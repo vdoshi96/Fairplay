@@ -83,7 +83,9 @@ async function mockAuthApis(page: Page) {
   });
 }
 
-async function mockProtectedDocuments(page: Page) {
+async function mockProtectedRouteHandoffs(page: Page) {
+  // Keeps auth flow e2e runnable without local Postgres. Real protected UI is
+  // exercised in component tests under src/components/app-shell and settings.
   await page.route("**/app/onboarding**", async (route) => {
     await route.fulfill({
       contentType: "text/html",
@@ -114,7 +116,7 @@ async function tabUntilFocused(
 test.describe("auth and onboarding", () => {
   test("create household -> choose persona -> onboarding -> home", async ({ page }) => {
     await mockAuthApis(page);
-    await mockProtectedDocuments(page);
+    await mockProtectedRouteHandoffs(page);
 
     await page.goto("/create-household");
     await page.getByLabel("Household display name").fill("River Home");
@@ -135,7 +137,7 @@ test.describe("auth and onboarding", () => {
 
   test("logout -> login -> choose persona -> home", async ({ page }) => {
     await mockAuthApis(page);
-    await mockProtectedDocuments(page);
+    await mockProtectedRouteHandoffs(page);
     await page.route("**/api/auth/logout", async (route) => {
       await route.fulfill({
         status: 200,
@@ -167,7 +169,7 @@ test.describe("auth and onboarding", () => {
 
   test("keyboard smoke through login and persona screens", async ({ page }) => {
     await mockAuthApis(page);
-    await mockProtectedDocuments(page);
+    await mockProtectedRouteHandoffs(page);
 
     await page.goto("/login");
     await page.keyboard.press("Tab");

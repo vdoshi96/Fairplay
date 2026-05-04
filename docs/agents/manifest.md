@@ -43,6 +43,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T05 auth, onboarding, and app shell UI | Codex implementation worker T05 | Done with concerns; DB-backed e2e mocked | `docs/agents/tasks/2026-05-04-implementation-t05-auth-onboarding-ui/` |
 | 2026-05-04 | T05 spec compliance review | Codex spec compliance reviewer | Approved with notes | `docs/agents/tasks/2026-05-04-review-t05-spec/` |
 | 2026-05-04 | T05 code quality review | Codex code quality reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t05-code-quality/` |
+| 2026-05-04 | T05 accessible settings and protected UI test fix | Codex focused T05 frontend quality fix worker | Completed; DB-backed verification not claimed | `docs/agents/tasks/2026-05-04-fix-t05-accessible-settings-and-tests/` |
 
 ## Rules
 

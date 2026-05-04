@@ -118,3 +118,8 @@
 - Added T05 code quality review artifacts under `docs/agents/tasks/2026-05-04-review-t05-code-quality/`.
 - Reviewed T05 commit `c93da78` for frontend quality, accessibility, state handling, responsive design, API interaction, and test quality; result is CHANGES_REQUESTED because the persona-switch confirmation is not keyboard-modal and mocked e2e replaces protected app pages with handcrafted HTML.
 - Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/components/auth src/components/onboarding`, `npm run test:e2e -- --grep "auth|onboarding"`, and `npm run build`; all passed, with the existing non-blocking Next.js edge-runtime static-generation warning during build.
+- Started focused T05 accessible settings and protected UI test fix on `codex/v1-app` in `.worktrees/v1-app`.
+- Added task artifacts under `docs/agents/tasks/2026-05-04-fix-t05-accessible-settings-and-tests/`.
+- Added SettingsPanel modal accessibility regression tests, implemented keyboard-modal focus management, and added real AppShell/home/onboarding/settings component coverage for DB-unavailable verification.
+- Kept auth/onboarding e2e protected-route handoff mocks explicit because those flows are not DB-backed verification.
+- Verified the focused T05 quality fix with `npm run lint`, `npm run typecheck`, `npm test -- --run src/components/auth src/components/onboarding src/components/settings src/components/app-shell`, `npm run test:e2e -- --grep "auth|onboarding"`, `npm run build`, and `git diff --check`; all passed, with the existing non-blocking Next.js edge-runtime static-generation warning during build.
