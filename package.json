@@ -24,8 +24,12 @@
     "db:wait": "DATABASE_URL=${DATABASE_URL:-postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public} node scripts/db/wait-for-db.mjs"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@node-rs/argon2": "^2.0.2",
     "@prisma/client": "^6.7.0",
+    "lucide-react": "^1.14.0",
     "nanoid": "^5.1.5",
     "next": "^15.3.1",
     "react": "^19.1.0",
