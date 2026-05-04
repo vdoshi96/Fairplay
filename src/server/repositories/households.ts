@@ -1,4 +1,4 @@
-import type { Household } from "@prisma/client";
+import type { Household, HouseholdCredential, Persona } from "@prisma/client";
 
 import type {
   CreateHouseholdResponse,
@@ -16,6 +16,11 @@ export type CreateHouseholdWithPersonasInput = {
   passwordHash: string;
   hashAlgorithm: string;
   hashParamsVersion: string;
+};
+
+type HouseholdWithCredentialAndPersonas = Household & {
+  credential: HouseholdCredential | null;
+  personas: Persona[];
 };
 
 export function toHouseholdSummary(household: Household): HouseholdSummary {
@@ -82,7 +87,7 @@ export async function createHouseholdWithPersonas(
 
 export async function findHouseholdByUsernameNormalized(
   usernameNormalized: string
-) {
+): Promise<HouseholdWithCredentialAndPersonas | null> {
   return prisma.household.findUnique({
     where: {
       usernameNormalized
