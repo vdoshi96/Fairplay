@@ -22,7 +22,11 @@ import type { CurrentSession } from "@/server/auth/current-session";
 import { prisma } from "@/server/db/prisma";
 import { radarService } from "@/server/radar/service";
 import { responsibilityService } from "@/server/responsibilities/service";
-import { buildSuggestedAgenda, type AgendaDraftItem, type AgendaSources } from "./agenda";
+import {
+  buildSuggestedAgenda,
+  type AgendaDraftItem,
+  type AgendaSources
+} from "./agenda";
 import { buildCheckInSummary, containsUnsafeSummaryLanguage } from "./summary";
 
 export type GuidedCheckInItem = CheckInAgendaItem & {
