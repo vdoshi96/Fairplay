@@ -70,3 +70,6 @@
 - Added T03 spec compliance re-review artifacts under `docs/agents/tasks/2026-05-04-review-t03-spec-rereview/`.
 - Re-reviewed T03 after fix commit `f6f358bf2a7d2f703d3773d31f996f406a544452`; result is APPROVED_WITH_NOTES because the prior spec findings are resolved, with live Postgres integration verification still blocked by no database at `localhost:5432`.
 - Verified `git status --short`, `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm run build`, and `npm test -- --run src/server/repositories`; repository tests failed for the expected DB connection limitation.
+- Added T03 code quality review artifacts under `docs/agents/tasks/2026-05-04-review-t03-code-quality/`.
+- Reviewed T03 persistence quality after commits `5d20d6d` and `f6f358b`; result is CHANGES_REQUESTED because auth-throttle failed-login counting is read-then-write and can lose increments under concurrent serverless requests.
+- Verified `git status --short`, `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm run build`, and `npm test -- --run src/server/repositories`; repository tests failed because Prisma cannot reach `localhost:5432` without local Postgres.
