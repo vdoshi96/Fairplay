@@ -204,3 +204,8 @@
 - Added T08 spec compliance re-review artifacts under `docs/agents/tasks/2026-05-04-review-t08-spec-rereview/`.
 - Re-reviewed T08 after fix commit `cb22b7256302f5e49c143c229199b03c3720ceb4`; result is CHANGES_REQUESTED because the prior preview, item-scoping, and structured decision findings are resolved, but the original T08 max-5 agenda requirement remains externally bypassable through `maxItems` values above 5.
 - Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/server/check-ins src/components/check-ins src/app/api/check-ins`, `npm run test:e2e -- --grep "check-in"`, and `npm run build`; all passed, with route-mocked e2e and the existing Edge Runtime/static-generation build warning noted.
+- Started focused T08 agenda cap fix on `codex/v1-app` in `.worktrees/v1-app`.
+- Added task artifacts under `docs/agents/tasks/2026-05-04-fix-t08-agenda-cap/`.
+- Added failing regression tests proving `maxItems: 8` was accepted by create/preview routes and could produce more than five direct service agenda items.
+- Tightened create and preview route schemas to reject agenda sizes above five and clamped agenda generation to a shared five-item cap for direct service callers.
+- Verified the focused T08 agenda cap fix with `npm run lint`, `npm run typecheck`, `npm test -- --run src/server/check-ins src/app/api/check-ins`, `npm run build`, and `git diff --check`; all passed, with the existing Edge Runtime/static-generation build warning noted.

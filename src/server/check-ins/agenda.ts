@@ -33,7 +33,7 @@ export type AgendaDraftItem = {
   visibility: Visibility | null;
 };
 
-const DEFAULT_MAX_ITEMS = 5;
+export const MAX_AGENDA_ITEMS = 5;
 
 function dueReviewDescription(source: ResponsibilityAgendaSource) {
   return source.nextReviewAt ? "Review due" : "Recent responsibility";
@@ -48,7 +48,7 @@ export function buildSuggestedAgenda(
     includeAcknowledgement?: boolean;
   } = {}
 ): AgendaDraftItem[] {
-  const maxItems = options.maxItems ?? DEFAULT_MAX_ITEMS;
+  const maxItems = Math.min(options.maxItems ?? MAX_AGENDA_ITEMS, MAX_AGENDA_ITEMS);
   const selectedRadarIds = options.radarItemIds
     ? new Set(options.radarItemIds)
     : null;

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { RadarItemIdSchema, ResponsibilityIdSchema } from "@/domain/ids";
 import { getCurrentSession } from "@/server/auth/current-session";
+import { MAX_AGENDA_ITEMS } from "@/server/check-ins/agenda";
 import { checkInService } from "@/server/check-ins/service";
 import {
   authRequired,
@@ -15,7 +16,7 @@ export const runtime = "nodejs";
 
 const PreviewCheckInSchema = z
   .object({
-    maxItems: z.number().int().min(1).max(8).optional(),
+    maxItems: z.number().int().min(1).max(MAX_AGENDA_ITEMS).optional(),
     radarItemIds: z.array(RadarItemIdSchema).optional(),
     responsibilityIds: z.array(ResponsibilityIdSchema).optional(),
     includeAcknowledgement: z.boolean().optional()

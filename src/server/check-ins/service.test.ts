@@ -170,6 +170,18 @@ describe("check-in service", () => {
       .toHaveLength(5);
   });
 
+  it("caps requested agenda size above five for create and preview", async () => {
+    const deps = makeDeps();
+    const service = createCheckInService(deps);
+
+    await service.create(session, { maxItems: 8 });
+    const preview = await service.preview(session, { maxItems: 8 });
+
+    expect((deps.createCheckIn as ReturnType<typeof vi.fn>).mock.calls[0][0].items)
+      .toHaveLength(5);
+    expect(preview.items).toHaveLength(5);
+  });
+
   it("resumes the active check-in instead of creating another one", async () => {
     const deps = makeDeps({ getActiveCheckIn: vi.fn().mockResolvedValue(checkIn()) });
     const service = createCheckInService(deps);

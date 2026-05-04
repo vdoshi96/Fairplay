@@ -64,6 +64,15 @@ describe("/api/check-ins/preview", () => {
     expect(preview).toHaveBeenCalledWith(session, { maxItems: 5 });
   });
 
+  it("rejects agenda sizes above five", async () => {
+    const { POST } = await import("./route");
+
+    const response = await POST(request({ maxItems: 8 }));
+
+    expect(response.status).toBe(400);
+    expect(preview).not.toHaveBeenCalled();
+  });
+
   it("requires authentication", async () => {
     getCurrentSession.mockResolvedValue(null);
     const { POST } = await import("./route");
