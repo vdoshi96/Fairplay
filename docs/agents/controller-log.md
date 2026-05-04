@@ -67,3 +67,6 @@
 - Added initial Prisma migration SQL, switched responsibility template ids to Prisma-generated UUID strings while preserving slug-based seed upserts, and tightened repository reads/writes around household/persona ownership for responsibilities, radar, check-ins, and sessions.
 - Added cross-household repository integration tests for responsibilities, private radar drafts, check-ins, and sessions/personas.
 - Verified `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, and `npm run build` pass; `npm test -- --run src/server/repositories` remains DB-limited because Prisma cannot reach `localhost:5432`.
+- Added T03 spec compliance re-review artifacts under `docs/agents/tasks/2026-05-04-review-t03-spec-rereview/`.
+- Re-reviewed T03 after fix commit `f6f358bf2a7d2f703d3773d31f996f406a544452`; result is APPROVED_WITH_NOTES because the prior spec findings are resolved, with live Postgres integration verification still blocked by no database at `localhost:5432`.
+- Verified `git status --short`, `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm run build`, and `npm test -- --run src/server/repositories`; repository tests failed for the expected DB connection limitation.
