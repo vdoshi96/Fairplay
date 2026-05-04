@@ -11,8 +11,10 @@ import { AppShell } from "./app-shell";
 
 const routerPush = vi.hoisted(() => vi.fn());
 const routerReplace = vi.hoisted(() => vi.fn());
+const pathname = vi.hoisted(() => vi.fn(() => "/app/load-map"));
 
 vi.mock("next/navigation", () => ({
+  usePathname: pathname,
   useRouter: () => ({
     push: routerPush,
     replace: routerReplace
@@ -42,6 +44,7 @@ function renderProtectedUi(children: ReactNode) {
 
 describe("protected app UI", () => {
   afterEach(() => {
+    pathname.mockReturnValue("/app/load-map");
     routerPush.mockReset();
     routerReplace.mockReset();
   });
@@ -49,11 +52,10 @@ describe("protected app UI", () => {
   it("renders the app shell around the real home page", () => {
     renderProtectedUi(<AppHomePage />);
 
-    expect(screen.getByRole("link", { name: /River Home Fairplay/i })).toHaveAttribute(
-      "href",
-      "/app/home"
-    );
-    expect(screen.getByRole("link", { name: "Alex" })).toHaveAttribute(
+    expect(
+      screen.getAllByRole("link", { name: /River Home Fairplay/i })[0]
+    ).toHaveAttribute("href", "/app/home");
+    expect(screen.getAllByRole("link", { name: "Alex" })[0]).toHaveAttribute(
       "href",
       "/app/settings"
     );
@@ -66,6 +68,24 @@ describe("protected app UI", () => {
     expect(screen.getAllByRole("link", { name: "Radar" }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole("link", { name: "Check-ins" }).length).toBeGreaterThan(
       0
+    );
+  });
+
+  it("renders premium route chrome with active load map and personal-use entries", () => {
+    renderProtectedUi(<AppHomePage />);
+
+    expect(screen.getAllByRole("navigation", { name: "Primary" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: /Library/i })[0]).toHaveAttribute(
+      "href",
+      "/app/library"
+    );
+    expect(screen.getAllByRole("link", { name: /Crash course/i })[0]).toHaveAttribute(
+      "href",
+      "/app/crash-course"
+    );
+    expect(screen.getAllByRole("link", { name: /Load map/i })[0]).toHaveAttribute(
+      "aria-current",
+      "page"
     );
   });
 
