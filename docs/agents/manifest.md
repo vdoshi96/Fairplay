@@ -55,6 +55,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T06 load snapshot auth-required fix | Codex focused T06 load-snapshot fix worker | Completed and pushed | `docs/agents/tasks/2026-05-04-fix-t06-load-snapshot-auth-required/` |
 | 2026-05-04 | T06 final code quality re-review | Codex final code quality re-reviewer | Approved with notes | `docs/agents/tasks/2026-05-04-review-t06-code-quality-final/` |
 | 2026-05-04 | T07 radar concern board UI and API mutations | Codex implementation worker T07 | Completed locally; push pending | `docs/agents/tasks/2026-05-04-implementation-t07-radar/` |
+| 2026-05-04 | T07 spec compliance review | Codex spec compliance reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t07-spec/` |
 
 ## Rules
 
