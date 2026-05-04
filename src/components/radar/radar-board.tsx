@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Fragment,
   useEffect,
   useMemo,
   useRef,
@@ -13,6 +12,8 @@ import {
 import type { RadarCreate, RadarSummary } from "@/contracts/radar";
 import type { RadarReasonKey, RadarState, Urgency, Visibility } from "@/domain/enums";
 import { SAFETY_COPY } from "@/lib/safety-copy";
+import { MotionPanel } from "@/components/motion/fairplay-motion";
+import { RadarVisual } from "@/components/visuals/fairplay-visuals";
 
 type RadarBoardItem = RadarSummary;
 
@@ -479,12 +480,19 @@ export function RadarBoard({
   return (
     <>
     <section className="grid gap-5" ref={contentRef}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
         <div className="grid gap-1">
           <p className="text-[13px] font-semibold text-fp-muted-ink">Radar</p>
           <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
             Concern board
           </h1>
+        </div>
+        <div className="relative w-36 justify-self-start sm:w-44 sm:justify-self-end">
+          <span
+            aria-hidden="true"
+            className="fp-motion-radar-pulse absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          />
+          <RadarVisual className="relative rounded-[8px]" />
         </div>
       </div>
 
@@ -779,7 +787,7 @@ function RadarSection({
       {items.length > 0 ? (
         <div className="grid gap-3">
           {items.map((item) => (
-            <Fragment key={item.id}>{children(item)}</Fragment>
+            <MotionPanel key={item.id}>{children(item)}</MotionPanel>
           ))}
         </div>
       ) : (

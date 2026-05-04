@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 import type {
   LoadSnapshotSummary,
   ResponsibilitySummary
 } from "@/contracts/responsibilities";
 import type { HiddenEffortKey } from "@/domain/enums";
+import { AssignmentShift, MotionPanel } from "@/components/motion/fairplay-motion";
+import { HelperMascot } from "@/components/visuals/fairplay-visuals";
 
 type ResponsibilityLoadMapProps = {
   responsibilities: ResponsibilitySummary[];
@@ -150,7 +152,14 @@ export function ResponsibilityLoadMap({
       </div>
 
       <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
-        <Signal label="Owner mix" value={ownerMix(loadSnapshot.ownerDistribution)} />
+        <Signal label="Owner mix" value={ownerMix(loadSnapshot.ownerDistribution)}>
+          <AssignmentShift
+            className="mt-2 w-fit"
+            from="alex"
+            label="Owner mix visual"
+            to="max"
+          />
+        </Signal>
         <Signal
           label="Shared"
           value={String(loadSnapshot.sharedDistribution.shared ?? 0)}
@@ -214,50 +223,54 @@ export function ResponsibilityLoadMap({
       </div>
 
       {responsibilities.length === 0 ? (
-        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-5">
-          <h2 className="text-[18px] font-bold">No responsibilities mapped yet.</h2>
-          <p className="text-[14px] leading-6 text-fp-muted-ink">
-            Add one household responsibility and decide what needs attention first.
-          </p>
-          <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-bold"
-            href="/app/responsibilities/new"
-          >
-            Add responsibility
-          </Link>
+        <div className="grid gap-4 rounded-[8px] border border-fp-line bg-white p-5 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="grid gap-3">
+            <h2 className="text-[18px] font-bold">No responsibilities mapped yet.</h2>
+            <p className="text-[14px] leading-6 text-fp-muted-ink">
+              Add one household responsibility and decide what needs attention first.
+            </p>
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-bold sm:w-fit"
+              href="/app/responsibilities/new"
+            >
+              Add responsibility
+            </Link>
+          </div>
+          <HelperMascot className="h-24 w-24 justify-self-start sm:justify-self-end" decorative />
         </div>
       ) : (
         <div className="grid gap-3">
           {filteredResponsibilities.map((responsibility) => (
-            <Link
-              className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-4 outline-none focus:ring-2 focus:ring-fp-ink/20"
-              href={`/app/responsibilities/${responsibility.id}`}
-              key={responsibility.id}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="truncate text-[17px] font-bold leading-6">
-                    {responsibility.title}
-                  </h2>
-                  <p className="text-[13px] text-fp-muted-ink">
-                    {ownerFor(responsibility)}
-                  </p>
+            <MotionPanel key={responsibility.id}>
+              <Link
+                className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-4 outline-none focus:ring-2 focus:ring-fp-ink/20"
+                href={`/app/responsibilities/${responsibility.id}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-[17px] font-bold leading-6">
+                      {responsibility.title}
+                    </h2>
+                    <p className="text-[13px] text-fp-muted-ink">
+                      {ownerFor(responsibility)}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-[8px] border border-fp-line px-2 py-1 text-[12px] font-semibold">
+                    {label(responsibility.status)}
+                  </span>
                 </div>
-                <span className="shrink-0 rounded-[8px] border border-fp-line px-2 py-1 text-[12px] font-semibold">
-                  {label(responsibility.status)}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2 text-[12px] font-semibold text-fp-muted-ink">
-                <span>{label(responsibility.cadence)}</span>
-                {responsibility.areaKeys.map((key) => (
-                  <span key={key}>{label(key)}</span>
-                ))}
-                {responsibility.hiddenEffortKeys.map((key) => (
-                  <span key={key}>{label(key)}</span>
-                ))}
-                <span>{label(reviewState(responsibility))}</span>
-              </div>
-            </Link>
+                <div className="flex flex-wrap gap-2 text-[12px] font-semibold text-fp-muted-ink">
+                  <span>{label(responsibility.cadence)}</span>
+                  {responsibility.areaKeys.map((key) => (
+                    <span key={key}>{label(key)}</span>
+                  ))}
+                  {responsibility.hiddenEffortKeys.map((key) => (
+                    <span key={key}>{label(key)}</span>
+                  ))}
+                  <span>{label(reviewState(responsibility))}</span>
+                </div>
+              </Link>
+            </MotionPanel>
           ))}
           {filteredResponsibilities.length === 0 ? (
             <p className="rounded-[8px] border border-fp-line bg-white p-4 text-[14px] text-fp-muted-ink">
@@ -288,11 +301,20 @@ function summaryMix(distribution: Record<string, number>) {
     .join(" / ");
 }
 
-function Signal({ label, value }: { label: string; value: string }) {
+function Signal({
+  children,
+  label,
+  value
+}: {
+  children?: ReactNode;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="rounded-[8px] border border-fp-line bg-white p-3">
       <p className="text-[12px] font-semibold text-fp-muted-ink">{label}</p>
       <p className="mt-1 text-[20px] font-bold text-fp-ink">{value}</p>
+      {children}
     </div>
   );
 }

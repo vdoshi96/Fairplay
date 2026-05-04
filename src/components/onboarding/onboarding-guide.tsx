@@ -1,6 +1,11 @@
 "use client";
 
 import { SAFETY_COPY } from "@/lib/safety-copy";
+import { MotionPanel } from "@/components/motion/fairplay-motion";
+import {
+  HelperMascot,
+  PersonaAvatar
+} from "@/components/visuals/fairplay-visuals";
 
 type OnboardingGuideProps = {
   onSkip: () => void;
@@ -28,35 +33,44 @@ const steps = [
 export function OnboardingGuide({ onSkip }: OnboardingGuideProps) {
   return (
     <section className="mx-auto grid w-full max-w-3xl gap-6">
-      <div className="grid gap-3">
-        <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
-          First setup
-        </p>
-        <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-          Set up your household rhythm
-        </h1>
-        <p className="text-[15px] leading-6 text-fp-muted-ink">
-          Fairplay is for practical household planning: make work visible, clarify
-          ownership, and return to decisions when capacity changes.
-        </p>
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="grid gap-3">
+          <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
+            First setup
+          </p>
+          <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+            Set up your household rhythm
+          </h1>
+          <p className="text-[15px] leading-6 text-fp-muted-ink">
+            Fairplay is for practical household planning: make work visible, clarify
+            ownership, and return to decisions when capacity changes.
+          </p>
+        </div>
+        <div className="flex items-center justify-start gap-2 sm:justify-end">
+          <PersonaAvatar className="h-12 w-12 rounded-full" decorative persona="alex" />
+          <HelperMascot
+            className="h-20 w-20 rounded-[8px]"
+            alt="Household helper mascot"
+          />
+          <PersonaAvatar className="h-12 w-12 rounded-full" decorative persona="max" />
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {steps.map((step, index) => (
-          <article
-            className="rounded-[8px] border border-fp-line bg-white p-4"
-            key={step.title}
-          >
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-fp-surface text-[13px] font-bold text-fp-ink">
-              {index + 1}
-            </span>
-            <h2 className="mt-3 text-[17px] font-bold leading-6 text-fp-ink">
-              {step.title}
-            </h2>
-            <p className="mt-1 text-[14px] leading-5 text-fp-muted-ink">
-              {step.body}
-            </p>
-          </article>
+          <MotionPanel key={step.title}>
+            <article className="h-full rounded-[8px] border border-fp-line bg-white p-4">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-fp-surface text-[13px] font-bold text-fp-ink">
+                {index + 1}
+              </span>
+              <h2 className="mt-3 text-[17px] font-bold leading-6 text-fp-ink">
+                {step.title}
+              </h2>
+              <p className="mt-1 text-[14px] leading-5 text-fp-muted-ink">
+                {step.body}
+              </p>
+            </article>
+          </MotionPanel>
         ))}
       </div>
 

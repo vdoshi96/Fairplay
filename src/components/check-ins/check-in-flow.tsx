@@ -9,6 +9,8 @@ import type {
   GuidedDecisionInput
 } from "@/server/check-ins/service";
 import { SAFETY_COPY } from "@/lib/safety-copy";
+import { MotionPanel, MotionSpark } from "@/components/motion/fairplay-motion";
+import { CheckInVisual } from "@/components/visuals/fairplay-visuals";
 
 type ItemMutation = {
   state: CheckInItemState;
@@ -242,10 +244,21 @@ export function CheckInFlow({
     return (
       <section
         aria-label="Check-in summary"
-        className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-6"
+        className="mx-auto grid w-full max-w-2xl gap-4 px-4 py-6"
       >
-        <h1 className="text-2xl font-semibold text-stone-950">Check-in complete</h1>
-        <p className="whitespace-pre-line rounded-md border border-stone-200 bg-white p-4 text-sm leading-6 text-stone-700">
+        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="flex items-center gap-3">
+            <MotionSpark decorative />
+            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+              Check-in complete
+            </h1>
+          </div>
+          <CheckInVisual
+            className="justify-self-start sm:justify-self-end"
+            label="Check-in completion spark"
+          />
+        </div>
+        <p className="whitespace-pre-line rounded-[8px] border border-fp-line bg-white p-4 text-[14px] leading-6 text-fp-muted-ink">
           {checkIn.summary}
         </p>
       </section>
@@ -277,60 +290,70 @@ export function CheckInFlow({
           Saving change...
         </p>
       ) : message ? (
-        <p role="status" className="text-sm text-stone-600">{message}</p>
+        <p role="status" className="flex items-center gap-2 text-sm text-stone-600">
+          {message === "Decision recorded." ? <MotionSpark decorative /> : null}
+          {message}
+        </p>
       ) : null}
 
       {currentItem ? (
-        <section
-          aria-label="Current item"
-          className="flex flex-col gap-4 rounded-md border border-stone-200 bg-white p-4"
-        >
-          <div className="flex flex-col gap-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
-              {currentItem.description}
+        <MotionPanel>
+          <section
+            aria-label="Current item"
+            className="flex flex-col gap-4 rounded-[8px] border border-fp-line bg-white p-4"
+          >
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-fp-muted-ink">
+                {currentItem.description}
+              </p>
+              <h2 className="text-xl font-semibold text-fp-ink">
+                {currentItem.title}
+              </h2>
+              {currentItem.visibility ? (
+                <span className="w-fit rounded-[8px] border border-fp-line px-2 py-1 text-xs text-fp-muted-ink">
+                  {label(currentItem.visibility)}
+                </span>
+              ) : null}
+            </div>
+
+            <p className="text-sm leading-6 text-fp-muted-ink">
+              {SAFETY_COPY.deferOrPause}
             </p>
-            <h2 className="text-xl font-semibold text-stone-950">{currentItem.title}</h2>
-            {currentItem.visibility ? (
-              <span className="w-fit rounded border border-stone-300 px-2 py-1 text-xs text-stone-700">
-                {label(currentItem.visibility)}
-              </span>
-            ) : null}
-          </div>
 
-          <p className="text-sm leading-6 text-stone-600">{SAFETY_COPY.deferOrPause}</p>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
-              type="button"
-              disabled={Boolean(pendingAction)}
-              onClick={() =>
-                mutateItem({ state: "skipped", response: "Skipped for now." }, "skip")
-              }
-            >
-              Skip
-            </button>
-            <button
-              className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
-              type="button"
-              disabled={Boolean(pendingAction)}
-              onClick={() =>
-                mutateItem(
-                  { state: "deferred", response: "Deferred for later." },
-                  "defer"
-                )
-              }
-            >
-              Defer
-            </button>
-          </div>
-        </section>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                className="min-h-11 rounded-[8px] border border-fp-line px-3 py-2 text-sm font-medium"
+                type="button"
+                disabled={Boolean(pendingAction)}
+                onClick={() =>
+                  mutateItem({ state: "skipped", response: "Skipped for now." }, "skip")
+                }
+              >
+                Skip
+              </button>
+              <button
+                className="min-h-11 rounded-[8px] border border-fp-line px-3 py-2 text-sm font-medium"
+                type="button"
+                disabled={Boolean(pendingAction)}
+                onClick={() =>
+                  mutateItem(
+                    { state: "deferred", response: "Deferred for later." },
+                    "defer"
+                  )
+                }
+              >
+                Defer
+              </button>
+            </div>
+          </section>
+        </MotionPanel>
       ) : null}
 
-      <section
-        aria-label="Decision form"
-        className="flex flex-col gap-3 rounded-md border border-stone-200 bg-white p-4"
-      >
+      <MotionPanel>
+        <section
+          aria-label="Decision form"
+          className="flex flex-col gap-3 rounded-[8px] border border-fp-line bg-white p-4"
+        >
         <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
           Decision type
           <select
@@ -386,7 +409,8 @@ export function CheckInFlow({
         >
           Record decision
         </button>
-      </section>
+        </section>
+      </MotionPanel>
 
       <button
         className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
@@ -456,7 +480,10 @@ export function NewCheckInLauncher({
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 py-6">
-      <h1 className="text-2xl font-semibold text-stone-950">New check-in</h1>
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+        <h1 className="text-2xl font-semibold text-stone-950">New check-in</h1>
+        <CheckInVisual className="justify-self-start sm:justify-self-end" />
+      </div>
       {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
       <button
         className="rounded-md bg-stone-950 px-3 py-2 text-sm font-medium text-white"
@@ -467,26 +494,25 @@ export function NewCheckInLauncher({
       </button>
       <section aria-label="Agenda preview" className="flex flex-col gap-3">
         {suggestions.map((item) => (
-          <article
-            className="flex items-start justify-between gap-3 rounded-md border border-stone-200 bg-white p-3"
-            key={item.id}
-          >
-            <div>
-              <h2 className="font-medium text-stone-950">{item.title}</h2>
-              <p className="text-sm text-stone-600">{item.description}</p>
-            </div>
-            <button
-              className="rounded-md border border-stone-300 px-2 py-1 text-sm"
-              type="button"
-              onClick={() =>
-                setSuggestions((current) =>
-                  current.filter((candidate) => candidate.id !== item.id)
-                )
-              }
-            >
-              Remove {item.title}
-            </button>
-          </article>
+          <MotionPanel key={item.id}>
+            <article className="flex items-start justify-between gap-3 rounded-md border border-stone-200 bg-white p-3">
+              <div>
+                <h2 className="font-medium text-stone-950">{item.title}</h2>
+                <p className="text-sm text-stone-600">{item.description}</p>
+              </div>
+              <button
+                className="rounded-md border border-stone-300 px-2 py-1 text-sm"
+                type="button"
+                onClick={() =>
+                  setSuggestions((current) =>
+                    current.filter((candidate) => candidate.id !== item.id)
+                  )
+                }
+              >
+                Remove {item.title}
+              </button>
+            </article>
+          </MotionPanel>
         ))}
       </section>
       <button
