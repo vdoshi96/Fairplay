@@ -24,3 +24,6 @@
 - Replaced the high-level implementation plan with task-scoped worker assignments covering app scaffold, shared contracts, Prisma/Postgres persistence, auth/session/persona APIs, mobile UI/onboarding, responsibilities/load map, radar, guided check-ins, visual integration, README/Vercel readiness, final verification, review gates, and PR strategy.
 - Added Fairplay visual and asset direction task on `codex/research-and-spec`.
 - Defined mobile-first visual tokens, type/spacing/shape direction, original Alex/Max/helper character rules, future image prompts, PWA icon direction, motion guidance, reduced-motion requirements, and original SVG placeholder assets for T09 visual integration.
+- Started T01 implementation on `codex/v1-app` in `.worktrees/v1-app`.
+- Added Next.js App Router scaffold with TypeScript, Tailwind CSS, ESLint, Vitest, Playwright, baseline dependencies, placeholder env example, PWA metadata/manifest/icon routes, and a safe root page linking to future auth entry points.
+- Added a minimal Playwright smoke test for `/` and documented T01 task artifacts under `docs/agents/tasks/2026-05-04-implementation-t01-scaffold/`.
