@@ -18,6 +18,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | Fairplay visual and asset direction | Codex visual/asset agent | Completed | `docs/agents/tasks/2026-05-04-visual-asset-direction/` |
 | 2026-05-04 | T01 app scaffold, dependencies, config, and PWA baseline | Codex implementation worker T01 | Completed | `docs/agents/tasks/2026-05-04-implementation-t01-scaffold/` |
 | 2026-05-04 | T01 spec compliance review | Codex spec compliance reviewer | Completed | `docs/agents/tasks/2026-05-04-review-t01-spec/` |
+| 2026-05-04 | T01 code quality review | Codex code quality reviewer | Completed | `docs/agents/tasks/2026-05-04-review-t01-code-quality/` |
 
 ## Rules
 

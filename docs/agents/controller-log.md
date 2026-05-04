@@ -30,3 +30,6 @@
 - Added T01 spec compliance review artifacts under `docs/agents/tasks/2026-05-04-review-t01-spec/`.
 - Reviewed T01 commit range `151b815..33862e8` against the implementation plan and product constraints; result is APPROVED_WITH_NOTES with no blocking spec findings.
 - Verified `npm run lint`, `npm run typecheck`, `npm test -- --run`, standalone `npm run build`, and `npm run test:e2e` pass.
+- Added T01 code quality review artifacts under `docs/agents/tasks/2026-05-04-review-t01-code-quality/`.
+- Reviewed T01 commit range `151b815..33862e8` for scaffold quality, security posture, maintainability, test setup, and Vercel readiness; result is APPROVED_WITH_NOTES with a non-blocking npm audit note for Next's transitive PostCSS advisory.
+- Verified `git diff --check 151b815..33862e8`, `npm run lint`, `npm run typecheck`, `npm test -- --run`, `npm run build`, and `npm run test:e2e` pass; `npm audit --omit=dev` reports the tracked moderate PostCSS advisory.
