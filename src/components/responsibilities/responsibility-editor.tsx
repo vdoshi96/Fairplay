@@ -196,7 +196,7 @@ export function ResponsibilityEditor({
   }
 
   async function save() {
-    const body = {
+    const editBody = {
       title,
       summary: summary || null,
       areaKeys: areaKeys
@@ -206,12 +206,15 @@ export function ResponsibilityEditor({
       hiddenEffortKeys,
       cadence,
       relevantDays: listInput(relevantDays),
-      status,
       householdStandard: householdStandard || null,
       notes: notes || null,
-      nextReviewAt: nextReviewAt ? `${nextReviewAt}T12:00:00.000Z` : null,
+      nextReviewAt: nextReviewAt ? `${nextReviewAt}T12:00:00.000Z` : null
+    };
+    const createBody = {
+      ...editBody,
+      status,
       currentAssignments: assignmentList,
-      ...(initialResponsibility ? {} : { visibility })
+      visibility
     };
     const url = initialResponsibility
       ? `/api/responsibilities/${initialResponsibility.id}`
@@ -222,7 +225,7 @@ export function ResponsibilityEditor({
       headers: {
         "content-type": "application/json"
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(initialResponsibility ? editBody : createBody)
     });
 
     if (initialResponsibility) {

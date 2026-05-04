@@ -360,6 +360,117 @@ describe("responsibility service", () => {
     expect(serialized).not.toMatch(/score|winner|loser|grade|diagnosis/i);
   });
 
+  it("requires a selected persona and uses persona-scoped radar links in load overview", async () => {
+    const alexPrivateRadarId = "550e8400-e29b-41d4-a716-446655440060";
+    const maxPrivateRadarId = "550e8400-e29b-41d4-a716-446655440061";
+    const sharedRadarId = "550e8400-e29b-41d4-a716-446655440062";
+    const listRadarItems = vi
+      .fn()
+      .mockImplementation(
+        async (input: Parameters<ResponsibilityServiceDeps["listRadarItems"]>[0]) => [
+          {
+            id: sharedRadarId,
+            responsibilityId,
+            state: "open"
+          },
+          {
+            id:
+              input.selectedPersonaId === alexId
+                ? alexPrivateRadarId
+                : maxPrivateRadarId,
+            responsibilityId,
+            state: "draft"
+          }
+        ]
+      );
+    const service = createResponsibilityService(
+      makeDeps({
+        listRadarItems
+      })
+    );
+
+    await expect(
+      service.listOverview({
+        ...session,
+        selectedPersonaId: null
+      })
+    ).rejects.toMatchObject({
+      code: "AUTH_REQUIRED"
+    });
+    expect(listRadarItems).not.toHaveBeenCalled();
+
+    const alexOverview = await service.listOverview(session);
+    const maxOverview = await service.listOverview({
+      ...session,
+      selectedPersonaId: maxId
+    });
+
+    expect(listRadarItems).toHaveBeenCalledWith({
+      householdId,
+      selectedPersonaId: alexId
+    });
+    expect(alexOverview.responsibilities[0].linkedRadarItems).toEqual([
+      {
+        id: sharedRadarId,
+        state: "open"
+      },
+      {
+        id: alexPrivateRadarId,
+        state: "draft"
+      }
+    ]);
+    expect(maxOverview.responsibilities[0].linkedRadarItems).toEqual([
+      {
+        id: sharedRadarId,
+        state: "open"
+      },
+      {
+        id: maxPrivateRadarId,
+        state: "draft"
+      }
+    ]);
+  });
+
+  it("records neutral status events through the dedicated status path", async () => {
+    const deps = makeDeps({
+      updateResponsibilityRecord: vi.fn().mockResolvedValue(
+        detail({
+          status: "paused",
+          nextReviewAt: "2026-05-22T12:00:00.000Z"
+        })
+      )
+    });
+    const service = createResponsibilityService(deps);
+
+    await service.updateStatus(session, responsibilityId, {
+      status: "paused",
+      note: "Pause until the new schedule is clear.",
+      reviewOn: "2026-05-22T12:00:00.000Z"
+    });
+
+    expect(deps.updateResponsibilityRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        householdId,
+        responsibilityId,
+        status: "paused",
+        nextReviewAt: "2026-05-22T12:00:00.000Z"
+      })
+    );
+    expect(deps.createResponsibilityEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        householdId,
+        responsibilityId,
+        actorPersonaId: alexId,
+        eventType: "status_changed",
+        payload: {
+          status: "paused",
+          note: "Pause until the new schedule is clear.",
+          reviewOn: "2026-05-22T12:00:00.000Z"
+        }
+      })
+    );
+  });
+
   it("updates visibility through the dedicated confirmed path and rejects private responsibility visibility", async () => {
     const deps = makeDeps({
       updateResponsibilityRecord: vi.fn().mockResolvedValue(

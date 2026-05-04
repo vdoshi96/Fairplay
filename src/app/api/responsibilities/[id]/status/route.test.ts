@@ -64,4 +64,28 @@ describe("POST /api/responsibilities/[id]/status", () => {
       })
     );
   });
+
+  it("passes pause context to the dedicated status service", async () => {
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      request({
+        status: "paused",
+        note: "Pause until travel settles.",
+        reviewOn: "2026-05-22T12:00:00.000Z"
+      }),
+      { params: Promise.resolve({ id }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(updateStatus).toHaveBeenCalledWith(
+      session,
+      id,
+      expect.objectContaining({
+        status: "paused",
+        note: "Pause until travel settles.",
+        reviewOn: "2026-05-22T12:00:00.000Z"
+      })
+    );
+  });
 });

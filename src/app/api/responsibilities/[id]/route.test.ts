@@ -91,4 +91,31 @@ describe("/api/responsibilities/[id]", () => {
     expect(response.status).toBe(400);
     expect(update).not.toHaveBeenCalled();
   });
+
+  it("rejects status transitions and assignment replacements in the general edit path", async () => {
+    const { PATCH } = await import("./route");
+
+    for (const status of ["active", "paused", "not_relevant", "archived"]) {
+      const response = await PATCH(
+        request({
+          status
+        }),
+        context
+      );
+
+      expect(response.status).toBe(400);
+    }
+
+    const assignmentResponse = await PATCH(
+      request({
+        currentAssignments: [
+          { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+        ]
+      }),
+      context
+    );
+
+    expect(assignmentResponse.status).toBe(400);
+    expect(update).not.toHaveBeenCalled();
+  });
 });

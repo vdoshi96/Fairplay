@@ -50,6 +50,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T06 editor and load-map spec fix | Codex focused T06 spec-fix worker | Completed and pushed | `docs/agents/tasks/2026-05-04-fix-t06-editor-loadmap-spec/` |
 | 2026-05-04 | T06 spec compliance re-review | Codex spec compliance re-reviewer | Approved with notes | `docs/agents/tasks/2026-05-04-review-t06-spec-rereview/` |
 | 2026-05-04 | T06 code quality review | Codex code quality reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t06-code-quality/` |
+| 2026-05-04 | T06 transition, radar privacy, and coverage fix | Codex focused T06 code-quality fix worker | Completed and pushed | `docs/agents/tasks/2026-05-04-fix-t06-transition-privacy-coverage/` |
 
 ## Rules
 

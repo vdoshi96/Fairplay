@@ -103,4 +103,21 @@ describe("/api/responsibilities", () => {
     expect(response.status).toBe(401);
     expect(body.error).toBe("Authentication required.");
   });
+
+  it("returns auth required when overview needs a selected persona", async () => {
+    getCurrentSession.mockResolvedValue({
+      ...session,
+      selectedPersonaId: null
+    });
+    listOverview.mockRejectedValue({
+      code: "AUTH_REQUIRED"
+    });
+    const { GET } = await import("./route");
+
+    const response = await GET(request("GET"));
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body.error).toBe("Authentication required.");
+  });
 });

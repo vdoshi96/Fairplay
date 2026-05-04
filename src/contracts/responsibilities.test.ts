@@ -93,10 +93,9 @@ describe("responsibility JSON contracts", () => {
     expect(
       ResponsibilityUpdateSchema.parse({
         id: summary.id,
-        status: "needs_review",
         nextReviewAt: "2026-06-01T00:00:00.000Z"
       })
-    ).toMatchObject({ status: "needs_review" });
+    ).toMatchObject({ nextReviewAt: "2026-06-01T00:00:00.000Z" });
 
     expect(ArchiveResponsibilityMutationSchema.parse({ id: summary.id })).toEqual({
       id: summary.id
@@ -140,6 +139,28 @@ describe("responsibility JSON contracts", () => {
       ResponsibilityUpdateSchema.parse({
         id: "550e8400-e29b-41d4-a716-446655440010",
         visibility: "shared_household"
+      })
+    ).toThrow();
+  });
+
+  it("rejects status and assignment changes in the general update contract", () => {
+    const id = "550e8400-e29b-41d4-a716-446655440010";
+
+    for (const status of ["active", "paused", "not_relevant", "archived"]) {
+      expect(() =>
+        ResponsibilityUpdateSchema.parse({
+          id,
+          status
+        })
+      ).toThrow();
+    }
+
+    expect(() =>
+      ResponsibilityUpdateSchema.parse({
+        id,
+        currentAssignments: [
+          { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+        ]
       })
     ).toThrow();
   });

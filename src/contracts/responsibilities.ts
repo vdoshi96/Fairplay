@@ -97,6 +97,8 @@ export const ResponsibilityCreateSchema = ResponsibilityEditableFieldsSchema.ext
 });
 
 const ResponsibilityUpdateFieldsSchema = ResponsibilityEditableFieldsSchema.omit({
+  currentAssignments: true,
+  status: true,
   visibility: true
 });
 

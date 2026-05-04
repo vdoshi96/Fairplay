@@ -28,7 +28,7 @@ import {
   getResponsibilityDetail,
   listResponsibilitiesForHousehold
 } from "@/server/repositories/responsibilities";
-import { createRadarItem } from "@/server/repositories/radar";
+import { createRadarItem, listRadarItemsForPersona } from "@/server/repositories/radar";
 import { listPersonasForHousehold } from "@/server/repositories/personas";
 import { buildLoadSnapshot } from "./load-snapshot";
 
@@ -59,10 +59,12 @@ export type CreateResponsibilityRecordInput = ResponsibilityCreate & {
 };
 
 export type UpdateResponsibilityRecordInput = Partial<
-  Omit<ResponsibilityUpdate, "id">
+  Omit<ResponsibilityCreate, "currentAssignments" | "visibility">
 > & {
   householdId: HouseholdId;
   responsibilityId: ResponsibilityId;
+  archivedAt?: string;
+  status?: ResponsibilityStatus;
   visibility?: Exclude<Visibility, "private">;
 };
 
@@ -120,7 +122,10 @@ export type ResponsibilityServiceDeps = {
     input: ResponsibilityEventInput
   ) => Promise<void>;
   listRadarItems: (
-    householdId: HouseholdId
+    input: {
+      householdId: HouseholdId;
+      selectedPersonaId: PersonaId;
+    }
   ) => Promise<ResponsibilityOverviewRadarItem[]>;
   createRadarItem: typeof createRadarItem;
 };
@@ -278,9 +283,13 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
       responsibilities: ResponsibilitySummary[];
       loadSnapshot: LoadSnapshotSummary;
     }> {
+      const selectedPersonaId = requireSelectedPersona(session);
       const [responsibilities, radarItems] = await Promise.all([
         deps.listResponsibilities(session.householdId),
-        deps.listRadarItems(session.householdId)
+        deps.listRadarItems({
+          householdId: session.householdId,
+          selectedPersonaId
+        })
       ]);
       const responsibilitiesWithRadar = withLinkedRadarItems(
         responsibilities,
@@ -621,17 +630,17 @@ export const responsibilityService = createResponsibilityService({
       }
     });
   },
-  async listRadarItems(householdId) {
-    return prisma.radarItem.findMany({
-      where: {
-        householdId
-      },
-      select: {
-        id: true,
-        responsibilityId: true,
-        state: true
-      }
+  async listRadarItems(input) {
+    const items = await listRadarItemsForPersona({
+      householdId: input.householdId,
+      selectedPersonaId: input.selectedPersonaId
     });
+
+    return items.map((item) => ({
+      id: item.id,
+      responsibilityId: item.responsibilityId,
+      state: item.state
+    }));
   },
   createRadarItem
 });

@@ -124,6 +124,19 @@ describe("ResponsibilityEditor", () => {
       relevantDays: ["monday", "friday"]
     });
     expect(editBody).not.toHaveProperty("visibility");
+    expect(editBody).not.toHaveProperty("status");
+    expect(editBody).not.toHaveProperty("currentAssignments");
+
+    const assignmentCall = fetchMock.mock.calls[1];
+    expect(assignmentCall[0]).toBe(
+      `/api/responsibilities/${responsibility.id}/assignments`
+    );
+    expect(assignmentCall[1].method).toBe("POST");
+    expect(JSON.parse(assignmentCall[1].body)).toMatchObject({
+      assignments: [
+        { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+      ]
+    });
 
     const visibilityCall = fetchMock.mock.calls[2];
     expect(visibilityCall[0]).toBe(

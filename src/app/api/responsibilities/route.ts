@@ -13,7 +13,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return authRequired();
   }
 
-  return NextResponse.json(await responsibilityService.listOverview(session));
+  try {
+    return NextResponse.json(await responsibilityService.listOverview(session));
+  } catch (error) {
+    return serviceErrorResponse(error);
+  }
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -62,6 +66,10 @@ function serviceErrorResponse(error: unknown): NextResponse {
 
   if (code === "INVALID_INPUT") {
     return invalidRequest();
+  }
+
+  if (code === "AUTH_REQUIRED") {
+    return authRequired();
   }
 
   if (code === "NOT_FOUND") {
