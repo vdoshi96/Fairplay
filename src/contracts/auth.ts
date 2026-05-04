@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { HouseholdIdSchema, PersonaIdSchema } from "../domain/ids";
+import {
+  HouseholdIdSchema,
+  HouseholdUsernameSchema,
+  PersonaIdSchema
+} from "../domain/ids";
 import { IsoDateTimeSchema, TimezoneSchema } from "../domain/time";
 import { PersonaSummarySchema } from "./personas";
 
@@ -15,7 +19,7 @@ export const HouseholdSummarySchema = z
 export const CreateHouseholdRequestSchema = z
   .object({
     householdName: z.string().trim().min(1).max(120),
-    username: z.string().trim().min(1).max(120),
+    username: HouseholdUsernameSchema,
     password: z.string().min(12).max(1024),
     timezone: TimezoneSchema
   })
@@ -31,7 +35,7 @@ export const CreateHouseholdResponseSchema = z
 
 export const LoginRequestSchema = z
   .object({
-    username: z.string().trim().min(1).max(120),
+    username: HouseholdUsernameSchema,
     password: z.string().min(1).max(1024)
   })
   .strict();

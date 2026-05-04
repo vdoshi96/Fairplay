@@ -15,6 +15,10 @@ import { assertVisibilityTransition } from "../domain/visibility";
 
 export const AreaKeySchema = z.string().trim().min(1).max(80);
 
+const ResponsibilityCreateVisibilitySchema = z
+  .enum(["shared_household", "partner_visible", "check_in_only"])
+  .default("shared_household");
+
 export const ResponsibilityAssignmentSummarySchema = z
   .object({
     personaKey: PersonaKeySchema,
@@ -78,7 +82,9 @@ const ResponsibilityEditableFieldsSchema = z
   })
   .strict();
 
-export const ResponsibilityCreateSchema = ResponsibilityEditableFieldsSchema;
+export const ResponsibilityCreateSchema = ResponsibilityEditableFieldsSchema.extend({
+  visibility: ResponsibilityCreateVisibilitySchema
+});
 
 const ResponsibilityUpdateFieldsSchema = ResponsibilityEditableFieldsSchema.omit({
   visibility: true

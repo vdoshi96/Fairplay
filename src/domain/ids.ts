@@ -27,6 +27,19 @@ export function normalizeHouseholdUsername(username: string): string {
   return username
     .trim()
     .toLowerCase()
-    .replace(/[\s-]+/g, "-")
+    .replace(/[\s_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+export const HouseholdUsernameSchema = z
+  .string()
+  .transform(normalizeHouseholdUsername)
+  .pipe(
+    z
+      .string()
+      .min(3)
+      .max(40)
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+  );
+
+export type HouseholdUsername = z.infer<typeof HouseholdUsernameSchema>;

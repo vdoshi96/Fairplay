@@ -82,6 +82,15 @@ describe("responsibility JSON contracts", () => {
     ).toMatchObject({ title: "Supply restock" });
 
     expect(
+      ResponsibilityCreateSchema.parse({
+        title: "Morning launch",
+        areaKeys: ["home_base"],
+        hiddenEffortKeys: ["planning"],
+        cadence: "daily"
+      })
+    ).toMatchObject({ visibility: "shared_household" });
+
+    expect(
       ResponsibilityUpdateSchema.parse({
         id: summary.id,
         status: "needs_review",
@@ -131,6 +140,18 @@ describe("responsibility JSON contracts", () => {
       ResponsibilityUpdateSchema.parse({
         id: "550e8400-e29b-41d4-a716-446655440010",
         visibility: "shared_household"
+      })
+    ).toThrow();
+  });
+
+  it("rejects private visibility when creating responsibilities", () => {
+    expect(() =>
+      ResponsibilityCreateSchema.parse({
+        title: "Private responsibility draft",
+        areaKeys: ["home_base"],
+        hiddenEffortKeys: ["planning"],
+        cadence: "daily",
+        visibility: "private"
       })
     ).toThrow();
   });

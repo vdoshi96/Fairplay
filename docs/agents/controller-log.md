@@ -49,3 +49,7 @@
 - Added T02 code quality review artifacts under `docs/agents/tasks/2026-05-04-review-t02-code-quality/`.
 - Reviewed T02 domain/contracts/seed quality after visibility fix commit `3e3235e`; result is CHANGES_REQUESTED because username contracts are not a safe normalized identity boundary and responsibility creation still accepts private visibility despite v1 reserving private drafts for radar unless reviewed.
 - Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/domain src/contracts src/seed`, and `npm run build`.
+- Started focused T02 contract quality fix on `codex/v1-app` in `.worktrees/v1-app`.
+- Added regression coverage for safe household username normalization/rejection, auth request normalization, responsibility create default visibility, and private responsibility create rejection.
+- Updated the shared username and responsibility create contracts, and added a simple Vitest `@` alias mapping.
+- Verified the focused T02 contract quality fix with `npm run lint`, `npm run typecheck`, `npm test -- --run src/contracts src/domain`, `npm run build`, and `git diff --check`.
