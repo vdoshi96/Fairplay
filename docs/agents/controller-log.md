@@ -77,3 +77,6 @@
 - Replaced auth-throttle read-then-literal failed-attempt writes with a Prisma transaction that uses atomic increment and derives throttling from the persisted count.
 - Added repository integration coverage for repeated failed attempts and concurrent failed attempts against the auth throttle unique username/IP key.
 - Verified `npm run lint`, `npm run typecheck`, and `npm run build` pass; `npm test -- --run src/server/repositories` remains DB-limited because Prisma cannot reach `localhost:5432`.
+- Added T03 code quality re-review artifacts under `docs/agents/tasks/2026-05-04-review-t03-code-quality-rereview/`.
+- Re-reviewed T03 after auth-throttle fix commit `df4ee13fcb2c08b7126fffb378ea2b277b6c1d0e`; result is APPROVED_WITH_NOTES because the atomic increment fix resolves the prior concurrency finding and tests were added, with live repository integration verification still blocked by no Postgres at `localhost:5432`.
+- Verified `git status --short`, `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm run build`, and `npm test -- --run src/server/repositories`; repository tests failed for the expected DB connection limitation.
