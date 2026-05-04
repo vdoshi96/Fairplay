@@ -43,6 +43,17 @@ const checkIn: GuidedCheckIn = {
   ]
 };
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+
+  return { promise, resolve, reject };
+}
+
 describe("CheckInFlow", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -231,5 +242,97 @@ describe("CheckInFlow", () => {
 
     const region = await screen.findByRole("region", { name: "Check-in summary" });
     expect(within(region).getByText(/Review the meal plan in June/)).toBeVisible();
+  });
+
+  it("announces skip failures and blocks duplicate skip submits while pending", async () => {
+    const pendingUpdate = deferred<void>();
+    const onUpdateItem = vi.fn().mockReturnValue(pendingUpdate.promise);
+    render(<CheckInFlow initialCheckIn={checkIn} onUpdateItem={onUpdateItem} />);
+
+    const skip = screen.getByRole("button", { name: "Skip" });
+    fireEvent.click(skip);
+    fireEvent.click(skip);
+
+    expect(skip).toBeDisabled();
+    expect(onUpdateItem).toHaveBeenCalledTimes(1);
+
+    pendingUpdate.reject(new Error("Unable to skip this item."));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to skip this item."
+    );
+    expect(screen.getByRole("heading", { name: "Clarify morning handoff" }))
+      .toBeVisible();
+  });
+
+  it("announces defer failures without advancing the current item", async () => {
+    const onUpdateItem = vi.fn().mockRejectedValue(new Error("Unable to defer."));
+    render(<CheckInFlow initialCheckIn={checkIn} onUpdateItem={onUpdateItem} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Defer" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Unable to defer.");
+    expect(screen.getByRole("heading", { name: "Clarify morning handoff" }))
+      .toBeVisible();
+  });
+
+  it("announces decision save failures, blocks duplicates, and preserves fields", async () => {
+    const pendingDecision = deferred<void>();
+    const onDecision = vi.fn().mockReturnValue(pendingDecision.promise);
+    render(
+      <CheckInFlow
+        initialCheckIn={{ ...checkIn, items: [checkIn.items[1]] }}
+        onDecision={onDecision}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Decision type"), {
+      target: { value: "assign_owner" }
+    });
+    fireEvent.change(screen.getByLabelText("Owner"), {
+      target: { value: "max" }
+    });
+    fireEvent.change(screen.getByLabelText("Decision summary"), {
+      target: { value: "Max owns meal planning until the next review." }
+    });
+    fireEvent.change(screen.getByLabelText("Review date"), {
+      target: { value: "2026-06-04" }
+    });
+    const record = screen.getByRole("button", { name: "Record decision" });
+    fireEvent.click(record);
+    fireEvent.click(record);
+
+    expect(record).toBeDisabled();
+    expect(onDecision).toHaveBeenCalledTimes(1);
+
+    pendingDecision.reject(new Error("Unable to save decision."));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to save decision."
+    );
+    expect(screen.getByLabelText("Decision summary")).toHaveValue(
+      "Max owns meal planning until the next review."
+    );
+    expect(screen.getByLabelText("Review date")).toHaveValue("2026-06-04");
+    expect(screen.getByLabelText("Owner")).toHaveValue("max");
+  });
+
+  it("announces completion failures and blocks duplicate complete submits while pending", async () => {
+    const pendingComplete = deferred<GuidedCheckIn>();
+    const onComplete = vi.fn().mockReturnValue(pendingComplete.promise);
+    render(<CheckInFlow initialCheckIn={checkIn} onComplete={onComplete} />);
+
+    const complete = screen.getByRole("button", { name: "Complete check-in" });
+    fireEvent.click(complete);
+    fireEvent.click(complete);
+
+    expect(complete).toBeDisabled();
+    expect(onComplete).toHaveBeenCalledTimes(1);
+
+    pendingComplete.reject(new Error("Unable to complete check-in."));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to complete check-in."
+    );
   });
 });

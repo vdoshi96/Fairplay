@@ -160,19 +160,13 @@ export type CheckInServiceDeps = {
     state: CheckInItemState;
     response?: string | null;
   }) => Promise<GuidedCheckInItem>;
-  createDecision: (input: {
+  recordDecisionForItem: (input: {
     householdId: HouseholdId;
     checkInId: CheckInId;
     itemId: CheckInItemId;
     createdByPersonaId: PersonaId;
     decision: CheckInDecision;
   }) => Promise<GuidedDecision>;
-  updateItemDecision: (input: {
-    householdId: HouseholdId;
-    checkInId: CheckInId;
-    itemId: CheckInItemId;
-    decisionId: string;
-  }) => Promise<GuidedCheckInItem>;
   applyResponsibilityDecision: (input: {
     session: CurrentSession;
     responsibilityId: ResponsibilityId;
@@ -230,6 +224,44 @@ function assertActiveItem(record: GuidedCheckIn, itemId: CheckInItemId): void {
     !record.items.some((item) => item.id === itemId)
   ) {
     throw new CheckInServiceError("NOT_FOUND", "Check-in item not found.");
+  }
+}
+
+function assertDecisionTarget(
+  record: GuidedCheckIn,
+  item: GuidedCheckInItem,
+  input: GuidedDecisionInput
+): void {
+  if (record.state !== "active") {
+    throw new CheckInServiceError(
+      "INVALID_INPUT",
+      "Decisions can only be recorded for active check-ins."
+    );
+  }
+
+  if (item.state !== "queued" && item.state !== "deferred") {
+    throw new CheckInServiceError(
+      "INVALID_INPUT",
+      "Decisions can only be recorded for queued or deferred items."
+    );
+  }
+
+  if (item.decisionId) {
+    throw new CheckInServiceError(
+      "INVALID_INPUT",
+      "This check-in item already has a recorded decision."
+    );
+  }
+
+  if (!input.responsibilityId && !input.responsibilityEffect) {
+    return;
+  }
+
+  if (!input.responsibilityId || item.responsibilityId !== input.responsibilityId) {
+    throw new CheckInServiceError(
+      "INVALID_INPUT",
+      "Responsibility decisions must match the current agenda item."
+    );
   }
 }
 
@@ -387,19 +419,14 @@ export function createCheckInService(deps: CheckInServiceDeps) {
         throw new CheckInServiceError("NOT_FOUND", "Check-in item not found.");
       }
 
-      const decision = await deps.createDecision({
+      assertDecisionTarget(record, item, input);
+
+      const decision = await deps.recordDecisionForItem({
         householdId: session.householdId,
         checkInId,
         itemId,
         createdByPersonaId: selectedPersonaId,
         decision: toCheckInDecision(input)
-      });
-
-      await deps.updateItemDecision({
-        householdId: session.householdId,
-        checkInId,
-        itemId,
-        decisionId: decision.id
       });
 
       if (input.responsibilityId && input.responsibilityEffect) {
@@ -719,18 +746,57 @@ export const checkInService = createCheckInService({
       decisions: []
     }).items[0];
   },
-  async createDecision(input) {
-    const decision = await prisma.decision.create({
-      data: {
-        householdId: input.householdId,
-        checkInId: input.checkInId,
-        responsibilityId: input.decision.responsibilityId ?? null,
-        decisionType: input.decision.decisionType,
-        summary: input.decision.summary,
-        effectiveAt: new Date(input.decision.effectiveAt),
-        reviewOn: input.decision.reviewOn ? new Date(input.decision.reviewOn) : null,
-        createdByPersonaId: input.createdByPersonaId
+  async recordDecisionForItem(input) {
+    const decision = await prisma.$transaction(async (tx) => {
+      const checkIn = await tx.checkIn.findFirst({
+        where: {
+          id: input.checkInId,
+          householdId: input.householdId,
+          state: "active"
+        },
+        select: { id: true }
+      });
+      if (!checkIn) {
+        throw new CheckInServiceError(
+          "INVALID_INPUT",
+          "Decisions can only be recorded for active check-ins."
+        );
       }
+
+      const created = await tx.decision.create({
+        data: {
+          householdId: input.householdId,
+          checkInId: input.checkInId,
+          responsibilityId: input.decision.responsibilityId ?? null,
+          decisionType: input.decision.decisionType,
+          summary: input.decision.summary,
+          effectiveAt: new Date(input.decision.effectiveAt),
+          reviewOn: input.decision.reviewOn ? new Date(input.decision.reviewOn) : null,
+          createdByPersonaId: input.createdByPersonaId
+        }
+      });
+
+      const update = await tx.checkInItem.updateMany({
+        where: {
+          id: input.itemId,
+          checkInId: input.checkInId,
+          state: { in: ["queued", "deferred"] },
+          decisionId: null
+        },
+        data: {
+          state: "discussed",
+          decisionId: created.id
+        }
+      });
+
+      if (update.count !== 1) {
+        throw new CheckInServiceError(
+          "INVALID_INPUT",
+          "This check-in item cannot accept another decision."
+        );
+      }
+
+      return created;
     });
 
     return {
@@ -741,53 +807,6 @@ export const checkInService = createCheckInService({
       reviewOn: nullableIso(decision.reviewOn),
       responsibilityId: decision.responsibilityId
     };
-  },
-  async updateItemDecision(input) {
-    await prisma.checkIn.findFirstOrThrow({
-      where: {
-        id: input.checkInId,
-        householdId: input.householdId
-      },
-      select: { id: true }
-    });
-    const update = await prisma.checkInItem.updateMany({
-      where: {
-        id: input.itemId,
-        checkInId: input.checkInId
-      },
-      data: {
-        state: "discussed",
-        decisionId: input.decisionId
-      }
-    });
-
-    if (update.count !== 1) {
-      throw new CheckInServiceError("NOT_FOUND", "Check-in item not found.");
-    }
-
-    const item = await prisma.checkInItem.findFirstOrThrow({
-      where: {
-        id: input.itemId,
-        checkInId: input.checkInId
-      },
-      include: {
-        radarItem: { select: { topic: true, visibility: true } },
-        responsibility: { select: { title: true, status: true, nextReviewAt: true } }
-      }
-    });
-
-    return toGuidedCheckIn({
-      id: input.checkInId,
-      householdId: input.householdId,
-      state: "active",
-      scheduledFor: null,
-      startedAt: null,
-      completedAt: null,
-      summary: null,
-      facilitatorPersona: null,
-      items: [item],
-      decisions: []
-    }).items[0];
   },
   async applyResponsibilityDecision(input) {
     const effect = input.decision.responsibilityEffect;

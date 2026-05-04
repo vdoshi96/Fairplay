@@ -16,6 +16,7 @@ const itemId = "550e8400-e29b-41d4-a716-446655440081";
 const otherHouseholdItemId = "550e8400-e29b-41d4-a716-446655440089";
 const radarId = "550e8400-e29b-41d4-a716-446655440090";
 const responsibilityId = "550e8400-e29b-41d4-a716-446655440070";
+const otherResponsibilityId = "550e8400-e29b-41d4-a716-446655440071";
 
 const session: CurrentSession = {
   id: "550e8400-e29b-41d4-a716-446655440030",
@@ -121,19 +122,13 @@ function makeDeps(overrides: Partial<CheckInServiceDeps> = {}): CheckInServiceDe
       state: input.state,
       response: input.response ?? null
     })),
-    createDecision: vi.fn().mockResolvedValue({
+    recordDecisionForItem: vi.fn().mockResolvedValue({
       id: "550e8400-e29b-41d4-a716-446655440082",
       decisionType: "assign_owner",
       summary: "Alex carries meal planning until the next review.",
       effectiveAt: "2026-05-04T12:00:00.000Z",
       reviewOn: "2026-06-04T12:00:00.000Z",
       responsibilityId
-    }),
-    updateItemDecision: vi.fn().mockResolvedValue({
-      ...checkIn().items[0],
-      state: "discussed",
-      responsibilityId,
-      decisionId: "550e8400-e29b-41d4-a716-446655440082"
     }),
     applyResponsibilityDecision: vi.fn().mockResolvedValue(undefined),
     applyRadarDecision: vi.fn().mockResolvedValue(undefined),
@@ -144,6 +139,29 @@ function makeDeps(overrides: Partial<CheckInServiceDeps> = {}): CheckInServiceDe
       summary: input.summary
     })),
     ...overrides
+  };
+}
+
+function responsibilityDecisionInput(
+  input: { responsibilityId?: string | null } = {}
+) {
+  return {
+    decisionType: "assign_owner" as const,
+    summary: "Alex carries meal planning until the next review.",
+    effectiveAt: "2026-05-04T12:00:00.000Z",
+    reviewOn: "2026-06-04T12:00:00.000Z",
+    responsibilityId: input.responsibilityId ?? responsibilityId,
+    responsibilityEffect: {
+      kind: "assign_owner" as const,
+      assignments: [
+        {
+          personaKey: "alex" as const,
+          role: "accountable_owner" as const,
+          scope: "outcome" as const
+        }
+      ],
+      revisitAt: "2026-06-04T12:00:00.000Z"
+    }
   };
 }
 
@@ -254,7 +272,7 @@ describe("check-in service", () => {
     });
 
     expect(deps.updateItem).toHaveBeenCalledTimes(2);
-    expect(deps.createDecision).not.toHaveBeenCalled();
+    expect(deps.recordDecisionForItem).not.toHaveBeenCalled();
     expect(deps.applyResponsibilityDecision).not.toHaveBeenCalled();
   });
 
@@ -274,7 +292,13 @@ describe("check-in service", () => {
   });
 
   it("applies responsibility changes only through the explicit decision path", async () => {
-    const deps = makeDeps();
+    const deps = makeDeps({
+      getCheckIn: vi.fn().mockResolvedValue(
+        checkIn({
+          items: [{ ...checkIn().items[0], responsibilityId }]
+        })
+      )
+    });
     const service = createCheckInService(deps);
 
     await service.updateItem(session, checkInId, itemId, {
@@ -303,12 +327,172 @@ describe("check-in service", () => {
       }
     });
 
-    expect(deps.createDecision).toHaveBeenCalledWith(
+    expect(deps.recordDecisionForItem).toHaveBeenCalledWith(
       expect.objectContaining({ createdByPersonaId: alexId })
     );
     expect(deps.applyResponsibilityDecision).toHaveBeenCalledWith(
       expect.objectContaining({ responsibilityId })
     );
+  });
+
+  it("allows responsibility effects for a responsibility agenda item", async () => {
+    const deps = makeDeps({
+      getCheckIn: vi.fn().mockResolvedValue(
+        checkIn({
+          items: [
+            {
+              ...checkIn().items[0],
+              itemType: "responsibility",
+              radarItemId: null,
+              responsibilityId
+            }
+          ]
+        })
+      )
+    });
+    const service = createCheckInService(deps);
+
+    await service.recordDecision(
+      session,
+      checkInId,
+      itemId,
+      responsibilityDecisionInput()
+    );
+
+    expect(deps.applyResponsibilityDecision).toHaveBeenCalledWith(
+      expect.objectContaining({ responsibilityId })
+    );
+  });
+
+  it("allows responsibility effects for a radar item linked to that responsibility", async () => {
+    const deps = makeDeps({
+      getCheckIn: vi.fn().mockResolvedValue(
+        checkIn({
+          items: [
+            {
+              ...checkIn().items[0],
+              itemType: "radar",
+              radarItemId: radarId,
+              responsibilityId
+            }
+          ]
+        })
+      )
+    });
+    const service = createCheckInService(deps);
+
+    await service.recordDecision(
+      session,
+      checkInId,
+      itemId,
+      responsibilityDecisionInput()
+    );
+
+    expect(deps.applyResponsibilityDecision).toHaveBeenCalledWith(
+      expect.objectContaining({ responsibilityId })
+    );
+  });
+
+  it("rejects responsibility effects for custom agenda items", async () => {
+    const deps = makeDeps({
+      getCheckIn: vi.fn().mockResolvedValue(
+        checkIn({
+          items: [
+            {
+              ...checkIn().items[0],
+              itemType: "custom",
+              radarItemId: null,
+              responsibilityId: null
+            }
+          ]
+        })
+      )
+    });
+    const service = createCheckInService(deps);
+
+    await expect(
+      service.recordDecision(
+        session,
+        checkInId,
+        itemId,
+        responsibilityDecisionInput()
+      )
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    expect(deps.recordDecisionForItem).not.toHaveBeenCalled();
+    expect(deps.applyResponsibilityDecision).not.toHaveBeenCalled();
+  });
+
+  it("rejects responsibility effects for a different local responsibility", async () => {
+    const deps = makeDeps({
+      getCheckIn: vi.fn().mockResolvedValue(
+        checkIn({
+          items: [
+            {
+              ...checkIn().items[0],
+              itemType: "responsibility",
+              radarItemId: null,
+              responsibilityId
+            }
+          ]
+        })
+      )
+    });
+    const service = createCheckInService(deps);
+
+    await expect(
+      service.recordDecision(
+        session,
+        checkInId,
+        itemId,
+        responsibilityDecisionInput({ responsibilityId: otherResponsibilityId })
+      )
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    expect(deps.recordDecisionForItem).not.toHaveBeenCalled();
+    expect(deps.applyResponsibilityDecision).not.toHaveBeenCalled();
+  });
+
+  it("rejects decisions for completed check-ins before creating a decision", async () => {
+    const deps = makeDeps({
+      getCheckIn: vi.fn().mockResolvedValue(checkIn({ state: "completed" }))
+    });
+    const service = createCheckInService(deps);
+
+    await expect(
+      service.recordDecision(
+        session,
+        checkInId,
+        itemId,
+        responsibilityDecisionInput({ responsibilityId: null })
+      )
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    expect(deps.recordDecisionForItem).not.toHaveBeenCalled();
+  });
+
+  it("rejects duplicate decisions for the same agenda item", async () => {
+    const deps = makeDeps({
+      getCheckIn: vi.fn().mockResolvedValue(
+        checkIn({
+          items: [
+            {
+              ...checkIn().items[0],
+              state: "discussed",
+              decisionId: "550e8400-e29b-41d4-a716-446655440082"
+            }
+          ]
+        })
+      )
+    });
+    const service = createCheckInService(deps);
+
+    await expect(
+      service.recordDecision(
+        session,
+        checkInId,
+        itemId,
+        responsibilityDecisionInput({ responsibilityId: null })
+      )
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    expect(deps.recordDecisionForItem).not.toHaveBeenCalled();
   });
 
   it("persists a factual generated summary and completion timestamp", async () => {

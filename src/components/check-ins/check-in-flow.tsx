@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { CheckInItemState, DecisionType, PersonaKey } from "@/domain/enums";
 import type {
@@ -53,6 +53,10 @@ function dateInputToIso(value: string) {
   return value ? `${value}T12:00:00.000Z` : null;
 }
 
+function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 async function jsonFetch<T>(url: string, init: RequestInit): Promise<T> {
   const response = await fetch(url, init);
   if (!response.ok) {
@@ -77,45 +81,80 @@ export function CheckInFlow({
   const [responsibilityOwner, setResponsibilityOwner] =
     useState<PersonaKey>("alex");
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    "skip" | "defer" | "decision" | "complete" | null
+  >(null);
+  const errorRef = useRef<HTMLParagraphElement>(null);
 
   const currentItem = useMemo(
     () => checkIn.items[currentIndex] ?? checkIn.items.at(-1) ?? null,
     [checkIn.items, currentIndex]
   );
 
-  async function mutateItem(input: ItemMutation) {
-    if (!currentItem) {
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus();
+    }
+  }, [error]);
+
+  async function mutateItem(
+    input: ItemMutation,
+    action: "skip" | "defer"
+  ) {
+    if (!currentItem || pendingAction) {
       return;
     }
 
-    if (onUpdateItem) {
-      await onUpdateItem(checkIn.id, currentItem.id, input);
-    } else {
-      await jsonFetch<GuidedCheckInItem>(
-        `/api/check-ins/${checkIn.id}/items/${currentItem.id}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify(input),
-          headers: { "content-type": "application/json" }
-        }
-      );
-    }
+    setPendingAction(action);
+    setError(null);
+    setMessage(null);
+    try {
+      if (onUpdateItem) {
+        await onUpdateItem(checkIn.id, currentItem.id, input);
+      } else {
+        await jsonFetch<GuidedCheckInItem>(
+          `/api/check-ins/${checkIn.id}/items/${currentItem.id}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify(input),
+            headers: { "content-type": "application/json" }
+          }
+        );
+      }
 
-    setCheckIn((current) => ({
-      ...current,
-      items: current.items.map((item) =>
-        item.id === currentItem.id ? { ...item, state: input.state } : item
-      )
-    }));
-    setCurrentIndex((index) => Math.min(index + 1, checkIn.items.length - 1));
-    setMessage(input.state === "deferred" ? "Deferred for later." : "Skipped for now.");
+      setCheckIn((current) => ({
+        ...current,
+        items: current.items.map((item) =>
+          item.id === currentItem.id ? { ...item, state: input.state } : item
+        )
+      }));
+      setCurrentIndex((index) => Math.min(index + 1, checkIn.items.length - 1));
+      setMessage(
+        input.state === "deferred" ? "Deferred for later." : "Skipped for now."
+      );
+    } catch (updateError) {
+      setError(
+        errorMessage(
+          updateError,
+          input.state === "deferred"
+            ? "Unable to defer this item."
+            : "Unable to skip this item."
+        )
+      );
+    } finally {
+      setPendingAction(null);
+    }
   }
 
   async function recordDecision() {
-    if (!currentItem || decisionSummary.trim().length === 0) {
+    if (!currentItem || pendingAction || decisionSummary.trim().length === 0) {
       return;
     }
 
+    setPendingAction("decision");
+    setError(null);
+    setMessage(null);
     const reviewOn = dateInputToIso(reviewDate);
     const decision: GuidedDecisionInput = {
       decisionType,
@@ -146,38 +185,57 @@ export function CheckInFlow({
       }
     }
 
-    if (onDecision) {
-      await onDecision(checkIn.id, currentItem.id, decision);
-    } else {
-      await jsonFetch(`/api/check-ins/${checkIn.id}/decisions`, {
-        method: "POST",
-        body: JSON.stringify({ itemId: currentItem.id, ...decision }),
-        headers: { "content-type": "application/json" }
-      });
-    }
+    try {
+      if (onDecision) {
+        await onDecision(checkIn.id, currentItem.id, decision);
+      } else {
+        await jsonFetch(`/api/check-ins/${checkIn.id}/decisions`, {
+          method: "POST",
+          body: JSON.stringify({ itemId: currentItem.id, ...decision }),
+          headers: { "content-type": "application/json" }
+        });
+      }
 
-    setCheckIn((current) => ({
-      ...current,
-      items: current.items.map((item) =>
-        item.id === currentItem.id ? { ...item, state: "discussed" } : item
-      )
-    }));
-    setCurrentIndex((index) => Math.min(index + 1, checkIn.items.length - 1));
-    setDecisionSummary("");
-    setReviewDate("");
-    setMessage("Decision recorded.");
+      setCheckIn((current) => ({
+        ...current,
+        items: current.items.map((item) =>
+          item.id === currentItem.id ? { ...item, state: "discussed" } : item
+        )
+      }));
+      setCurrentIndex((index) => Math.min(index + 1, checkIn.items.length - 1));
+      setDecisionSummary("");
+      setReviewDate("");
+      setMessage("Decision recorded.");
+    } catch (decisionError) {
+      setError(errorMessage(decisionError, "Unable to save this decision."));
+    } finally {
+      setPendingAction(null);
+    }
   }
 
   async function completeCheckIn() {
-    const completed = onComplete
-      ? await onComplete(checkIn.id)
-      : await jsonFetch<GuidedCheckIn>(`/api/check-ins/${checkIn.id}/complete`, {
-          method: "POST",
-          body: JSON.stringify({ completedAt: new Date().toISOString() }),
-          headers: { "content-type": "application/json" }
-        });
+    if (pendingAction) {
+      return;
+    }
 
-    setCheckIn(completed);
+    setPendingAction("complete");
+    setError(null);
+    setMessage(null);
+    try {
+      const completed = onComplete
+        ? await onComplete(checkIn.id)
+        : await jsonFetch<GuidedCheckIn>(`/api/check-ins/${checkIn.id}/complete`, {
+            method: "POST",
+            body: JSON.stringify({ completedAt: new Date().toISOString() }),
+            headers: { "content-type": "application/json" }
+          });
+
+      setCheckIn(completed);
+    } catch (completeError) {
+      setError(errorMessage(completeError, "Unable to complete this check-in."));
+    } finally {
+      setPendingAction(null);
+    }
   }
 
   if (checkIn.state === "completed") {
@@ -203,7 +261,24 @@ export function CheckInFlow({
         </span>
       </div>
 
-      {message ? <p role="status" className="text-sm text-stone-600">{message}</p> : null}
+      {error ? (
+        <p
+          ref={errorRef}
+          role="alert"
+          tabIndex={-1}
+          className="text-sm text-red-700"
+        >
+          {error}
+        </p>
+      ) : null}
+
+      {pendingAction ? (
+        <p role="status" aria-live="polite" className="text-sm text-stone-600">
+          Saving change...
+        </p>
+      ) : message ? (
+        <p role="status" className="text-sm text-stone-600">{message}</p>
+      ) : null}
 
       {currentItem ? (
         <section
@@ -228,14 +303,23 @@ export function CheckInFlow({
             <button
               className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
               type="button"
-              onClick={() => mutateItem({ state: "skipped", response: "Skipped for now." })}
+              disabled={Boolean(pendingAction)}
+              onClick={() =>
+                mutateItem({ state: "skipped", response: "Skipped for now." }, "skip")
+              }
             >
               Skip
             </button>
             <button
               className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
               type="button"
-              onClick={() => mutateItem({ state: "deferred", response: "Deferred for later." })}
+              disabled={Boolean(pendingAction)}
+              onClick={() =>
+                mutateItem(
+                  { state: "deferred", response: "Deferred for later." },
+                  "defer"
+                )
+              }
             >
               Defer
             </button>
@@ -297,6 +381,7 @@ export function CheckInFlow({
         <button
           className="rounded-md bg-stone-950 px-3 py-2 text-sm font-medium text-white"
           type="button"
+          disabled={Boolean(pendingAction)}
           onClick={recordDecision}
         >
           Record decision
@@ -306,6 +391,7 @@ export function CheckInFlow({
       <button
         className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
         type="button"
+        disabled={Boolean(pendingAction)}
         onClick={completeCheckIn}
       >
         Complete check-in
