@@ -19,6 +19,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T01 app scaffold, dependencies, config, and PWA baseline | Codex implementation worker T01 | Completed | `docs/agents/tasks/2026-05-04-implementation-t01-scaffold/` |
 | 2026-05-04 | T01 spec compliance review | Codex spec compliance reviewer | Completed | `docs/agents/tasks/2026-05-04-review-t01-spec/` |
 | 2026-05-04 | T01 code quality review | Codex code quality reviewer | Completed | `docs/agents/tasks/2026-05-04-review-t01-code-quality/` |
+| 2026-05-04 | T02 shared domain contracts and reviewed seed content | Codex implementation worker T02 | Completed locally; review pending | `docs/agents/tasks/2026-05-04-implementation-t02-domain-contracts/` |
 
 ## Rules
 

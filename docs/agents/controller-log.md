@@ -33,3 +33,6 @@
 - Added T01 code quality review artifacts under `docs/agents/tasks/2026-05-04-review-t01-code-quality/`.
 - Reviewed T01 commit range `151b815..33862e8` for scaffold quality, security posture, maintainability, test setup, and Vercel readiness; result is APPROVED_WITH_NOTES with a non-blocking npm audit note for Next's transitive PostCSS advisory.
 - Verified `git diff --check 151b815..33862e8`, `npm run lint`, `npm run typecheck`, `npm test -- --run`, `npm run build`, and `npm run test:e2e` pass; `npm audit --omit=dev` reports the tracked moderate PostCSS advisory.
+- Started T02 implementation on `codex/v1-app` in `.worktrees/v1-app`.
+- Added shared domain enum arrays, Zod schemas, TypeScript types, username normalization, persona and visibility assertions, aggregate-only load signals, platform-neutral JSON contracts, tiny approved-original demo seed content, safety copy snippets, formatting helpers, and domain test factories.
+- Added T02 task artifacts under `docs/agents/tasks/2026-05-04-implementation-t02-domain-contracts/`.
