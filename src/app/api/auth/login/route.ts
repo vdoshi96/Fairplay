@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import type { Persona } from "@prisma/client";
-
 import { LoginRequestSchema } from "@/contracts/auth";
 import { setSessionCookie } from "@/server/auth/cookies";
 import {
@@ -23,7 +21,9 @@ export const runtime = "nodejs";
 
 const GENERIC_LOGIN_ERROR = "Unable to log in with that username and password.";
 
-const comparePersonasForLogin = (left: Persona, right: Persona): number =>
+type PersonaForLogin = Parameters<typeof toPersonaSummary>[0];
+
+const comparePersonasForLogin = (left: PersonaForLogin, right: PersonaForLogin): number =>
   left.key === "alex" && right.key === "max" ? -1 : 1;
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
