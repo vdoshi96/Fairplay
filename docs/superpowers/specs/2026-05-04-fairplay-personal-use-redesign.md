@@ -96,7 +96,7 @@ Each template/card should store:
 - Planning section.
 - Execution section.
 - Minimum standard.
-- Cover image URL or locally imported cover asset reference.
+- Locally imported cover asset path under `/assets/fairplay/cards/`.
 - Source version/import timestamp.
 - Default lane, usually `Not in Play`.
 - Optional flags such as Daily Grind, Happiness Trio, Kids, Kid Split, Wild.
@@ -118,6 +118,18 @@ Each household responsibility instance should store:
 - Event history.
 
 The UI should clearly distinguish a source template from the household's working instance. Users should be able to browse source content, copy it into play, edit household-specific details, and preserve the original template for later reference.
+
+## Source Asset Storage
+
+All Trello/deck card cover PNGs must be downloaded into the repository and committed to GitHub with the implementation branch. The app must reference local public assets such as `/assets/fairplay/cards/auto.png`; it must not hotlink Trello attachment URLs at runtime.
+
+Asset requirements:
+
+- Store source card covers in `public/assets/fairplay/cards/`.
+- Use stable slug-based filenames that match the template slug.
+- Store an asset manifest or template field that maps each source card to its local `coverAssetPath`.
+- Verify every non-null `coverAssetPath` exists on disk before completion.
+- Keep the original Trello attachment URL only in worker notes or private import logs if needed for traceability; do not render it in the app.
 
 ## Rich Card Detail
 
@@ -323,7 +335,7 @@ Minimum verification for implementation:
 
 ## Open Questions for Implementation
 
-- Should Trello card cover PNGs be hotlinked, imported into local/public storage, or stored as private app assets?
+- Should local Trello card cover PNGs later be optimized into additional responsive sizes, or is one committed PNG per source card enough for this private deployment?
 - Should the full source card text be committed into the repository, imported from Trello at seed time, or kept in a private generated seed file?
 - Should persona names remain Alex/Max or become Player 1/Player 2 to mirror the board?
 - Should `Kid Split` be a lane only, or also a structured split model that can assign child/context-specific ownership?
