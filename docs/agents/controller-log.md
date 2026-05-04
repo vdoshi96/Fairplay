@@ -16,3 +16,5 @@
 - Captured aggregate workbook/PDF structure, assignment-matrix patterns, lifecycle/reference-field patterns, printable-card asset risks, original v1 model implications, equity snapshot ideas, check-in patterns, and workbook/PDF-specific IP risks.
 - Added IP, privacy, and relationship-safety review task on `codex/research-and-spec`.
 - Defined pre-design constraints for source-derived IP, household login/session privacy, private/shared visibility, non-clinical relationship support, unsafe-relationship boundaries, non-punitive metrics, and implementation review readiness.
+- Added Fairplay v1 product architecture task on `codex/research-and-spec`.
+- Defined v1 product scope, mobile-first routes/flows, platform-neutral API/domain boundaries, Postgres/Prisma/Vercel architecture direction, household username/password login with Alex/Max persona selection, core data entities, original demo seed taxonomy boundaries, and relationship-safety/IP guardrails.
