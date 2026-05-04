@@ -159,3 +159,9 @@
 - Added T06 final code quality re-review artifacts under `docs/agents/tasks/2026-05-04-review-t06-code-quality-final/`.
 - Re-reviewed T06 after fix commits `85108b11982c01276b1c5172e9c02e350c723295` and `6896c44496c5731c8786abaa6a0e690cad501cc7`; result is APPROVED_WITH_NOTES because `/api/load-snapshot` now maps `AUTH_REQUIRED`, the original generic PATCH and radar privacy blockers remain resolved, and no new blocking T06 quality/accessibility/security/no-score regression was found.
 - Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/server/responsibilities src/components/responsibilities src/app/api/responsibilities src/app/api/load-snapshot`, `npm run test:e2e -- --grep "responsibility|load map"`, and `npm run build`; all passed, with existing non-blocking e2e color warnings and the existing Next.js Edge Runtime/static-generation build warning.
+- Started T07 radar concern board UI and API mutations on `codex/v1-app` in `.worktrees/v1-app`.
+- Added radar service tests first, then implemented persona-scoped list/detail access, create/update, publish confirmation, defer, resolve, schedule, and dismiss-through-update behavior.
+- Added radar API route tests and route handlers for list/create/update/publish/defer/resolve/schedule.
+- Added mobile-first `RadarBoard`, authenticated `/app/radar` page, component tests for visibility labels and publish confirmation, and a route-mocked radar Playwright flow.
+- Added T07 task artifacts under `docs/agents/tasks/2026-05-04-implementation-t07-radar/`.
+- Verified T07 with `npm run lint`, `npm run typecheck`, `npm test -- --run src/server/radar src/components/radar src/app/api/radar`, `npm run test:e2e -- --grep "radar"`, `npm run build`, and `git diff --check`; all passed, with existing non-blocking e2e color warnings and the existing Next.js Edge Runtime/static-generation build warning.
