@@ -12,7 +12,8 @@ import type {
   AssignmentScope,
   Cadence,
   PersonaKey,
-  ResponsibilityStatus
+  ResponsibilityStatus,
+  Visibility
 } from "@/domain/enums";
 
 type ResponsibilityEditorProps = {
@@ -55,6 +56,11 @@ const hiddenEffortOptions = [
   "follow_through",
   "emotional_attention"
 ] as const;
+const visibilityOptions = [
+  "shared_household",
+  "partner_visible",
+  "check_in_only"
+] as const;
 
 function label(value: string) {
   return value
@@ -78,6 +84,15 @@ function accountableOwners(assignments: readonly ResponsibilityAssignmentSummary
     .join(",");
 }
 
+function listInput(value: string) {
+  const values = value
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+
+  return values.length > 0 ? values : null;
+}
+
 export function ResponsibilityEditor({
   personas,
   initialResponsibility = null,
@@ -89,7 +104,16 @@ export function ResponsibilityEditor({
     initialResponsibility?.areaKeys.join(", ") ?? ""
   );
   const [cadence, setCadence] = useState(initialResponsibility?.cadence ?? "weekly");
+  const [relevantDays, setRelevantDays] = useState(
+    initialResponsibility?.relevantDays.join(", ") ?? ""
+  );
   const [status, setStatus] = useState(initialResponsibility?.status ?? "unassigned");
+  const [visibility, setVisibility] = useState<Exclude<Visibility, "private">>(
+    initialResponsibility?.visibility === "partner_visible" ||
+      initialResponsibility?.visibility === "check_in_only"
+      ? initialResponsibility.visibility
+      : "shared_household"
+  );
   const [householdStandard, setHouseholdStandard] = useState(
     initialResponsibility?.householdStandard ?? ""
   );
@@ -181,12 +205,13 @@ export function ResponsibilityEditor({
         .filter(Boolean),
       hiddenEffortKeys,
       cadence,
+      relevantDays: listInput(relevantDays),
       status,
-      visibility: initialResponsibility?.visibility ?? "shared_household",
       householdStandard: householdStandard || null,
       notes: notes || null,
       nextReviewAt: nextReviewAt ? `${nextReviewAt}T12:00:00.000Z` : null,
-      currentAssignments: assignmentList
+      currentAssignments: assignmentList,
+      ...(initialResponsibility ? {} : { visibility })
     };
     const url = initialResponsibility
       ? `/api/responsibilities/${initialResponsibility.id}`
@@ -213,6 +238,21 @@ export function ResponsibilityEditor({
           revisitAt: revisitAt ? `${revisitAt}T12:00:00.000Z` : undefined
         })
       });
+
+      if (visibility !== initialResponsibility.visibility) {
+        await fetch(`/api/responsibilities/${initialResponsibility.id}/visibility`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json"
+          },
+          body: JSON.stringify({
+            responsibilityId: initialResponsibility.id,
+            fromVisibility: initialResponsibility.visibility,
+            toVisibility: visibility,
+            confirmedVisibilityChange: true
+          })
+        });
+      }
     }
   }
 
@@ -263,6 +303,32 @@ export function ResponsibilityEditor({
               value={cadence}
             >
               {cadenceOptions.map((option) => (
+                <option key={option} value={option}>
+                  {label(option)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+            Relevant days
+            <input
+              className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+              onChange={(event) => setRelevantDays(event.target.value)}
+              value={relevantDays}
+            />
+          </label>
+          <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+            Visibility
+            <select
+              className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+              onChange={(event) =>
+                setVisibility(
+                  event.target.value as Exclude<Visibility, "private">
+                )
+              }
+              value={visibility}
+            >
+              {visibilityOptions.map((option) => (
                 <option key={option} value={option}>
                   {label(option)}
                 </option>

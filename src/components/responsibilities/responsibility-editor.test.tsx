@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { PersonaSummary } from "@/contracts/personas";
 import type { ResponsibilityDetail } from "@/contracts/responsibilities";
@@ -25,8 +25,10 @@ const responsibility: ResponsibilityDetail = {
   areaKeys: ["food_flow"],
   hiddenEffortKeys: ["planning"],
   cadence: "weekly",
+  relevantDays: ["monday", "thursday"],
   status: "active",
   visibility: "shared_household",
+  linkedRadarItems: [],
   currentAssignments: [
     { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
   ],
@@ -41,6 +43,10 @@ const responsibility: ResponsibilityDetail = {
 };
 
 describe("ResponsibilityEditor", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("shows assignment controls and handoff prompts only after accountable owner changes", () => {
     render(
       <ResponsibilityEditor
@@ -83,6 +89,86 @@ describe("ResponsibilityEditor", () => {
     expect(onStatusChange).toHaveBeenCalledWith({
       status: "archived",
       confirmedArchive: true
+    });
+  });
+
+  it("saves existing edit fields without visibility and uses the dedicated visibility path", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({})
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ResponsibilityEditor
+        initialResponsibility={responsibility}
+        personas={personas}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Relevant days"), {
+      target: { value: "monday, friday" }
+    });
+    fireEvent.change(screen.getByLabelText("Visibility"), {
+      target: { value: "partner_visible" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+
+    const editCall = fetchMock.mock.calls[0];
+    const editBody = JSON.parse(editCall[1].body);
+    expect(editCall[0]).toBe(`/api/responsibilities/${responsibility.id}`);
+    expect(editCall[1].method).toBe("PATCH");
+    expect(editBody).toMatchObject({
+      relevantDays: ["monday", "friday"]
+    });
+    expect(editBody).not.toHaveProperty("visibility");
+
+    const visibilityCall = fetchMock.mock.calls[2];
+    expect(visibilityCall[0]).toBe(
+      `/api/responsibilities/${responsibility.id}/visibility`
+    );
+    expect(visibilityCall[1].method).toBe("POST");
+    expect(JSON.parse(visibilityCall[1].body)).toMatchObject({
+      responsibilityId: responsibility.id,
+      fromVisibility: "shared_household",
+      toVisibility: "partner_visible",
+      confirmedVisibilityChange: true
+    });
+  });
+
+  it("includes relevant days and non-private visibility when creating", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({})
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ResponsibilityEditor personas={personas} />);
+
+    fireEvent.change(screen.getByLabelText("Title"), {
+      target: { value: "Morning launch" }
+    });
+    fireEvent.change(screen.getByLabelText("Area keys"), {
+      target: { value: "school_flow" }
+    });
+    fireEvent.change(screen.getByLabelText("Relevant days"), {
+      target: { value: "weekday" }
+    });
+    fireEvent.change(screen.getByLabelText("Visibility"), {
+      target: { value: "check_in_only" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const createBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/responsibilities");
+    expect(createBody).toMatchObject({
+      title: "Morning launch",
+      relevantDays: ["weekday"],
+      visibility: "check_in_only"
     });
   });
 });

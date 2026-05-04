@@ -20,6 +20,14 @@ async function mockResponsibilityFlow(page: Page) {
         <main>
           <h1>New responsibility</h1>
           <label>Title <input aria-label="Title" id="title" /></label>
+          <label>Relevant days <input aria-label="Relevant days" id="relevant-days" /></label>
+          <label>Visibility
+            <select aria-label="Visibility" id="visibility">
+              <option value="shared_household">Shared household</option>
+              <option value="partner_visible">Partner visible</option>
+              <option value="check_in_only">Check-in only</option>
+            </select>
+          </label>
           <label>Alex role
             <select aria-label="Alex role" id="alex-role">
               <option value="none">None</option>
@@ -43,6 +51,14 @@ async function mockResponsibilityFlow(page: Page) {
         <main>
           <h1>Edit responsibility</h1>
           <p id="state">Active</p>
+          <label>Relevant days <input aria-label="Relevant days" value="monday" /></label>
+          <label>Visibility
+            <select aria-label="Visibility" id="visibility">
+              <option value="shared_household" selected>Shared household</option>
+              <option value="partner_visible">Partner visible</option>
+              <option value="check_in_only">Check-in only</option>
+            </select>
+          </label>
           <label>Alex role
             <select aria-label="Alex role" id="alex-role">
               <option value="accountable_owner" selected>Accountable owner</option>
@@ -103,10 +119,14 @@ test("responsibility load map flow creates, reassigns, pauses, restores, and arc
   await page.goto("/app/load-map");
   await page.getByRole("link", { name: "Add responsibility" }).click();
   await page.getByLabel("Title").fill("Weekly meal outline");
+  await page.getByLabel("Relevant days").fill("monday, thursday");
+  await page.getByLabel("Visibility").selectOption("check_in_only");
   await page.getByLabel("Alex role").selectOption("accountable_owner");
   await page.getByRole("button", { name: "Save" }).click();
 
   await expect(page).toHaveURL(/\/app\/responsibilities\/mock-responsibility/);
+  await page.getByLabel("Relevant days").fill("monday, friday");
+  await page.getByLabel("Visibility").selectOption("partner_visible");
   await page.getByLabel("Alex role").selectOption("helper");
   await page.getByLabel("Max role").selectOption("accountable_owner");
   await expect(page.getByLabel("Handoff context")).toBeVisible();

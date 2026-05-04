@@ -7,16 +7,19 @@ import type {
   ResponsibilityCreate,
   ResponsibilityDetail,
   ResponsibilitySummary,
-  ResponsibilityUpdate
+  ResponsibilityUpdate,
+  ResponsibilityVisibilityMutation
 } from "@/contracts/responsibilities";
 import type {
   RadarReasonKey,
+  RadarState,
   ResponsibilityStatus,
   Urgency,
   Visibility
 } from "@/domain/enums";
 import type { HouseholdId, PersonaId, ResponsibilityId } from "@/domain/ids";
 import type { LoadSignalRadarItem } from "@/domain/load-signals";
+import { assertVisibilityTransition } from "@/domain/visibility";
 import type { CurrentSession } from "@/server/auth/current-session";
 import { prisma } from "@/server/db/prisma";
 import {
@@ -60,6 +63,7 @@ export type UpdateResponsibilityRecordInput = Partial<
 > & {
   householdId: HouseholdId;
   responsibilityId: ResponsibilityId;
+  visibility?: Exclude<Visibility, "private">;
 };
 
 export type ReplaceActiveAssignmentsInput = {
@@ -88,6 +92,10 @@ export type RadarFlagInput = {
   confirmPublish?: boolean;
 };
 
+export type ResponsibilityOverviewRadarItem = LoadSignalRadarItem & {
+  responsibilityId: ResponsibilityId | null;
+};
+
 export type ResponsibilityServiceDeps = {
   listPersonasForHousehold: (
     householdId: HouseholdId
@@ -111,7 +119,9 @@ export type ResponsibilityServiceDeps = {
   createResponsibilityEvent: (
     input: ResponsibilityEventInput
   ) => Promise<void>;
-  listRadarItems: (householdId: HouseholdId) => Promise<LoadSignalRadarItem[]>;
+  listRadarItems: (
+    householdId: HouseholdId
+  ) => Promise<ResponsibilityOverviewRadarItem[]>;
   createRadarItem: typeof createRadarItem;
 };
 
@@ -227,6 +237,38 @@ function publicCreateInput(input: ResponsibilityCreate): CreateResponsibilityRec
   };
 }
 
+function isLinkedRadarActive(state: RadarState) {
+  return state !== "resolved";
+}
+
+function withLinkedRadarItems(
+  responsibilities: ResponsibilitySummary[],
+  radarItems: readonly ResponsibilityOverviewRadarItem[]
+): ResponsibilitySummary[] {
+  const linkedItemsByResponsibility = new Map<
+    ResponsibilityId,
+    ResponsibilitySummary["linkedRadarItems"]
+  >();
+
+  for (const item of radarItems) {
+    if (!item.responsibilityId || !isLinkedRadarActive(item.state)) {
+      continue;
+    }
+
+    const current = linkedItemsByResponsibility.get(item.responsibilityId) ?? [];
+    current.push({
+      id: item.id,
+      state: item.state
+    });
+    linkedItemsByResponsibility.set(item.responsibilityId, current);
+  }
+
+  return responsibilities.map((responsibility) => ({
+    ...responsibility,
+    linkedRadarItems: linkedItemsByResponsibility.get(responsibility.id) ?? []
+  }));
+}
+
 export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
   return {
     async listOverview(
@@ -240,11 +282,15 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
         deps.listResponsibilities(session.householdId),
         deps.listRadarItems(session.householdId)
       ]);
+      const responsibilitiesWithRadar = withLinkedRadarItems(
+        responsibilities,
+        radarItems
+      );
 
       return {
-        responsibilities,
+        responsibilities: responsibilitiesWithRadar,
         loadSnapshot: buildLoadSnapshot({
-          responsibilities,
+          responsibilities: responsibilitiesWithRadar,
           radarItems,
           asOf: options.asOf
         })
@@ -292,6 +338,76 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
         householdId: session.householdId,
         responsibilityId
       });
+    },
+
+    async updateVisibility(
+      session: CurrentSession,
+      responsibilityId: ResponsibilityId,
+      input: ResponsibilityVisibilityMutation
+    ): Promise<ResponsibilityDetail> {
+      const actorPersonaId = requireSelectedPersona(session);
+      const responsibility = await getRequiredResponsibility(
+        deps,
+        session.householdId,
+        responsibilityId
+      );
+
+      if (input.responsibilityId !== responsibilityId) {
+        throw new ResponsibilityServiceError(
+          "INVALID_INPUT",
+          "Visibility update does not match this responsibility."
+        );
+      }
+
+      if (input.fromVisibility !== responsibility.visibility) {
+        throw new ResponsibilityServiceError(
+          "INVALID_INPUT",
+          "Visibility update is based on stale responsibility data."
+        );
+      }
+
+      if (input.toVisibility === "private") {
+        throw new ResponsibilityServiceError(
+          "INVALID_INPUT",
+          "Private responsibility visibility is not available in v1."
+        );
+      }
+
+      try {
+        assertVisibilityTransition({
+          from: input.fromVisibility,
+          to: input.toVisibility,
+          confirmed: input.confirmedVisibilityChange
+        });
+      } catch (error) {
+        throw new ResponsibilityServiceError(
+          "INVALID_INPUT",
+          error instanceof Error
+            ? error.message
+            : "Visibility update needs confirmation."
+        );
+      }
+
+      const updated = await deps.updateResponsibilityRecord({
+        householdId: session.householdId,
+        responsibilityId,
+        visibility: input.toVisibility
+      });
+
+      await deps.createResponsibilityEvent({
+        householdId: session.householdId,
+        responsibilityId,
+        actorPersonaId,
+        eventType: "visibility_changed",
+        occurredAt: new Date().toISOString(),
+        payload: {
+          fromVisibility: input.fromVisibility,
+          toVisibility: input.toVisibility,
+          confirmationText: input.confirmationText ?? null
+        }
+      });
+
+      return updated;
     },
 
     async updateAssignments(
@@ -459,6 +575,7 @@ export const responsibilityService = createResponsibilityService({
         cadence: input.cadence,
         relevantDays: input.relevantDays ?? undefined,
         status: input.status,
+        visibility: input.visibility,
         householdStandard: input.householdStandard,
         notes: input.notes,
         nextReviewAt:
@@ -511,6 +628,7 @@ export const responsibilityService = createResponsibilityService({
       },
       select: {
         id: true,
+        responsibilityId: true,
         state: true
       }
     });

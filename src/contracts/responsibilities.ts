@@ -6,10 +6,11 @@ import {
   CadenceSchema,
   HiddenEffortKeySchema,
   PersonaKeySchema,
+  RadarStateSchema,
   ResponsibilityStatusSchema,
   VisibilitySchema
 } from "../domain/enums";
-import { ResponsibilityIdSchema } from "../domain/ids";
+import { RadarItemIdSchema, ResponsibilityIdSchema } from "../domain/ids";
 import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from "../domain/time";
 import { assertVisibilityTransition } from "../domain/visibility";
 
@@ -27,6 +28,13 @@ export const ResponsibilityAssignmentSummarySchema = z
   })
   .strict();
 
+export const ResponsibilityLinkedRadarItemSchema = z
+  .object({
+    id: RadarItemIdSchema,
+    state: RadarStateSchema
+  })
+  .strict();
+
 export const ResponsibilitySummarySchema = z
   .object({
     id: ResponsibilityIdSchema,
@@ -34,8 +42,10 @@ export const ResponsibilitySummarySchema = z
     areaKeys: z.array(AreaKeySchema),
     hiddenEffortKeys: z.array(HiddenEffortKeySchema),
     cadence: CadenceSchema,
+    relevantDays: z.array(z.string().trim().min(1).max(40)).default([]),
     status: ResponsibilityStatusSchema,
     visibility: VisibilitySchema,
+    linkedRadarItems: z.array(ResponsibilityLinkedRadarItemSchema).default([]),
     currentAssignments: z.array(ResponsibilityAssignmentSummarySchema),
     nextReviewAt: NullableIsoDateTimeSchema
   })

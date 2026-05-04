@@ -12,7 +12,6 @@ import type { HiddenEffortKey } from "@/domain/enums";
 type ResponsibilityLoadMapProps = {
   responsibilities: ResponsibilitySummary[];
   loadSnapshot: LoadSnapshotSummary;
-  radarFlaggedResponsibilityIds?: string[];
 };
 
 const ownerOptions = ["all", "alex", "max", "unassigned"] as const;
@@ -81,8 +80,7 @@ function reviewState(responsibility: ResponsibilitySummary, now = new Date()) {
 
 export function ResponsibilityLoadMap({
   responsibilities,
-  loadSnapshot,
-  radarFlaggedResponsibilityIds = []
+  loadSnapshot
 }: ResponsibilityLoadMapProps) {
   const [owner, setOwner] = useState<OwnerFilter>("all");
   const [status, setStatus] = useState<StatusFilter>("all");
@@ -112,7 +110,9 @@ export function ResponsibilityLoadMap({
       owner === "all" ||
       (owner === "unassigned" && currentOwners.length === 0) ||
       currentOwners.some((assignment) => assignment.personaKey === owner);
-    const radarFlagged = radarFlaggedResponsibilityIds.includes(responsibility.id);
+    const radarFlagged = responsibility.linkedRadarItems.some(
+      (item) => item.state !== "resolved"
+    );
 
     return (
       hasOwner &&
@@ -149,7 +149,7 @@ export function ResponsibilityLoadMap({
         ) : null}
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
         <Signal label="Owner mix" value={ownerMix(loadSnapshot.ownerDistribution)} />
         <Signal
           label="Shared"
@@ -167,6 +167,14 @@ export function ResponsibilityLoadMap({
             (loadSnapshot.cadenceDistribution.daily ?? 0) +
               (loadSnapshot.cadenceDistribution.weekly ?? 0)
           )}
+        />
+        <Signal
+          label="Area mix"
+          value={summaryMix(loadSnapshot.areaDistribution)}
+        />
+        <Signal
+          label="Hidden effort mix"
+          value={summaryMix(loadSnapshot.hiddenEffortMix)}
         />
       </div>
 
@@ -264,6 +272,20 @@ export function ResponsibilityLoadMap({
 
 function ownerMix(distribution: Record<string, number>) {
   return `A ${distribution.alex ?? 0} / M ${distribution.max ?? 0}`;
+}
+
+function summaryMix(distribution: Record<string, number>) {
+  const visibleEntries = Object.entries(distribution).filter(
+    ([, value]) => value > 0
+  );
+
+  if (visibleEntries.length === 0) {
+    return "None";
+  }
+
+  return visibleEntries
+    .map(([key, value]) => `${label(key)} ${value}`)
+    .join(" / ");
 }
 
 function Signal({ label, value }: { label: string; value: string }) {

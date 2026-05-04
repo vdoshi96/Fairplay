@@ -16,8 +16,10 @@ function responsibility(
     areaKeys: ["food_flow"],
     hiddenEffortKeys: ["planning"],
     cadence: "weekly",
+    relevantDays: ["monday"],
     status: "active",
     visibility: "shared_household",
+    linkedRadarItems: [],
     currentAssignments: [
       { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
     ],
@@ -60,7 +62,6 @@ describe("ResponsibilityLoadMap", () => {
     render(
       <ResponsibilityLoadMap
         loadSnapshot={loadSnapshot}
-        radarFlaggedResponsibilityIds={["550e8400-e29b-41d4-a716-446655440020"]}
         responsibilities={[
           responsibility(),
           responsibility({
@@ -73,7 +74,13 @@ describe("ResponsibilityLoadMap", () => {
             currentAssignments: [
               { personaKey: "max", role: "shared_owner", scope: "part" }
             ],
-            nextReviewAt: "2026-06-01T00:00:00.000Z"
+            nextReviewAt: "2026-06-01T00:00:00.000Z",
+            linkedRadarItems: [
+              {
+                id: "550e8400-e29b-41d4-a716-446655440030",
+                state: "open"
+              }
+            ]
           })
         ]}
       />
@@ -104,5 +111,43 @@ describe("ResponsibilityLoadMap", () => {
 
     expect(screen.getByText("Shared space reset")).toBeVisible();
     expect(screen.queryByText("Weekly meal outline")).not.toBeInTheDocument();
+  });
+
+  it("treats resolved linked radar items as clear", () => {
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        responsibilities={[
+          responsibility({
+            linkedRadarItems: [
+              {
+                id: "550e8400-e29b-41d4-a716-446655440031",
+                state: "resolved"
+              }
+            ]
+          })
+        ]}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Radar"), {
+      target: { value: "clear" }
+    });
+
+    expect(screen.getByText("Weekly meal outline")).toBeVisible();
+  });
+
+  it("shows area and hidden effort summary signals from the snapshot", () => {
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        responsibilities={[responsibility()]}
+      />
+    );
+
+    expect(screen.getByText("Area mix")).toBeVisible();
+    expect(screen.getByText("Food Flow 1 / Home Base 1")).toBeVisible();
+    expect(screen.getByText("Hidden effort mix")).toBeVisible();
+    expect(screen.getByText("Planning 1 / Doing 1")).toBeVisible();
   });
 });

@@ -58,6 +58,7 @@ describe("/api/responsibilities/[id]", () => {
     const response = await PATCH(
       request({
         title: "Updated outline",
+        relevantDays: ["monday", "friday"],
         nextReviewAt: "2026-05-20T12:00:00.000Z"
       }),
       context
@@ -69,9 +70,25 @@ describe("/api/responsibilities/[id]", () => {
       session,
       id,
       expect.objectContaining({
-        title: "Updated outline"
+        title: "Updated outline",
+        relevantDays: ["monday", "friday"]
       })
     );
     expect(body.title).toBe("Updated outline");
+  });
+
+  it("rejects visibility in the general edit path", async () => {
+    const { PATCH } = await import("./route");
+
+    const response = await PATCH(
+      request({
+        title: "Updated outline",
+        visibility: "partner_visible"
+      }),
+      context
+    );
+
+    expect(response.status).toBe(400);
+    expect(update).not.toHaveBeenCalled();
   });
 });

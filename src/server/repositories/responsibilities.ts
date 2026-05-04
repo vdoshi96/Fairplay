@@ -91,8 +91,10 @@ function toResponsibilitySummary(
     areaKeys: responsibility.areaKeys,
     hiddenEffortKeys: responsibility.hiddenEffortKeys,
     cadence: responsibility.cadence,
+    relevantDays: responsibility.relevantDays,
     status: responsibility.status,
     visibility: responsibility.visibility,
+    linkedRadarItems: [],
     currentAssignments: currentAssignments(responsibility.assignments),
     nextReviewAt: nullableIso(responsibility.nextReviewAt)
   };

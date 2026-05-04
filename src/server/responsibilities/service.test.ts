@@ -44,8 +44,10 @@ function detail(
     areaKeys: ["food_flow"],
     hiddenEffortKeys: ["planning"],
     cadence: "weekly",
+    relevantDays: ["monday"],
     status: "active",
     visibility: "shared_household",
+    linkedRadarItems: [],
     currentAssignments: [],
     nextReviewAt: null,
     householdStandard: null,
@@ -70,8 +72,10 @@ function summary(
     areaKeys: full.areaKeys,
     hiddenEffortKeys: full.hiddenEffortKeys,
     cadence: full.cadence,
+    relevantDays: full.relevantDays,
     status: full.status,
     visibility: full.visibility,
+    linkedRadarItems: full.linkedRadarItems,
     currentAssignments: full.currentAssignments,
     nextReviewAt: full.nextReviewAt
   };
@@ -329,6 +333,7 @@ describe("responsibility service", () => {
         listRadarItems: vi.fn().mockResolvedValue([
           {
             id: "550e8400-e29b-41d4-a716-446655440060",
+            responsibilityId,
             state: "open"
           }
         ])
@@ -346,7 +351,64 @@ describe("responsibility service", () => {
     });
     expect(overview.loadSnapshot.radarOpenCount).toBe(1);
     expect(overview.loadSnapshot.reviewDueCount).toBe(1);
+    expect(overview.responsibilities[0].linkedRadarItems).toEqual([
+      {
+        id: "550e8400-e29b-41d4-a716-446655440060",
+        state: "open"
+      }
+    ]);
     expect(serialized).not.toMatch(/score|winner|loser|grade|diagnosis/i);
+  });
+
+  it("updates visibility through the dedicated confirmed path and rejects private responsibility visibility", async () => {
+    const deps = makeDeps({
+      updateResponsibilityRecord: vi.fn().mockResolvedValue(
+        detail({
+          visibility: "partner_visible"
+        })
+      ),
+      getResponsibility: vi.fn().mockResolvedValue(
+        detail({
+          visibility: "shared_household"
+        })
+      )
+    });
+    const service = createResponsibilityService(deps);
+
+    await service.updateVisibility(session, responsibilityId, {
+      responsibilityId,
+      fromVisibility: "shared_household",
+      toVisibility: "partner_visible",
+      confirmedVisibilityChange: true
+    });
+
+    expect(deps.updateResponsibilityRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        householdId,
+        responsibilityId,
+        visibility: "partner_visible"
+      })
+    );
+    expect(deps.createResponsibilityEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: "visibility_changed",
+        payload: expect.objectContaining({
+          fromVisibility: "shared_household",
+          toVisibility: "partner_visible"
+        })
+      })
+    );
+
+    await expect(
+      service.updateVisibility(session, responsibilityId, {
+        responsibilityId,
+        fromVisibility: "shared_household",
+        toVisibility: "private",
+        confirmedVisibilityChange: true
+      })
+    ).rejects.toMatchObject({
+      code: "INVALID_INPUT"
+    });
   });
 
   it("requires explicit confirmation before archiving", async () => {
