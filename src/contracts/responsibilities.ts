@@ -7,10 +7,15 @@ import {
   HiddenEffortKeySchema,
   PersonaKeySchema,
   RadarStateSchema,
+  ResponsibilityBoardLaneSchema,
   ResponsibilityStatusSchema,
   VisibilitySchema
 } from "../domain/enums";
-import { RadarItemIdSchema, ResponsibilityIdSchema } from "../domain/ids";
+import {
+  PersonaIdSchema,
+  RadarItemIdSchema,
+  ResponsibilityIdSchema
+} from "../domain/ids";
 import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from "../domain/time";
 import { assertVisibilityTransition } from "../domain/visibility";
 
@@ -45,6 +50,8 @@ export const ResponsibilitySummarySchema = z
     relevantDays: z.array(z.string().trim().min(1).max(40)).default([]),
     status: ResponsibilityStatusSchema,
     visibility: VisibilitySchema,
+    boardLane: ResponsibilityBoardLaneSchema,
+    boardSortOrder: z.number().int().nonnegative(),
     linkedRadarItems: z.array(ResponsibilityLinkedRadarItemSchema).default([]),
     currentAssignments: z.array(ResponsibilityAssignmentSummarySchema),
     nextReviewAt: NullableIsoDateTimeSchema
@@ -159,6 +166,25 @@ export const ResponsibilityAssignmentMutationSchema = z
   })
   .strict();
 
+export const ResponsibilityBoardPlacementMutationSchema = z
+  .object({
+    responsibilityId: ResponsibilityIdSchema,
+    toLane: ResponsibilityBoardLaneSchema,
+    sortOrder: z.number().int().nonnegative(),
+    actorPersonaId: PersonaIdSchema.optional(),
+    note: z.string().trim().max(1000).optional()
+  })
+  .strict();
+
+export const ResponsibilityFromTemplateMutationSchema = z
+  .object({
+    templateId: z.string().trim().min(1),
+    actorPersonaId: PersonaIdSchema,
+    lane: ResponsibilityBoardLaneSchema.default("cards_of_concern"),
+    titleOverride: z.string().trim().min(1).max(140).optional()
+  })
+  .strict();
+
 export const LoadSnapshotSummarySchema = z
   .object({
     periodStart: IsoDateTimeSchema,
@@ -194,5 +220,11 @@ export type PauseResponsibilityMutation = z.infer<
 >;
 export type ResponsibilityAssignmentMutation = z.infer<
   typeof ResponsibilityAssignmentMutationSchema
+>;
+export type ResponsibilityBoardPlacementMutation = z.infer<
+  typeof ResponsibilityBoardPlacementMutationSchema
+>;
+export type ResponsibilityFromTemplateMutation = z.infer<
+  typeof ResponsibilityFromTemplateMutationSchema
 >;
 export type LoadSnapshotSummary = z.infer<typeof LoadSnapshotSummarySchema>;

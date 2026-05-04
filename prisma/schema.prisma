@@ -125,6 +125,15 @@ enum SourceReviewStatus {
   needs_review
 }
 
+enum ResponsibilityBoardLane {
+  cards_of_concern
+  player_1
+  player_2
+  kid_split
+  not_in_play
+  trimmed
+}
+
 model Household {
   id                 String                 @id @default(uuid())
   name               String
@@ -172,8 +181,22 @@ model Persona {
   facilitatedCheckIns              CheckIn[]                      @relation("FacilitatedCheckIns")
   createdDecisions                 Decision[]                     @relation("CreatedDecisions")
   actedResponsibilityEvents        ResponsibilityEvent[]          @relation("ActedResponsibilityEvents")
+  onboardingPreferences            PersonaOnboardingPreferences?
 
   @@unique([householdId, key])
+}
+
+model PersonaOnboardingPreferences {
+  id                            String    @id @default(uuid())
+  personaId                     String    @unique
+  welcomeDismissedAt            DateTime?
+  crashCourseSkippedAt          DateTime?
+  crashCourseCompletedAt        DateTime?
+  crashCourseCurrentStep        Int       @default(0)
+  crashCourseReplayRequestedAt  DateTime?
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+  persona                       Persona   @relation(fields: [personaId], references: [id], onDelete: Cascade)
 }
 
 model Session {
@@ -207,8 +230,16 @@ model Responsibility {
   relevantDays          String[]
   status                ResponsibilityStatus
   visibility            Visibility
+  boardLane             ResponsibilityBoardLane           @default(cards_of_concern)
+  boardSortOrder        Int                               @default(0)
   householdStandard     String?
   notes                 String?
+  sourceDefinition      String?
+  sourceConception      String?
+  sourcePlanning        String?
+  sourceExecution       String?
+  sourceMinimumStandard String?
+  sourceCoverAssetPath  String?
   lastReviewedAt        DateTime?
   nextReviewAt          DateTime?
   createdAt             DateTime                       @default(now())
@@ -225,7 +256,9 @@ model Responsibility {
   events                ResponsibilityEvent[]
 
   @@index([householdId])
+  @@index([householdId, boardLane, boardSortOrder])
   @@index([status])
+  @@index([templateId])
 }
 
 model ResponsibilityAssignment {
@@ -272,6 +305,16 @@ model ResponsibilityTemplate {
   hiddenEffortKeys   HiddenEffortKey[]
   sourceReviewStatus SourceReviewStatus
   contentVersion     String
+  sourceCardId       String?                 @unique
+  definition         String?
+  conception         String?
+  planning           String?
+  execution          String?
+  minimumStandard    String?
+  coverAssetPath     String?
+  defaultLane        ResponsibilityBoardLane @default(not_in_play)
+  sourceVersion      String?
+  importedAt         DateTime?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   responsibilities   Responsibility[]
