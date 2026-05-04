@@ -24,3 +24,15 @@
 - Replaced the high-level implementation plan with task-scoped worker assignments covering app scaffold, shared contracts, Prisma/Postgres persistence, auth/session/persona APIs, mobile UI/onboarding, responsibilities/load map, radar, guided check-ins, visual integration, README/Vercel readiness, final verification, review gates, and PR strategy.
 - Added Fairplay visual and asset direction task on `codex/research-and-spec`.
 - Defined mobile-first visual tokens, type/spacing/shape direction, original Alex/Max/helper character rules, future image prompts, PWA icon direction, motion guidance, reduced-motion requirements, and original SVG placeholder assets for T09 visual integration.
+- Started T01 implementation on `codex/v1-app` in `.worktrees/v1-app`.
+- Added Next.js App Router scaffold with TypeScript, Tailwind CSS, ESLint, Vitest, Playwright, baseline dependencies, placeholder env example, PWA metadata/manifest/icon routes, and a safe root page linking to future auth entry points.
+- Added a minimal Playwright smoke test for `/` and documented T01 task artifacts under `docs/agents/tasks/2026-05-04-implementation-t01-scaffold/`.
+- Added T01 spec compliance review artifacts under `docs/agents/tasks/2026-05-04-review-t01-spec/`.
+- Reviewed T01 commit range `151b815..33862e8` against the implementation plan and product constraints; result is APPROVED_WITH_NOTES with no blocking spec findings.
+- Verified `npm run lint`, `npm run typecheck`, `npm test -- --run`, standalone `npm run build`, and `npm run test:e2e` pass.
+- Added T01 code quality review artifacts under `docs/agents/tasks/2026-05-04-review-t01-code-quality/`.
+- Reviewed T01 commit range `151b815..33862e8` for scaffold quality, security posture, maintainability, test setup, and Vercel readiness; result is APPROVED_WITH_NOTES with a non-blocking npm audit note for Next's transitive PostCSS advisory.
+- Verified `git diff --check 151b815..33862e8`, `npm run lint`, `npm run typecheck`, `npm test -- --run`, `npm run build`, and `npm run test:e2e` pass; `npm audit --omit=dev` reports the tracked moderate PostCSS advisory.
+- Started T02 implementation on `codex/v1-app` in `.worktrees/v1-app`.
+- Added shared domain enum arrays, Zod schemas, TypeScript types, username normalization, persona and visibility assertions, aggregate-only load signals, platform-neutral JSON contracts, tiny approved-original demo seed content, safety copy snippets, formatting helpers, and domain test factories.
+- Added T02 task artifacts under `docs/agents/tasks/2026-05-04-implementation-t02-domain-contracts/`.

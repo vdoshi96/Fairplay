@@ -1,0 +1,144 @@
+import { z } from "zod";
+
+import {
+  AssignmentRoleSchema,
+  AssignmentScopeSchema,
+  CadenceSchema,
+  HiddenEffortKeySchema,
+  PersonaKeySchema,
+  ResponsibilityStatusSchema,
+  VisibilitySchema
+} from "../domain/enums";
+import { ResponsibilityIdSchema } from "../domain/ids";
+import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from "../domain/time";
+
+export const AreaKeySchema = z.string().trim().min(1).max(80);
+
+export const ResponsibilityAssignmentSummarySchema = z
+  .object({
+    personaKey: PersonaKeySchema,
+    role: AssignmentRoleSchema,
+    scope: AssignmentScopeSchema
+  })
+  .strict();
+
+export const ResponsibilitySummarySchema = z
+  .object({
+    id: ResponsibilityIdSchema,
+    title: z.string().trim().min(1).max(140),
+    areaKeys: z.array(AreaKeySchema),
+    hiddenEffortKeys: z.array(HiddenEffortKeySchema),
+    cadence: CadenceSchema,
+    status: ResponsibilityStatusSchema,
+    visibility: VisibilitySchema,
+    currentAssignments: z.array(ResponsibilityAssignmentSummarySchema),
+    nextReviewAt: NullableIsoDateTimeSchema
+  })
+  .strict();
+
+export const ResponsibilityLifecycleNotesSchema = z
+  .object({
+    noticeDecideNotes: z.string().trim().max(2000).nullable(),
+    planPrepareNotes: z.string().trim().max(2000).nullable(),
+    executeFollowThroughNotes: z.string().trim().max(2000).nullable(),
+    dependencies: z.string().trim().max(2000).nullable(),
+    blockers: z.string().trim().max(2000).nullable(),
+    supportNeeded: z.string().trim().max(2000).nullable(),
+    handoffNotes: z.string().trim().max(2000).nullable(),
+    updatedAt: IsoDateTimeSchema
+  })
+  .strict();
+
+export const ResponsibilityDetailSchema = ResponsibilitySummarySchema.extend({
+  summary: z.string().trim().max(500).nullable(),
+  householdStandard: z.string().trim().max(2000).nullable(),
+  notes: z.string().trim().max(4000).nullable(),
+  lifecycleNotes: ResponsibilityLifecycleNotesSchema.nullable(),
+  lastReviewedAt: NullableIsoDateTimeSchema,
+  createdAt: IsoDateTimeSchema,
+  updatedAt: IsoDateTimeSchema,
+  archivedAt: NullableIsoDateTimeSchema
+}).strict();
+
+const ResponsibilityEditableFieldsSchema = z
+  .object({
+    title: z.string().trim().min(1).max(140),
+    summary: z.string().trim().max(500).nullable().optional(),
+    areaKeys: z.array(AreaKeySchema),
+    hiddenEffortKeys: z.array(HiddenEffortKeySchema),
+    cadence: CadenceSchema,
+    relevantDays: z.array(z.string().trim().min(1).max(40)).nullable().optional(),
+    status: ResponsibilityStatusSchema.optional(),
+    visibility: VisibilitySchema,
+    householdStandard: z.string().trim().max(2000).nullable().optional(),
+    notes: z.string().trim().max(4000).nullable().optional(),
+    nextReviewAt: NullableIsoDateTimeSchema.optional(),
+    currentAssignments: z.array(ResponsibilityAssignmentSummarySchema).optional()
+  })
+  .strict();
+
+export const ResponsibilityCreateSchema = ResponsibilityEditableFieldsSchema;
+
+export const ResponsibilityUpdateSchema = ResponsibilityEditableFieldsSchema.partial()
+  .extend({
+    id: ResponsibilityIdSchema
+  })
+  .strict();
+
+export const ArchiveResponsibilityMutationSchema = z
+  .object({
+    id: ResponsibilityIdSchema
+  })
+  .strict();
+
+export const PauseResponsibilityMutationSchema = z
+  .object({
+    id: ResponsibilityIdSchema,
+    reviewOn: NullableIsoDateTimeSchema.optional(),
+    note: z.string().trim().max(1000).optional()
+  })
+  .strict();
+
+export const ResponsibilityAssignmentMutationSchema = z
+  .object({
+    responsibilityId: ResponsibilityIdSchema,
+    assignments: z.array(ResponsibilityAssignmentSummarySchema),
+    effectiveAt: IsoDateTimeSchema,
+    handoffNotes: z.string().trim().max(2000).optional()
+  })
+  .strict();
+
+export const LoadSnapshotSummarySchema = z
+  .object({
+    periodStart: IsoDateTimeSchema,
+    periodEnd: IsoDateTimeSchema,
+    computedAt: IsoDateTimeSchema,
+    ownerDistribution: z.record(z.string(), z.number().int().nonnegative()),
+    sharedDistribution: z.record(z.string(), z.number().int().nonnegative()),
+    areaDistribution: z.record(z.string(), z.number().int().nonnegative()),
+    cadenceDistribution: z.record(z.string(), z.number().int().nonnegative()),
+    reviewDueCount: z.number().int().nonnegative(),
+    radarOpenCount: z.number().int().nonnegative(),
+    pausedOrNotRelevantCount: z.number().int().nonnegative(),
+    hiddenEffortMix: z.record(z.string(), z.number().int().nonnegative())
+  })
+  .strict();
+
+export type AreaKey = z.infer<typeof AreaKeySchema>;
+export type ResponsibilityAssignmentSummary = z.infer<
+  typeof ResponsibilityAssignmentSummarySchema
+>;
+export type ResponsibilitySummary = z.infer<typeof ResponsibilitySummarySchema>;
+export type ResponsibilityDetail = z.infer<typeof ResponsibilityDetailSchema>;
+export type ResponsibilityCreate = z.infer<typeof ResponsibilityCreateSchema>;
+export type ResponsibilityUpdate = z.infer<typeof ResponsibilityUpdateSchema>;
+export type ArchiveResponsibilityMutation = z.infer<
+  typeof ArchiveResponsibilityMutationSchema
+>;
+export type PauseResponsibilityMutation = z.infer<
+  typeof PauseResponsibilityMutationSchema
+>;
+export type ResponsibilityAssignmentMutation = z.infer<
+  typeof ResponsibilityAssignmentMutationSchema
+>;
+export type LoadSnapshotSummary = z.infer<typeof LoadSnapshotSummarySchema>;
