@@ -32,6 +32,8 @@ const responsibility: ResponsibilityDetail = {
   currentAssignments: [
     { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
   ],
+  boardLane: "player_1",
+  boardSortOrder: 0,
   nextReviewAt: null,
   householdStandard: null,
   notes: null,
