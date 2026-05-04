@@ -1,0 +1,418 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PersonaKey {
+  alex
+  max
+}
+
+enum ResponsibilityStatus {
+  unassigned
+  active
+  needs_review
+  paused
+  not_relevant
+  archived
+}
+
+enum AssignmentRole {
+  accountable_owner
+  shared_owner
+  helper
+  backup
+}
+
+enum AssignmentScope {
+  outcome
+  part
+  support
+  temporary
+}
+
+enum Visibility {
+  private
+  shared_household
+  partner_visible
+  check_in_only
+}
+
+enum Cadence {
+  daily
+  weekly
+  monthly
+  seasonal
+  event_based
+  as_needed
+  one_time
+}
+
+enum HiddenEffortKey {
+  noticing
+  planning
+  doing
+  follow_through
+  emotional_attention
+}
+
+enum RadarReasonKey {
+  unclear_expectation
+  blocked
+  too_much
+  handoff_needed
+  review_due
+  other
+}
+
+enum Urgency {
+  low
+  normal
+  soon
+}
+
+enum RadarState {
+  draft
+  open
+  scheduled
+  discussed
+  resolved
+  dismissed
+  deferred
+}
+
+enum CheckInState {
+  draft
+  scheduled
+  active
+  completed
+  skipped
+}
+
+enum CheckInItemState {
+  queued
+  discussed
+  deferred
+  skipped
+}
+
+enum CheckInItemType {
+  responsibility
+  radar
+  custom
+}
+
+enum DecisionType {
+  assign_owner
+  change_role
+  change_standard
+  change_cadence
+  pause
+  mark_not_relevant
+  archive
+  schedule_review
+  custom_note
+}
+
+enum SourceReviewStatus {
+  not_reviewed
+  approved_original
+  blocked
+  needs_review
+}
+
+model Household {
+  id                 String                 @id @default(uuid())
+  name               String
+  usernameNormalized String                 @unique
+  timezone           String
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  credential         HouseholdCredential?
+  personas           Persona[]
+  sessions           Session[]
+  responsibilities   Responsibility[]
+  radarItems         RadarItem[]
+  checkIns           CheckIn[]
+  decisions          Decision[]
+  events             ResponsibilityEvent[]
+  loadSnapshots      LoadSnapshot[]
+}
+
+model HouseholdCredential {
+  id                String    @id @default(uuid())
+  householdId       String    @unique
+  passwordHash      String
+  hashAlgorithm     String
+  hashParamsVersion String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastRotatedAt     DateTime?
+  household         Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+}
+
+model Persona {
+  id                               String                         @id @default(uuid())
+  householdId                      String
+  key                              PersonaKey
+  displayName                      String
+  avatarKey                        String?
+  createdAt                        DateTime                       @default(now())
+  updatedAt                        DateTime                       @updatedAt
+  household                        Household                      @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  selectedSessions                 Session[]
+  createdResponsibilities          Responsibility[]               @relation("CreatedResponsibilities")
+  createdAssignments               ResponsibilityAssignment[]     @relation("CreatedAssignments")
+  assignments                      ResponsibilityAssignment[]     @relation("PersonaAssignments")
+  createdRadarItems                RadarItem[]                    @relation("CreatedRadarItems")
+  facilitatedCheckIns              CheckIn[]                      @relation("FacilitatedCheckIns")
+  createdDecisions                 Decision[]                     @relation("CreatedDecisions")
+  actedResponsibilityEvents        ResponsibilityEvent[]          @relation("ActedResponsibilityEvents")
+
+  @@unique([householdId, key])
+}
+
+model Session {
+  id                String    @id @default(uuid())
+  householdId       String
+  selectedPersonaId String?
+  tokenHash         String    @unique
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastSeenAt        DateTime  @default(now())
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  userAgentHash     String?
+  household         Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  selectedPersona   Persona?  @relation(fields: [selectedPersonaId], references: [id], onDelete: SetNull)
+
+  @@index([householdId])
+  @@index([expiresAt])
+}
+
+model Responsibility {
+  id                    String                         @id @default(uuid())
+  householdId           String
+  createdByPersonaId    String
+  templateId            String?
+  title                 String
+  summary               String?
+  areaKeys              String[]
+  hiddenEffortKeys      HiddenEffortKey[]
+  cadence               Cadence
+  relevantDays          String[]
+  status                ResponsibilityStatus
+  visibility            Visibility
+  householdStandard     String?
+  notes                 String?
+  lastReviewedAt        DateTime?
+  nextReviewAt          DateTime?
+  createdAt             DateTime                       @default(now())
+  updatedAt             DateTime                       @updatedAt
+  archivedAt            DateTime?
+  household             Household                      @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  createdByPersona      Persona                        @relation("CreatedResponsibilities", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  template              ResponsibilityTemplate?        @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  assignments           ResponsibilityAssignment[]
+  lifecycleNotes        ResponsibilityLifecycleNotes?
+  radarItems            RadarItem[]
+  checkInItems          CheckInItem[]
+  decisions             Decision[]
+  events                ResponsibilityEvent[]
+
+  @@index([householdId])
+  @@index([status])
+}
+
+model ResponsibilityAssignment {
+  id                    String          @id @default(uuid())
+  responsibilityId      String
+  personaId             String
+  role                  AssignmentRole
+  scope                 AssignmentScope
+  startsAt              DateTime
+  endsAt                DateTime?
+  createdByPersonaId    String
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  responsibility        Responsibility  @relation(fields: [responsibilityId], references: [id], onDelete: Cascade)
+  persona               Persona         @relation("PersonaAssignments", fields: [personaId], references: [id], onDelete: Restrict)
+  createdByPersona      Persona         @relation("CreatedAssignments", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+
+  @@index([responsibilityId, startsAt])
+  @@index([personaId])
+}
+
+model ResponsibilityLifecycleNotes {
+  id                              String         @id @default(uuid())
+  responsibilityId                String         @unique
+  noticeDecideNotes               String?
+  planPrepareNotes                String?
+  executeFollowThroughNotes       String?
+  dependencies                    String?
+  blockers                        String?
+  supportNeeded                   String?
+  handoffNotes                    String?
+  createdAt                       DateTime       @default(now())
+  updatedAt                       DateTime       @updatedAt
+  responsibility                  Responsibility @relation(fields: [responsibilityId], references: [id], onDelete: Cascade)
+}
+
+model ResponsibilityTemplate {
+  id                 String               @id
+  slug               String               @unique
+  title              String
+  summary            String
+  areaKeys           String[]
+  defaultCadence     Cadence
+  hiddenEffortKeys   HiddenEffortKey[]
+  sourceReviewStatus SourceReviewStatus
+  contentVersion     String
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  responsibilities   Responsibility[]
+}
+
+model RadarItem {
+  id                 String          @id @default(uuid())
+  householdId        String
+  responsibilityId   String?
+  createdByPersonaId String
+  topic              String
+  notes              String?
+  reasonKey          RadarReasonKey
+  urgency            Urgency
+  visibility         Visibility
+  state              RadarState
+  targetCheckInId    String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  resolvedAt         DateTime?
+  household          Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  responsibility     Responsibility? @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
+  createdByPersona   Persona         @relation("CreatedRadarItems", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  targetCheckIn      CheckIn?        @relation("TargetCheckInRadarItems", fields: [targetCheckInId], references: [id], onDelete: SetNull)
+  checkInItems       CheckInItem[]
+
+  @@index([householdId, state])
+  @@index([createdByPersonaId, visibility])
+}
+
+model CheckIn {
+  id                    String        @id @default(uuid())
+  householdId           String
+  state                 CheckInState
+  scheduledFor          DateTime?
+  startedAt             DateTime?
+  completedAt           DateTime?
+  facilitatorPersonaId  String?
+  summary               String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  household             Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  facilitatorPersona    Persona?      @relation("FacilitatedCheckIns", fields: [facilitatorPersonaId], references: [id], onDelete: SetNull)
+  items                 CheckInItem[]
+  decisions             Decision[]
+  targetedRadarItems    RadarItem[]    @relation("TargetCheckInRadarItems")
+
+  @@index([householdId, state])
+}
+
+model CheckInItem {
+  id                 String             @id @default(uuid())
+  checkInId          String
+  responsibilityId   String?
+  radarItemId        String?
+  itemType           CheckInItemType
+  state              CheckInItemState
+  promptKey          String
+  response           String?
+  decisionId         String?            @unique
+  sortOrder          Int
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  checkIn            CheckIn            @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  responsibility     Responsibility?    @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
+  radarItem          RadarItem?         @relation(fields: [radarItemId], references: [id], onDelete: SetNull)
+  decision           Decision?          @relation(fields: [decisionId], references: [id], onDelete: SetNull)
+
+  @@index([checkInId, sortOrder])
+}
+
+model Decision {
+  id                 String          @id @default(uuid())
+  householdId        String
+  checkInId          String?
+  responsibilityId   String?
+  decisionType       DecisionType
+  summary            String
+  effectiveAt        DateTime
+  reviewOn           DateTime?
+  createdByPersonaId String
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  household          Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  checkIn            CheckIn?        @relation(fields: [checkInId], references: [id], onDelete: SetNull)
+  responsibility     Responsibility? @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
+  createdByPersona   Persona         @relation("CreatedDecisions", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  checkInItem        CheckInItem?
+
+  @@index([householdId])
+}
+
+model ResponsibilityEvent {
+  id                 String          @id @default(uuid())
+  householdId        String
+  responsibilityId   String?
+  actorPersonaId     String?
+  eventType          String
+  payload            Json
+  occurredAt         DateTime
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  household          Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  responsibility     Responsibility? @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
+  actorPersona       Persona?        @relation("ActedResponsibilityEvents", fields: [actorPersonaId], references: [id], onDelete: SetNull)
+
+  @@index([householdId, occurredAt])
+}
+
+model LoadSnapshot {
+  id                         String    @id @default(uuid())
+  householdId                String
+  periodStart                DateTime
+  periodEnd                  DateTime
+  computedAt                 DateTime
+  ownerDistribution          Json
+  sharedDistribution         Json
+  areaDistribution           Json
+  cadenceDistribution        Json
+  reviewDueCount             Int
+  radarOpenCount             Int
+  pausedOrNotRelevantCount   Int
+  hiddenEffortMix            Json
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+  household                  Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, periodStart, periodEnd])
+}
+
+model AuthThrottle {
+  id                 String    @id @default(uuid())
+  usernameNormalized String
+  ipHash             String
+  failedAttemptCount Int       @default(0)
+  windowStartedAt    DateTime
+  throttledUntil     DateTime?
+  lastAttemptAt      DateTime
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([usernameNormalized, ipHash])
+  @@index([throttledUntil])
+}

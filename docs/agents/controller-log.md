@@ -56,3 +56,7 @@
 - Added T02 code quality re-review artifacts under `docs/agents/tasks/2026-05-04-review-t02-code-quality-rereview/`.
 - Re-reviewed T02 after fix commit `a6ec1a3`; result is APPROVED because the safe normalized username boundary, responsibility create visibility restriction, visibility mutation confirmation coverage, and Vitest alias config are now in place.
 - Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/domain src/contracts src/seed`, `npm run build`, and Vite config alias resolution.
+- Started T03 implementation on `codex/v1-app` in `.worktrees/v1-app`.
+- Added Postgres Prisma schema, approved demo template seed, lazy Prisma client, repository error helpers, household/persona/session/responsibility/radar/check-in/load-snapshot/auth-throttle repositories, Docker Compose Postgres, DB wait helper, local Docker env guidance, Prisma/db package scripts, and repository integration tests.
+- Verified `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, and `npm run build` pass.
+- Attempted DB verification, but `npm run db:up` failed because `docker` is not installed (`sh: docker: command not found`); `prisma:migrate`, `prisma:seed`, and repository integration tests could not complete without a running local Postgres.

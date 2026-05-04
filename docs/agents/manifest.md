@@ -26,6 +26,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T02 code quality review | Codex code quality reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t02-code-quality/` |
 | 2026-05-04 | T02 contract quality fix | Codex focused T02 quality-fix worker | Completed and pushed | `docs/agents/tasks/2026-05-04-fix-t02-contract-quality/` |
 | 2026-05-04 | T02 code quality re-review | Codex code quality re-reviewer | Approved | `docs/agents/tasks/2026-05-04-review-t02-code-quality-rereview/` |
+| 2026-05-04 | T03 Prisma/Postgres persistence layer | Codex implementation worker T03 | Done with concerns; Docker unavailable for DB verification | `docs/agents/tasks/2026-05-04-implementation-t03-persistence/` |
 
 ## Rules
 
