@@ -8,7 +8,8 @@ import {
   ResponsibilityCreateSchema,
   ResponsibilityDetailSchema,
   ResponsibilitySummarySchema,
-  ResponsibilityUpdateSchema
+  ResponsibilityUpdateSchema,
+  ResponsibilityVisibilityMutationSchema
 } from "./responsibilities";
 
 describe("responsibility JSON contracts", () => {
@@ -123,5 +124,46 @@ describe("responsibility JSON contracts", () => {
         hiddenEffortMix: { doing: 1 }
       })
     ).toMatchObject({ reviewDueCount: 1 });
+  });
+
+  it("rejects direct visibility changes in the general update contract", () => {
+    expect(() =>
+      ResponsibilityUpdateSchema.parse({
+        id: "550e8400-e29b-41d4-a716-446655440010",
+        visibility: "shared_household"
+      })
+    ).toThrow();
+  });
+
+  it("requires confirmation before changing a private responsibility to visible spaces", () => {
+    const responsibilityId = "550e8400-e29b-41d4-a716-446655440010";
+
+    for (const toVisibility of [
+      "shared_household",
+      "partner_visible",
+      "check_in_only"
+    ]) {
+      expect(() =>
+        ResponsibilityVisibilityMutationSchema.parse({
+          responsibilityId,
+          fromVisibility: "private",
+          toVisibility
+        })
+      ).toThrow();
+
+      expect(
+        ResponsibilityVisibilityMutationSchema.parse({
+          responsibilityId,
+          fromVisibility: "private",
+          toVisibility,
+          confirmedVisibilityChange: true
+        })
+      ).toMatchObject({
+        responsibilityId,
+        fromVisibility: "private",
+        toVisibility,
+        confirmedVisibilityChange: true
+      });
+    }
   });
 });

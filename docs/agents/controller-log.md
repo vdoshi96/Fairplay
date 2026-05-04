@@ -39,3 +39,7 @@
 - Added T02 spec compliance review artifacts under `docs/agents/tasks/2026-05-04-review-t02-spec/`.
 - Reviewed T02 commit range `3faf932..b8dfb24`; result is CHANGES_REQUESTED because `ResponsibilityUpdateSchema` accepts direct `visibility` changes without private-to-shared transition confirmation.
 - Verified `git status --short`, `git diff --name-only 3faf93278688a8bc209699f81827990d2d67f01a..b8dfb242ecfdaea2ce6a210f23f1131175655307`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/domain src/contracts src/seed`, and `npm run build`.
+- Started focused T02 responsibility visibility confirmation fix on `codex/v1-app` in `.worktrees/v1-app`.
+- Added regression coverage and contract changes so generic responsibility updates reject direct `visibility` while `ResponsibilityVisibilityMutationSchema` requires confirmation for private-to-visible transitions.
+- Verified the focused T02 fix with `npm run lint`, `npm run typecheck`, `npm test -- --run src/contracts src/domain`, `npm run build`, and `git diff --check`.
+- Pushed the T02 responsibility visibility confirmation fix to `origin/codex/v1-app`.

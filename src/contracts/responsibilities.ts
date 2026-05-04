@@ -11,6 +11,7 @@ import {
 } from "../domain/enums";
 import { ResponsibilityIdSchema } from "../domain/ids";
 import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from "../domain/time";
+import { assertVisibilityTransition } from "../domain/visibility";
 
 export const AreaKeySchema = z.string().trim().min(1).max(80);
 
@@ -79,11 +80,43 @@ const ResponsibilityEditableFieldsSchema = z
 
 export const ResponsibilityCreateSchema = ResponsibilityEditableFieldsSchema;
 
-export const ResponsibilityUpdateSchema = ResponsibilityEditableFieldsSchema.partial()
+const ResponsibilityUpdateFieldsSchema = ResponsibilityEditableFieldsSchema.omit({
+  visibility: true
+});
+
+export const ResponsibilityUpdateSchema = ResponsibilityUpdateFieldsSchema.partial()
   .extend({
     id: ResponsibilityIdSchema
   })
   .strict();
+
+export const ResponsibilityVisibilityMutationSchema = z
+  .object({
+    responsibilityId: ResponsibilityIdSchema,
+    fromVisibility: VisibilitySchema,
+    toVisibility: VisibilitySchema,
+    confirmedVisibilityChange: z.boolean().default(false),
+    confirmationText: z.string().trim().max(500).optional()
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    try {
+      assertVisibilityTransition({
+        from: value.fromVisibility,
+        to: value.toVisibility,
+        confirmed: value.confirmedVisibilityChange
+      });
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["confirmedVisibilityChange"],
+        message:
+          error instanceof Error
+            ? error.message
+            : "Explicit confirmation is required before changing visibility."
+      });
+    }
+  });
 
 export const ArchiveResponsibilityMutationSchema = z
   .object({
@@ -132,6 +165,9 @@ export type ResponsibilitySummary = z.infer<typeof ResponsibilitySummarySchema>;
 export type ResponsibilityDetail = z.infer<typeof ResponsibilityDetailSchema>;
 export type ResponsibilityCreate = z.infer<typeof ResponsibilityCreateSchema>;
 export type ResponsibilityUpdate = z.infer<typeof ResponsibilityUpdateSchema>;
+export type ResponsibilityVisibilityMutation = z.infer<
+  typeof ResponsibilityVisibilityMutationSchema
+>;
 export type ArchiveResponsibilityMutation = z.infer<
   typeof ArchiveResponsibilityMutationSchema
 >;
