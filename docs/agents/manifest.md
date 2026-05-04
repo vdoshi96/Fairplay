@@ -78,6 +78,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T10 README deployment instructions and Vercel readiness | Codex implementation worker T10 | Done with concerns; Docker unavailable for DB-backed verification | `docs/agents/tasks/2026-05-04-implementation-t10-deployment-docs/` |
 | 2026-05-04 | T10 spec compliance review | Codex spec compliance reviewer | Approved with notes; DB-backed verification unavailable | `docs/agents/tasks/2026-05-04-review-t10-spec/` |
 | 2026-05-04 | T10 code quality review | Codex code quality reviewer | Approved with notes; DB-backed verification unavailable | `docs/agents/tasks/2026-05-04-review-t10-code-quality/` |
+| 2026-05-04 | T11 final verification and release-candidate checklist | Codex final verification agent | Approved with blockers; DB-backed verification unavailable | `docs/agents/tasks/2026-05-04-final-verification/` |
 
 ## Rules
 
