@@ -112,3 +112,6 @@
 - Added settings logout, neutral future data-controls note, and explicit persona-switch confirmation.
 - Added T05 component tests and Playwright e2e route-mocked flows for create/login/persona/onboarding, cleared-cookie redirect, and keyboard smoke.
 - Verified T05 with `npm run lint`, `npm run typecheck`, `npm test -- --run src/components/auth src/components/onboarding`, `npm run test:e2e -- --grep "auth|onboarding"`, `npm run build`, and `git diff --check`; e2e DB persistence remains route-mocked because local Postgres is unavailable.
+- Added T05 spec compliance review artifacts under `docs/agents/tasks/2026-05-04-review-t05-spec/`.
+- Reviewed T05 commit `c93da78` and diff range `f9a5fdffe5373e1114016bc3ed7a30b482bbddac..c93da78`; result is APPROVED_WITH_NOTES with no blocking spec findings, noting route-mocked e2e coverage and non-clinical boundary placement.
+- Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/components/auth src/components/onboarding`, `npm run test:e2e -- --grep "auth|onboarding"`, and `npm run build`; all passed, with the existing non-blocking Next.js edge-runtime static-generation warning during build.
