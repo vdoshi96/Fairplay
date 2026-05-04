@@ -1,5 +1,6 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 
 import type {
   LoadSnapshotSummary,
@@ -151,5 +152,67 @@ describe("ResponsibilityLoadMap", () => {
     expect(screen.getByText("Food Flow 1 / Home Base 1")).toBeVisible();
     expect(screen.getByText("Hidden effort mix")).toBeVisible();
     expect(screen.getByText("Planning 1 / Doing 1")).toBeVisible();
+  });
+
+  it("renders Trello board lanes with counts and explanations", () => {
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        responsibilities={[
+          responsibility({ title: "Auto", boardLane: "not_in_play" }),
+          responsibility({
+            id: "550e8400-e29b-41d4-a716-446655440011",
+            title: "Weekly meal outline",
+            boardLane: "cards_of_concern"
+          }),
+          responsibility({
+            id: "550e8400-e29b-41d4-a716-446655440012",
+            title: "Laundry",
+            boardLane: "player_1"
+          })
+        ]}
+      />
+    );
+
+    const reserveLane = screen.getByRole("region", { name: "Not in Play" });
+    const concernLane = screen.getByRole("region", { name: "Cards of Concern" });
+    const playerOneLane = screen.getByRole("region", { name: "Player 1" });
+
+    expect(
+      within(reserveLane).getByRole("heading", { name: "Not in Play" })
+    ).toBeVisible();
+    expect(within(reserveLane).getByText("1 card")).toBeVisible();
+    expect(within(reserveLane).getByText(/reserve cards/i)).toBeVisible();
+    expect(within(concernLane).getByText("1 card")).toBeVisible();
+    expect(within(playerOneLane).getByText("1 card")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Player 2" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Kid Split" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Trimmed" })).toBeVisible();
+  });
+
+  it("moves a card through the keyboard action menu", async () => {
+    const onMove = vi.fn();
+
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        onMove={onMove}
+        responsibilities={[
+          responsibility({
+            id: "550e8400-e29b-41d4-a716-446655440040",
+            title: "Auto",
+            boardLane: "not_in_play"
+          })
+        ]}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Move Auto" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "Player 1" }));
+
+    expect(onMove).toHaveBeenCalledWith({
+      responsibilityId: "550e8400-e29b-41d4-a716-446655440040",
+      toLane: "player_1"
+    });
   });
 });

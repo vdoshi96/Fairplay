@@ -1,5 +1,22 @@
 "use client";
 
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 
@@ -7,13 +24,21 @@ import type {
   LoadSnapshotSummary,
   ResponsibilitySummary
 } from "@/contracts/responsibilities";
-import type { HiddenEffortKey } from "@/domain/enums";
+import type { HiddenEffortKey, ResponsibilityBoardLane } from "@/domain/enums";
 import { AssignmentShift, MotionPanel } from "@/components/motion/fairplay-motion";
 import { HelperMascot } from "@/components/visuals/fairplay-visuals";
+import { BOARD_LANES, type BoardLaneTone } from "./board-lanes";
 
 type ResponsibilityLoadMapProps = {
   responsibilities: ResponsibilitySummary[];
   loadSnapshot: LoadSnapshotSummary;
+  onMove?: (move: ResponsibilityBoardMove) => void | Promise<void>;
+};
+
+export type ResponsibilityBoardMove = {
+  responsibilityId: string;
+  toLane: ResponsibilityBoardLane;
+  sortOrder?: number;
 };
 
 const ownerOptions = ["all", "alex", "max", "unassigned"] as const;
@@ -50,6 +75,24 @@ type StatusFilter = (typeof statusOptions)[number];
 type CadenceFilter = (typeof cadenceOptions)[number];
 type HiddenEffortFilter = (typeof hiddenEffortOptions)[number];
 
+const laneToneClasses: Record<BoardLaneTone, string> = {
+  concern: "border-amber-200 bg-amber-50/80",
+  playerOne: "border-sky-200 bg-sky-50/80",
+  playerTwo: "border-rose-200 bg-rose-50/80",
+  kidSplit: "border-violet-200 bg-violet-50/80",
+  reserve: "border-stone-200 bg-stone-50/80",
+  trimmed: "border-emerald-200 bg-emerald-50/80"
+};
+
+const laneDotClasses: Record<BoardLaneTone, string> = {
+  concern: "bg-amber-500",
+  playerOne: "bg-sky-500",
+  playerTwo: "bg-rose-500",
+  kidSplit: "bg-violet-500",
+  reserve: "bg-stone-500",
+  trimmed: "bg-emerald-500"
+};
+
 function label(value: string) {
   return value
     .split("_")
@@ -82,7 +125,8 @@ function reviewState(responsibility: ResponsibilitySummary, now = new Date()) {
 
 export function ResponsibilityLoadMap({
   responsibilities,
-  loadSnapshot
+  loadSnapshot,
+  onMove
 }: ResponsibilityLoadMapProps) {
   const [owner, setOwner] = useState<OwnerFilter>("all");
   const [status, setStatus] = useState<StatusFilter>("all");
@@ -93,6 +137,16 @@ export function ResponsibilityLoadMap({
   const [reviewTiming, setReviewTiming] = useState<
     "all" | "due" | "upcoming" | "none"
   >("all");
+  const [searchText, setSearchText] = useState("");
+  const [openMoveMenuId, setOpenMoveMenuId] = useState<string | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 }
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates
+    })
+  );
 
   const areaOptions = useMemo(() => {
     const keys = new Set<string>();
@@ -116,6 +170,8 @@ export function ResponsibilityLoadMap({
       (item) => item.state !== "resolved"
     );
 
+    const normalizedSearch = searchText.trim().toLowerCase();
+
     return (
       hasOwner &&
       (status === "all" || responsibility.status === status) &&
@@ -128,9 +184,83 @@ export function ResponsibilityLoadMap({
       (radar === "all" ||
         (radar === "flagged" && radarFlagged) ||
         (radar === "clear" && !radarFlagged)) &&
-      (reviewTiming === "all" || reviewState(responsibility) === reviewTiming)
+      (reviewTiming === "all" || reviewState(responsibility) === reviewTiming) &&
+      (normalizedSearch.length === 0 ||
+        responsibility.title.toLowerCase().includes(normalizedSearch) ||
+        responsibility.areaKeys.some((key) =>
+          label(key).toLowerCase().includes(normalizedSearch)
+        ))
     );
   });
+
+  const responsibilitiesByLane = useMemo(() => {
+    const groups = new Map<ResponsibilityBoardLane, ResponsibilitySummary[]>();
+
+    BOARD_LANES.forEach((lane) => groups.set(lane.key, []));
+    filteredResponsibilities.forEach((responsibility) => {
+      groups.get(responsibility.boardLane)?.push(responsibility);
+    });
+
+    groups.forEach((laneResponsibilities) => {
+      laneResponsibilities.sort(
+        (first, second) =>
+          first.boardSortOrder - second.boardSortOrder ||
+          first.title.localeCompare(second.title)
+      );
+    });
+
+    return groups;
+  }, [filteredResponsibilities]);
+
+  const handleMove = (move: ResponsibilityBoardMove) => {
+    setOpenMoveMenuId(null);
+    void onMove?.(move);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const activeId = String(event.active.id);
+    const overId = event.over ? String(event.over.id) : null;
+
+    if (!overId) {
+      return;
+    }
+
+    const dragged = responsibilities.find(
+      (responsibility) => responsibility.id === activeId
+    );
+    const overLane = BOARD_LANES.find((lane) => lane.key === overId)?.key;
+    const overCard = responsibilities.find(
+      (responsibility) => responsibility.id === overId
+    );
+    const toLane = overLane ?? overCard?.boardLane;
+
+    if (!dragged || !toLane) {
+      return;
+    }
+
+    if (dragged.boardLane === toLane && overId === dragged.id) {
+      return;
+    }
+
+    if (dragged.boardLane === toLane && overId === toLane) {
+      return;
+    }
+
+    const destinationCards = responsibilitiesByLane.get(toLane) ?? [];
+    const overIndex = destinationCards.findIndex(
+      (responsibility) => responsibility.id === overId
+    );
+    const sortOrder =
+      overIndex >= 0
+        ? destinationCards[overIndex]?.boardSortOrder ?? overIndex
+        : destinationCards.length;
+
+    handleMove({
+      responsibilityId: dragged.id,
+      toLane,
+      sortOrder
+    });
+  };
 
   return (
     <section className="grid gap-5">
@@ -220,6 +350,16 @@ export function ResponsibilityLoadMap({
           options={["all", "due", "upcoming", "none"] as const}
           value={reviewTiming}
         />
+        <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+          Search
+          <input
+            aria-label="Search responsibilities"
+            className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+            onChange={(event) => setSearchText(event.target.value)}
+            type="search"
+            value={searchText}
+          />
+        </label>
       </div>
 
       {responsibilities.length === 0 ? (
@@ -239,47 +379,230 @@ export function ResponsibilityLoadMap({
           <HelperMascot className="h-24 w-24 justify-self-start sm:justify-self-end" decorative />
         </div>
       ) : (
-        <div className="grid gap-3">
-          {filteredResponsibilities.map((responsibility) => (
-            <MotionPanel key={responsibility.id}>
-              <Link
-                className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-4 outline-none focus:ring-2 focus:ring-fp-ink/20"
-                href={`/app/responsibilities/${responsibility.id}`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="truncate text-[17px] font-bold leading-6">
-                      {responsibility.title}
-                    </h2>
-                    <p className="text-[13px] text-fp-muted-ink">
-                      {ownerFor(responsibility)}
-                    </p>
-                  </div>
-                  <span className="shrink-0 rounded-[8px] border border-fp-line px-2 py-1 text-[12px] font-semibold">
-                    {label(responsibility.status)}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2 text-[12px] font-semibold text-fp-muted-ink">
-                  <span>{label(responsibility.cadence)}</span>
-                  {responsibility.areaKeys.map((key) => (
-                    <span key={key}>{label(key)}</span>
-                  ))}
-                  {responsibility.hiddenEffortKeys.map((key) => (
-                    <span key={key}>{label(key)}</span>
-                  ))}
-                  <span>{label(reviewState(responsibility))}</span>
-                </div>
-              </Link>
-            </MotionPanel>
-          ))}
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+          sensors={sensors}
+        >
+          <div className="-mx-4 overflow-x-auto px-4 pb-3">
+            <div className="flex min-w-max gap-3">
+              {BOARD_LANES.map((lane) => {
+                const laneResponsibilities =
+                  responsibilitiesByLane.get(lane.key) ?? [];
+
+                return (
+                  <BoardLaneColumn
+                    key={lane.key}
+                    lane={lane}
+                    onMove={handleMove}
+                    openMoveMenuId={openMoveMenuId}
+                    responsibilities={laneResponsibilities}
+                    setOpenMoveMenuId={setOpenMoveMenuId}
+                  />
+                );
+              })}
+            </div>
+          </div>
           {filteredResponsibilities.length === 0 ? (
             <p className="rounded-[8px] border border-fp-line bg-white p-4 text-[14px] text-fp-muted-ink">
               No responsibilities match these filters.
             </p>
           ) : null}
-        </div>
+        </DndContext>
       )}
     </section>
+  );
+}
+
+function BoardLaneColumn({
+  lane,
+  onMove,
+  openMoveMenuId,
+  responsibilities,
+  setOpenMoveMenuId
+}: {
+  lane: (typeof BOARD_LANES)[number];
+  onMove: (move: ResponsibilityBoardMove) => void;
+  openMoveMenuId: string | null;
+  responsibilities: ResponsibilitySummary[];
+  setOpenMoveMenuId: (id: string | null) => void;
+}) {
+  const headingId = `load-board-lane-${lane.key}`;
+  const { isOver, setNodeRef } = useDroppable({ id: lane.key });
+
+  return (
+    <section
+      aria-labelledby={headingId}
+      className={[
+        "flex max-h-[72vh] w-[19rem] shrink-0 flex-col rounded-[8px] border p-3 transition",
+        laneToneClasses[lane.tone],
+        isOver ? "ring-2 ring-fp-ink/25" : ""
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      ref={setNodeRef}
+    >
+      <div className="grid gap-2">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className={[
+                  "h-2.5 w-2.5 shrink-0 rounded-full",
+                  laneDotClasses[lane.tone]
+                ].join(" ")}
+              />
+              <h2
+                className="truncate text-[16px] font-bold leading-6 text-fp-ink"
+                id={headingId}
+              >
+                {lane.label}
+              </h2>
+            </div>
+            <p className="mt-1 text-[12px] leading-5 text-fp-muted-ink">
+              {lane.shortHelp}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-[8px] border border-white/70 bg-white/75 px-2 py-1 text-[12px] font-bold text-fp-ink">
+            {responsibilities.length}{" "}
+            {responsibilities.length === 1 ? "card" : "cards"}
+          </span>
+        </div>
+      </div>
+
+      <SortableContext
+        items={responsibilities.map((responsibility) => responsibility.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="mt-3 grid flex-1 content-start gap-3 overflow-y-auto pr-1">
+          {responsibilities.map((responsibility) => (
+            <SortableResponsibilityCard
+              key={responsibility.id}
+              onMove={onMove}
+              openMoveMenuId={openMoveMenuId}
+              responsibility={responsibility}
+              setOpenMoveMenuId={setOpenMoveMenuId}
+            />
+          ))}
+          {responsibilities.length === 0 ? (
+            <p className="min-h-28 rounded-[8px] border border-dashed border-white/80 bg-white/55 p-3 text-[13px] leading-5 text-fp-muted-ink">
+              Drop a card here when it matches this lane.
+            </p>
+          ) : null}
+        </div>
+      </SortableContext>
+    </section>
+  );
+}
+
+function SortableResponsibilityCard({
+  onMove,
+  openMoveMenuId,
+  responsibility,
+  setOpenMoveMenuId
+}: {
+  onMove: (move: ResponsibilityBoardMove) => void;
+  openMoveMenuId: string | null;
+  responsibility: ResponsibilitySummary;
+  setOpenMoveMenuId: (id: string | null) => void;
+}) {
+  const {
+    attributes,
+    isDragging,
+    listeners,
+    setNodeRef,
+    transform,
+    transition
+  } = useSortable({ id: responsibility.id });
+  const moveMenuOpen = openMoveMenuId === responsibility.id;
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition
+  };
+
+  return (
+    <MotionPanel>
+      <article
+        className={[
+          "relative grid gap-3 rounded-[8px] border border-fp-line bg-white p-3 shadow-sm outline-none transition focus-within:ring-2 focus-within:ring-fp-ink/20",
+          isDragging ? "scale-[1.02] shadow-lg ring-2 ring-fp-ink/20" : ""
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <Link
+              className="outline-none focus-visible:underline"
+              href={`/app/responsibilities/${responsibility.id}`}
+            >
+              <h3 className="truncate text-[15px] font-bold leading-6 text-fp-ink">
+                {responsibility.title}
+              </h3>
+            </Link>
+            <p className="text-[13px] text-fp-muted-ink">
+              {ownerFor(responsibility)}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-[8px] border border-fp-line px-2 py-1 text-[12px] font-semibold">
+            {label(responsibility.status)}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2 text-[12px] font-semibold text-fp-muted-ink">
+          <span>{label(responsibility.cadence)}</span>
+          {responsibility.areaKeys.map((key) => (
+            <span key={key}>{label(key)}</span>
+          ))}
+          {responsibility.hiddenEffortKeys.map((key) => (
+            <span key={key}>{label(key)}</span>
+          ))}
+          <span>{label(reviewState(responsibility))}</span>
+        </div>
+        <div className="relative">
+          <button
+            aria-expanded={moveMenuOpen}
+            aria-haspopup="menu"
+            className="inline-flex min-h-9 w-full items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-3 text-[13px] font-bold text-fp-ink outline-none hover:bg-white focus:ring-2 focus:ring-fp-ink/20"
+            onClick={() =>
+              setOpenMoveMenuId(moveMenuOpen ? null : responsibility.id)
+            }
+            type="button"
+          >
+            Move {responsibility.title}
+          </button>
+          {moveMenuOpen ? (
+            <div
+              className="absolute left-0 right-0 top-10 z-10 grid gap-1 rounded-[8px] border border-fp-line bg-white p-2 shadow-lg"
+              role="menu"
+            >
+              {BOARD_LANES.filter(
+                (lane) => lane.key !== responsibility.boardLane
+              ).map((lane) => (
+                <button
+                  className="rounded-[6px] px-3 py-2 text-left text-[13px] font-semibold text-fp-ink outline-none hover:bg-fp-surface focus:bg-fp-surface"
+                  key={lane.key}
+                  onClick={() =>
+                    onMove({
+                      responsibilityId: responsibility.id,
+                      toLane: lane.key
+                    })
+                  }
+                  role="menuitem"
+                  type="button"
+                >
+                  {lane.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </article>
+    </MotionPanel>
   );
 }
 
