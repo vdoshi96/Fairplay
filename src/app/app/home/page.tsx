@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function AppHomePage() {
   return (
     <section className="grid gap-5">
@@ -35,7 +37,7 @@ export default function AppHomePage() {
             Hold blockers and unclear expectations for future review.
           </p>
         </a>
-        <a
+        <Link
           className="rounded-[8px] border border-fp-line bg-white p-4 outline-none focus:ring-2 focus:ring-fp-ink/25"
           href="/app/check-ins"
         >
@@ -45,7 +47,7 @@ export default function AppHomePage() {
           <p className="mt-1 text-[14px] leading-5 text-fp-muted-ink">
             Schedule calm decision time when the household is ready.
           </p>
-        </a>
+        </Link>
       </div>
     </section>
   );

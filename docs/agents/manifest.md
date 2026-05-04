@@ -61,6 +61,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T07 code quality review | Codex code quality reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t07-code-quality/` |
 | 2026-05-04 | T07 radar transition, modal, and mutation error fix | Codex focused T07 code-quality fix worker | Completed and pushed | `docs/agents/tasks/2026-05-04-fix-t07-transition-modal-errors/` |
 | 2026-05-04 | T07 code quality re-review | Codex code quality re-reviewer | Approved | `docs/agents/tasks/2026-05-04-review-t07-code-quality-rereview/` |
+| 2026-05-04 | T08 guided check-ins, decisions, and persisted summaries | Codex implementation worker T08 | Completed locally; push pending | `docs/agents/tasks/2026-05-04-implementation-t08-check-ins/` |
 
 ## Rules
 
