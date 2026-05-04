@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { getAppSessionView } from "@/components/app-shell/session-view";
+import { SettingsPanel } from "@/components/settings/settings-panel";
 
-export default async function Home() {
+export default async function AppSettingsPage() {
   const sessionView = await getAppSessionView();
 
   if (!sessionView) {
@@ -13,5 +14,10 @@ export default async function Home() {
     redirect("/choose-persona");
   }
 
-  redirect("/app/home");
+  return (
+    <SettingsPanel
+      household={sessionView.household}
+      selectedPersona={sessionView.selectedPersona}
+    />
+  );
 }

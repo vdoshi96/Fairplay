@@ -106,3 +106,9 @@
 - Re-reviewed T04 after auth hardening fix commit `574ff8aeac437196c8f0944c420cfd34261dc792`; result is APPROVED because missing usernames now run the verifier against a dummy Argon2id hash, malformed stored hashes fail closed with generic auth failure, and cookie expiration handling no longer converts expired or invalid values into default active cookies.
 - Re-swept secure cookie flags, raw session token handling, browser storage, route handler consistency, persona scoping, and focused tests; no blocking regressions found.
 - Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/server/auth src/app/api/auth src/app/api/personas`, `npm test -- --run src/middleware.test.ts`, and `npm run build`; all passed, with the existing non-blocking Next.js edge-runtime static-generation warning during build.
+- Started T05 auth/onboarding/app-shell UI implementation on `codex/v1-app` in `.worktrees/v1-app`.
+- Added mobile-first create-household, login, choose-persona, onboarding, home, settings, app shell, root redirect, and active-persona UI.
+- Added auth form handling for validation, pending states, generic login failure copy, and password clearing while preserving non-sensitive fields.
+- Added settings logout, neutral future data-controls note, and explicit persona-switch confirmation.
+- Added T05 component tests and Playwright e2e route-mocked flows for create/login/persona/onboarding, cleared-cookie redirect, and keyboard smoke.
+- Verified T05 with `npm run lint`, `npm run typecheck`, `npm test -- --run src/components/auth src/components/onboarding`, `npm run test:e2e -- --grep "auth|onboarding"`, `npm run build`, and `git diff --check`; e2e DB persistence remains route-mocked because local Postgres is unavailable.
