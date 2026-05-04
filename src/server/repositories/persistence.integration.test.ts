@@ -10,13 +10,18 @@ import {
   createResponsibility,
   getResponsibilityDetail
 } from "./responsibilities";
-import { createRadarItem, listRadarItemsForPersona } from "./radar";
+import { createRadarItem, listRadarItemsForPersona, updateRadarState } from "./radar";
 import {
   completeCheckIn,
   createCheckIn,
   recordCheckInItemDecision
 } from "./check-ins";
 import { computeAndStoreLoadSnapshot } from "./load-snapshots";
+import {
+  createSession,
+  revokeSession,
+  selectSessionPersona
+} from "./sessions";
 
 const createdHouseholdIds = new Set<string>();
 
@@ -121,6 +126,7 @@ describe("responsibility repository", () => {
     });
 
     await addResponsibilityAssignments({
+      householdId: household.id,
       responsibilityId: responsibility.id,
       createdByPersonaId: alex.id,
       startsAt: "2026-05-01T12:00:00.000Z",
@@ -133,6 +139,7 @@ describe("responsibility repository", () => {
       ]
     });
     await addResponsibilityAssignments({
+      householdId: household.id,
       responsibilityId: responsibility.id,
       createdByPersonaId: max.id,
       startsAt: "2026-05-10T12:00:00.000Z",
@@ -145,7 +152,10 @@ describe("responsibility repository", () => {
       ]
     });
 
-    const detail = await getResponsibilityDetail(responsibility.id);
+    const detail = await getResponsibilityDetail({
+      householdId: household.id,
+      responsibilityId: responsibility.id
+    });
 
     expect(detail?.currentAssignments).toEqual([
       {
@@ -154,6 +164,50 @@ describe("responsibility repository", () => {
         scope: "part"
       }
     ]);
+  });
+
+  test("rejects assignment writes when responsibility and persona are from different households", async () => {
+    const first = await createTestHousehold("responsibility-scope-a");
+    const second = await createTestHousehold("responsibility-scope-b");
+    const [firstAlex] = first.personas;
+    const [secondAlex] = second.personas;
+    const responsibility = await createResponsibility({
+      householdId: first.household.id,
+      createdByPersonaId: firstAlex.id,
+      title: "Scope guarded task",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["doing"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      householdStandard: null,
+      notes: null,
+      nextReviewAt: null
+    });
+
+    await expect(
+      addResponsibilityAssignments({
+        householdId: first.household.id,
+        responsibilityId: responsibility.id,
+        createdByPersonaId: firstAlex.id,
+        startsAt: "2026-05-01T12:00:00.000Z",
+        assignments: [
+          {
+            personaId: secondAlex.id,
+            role: "accountable_owner",
+            scope: "outcome"
+          }
+        ]
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    await expect(
+      getResponsibilityDetail({
+        householdId: second.household.id,
+        responsibilityId: responsibility.id
+      })
+    ).resolves.toBeNull();
   });
 });
 
@@ -193,6 +247,37 @@ describe("radar repository", () => {
     expect(alexRadar.map((item) => item.id)).toContain(privateDraft.id);
     expect(maxRadar.map((item) => item.id)).not.toContain(privateDraft.id);
     expect(maxRadar.every((item) => item.visibility !== "private")).toBe(true);
+  });
+
+  test("does not expose or mutate another household's private radar draft", async () => {
+    const first = await createTestHousehold("radar-scope-a");
+    const second = await createTestHousehold("radar-scope-b");
+    const [firstAlex] = first.personas;
+    const [secondAlex] = second.personas;
+    const privateDraft = await createRadarItem({
+      householdId: first.household.id,
+      createdByPersonaId: firstAlex.id,
+      topic: "Private first household draft",
+      notes: null,
+      reasonKey: "other",
+      urgency: "low",
+      visibility: "private"
+    });
+
+    const secondRadar = await listRadarItemsForPersona({
+      householdId: second.household.id,
+      selectedPersonaId: secondAlex.id
+    });
+
+    expect(secondRadar.map((item) => item.id)).not.toContain(privateDraft.id);
+    await expect(
+      updateRadarState({
+        householdId: second.household.id,
+        selectedPersonaId: secondAlex.id,
+        id: privateDraft.id,
+        state: "open"
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 });
 
@@ -237,6 +322,7 @@ describe("check-in repository", () => {
     expect(updatedItem.state).toBe("discussed");
 
     const completed = await completeCheckIn({
+      householdId: household.id,
       id: agenda.id,
       completedAt: "2026-05-12T16:15:00.000Z",
       summary: "One decision recorded."
@@ -250,6 +336,89 @@ describe("check-in repository", () => {
       discussedItemCount: 1,
       decisionCount: 1
     });
+  });
+
+  test("rejects check-in writes when related ids belong to another household", async () => {
+    const first = await createTestHousehold("check-in-scope-a");
+    const second = await createTestHousehold("check-in-scope-b");
+    const [firstAlex] = first.personas;
+    const [secondAlex] = second.personas;
+    const secondRadarItem = await createRadarItem({
+      householdId: second.household.id,
+      createdByPersonaId: secondAlex.id,
+      topic: "Second household radar",
+      notes: null,
+      reasonKey: "blocked",
+      urgency: "normal",
+      visibility: "shared_household"
+    });
+
+    await expect(
+      createCheckIn({
+        householdId: first.household.id,
+        facilitatorPersonaId: firstAlex.id,
+        scheduledFor: null,
+        radarItemIds: [secondRadarItem.id],
+        responsibilityIds: []
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    const agenda = await createCheckIn({
+      householdId: first.household.id,
+      facilitatorPersonaId: firstAlex.id,
+      scheduledFor: null,
+      radarItemIds: [],
+      responsibilityIds: []
+    });
+
+    await expect(
+      recordCheckInItemDecision({
+        householdId: second.household.id,
+        checkInId: agenda.id,
+        itemId: "00000000-0000-4000-8000-000000000001",
+        createdByPersonaId: secondAlex.id,
+        state: "discussed",
+        response: null,
+        decision: null
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+    await expect(
+      completeCheckIn({
+        householdId: second.household.id,
+        id: agenda.id,
+        completedAt: "2026-05-12T16:15:00.000Z",
+        summary: null
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+});
+
+describe("session repository", () => {
+  test("rejects persona selection and revocation across households", async () => {
+    const first = await createTestHousehold("session-scope-a");
+    const second = await createTestHousehold("session-scope-b");
+    const [secondAlex] = second.personas;
+    const session = await createSession({
+      householdId: first.household.id,
+      tokenHash: `token-${randomUUID()}`,
+      expiresAt: "2026-06-01T00:00:00.000Z"
+    });
+
+    await expect(
+      selectSessionPersona({
+        sessionId: session.id,
+        householdId: first.household.id,
+        selectedPersonaId: secondAlex.id
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    await expect(
+      revokeSession({
+        householdId: second.household.id,
+        sessionId: session.id
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 });
 
@@ -272,6 +441,7 @@ describe("load snapshot repository", () => {
       nextReviewAt: "2026-05-01T00:00:00.000Z"
     });
     await addResponsibilityAssignments({
+      householdId: household.id,
       responsibilityId: responsibility.id,
       createdByPersonaId: alex.id,
       startsAt: "2026-05-01T12:00:00.000Z",

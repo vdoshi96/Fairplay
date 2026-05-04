@@ -17,6 +17,7 @@ import type {
   ResponsibilitySummary
 } from "../../contracts/responsibilities";
 import type { HouseholdId, PersonaId, ResponsibilityId } from "../../domain/ids";
+import { RepositoryError } from "../db/errors";
 import { prisma } from "../db/prisma";
 
 type ResponsibilityWithRelations = Responsibility & {
@@ -132,6 +133,30 @@ const responsibilityInclude = {
 export async function createResponsibility(
   input: CreateResponsibilityInput
 ): Promise<ResponsibilityDetail> {
+  const [creatorCount, templateCount] = await Promise.all([
+    prisma.persona.count({
+      where: {
+        id: input.createdByPersonaId,
+        householdId: input.householdId
+      }
+    }),
+    input.templateId
+      ? prisma.responsibilityTemplate.count({
+          where: {
+            id: input.templateId
+          }
+        })
+      : Promise.resolve(1)
+  ]);
+
+  if (creatorCount !== 1) {
+    throw new RepositoryError("INVALID_INPUT", "Creator persona does not belong to household.");
+  }
+
+  if (templateCount !== 1) {
+    throw new RepositoryError("INVALID_INPUT", "Responsibility template does not exist.");
+  }
+
   const responsibility = await prisma.responsibility.create({
     data: {
       householdId: input.householdId,
@@ -156,6 +181,7 @@ export async function createResponsibility(
 }
 
 export async function addResponsibilityAssignments(input: {
+  householdId: HouseholdId;
   responsibilityId: ResponsibilityId;
   createdByPersonaId: PersonaId;
   startsAt: string | Date;
@@ -167,9 +193,46 @@ export async function addResponsibilityAssignments(input: {
 }): Promise<ResponsibilityDetail> {
   const startsAt = new Date(input.startsAt);
   const responsibility = await prisma.$transaction(async (tx) => {
+    const responsibility = await tx.responsibility.findFirst({
+      where: {
+        id: input.responsibilityId,
+        householdId: input.householdId
+      },
+      select: {
+        id: true
+      }
+    });
+    if (!responsibility) {
+      throw new RepositoryError("NOT_FOUND", "Responsibility not found for household.");
+    }
+
+    const personaIds = [
+      ...new Set([
+        input.createdByPersonaId,
+        ...input.assignments.map((assignment) => assignment.personaId)
+      ])
+    ];
+    const householdPersonaCount = await tx.persona.count({
+      where: {
+        householdId: input.householdId,
+        id: {
+          in: personaIds
+        }
+      }
+    });
+    if (householdPersonaCount !== personaIds.length) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Assignment personas must belong to the responsibility household."
+      );
+    }
+
     await tx.responsibilityAssignment.updateMany({
       where: {
         responsibilityId: input.responsibilityId,
+        responsibility: {
+          householdId: input.householdId
+        },
         endsAt: null
       },
       data: {
@@ -187,9 +250,10 @@ export async function addResponsibilityAssignments(input: {
       }))
     });
 
-    return tx.responsibility.findUniqueOrThrow({
+    return tx.responsibility.findFirstOrThrow({
       where: {
-        id: input.responsibilityId
+        id: input.responsibilityId,
+        householdId: input.householdId
       },
       include: responsibilityInclude
     });
@@ -198,12 +262,14 @@ export async function addResponsibilityAssignments(input: {
   return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
 }
 
-export async function getResponsibilityDetail(
-  responsibilityId: ResponsibilityId
-): Promise<ResponsibilityDetail | null> {
-  const responsibility = await prisma.responsibility.findUnique({
+export async function getResponsibilityDetail(input: {
+  householdId: HouseholdId;
+  responsibilityId: ResponsibilityId;
+}): Promise<ResponsibilityDetail | null> {
+  const responsibility = await prisma.responsibility.findFirst({
     where: {
-      id: responsibilityId
+      id: input.responsibilityId,
+      householdId: input.householdId
     },
     include: responsibilityInclude
   });

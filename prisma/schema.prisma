@@ -263,7 +263,7 @@ model ResponsibilityLifecycleNotes {
 }
 
 model ResponsibilityTemplate {
-  id                 String               @id
+  id                 String               @id @default(uuid())
   slug               String               @unique
   title              String
   summary            String

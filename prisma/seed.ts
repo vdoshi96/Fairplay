@@ -21,7 +21,6 @@ async function main() {
         contentVersion: template.contentVersion
       },
       create: {
-        id: template.id,
         slug: template.slug,
         title: template.title,
         summary: template.summary,

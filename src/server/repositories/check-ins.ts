@@ -19,6 +19,7 @@ import type {
   RadarItemId,
   ResponsibilityId
 } from "../../domain/ids";
+import { RepositoryError } from "../db/errors";
 import { prisma } from "../db/prisma";
 
 type CheckInWithItems = CheckIn & {
@@ -85,6 +86,54 @@ export async function createCheckIn(input: {
   radarItemIds: RadarItemId[];
   responsibilityIds: ResponsibilityId[];
 }): Promise<CheckInAgenda> {
+  const uniqueRadarItemIds = [...new Set(input.radarItemIds)];
+  const uniqueResponsibilityIds = [...new Set(input.responsibilityIds)];
+  const [facilitatorCount, radarItemCount, responsibilityCount] = await Promise.all([
+    input.facilitatorPersonaId
+      ? prisma.persona.count({
+          where: {
+            id: input.facilitatorPersonaId,
+            householdId: input.householdId
+          }
+        })
+      : Promise.resolve(1),
+    uniqueRadarItemIds.length > 0
+      ? prisma.radarItem.count({
+          where: {
+            householdId: input.householdId,
+            id: {
+              in: uniqueRadarItemIds
+            }
+          }
+        })
+      : Promise.resolve(0),
+    uniqueResponsibilityIds.length > 0
+      ? prisma.responsibility.count({
+          where: {
+            householdId: input.householdId,
+            id: {
+              in: uniqueResponsibilityIds
+            }
+          }
+        })
+      : Promise.resolve(0)
+  ]);
+
+  if (facilitatorCount !== 1) {
+    throw new RepositoryError("INVALID_INPUT", "Facilitator persona does not belong to household.");
+  }
+
+  if (radarItemCount !== uniqueRadarItemIds.length) {
+    throw new RepositoryError("INVALID_INPUT", "Check-in radar items must belong to household.");
+  }
+
+  if (responsibilityCount !== uniqueResponsibilityIds.length) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Check-in responsibilities must belong to household."
+    );
+  }
+
   const items = [
     ...input.radarItemIds.map((radarItemId) => ({
       radarItemId,
@@ -135,6 +184,84 @@ export async function recordCheckInItemDecision(input: {
   decision?: CheckInDecision | null;
 }): Promise<CheckInAgendaItem> {
   const item = await prisma.$transaction(async (tx) => {
+    const checkIn = await tx.checkIn.findFirst({
+      where: {
+        id: input.checkInId,
+        householdId: input.householdId
+      },
+      select: {
+        id: true
+      }
+    });
+    if (!checkIn) {
+      throw new RepositoryError("NOT_FOUND", "Check-in not found for household.");
+    }
+
+    const createdByPersonaCount = await tx.persona.count({
+      where: {
+        id: input.createdByPersonaId,
+        householdId: input.householdId
+      }
+    });
+    if (createdByPersonaCount !== 1) {
+      throw new RepositoryError("INVALID_INPUT", "Decision persona does not belong to household.");
+    }
+
+    const checkInItem = await tx.checkInItem.findFirst({
+      where: {
+        id: input.itemId,
+        checkInId: input.checkInId
+      },
+      select: {
+        id: true,
+        radarItemId: true,
+        responsibilityId: true
+      }
+    });
+    if (!checkInItem) {
+      throw new RepositoryError("NOT_FOUND", "Check-in item not found for household check-in.");
+    }
+
+    const [itemRadarCount, itemResponsibilityCount, decisionResponsibilityCount] =
+      await Promise.all([
+        checkInItem.radarItemId
+          ? tx.radarItem.count({
+              where: {
+                id: checkInItem.radarItemId,
+                householdId: input.householdId
+              }
+            })
+          : Promise.resolve(1),
+        checkInItem.responsibilityId
+          ? tx.responsibility.count({
+              where: {
+                id: checkInItem.responsibilityId,
+                householdId: input.householdId
+              }
+            })
+          : Promise.resolve(1),
+        input.decision?.responsibilityId
+          ? tx.responsibility.count({
+              where: {
+                id: input.decision.responsibilityId,
+                householdId: input.householdId
+              }
+            })
+          : Promise.resolve(1)
+      ]);
+    if (itemRadarCount !== 1 || itemResponsibilityCount !== 1) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Check-in item references must belong to household."
+      );
+    }
+    if (decisionResponsibilityCount !== 1) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Decision responsibility must belong to household."
+      );
+    }
+
     let decision: Decision | null = null;
 
     if (input.decision) {
@@ -168,23 +295,39 @@ export async function recordCheckInItemDecision(input: {
 }
 
 export async function completeCheckIn(input: {
+  householdId: HouseholdId;
   id: CheckInId;
   completedAt: string | Date;
   summary?: string | null;
 }): Promise<CompletedCheckInSummary> {
-  const checkIn = await prisma.checkIn.update({
-    where: {
-      id: input.id
-    },
-    data: {
-      state: "completed",
-      completedAt: new Date(input.completedAt),
-      summary: input.summary ?? null
-    },
-    include: {
-      items: true,
-      decisions: true
+  const checkIn = await prisma.$transaction(async (tx) => {
+    const existing = await tx.checkIn.findFirst({
+      where: {
+        id: input.id,
+        householdId: input.householdId
+      },
+      select: {
+        id: true
+      }
+    });
+    if (!existing) {
+      throw new RepositoryError("NOT_FOUND", "Check-in not found for household.");
     }
+
+    return tx.checkIn.update({
+      where: {
+        id: input.id
+      },
+      data: {
+        state: "completed",
+        completedAt: new Date(input.completedAt),
+        summary: input.summary ?? null
+      },
+      include: {
+        items: true,
+        decisions: true
+      }
+    });
   });
 
   return {

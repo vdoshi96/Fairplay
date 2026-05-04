@@ -14,6 +14,7 @@ import type {
   RadarItemId,
   ResponsibilityId
 } from "../../domain/ids";
+import { RepositoryError } from "../db/errors";
 import { prisma } from "../db/prisma";
 
 export type CreateRadarItemInput = {
@@ -62,6 +63,43 @@ function defaultStateForVisibility(visibility: Visibility): RadarState {
 export async function createRadarItem(
   input: CreateRadarItemInput
 ): Promise<RadarDetail> {
+  const [creatorCount, responsibilityCount, checkInCount] = await Promise.all([
+    prisma.persona.count({
+      where: {
+        id: input.createdByPersonaId,
+        householdId: input.householdId
+      }
+    }),
+    input.responsibilityId
+      ? prisma.responsibility.count({
+          where: {
+            id: input.responsibilityId,
+            householdId: input.householdId
+          }
+        })
+      : Promise.resolve(1),
+    input.targetCheckInId
+      ? prisma.checkIn.count({
+          where: {
+            id: input.targetCheckInId,
+            householdId: input.householdId
+          }
+        })
+      : Promise.resolve(1)
+  ]);
+
+  if (creatorCount !== 1) {
+    throw new RepositoryError("INVALID_INPUT", "Creator persona does not belong to household.");
+  }
+
+  if (responsibilityCount !== 1) {
+    throw new RepositoryError("INVALID_INPUT", "Radar responsibility must belong to household.");
+  }
+
+  if (checkInCount !== 1) {
+    throw new RepositoryError("INVALID_INPUT", "Target check-in must belong to household.");
+  }
+
   const radarItem = await prisma.radarItem.create({
     data: {
       householdId: input.householdId,
@@ -84,6 +122,17 @@ export async function listRadarItemsForPersona(input: {
   householdId: HouseholdId;
   selectedPersonaId: PersonaId;
 }): Promise<RadarSummary[]> {
+  const selectedPersonaCount = await prisma.persona.count({
+    where: {
+      id: input.selectedPersonaId,
+      householdId: input.householdId
+    }
+  });
+
+  if (selectedPersonaCount !== 1) {
+    throw new RepositoryError("INVALID_INPUT", "Selected persona does not belong to household.");
+  }
+
   const items = await prisma.radarItem.findMany({
     where: {
       householdId: input.householdId,
@@ -108,21 +157,59 @@ export async function listRadarItemsForPersona(input: {
 }
 
 export async function updateRadarState(input: {
+  householdId: HouseholdId;
+  selectedPersonaId: PersonaId;
   id: RadarItemId;
   state: RadarState;
   resolvedAt?: string | Date | null;
 }): Promise<RadarDetail> {
-  const item = await prisma.radarItem.update({
-    where: {
-      id: input.id
-    },
-    data: {
-      state: input.state,
-      resolvedAt:
-        input.resolvedAt === undefined || input.resolvedAt === null
-          ? null
-          : new Date(input.resolvedAt)
+  const item = await prisma.$transaction(async (tx) => {
+    const selectedPersonaCount = await tx.persona.count({
+      where: {
+        id: input.selectedPersonaId,
+        householdId: input.householdId
+      }
+    });
+    if (selectedPersonaCount !== 1) {
+      throw new RepositoryError("INVALID_INPUT", "Selected persona does not belong to household.");
     }
+
+    const existing = await tx.radarItem.findFirst({
+      where: {
+        id: input.id,
+        householdId: input.householdId,
+        OR: [
+          {
+            visibility: {
+              not: "private"
+            }
+          },
+          {
+            visibility: "private",
+            createdByPersonaId: input.selectedPersonaId
+          }
+        ]
+      },
+      select: {
+        id: true
+      }
+    });
+    if (!existing) {
+      throw new RepositoryError("NOT_FOUND", "Radar item not found for household and persona.");
+    }
+
+    return tx.radarItem.update({
+      where: {
+        id: input.id
+      },
+      data: {
+        state: input.state,
+        resolvedAt:
+          input.resolvedAt === undefined || input.resolvedAt === null
+            ? null
+            : new Date(input.resolvedAt)
+      }
+    });
   });
 
   return toRadarDetail(item);

@@ -37,6 +37,17 @@ export async function createSession(input: {
   selectedPersonaId?: PersonaId | null;
   userAgentHash?: string | null;
 }): Promise<SessionSummary> {
+  if (input.selectedPersonaId) {
+    const belongs = await personaBelongsToHousehold({
+      householdId: input.householdId,
+      personaId: input.selectedPersonaId
+    });
+
+    if (!belongs) {
+      throw new RepositoryError("INVALID_INPUT", "Persona does not belong to household.");
+    }
+  }
+
   const session = await prisma.session.create({
     data: {
       householdId: input.householdId,
@@ -67,23 +78,39 @@ export async function selectSessionPersona(input: {
   householdId: HouseholdId;
   selectedPersonaId: PersonaId;
 }): Promise<SelectPersonaResponse> {
-  const belongs = await personaBelongsToHousehold({
-    householdId: input.householdId,
-    personaId: input.selectedPersonaId
-  });
-
-  if (!belongs) {
-    throw new RepositoryError("INVALID_INPUT", "Persona does not belong to household.");
-  }
-
-  const session = await prisma.session.update({
-    where: {
-      id: input.sessionId
-    },
-    data: {
-      selectedPersonaId: input.selectedPersonaId,
-      lastSeenAt: new Date()
+  const session = await prisma.$transaction(async (tx) => {
+    const existing = await tx.session.findFirst({
+      where: {
+        id: input.sessionId,
+        householdId: input.householdId
+      },
+      select: {
+        id: true
+      }
+    });
+    if (!existing) {
+      throw new RepositoryError("NOT_FOUND", "Session not found for household.");
     }
+
+    const belongs = await tx.persona.count({
+      where: {
+        id: input.selectedPersonaId,
+        householdId: input.householdId
+      }
+    });
+    if (belongs !== 1) {
+      throw new RepositoryError("INVALID_INPUT", "Persona does not belong to household.");
+    }
+
+    return tx.session.update({
+      where: {
+        id: input.sessionId
+      },
+      data: {
+        selectedPersonaId: input.selectedPersonaId,
+        lastSeenAt: new Date()
+      }
+    });
   });
 
   return {
@@ -95,14 +122,32 @@ export async function selectSessionPersona(input: {
   };
 }
 
-export async function revokeSession(sessionId: string): Promise<SessionSummary> {
-  const session = await prisma.session.update({
-    where: {
-      id: sessionId
-    },
-    data: {
-      revokedAt: new Date()
+export async function revokeSession(input: {
+  householdId: HouseholdId;
+  sessionId: string;
+}): Promise<SessionSummary> {
+  const session = await prisma.$transaction(async (tx) => {
+    const existing = await tx.session.findFirst({
+      where: {
+        id: input.sessionId,
+        householdId: input.householdId
+      },
+      select: {
+        id: true
+      }
+    });
+    if (!existing) {
+      throw new RepositoryError("NOT_FOUND", "Session not found for household.");
     }
+
+    return tx.session.update({
+      where: {
+        id: input.sessionId
+      },
+      data: {
+        revokedAt: new Date()
+      }
+    });
   });
 
   return toSessionSummary(session);

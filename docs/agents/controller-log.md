@@ -63,3 +63,7 @@
 - Added T03 spec compliance review artifacts under `docs/agents/tasks/2026-05-04-review-t03-spec/`.
 - Reviewed T03 commit range `6b81645..5d20d6d`; result is CHANGES_REQUESTED because no Prisma migration artifact is present for deployment readiness, repository operations are not consistently household/persona scoped, and responsibility template ids do not comply with the UUID string id requirement.
 - Verified `git status --short`, `git diff --name-only 6b81645b3e4161e4bcbccb0e6ee2130aa244336b..5d20d6d9b34022eb7da4da02bee5013394105d18`, `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm run build`, and `npm test -- --run src/server/repositories`; repository tests failed because Prisma cannot reach `localhost:5432` without local Postgres.
+- Started focused T03 persistence scope fix on `codex/v1-app` in `.worktrees/v1-app`.
+- Added initial Prisma migration SQL, switched responsibility template ids to Prisma-generated UUID strings while preserving slug-based seed upserts, and tightened repository reads/writes around household/persona ownership for responsibilities, radar, check-ins, and sessions.
+- Added cross-household repository integration tests for responsibilities, private radar drafts, check-ins, and sessions/personas.
+- Verified `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, and `npm run build` pass; `npm test -- --run src/server/repositories` remains DB-limited because Prisma cannot reach `localhost:5432`.
