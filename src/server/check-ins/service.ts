@@ -5,7 +5,16 @@ import type {
   CheckInAgendaItem
 } from "@/contracts/check-ins";
 import { ResponsibilityAssignmentSummarySchema } from "@/contracts/responsibilities";
-import type { CheckInItemState, CheckInState, DecisionType, Visibility } from "@/domain/enums";
+import type {
+  CheckInItemState,
+  CheckInState,
+  DecisionType,
+  ResponsibilityStatus,
+  Visibility,
+  Cadence,
+  RadarReasonKey,
+  RadarState
+} from "@/domain/enums";
 import {
   CheckInIdSchema,
   CheckInItemIdSchema,
@@ -28,6 +37,23 @@ import {
   type AgendaSources
 } from "./agenda";
 import { buildCheckInSummary, containsUnsafeSummaryLanguage } from "./summary";
+
+type RadarAgendaRow = {
+  id: string;
+  topic: string;
+  reasonKey: RadarReasonKey;
+  visibility: Visibility;
+  state: RadarState;
+  responsibilityId: ResponsibilityId | null;
+};
+
+type ResponsibilityAgendaRow = {
+  id: ResponsibilityId;
+  title: string;
+  status: ResponsibilityStatus;
+  cadence: Cadence;
+  nextReviewAt: Date | null;
+};
 
 export type GuidedCheckInItem = CheckInAgendaItem & {
   title: string;
@@ -663,7 +689,7 @@ export const checkInService = createCheckInService({
     ]);
 
     return {
-      radarItems: radarItems.map((item) => ({
+      radarItems: radarItems.map((item: RadarAgendaRow) => ({
         id: item.id,
         topic: item.topic,
         reasonKey: item.reasonKey,
@@ -671,7 +697,7 @@ export const checkInService = createCheckInService({
         state: item.state,
         responsibilityId: item.responsibilityId
       })),
-      responsibilities: responsibilities.map((item) => ({
+      responsibilities: responsibilities.map((item: ResponsibilityAgendaRow) => ({
         id: item.id,
         title: item.title,
         status: item.status,
