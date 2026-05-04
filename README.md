@@ -13,14 +13,29 @@ The first version should support a small, practical household workflow:
 
 ## Architecture Direction
 
-The intended implementation direction is a Next.js application deployable on Vercel, with a typed application layer and a durable data store selected during implementation planning. This setup commit intentionally does not scaffold production app code; it establishes the repository, documentation structure, and planning artifacts needed before application work begins.
+The intended implementation direction is a mobile-first Next.js App Router application deployable on Vercel, with TypeScript, Tailwind CSS, shared domain types, explicit JSON API contracts, Prisma, and a Postgres-compatible managed database connected through Vercel Marketplace storage. This repository state intentionally does not scaffold production app code; it establishes the documentation structure and product architecture needed before application work begins.
 
 ## Setup Notes
 
 - Target repository: `https://github.com/vdoshi96/Fairplay.git`
 - Default branch: `main`
-- Package manager and runtime will be selected when the application scaffold is created.
+- Future implementation should use Node.js 20.9 or newer, matching current Next.js App Router requirements.
+- Future implementation should start from the current `create-next-app@latest` App Router defaults with TypeScript, ESLint, and Tailwind CSS.
+- Database credentials, password/session secrets, and provider connection strings must be configured outside source through environment variables.
 - Local environment files must stay out of git.
+
+## Planned Deployment Notes
+
+When production app implementation begins, deployment documentation should cover:
+
+- Vercel project setup and environment variables.
+- Vercel Marketplace Postgres-compatible storage connection.
+- Prisma schema, migration, and deploy commands.
+- Secure password hashing configuration.
+- Server-managed session secret configuration.
+- Local development commands and Vercel deployment flow.
+
+Do not add real secrets, private reference materials, generated source assets, or plaintext passwords to this repository.
 
 ## Reference Material Policy
 

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">Household helper mascot placeholder</title>
+  <desc id="desc">Original neutral house-shaped helper mascot for Fairplay.</desc>
+  <rect width="160" height="160" rx="36" fill="#FFFDF8"/>
+  <path d="M43 76l37-31 37 31v45c0 9-7 16-16 16H59c-9 0-16-7-16-16z" fill="#F7F8FB" stroke="#20212A" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M60 62V45h18" fill="none" stroke="#2C8F7A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="65" cy="93" r="5" fill="#20212A"/>
+  <circle cx="95" cy="93" r="5" fill="#20212A"/>
+  <path d="M66 113c10 8 20 8 30 0" fill="none" stroke="#20212A" stroke-width="5" stroke-linecap="round"/>
+  <path d="M30 96c-12 4-17 14-13 23" fill="none" stroke="#4568D9" stroke-width="6" stroke-linecap="round"/>
+  <path d="M130 96c12 4 17 14 13 23" fill="none" stroke="#D9714A" stroke-width="6" stroke-linecap="round"/>
+  <path d="M125 37l5 11 12 5-12 5-5 11-5-11-12-5 12-5z" fill="#F2B84B"/>
+  <path d="M39 39c22-17 59-17 82 0" fill="none" stroke="#D9DEE8" stroke-width="5" stroke-linecap="round"/>
+</svg>
