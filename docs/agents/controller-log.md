@@ -10,3 +10,5 @@
 - Captured paraphrased notes on invisible work, responsibility lifecycle, ownership, check-ins, boundaries, product implications, and IP/safety risks.
 - Added Better Share EPUB and `idea.md` research task on `codex/research-and-spec`.
 - Captured paraphrased notes on emotional load, hidden expectations, calm conversation supports, validation, habit formation, unseen work dimensions, onboarding implications, user project intent, v1 product implications, and copycat risks to avoid.
+- Added Trello data-model research task on `codex/research-and-spec`.
+- Captured aggregate Trello board structure, list/card/label/custom-field/checklist counts, original taxonomy implications, workflow behaviors, API/domain model sketch, iOS contract notes, and Trello-derived IP risks.
