@@ -13,6 +13,10 @@
 - Implementation plan: `docs/superpowers/plans/2026-05-04-fairplay-personal-use-redesign-implementation.md`.
 - Implementation branch: `codex/personal-use-redesign`.
 - Branch base: current `main` plus cherry-picked research/spec/plan commits.
+- Controller integration fix after Task 2/Task 5:
+  - Updated legacy responsibility mapper/test fixtures to include required `boardLane` and `boardSortOrder`.
+  - Verified `npm run typecheck` passes.
+  - Verified `npm test -- src/components/responsibilities/responsibility-load-map.test.tsx src/server/responsibilities/service.test.ts` passes.
 
 ## Challenges
 

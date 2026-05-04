@@ -19,6 +19,8 @@ function responsibility(
     relevantDays: ["monday"],
     status: "active",
     visibility: "shared_household",
+    boardLane: "cards_of_concern",
+    boardSortOrder: 0,
     linkedRadarItems: [],
     currentAssignments: [
       { personaKey: "alex", role: "accountable_owner", scope: "outcome" }

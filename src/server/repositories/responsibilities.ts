@@ -94,6 +94,8 @@ function toResponsibilitySummary(
     relevantDays: responsibility.relevantDays,
     status: responsibility.status,
     visibility: responsibility.visibility,
+    boardLane: responsibility.boardLane,
+    boardSortOrder: responsibility.boardSortOrder,
     linkedRadarItems: [],
     currentAssignments: currentAssignments(responsibility.assignments),
     nextReviewAt: nullableIso(responsibility.nextReviewAt)

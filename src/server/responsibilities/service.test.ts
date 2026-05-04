@@ -47,6 +47,8 @@ function detail(
     relevantDays: ["monday"],
     status: "active",
     visibility: "shared_household",
+    boardLane: "cards_of_concern",
+    boardSortOrder: 0,
     linkedRadarItems: [],
     currentAssignments: [],
     nextReviewAt: null,
@@ -75,6 +77,8 @@ function summary(
     relevantDays: full.relevantDays,
     status: full.status,
     visibility: full.visibility,
+    boardLane: full.boardLane,
+    boardSortOrder: full.boardSortOrder,
     linkedRadarItems: full.linkedRadarItems,
     currentAssignments: full.currentAssignments,
     nextReviewAt: full.nextReviewAt
