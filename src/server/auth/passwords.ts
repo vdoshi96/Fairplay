@@ -18,6 +18,9 @@ const ARGON2_OPTIONS = {
   version: 1
 };
 
+export const MISSING_CREDENTIAL_PASSWORD_HASH =
+  "$argon2id$v=19$m=19456,t=2,p=1$cMyt4aJvRIArqwUohxPEyw$bTeSZeXpwqZlVvM8xGSNJBmIVL1py/42yLqN/hqV7ew";
+
 export type PasswordHashResult = {
   passwordHash: string;
   hashAlgorithm: typeof PASSWORD_HASH_METADATA.algorithm;
@@ -38,5 +41,9 @@ export async function verifyPassword(
   passwordHash: string,
   password: string
 ): Promise<boolean> {
-  return verify(passwordHash, password);
+  try {
+    return await verify(passwordHash, password);
+  } catch {
+    return false;
+  }
 }

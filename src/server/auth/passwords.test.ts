@@ -34,4 +34,10 @@ describe("password hashing", () => {
       false
     );
   });
+
+  it("treats malformed stored hashes as invalid passwords", async () => {
+    await expect(
+      verifyPassword("not-an-argon2-hash", "correct horse battery staple")
+    ).resolves.toBe(false);
+  });
 });

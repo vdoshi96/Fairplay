@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { LoginRequestSchema } from "@/contracts/auth";
 import { setSessionCookie } from "@/server/auth/cookies";
-import { verifyPassword } from "@/server/auth/passwords";
+import {
+  MISSING_CREDENTIAL_PASSWORD_HASH,
+  verifyPassword
+} from "@/server/auth/passwords";
 import { createSessionForHousehold } from "@/server/auth/sessions";
 import {
   getClientIp,
@@ -45,11 +48,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const household = await findHouseholdByUsernameNormalized(usernameNormalized);
-  const validPassword =
-    household?.credential &&
-    (await verifyPassword(household.credential.passwordHash, parsed.data.password));
+  const passwordHash =
+    household?.credential?.passwordHash ?? MISSING_CREDENTIAL_PASSWORD_HASH;
+  const validPassword = await verifyPassword(passwordHash, parsed.data.password);
 
-  if (!household || !validPassword) {
+  if (!household?.credential || !validPassword) {
     await recordLoginFailure({
       usernameNormalized,
       ipHash

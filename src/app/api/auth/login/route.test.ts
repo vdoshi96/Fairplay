@@ -6,6 +6,7 @@ const createSessionForHousehold = vi.fn();
 const getLoginThrottleState = vi.fn();
 const recordLoginFailure = vi.fn();
 const resetLoginThrottle = vi.fn();
+const verifyPassword = vi.fn();
 
 vi.mock("@/server/repositories/households", () => ({
   findHouseholdByUsernameNormalized
@@ -17,6 +18,15 @@ vi.mock("@/server/auth/sessions", async (importOriginal) => {
   return {
     ...actual,
     createSessionForHousehold
+  };
+});
+
+vi.mock("@/server/auth/passwords", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/server/auth/passwords")>();
+
+  return {
+    ...actual,
+    verifyPassword
   };
 });
 
@@ -52,8 +62,11 @@ describe("POST /api/auth/login", () => {
     getLoginThrottleState.mockResolvedValue({ throttled: false });
     recordLoginFailure.mockResolvedValue(undefined);
     resetLoginThrottle.mockResolvedValue(undefined);
-    const { hashPassword } = await import("@/server/auth/passwords");
+    const { hashPassword, verifyPassword: realVerifyPassword } = await vi.importActual<
+      typeof import("@/server/auth/passwords")
+    >("@/server/auth/passwords");
     const password = await hashPassword("correct horse battery staple");
+    verifyPassword.mockImplementation(realVerifyPassword);
     findHouseholdByUsernameNormalized.mockResolvedValue({
       id: "68d8178b-a0ab-4f6e-a367-5308be369dbb",
       name: "Our Home",
@@ -109,6 +122,45 @@ describe("POST /api/auth/login", () => {
     const { POST } = await import("./route");
 
     const response = await POST(loginRequest("not the password"));
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(recordLoginFailure).toHaveBeenCalled();
+    expect(body.error).toBe("Unable to log in with that username and password.");
+  });
+
+  it("runs the verifier path for absent usernames before returning the generic error", async () => {
+    findHouseholdByUsernameNormalized.mockResolvedValue(null);
+    const { MISSING_CREDENTIAL_PASSWORD_HASH } = await import("@/server/auth/passwords");
+    const { POST } = await import("./route");
+
+    const response = await POST(loginRequest("not the password"));
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(verifyPassword).toHaveBeenCalledWith(
+      MISSING_CREDENTIAL_PASSWORD_HASH,
+      "not the password"
+    );
+    expect(recordLoginFailure).toHaveBeenCalled();
+    expect(body.error).toBe("Unable to log in with that username and password.");
+  });
+
+  it("returns generic invalid credentials for malformed stored password hashes", async () => {
+    findHouseholdByUsernameNormalized.mockResolvedValue({
+      id: "68d8178b-a0ab-4f6e-a367-5308be369dbb",
+      name: "Our Home",
+      timezone: "America/Chicago",
+      credential: {
+        passwordHash: "not-an-argon2-hash",
+        hashAlgorithm: "argon2id",
+        hashParamsVersion: "v1"
+      },
+      personas: []
+    });
+    const { POST } = await import("./route");
+
+    const response = await POST(loginRequest("correct horse battery staple"));
     const body = await response.json();
 
     expect(response.status).toBe(401);

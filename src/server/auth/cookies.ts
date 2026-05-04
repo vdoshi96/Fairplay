@@ -1,7 +1,5 @@
 import type { NextRequest, NextResponse } from "next/server";
 
-import { SESSION_ABSOLUTE_EXPIRATION_MS } from "./sessions";
-
 export function getAuthCookieName(): string {
   return process.env.AUTH_COOKIE_NAME || "fairplay_session";
 }
@@ -17,9 +15,16 @@ export function setSessionCookie(
   now = new Date()
 ): void {
   const absoluteExpiresAt = new Date(expiresAt);
+  const expiresAtMs = absoluteExpiresAt.getTime();
+  const nowMs = now.getTime();
+
+  if (!Number.isFinite(expiresAtMs) || !Number.isFinite(nowMs)) {
+    throw new Error("Invalid session expiration.");
+  }
+
   const maxAge = Math.max(
     0,
-    Math.floor((absoluteExpiresAt.getTime() - now.getTime()) / 1000)
+    Math.floor((expiresAtMs - nowMs) / 1000)
   );
 
   response.cookies.set(getAuthCookieName(), rawToken, {
@@ -27,7 +32,7 @@ export function setSessionCookie(
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: maxAge || Math.floor(SESSION_ABSOLUTE_EXPIRATION_MS / 1000)
+    maxAge
   });
 }
 
