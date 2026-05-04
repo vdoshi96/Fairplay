@@ -214,8 +214,10 @@ describe("radar service", () => {
       topic: "Clarify the school morning plan",
       notes: null,
       reasonKey: "handoff_needed",
-      urgency: "soon"
-    });
+      urgency: "soon",
+      state: "resolved",
+      targetCheckInId: checkInId
+    } as never);
 
     expect(deps.updateRecord).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -228,6 +230,12 @@ describe("radar service", () => {
     );
     expect(deps.updateRecord).not.toHaveBeenCalledWith(
       expect.objectContaining({ visibility: expect.any(String) as Visibility })
+    );
+    expect(deps.updateRecord).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        state: expect.any(String) as string,
+        targetCheckInId: expect.any(String) as string
+      })
     );
   });
 
@@ -249,14 +257,144 @@ describe("radar service", () => {
         id: radarId,
         state: "deferred",
         deferredUntil: "2026-05-11T12:00:00.000Z",
-        resolvedAt: null
+        resolvedAt: null,
+        targetCheckInId: null
       })
     );
     expect(deps.updateRecord).toHaveBeenCalledWith(
       expect.objectContaining({
         id: radarId,
         state: "resolved",
-        resolvedAt: "2026-05-12T12:00:00.000Z"
+        resolvedAt: "2026-05-12T12:00:00.000Z",
+        deferredUntil: null,
+        targetCheckInId: null
+      })
+    );
+  });
+
+  it("clears stale defer-only metadata when a deferred item is resolved", async () => {
+    const deps = makeDeps({
+      getRecord: vi.fn().mockResolvedValue(
+        record({
+          state: "deferred",
+          visibility: "shared_household",
+          deferredUntil: "2026-05-11T12:00:00.000Z",
+          targetCheckInId: checkInId
+        })
+      )
+    });
+    const service = createRadarService(deps);
+
+    await service.resolve(session, radarId, {
+      id: radarId,
+      resolvedAt: "2026-05-12T12:00:00.000Z"
+    });
+
+    expect(deps.updateRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: radarId,
+        state: "resolved",
+        resolvedAt: "2026-05-12T12:00:00.000Z",
+        deferredUntil: null,
+        targetCheckInId: null
+      })
+    );
+  });
+
+  it("clears stale resolved and deferred metadata when publishing or scheduling", async () => {
+    const deps = makeDeps({
+      getRecord: vi.fn().mockResolvedValue(
+        record({
+          state: "resolved",
+          resolvedAt: "2026-05-10T12:00:00.000Z",
+          deferredUntil: "2026-05-11T12:00:00.000Z",
+          targetCheckInId: checkInId
+        })
+      )
+    });
+    const service = createRadarService(deps);
+
+    await service.publish(session, radarId, {
+      id: radarId,
+      fromVisibility: "private",
+      visibility: "partner_visible",
+      confirmPrivateDraftPublish: true
+    });
+    await service.schedule(session, radarId, { targetCheckInId: checkInId });
+
+    expect(deps.updateRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: radarId,
+        visibility: "partner_visible",
+        state: "open",
+        resolvedAt: null,
+        deferredUntil: null,
+        targetCheckInId: null
+      })
+    );
+    expect(deps.updateRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: radarId,
+        state: "scheduled",
+        targetCheckInId: checkInId,
+        resolvedAt: null,
+        deferredUntil: null
+      })
+    );
+  });
+
+  it("clears scheduled and resolved metadata when a scheduled item is deferred", async () => {
+    const deps = makeDeps({
+      getRecord: vi.fn().mockResolvedValue(
+        record({
+          state: "scheduled",
+          visibility: "check_in_only",
+          targetCheckInId: checkInId,
+          resolvedAt: "2026-05-10T12:00:00.000Z"
+        })
+      )
+    });
+    const service = createRadarService(deps);
+
+    await service.defer(session, radarId, {
+      id: radarId,
+      deferredUntil: "2026-05-11T12:00:00.000Z"
+    });
+
+    expect(deps.updateRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: radarId,
+        state: "deferred",
+        deferredUntil: "2026-05-11T12:00:00.000Z",
+        resolvedAt: null,
+        targetCheckInId: null
+      })
+    );
+  });
+
+  it("dismisses through a dedicated transition and clears active metadata", async () => {
+    const deps = makeDeps({
+      getRecord: vi.fn().mockResolvedValue(
+        record({
+          state: "scheduled",
+          visibility: "check_in_only",
+          deferredUntil: "2026-05-11T12:00:00.000Z",
+          resolvedAt: "2026-05-10T12:00:00.000Z",
+          targetCheckInId: checkInId
+        })
+      )
+    });
+    const service = createRadarService(deps);
+
+    await service.dismiss(session, radarId, { id: radarId });
+
+    expect(deps.updateRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: radarId,
+        state: "dismissed",
+        deferredUntil: null,
+        resolvedAt: null,
+        targetCheckInId: null
       })
     );
   });
@@ -301,7 +439,9 @@ describe("radar service", () => {
       expect.objectContaining({
         id: radarId,
         targetCheckInId: checkInId,
-        state: "scheduled"
+        state: "scheduled",
+        deferredUntil: null,
+        resolvedAt: null
       })
     );
     expect(deps.updateRecord).toHaveBeenCalledWith(

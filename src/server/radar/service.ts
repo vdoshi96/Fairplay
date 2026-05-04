@@ -15,6 +15,7 @@ import type {
   RadarCreate,
   RadarDeferMutation,
   RadarDetail,
+  RadarDismissMutation,
   RadarPublishMutation,
   RadarResolveMutation,
   RadarSummary,
@@ -286,15 +287,15 @@ export function createRadarService(deps: RadarServiceDeps) {
         session.householdId,
         input.responsibilityId
       );
-      await assertCheckInInHousehold(
-        deps,
-        session.householdId,
-        input.targetCheckInId
-      );
 
       return deps.updateRecord({
-        ...input,
-        id: radarItemId
+        id: radarItemId,
+        topic: input.topic,
+        notes: input.notes,
+        desiredTiming: input.desiredTiming,
+        responsibilityId: input.responsibilityId,
+        reasonKey: input.reasonKey,
+        urgency: input.urgency
       });
     },
 
@@ -337,7 +338,9 @@ export function createRadarService(deps: RadarServiceDeps) {
         id: radarItemId,
         visibility: input.visibility,
         state: "open",
-        resolvedAt: null
+        resolvedAt: null,
+        deferredUntil: null,
+        targetCheckInId: null
       });
     },
 
@@ -359,7 +362,8 @@ export function createRadarService(deps: RadarServiceDeps) {
         id: radarItemId,
         state: "deferred",
         deferredUntil: input.deferredUntil ?? null,
-        resolvedAt: null
+        resolvedAt: null,
+        targetCheckInId: null
       });
     },
 
@@ -380,7 +384,9 @@ export function createRadarService(deps: RadarServiceDeps) {
       return deps.updateRecord({
         id: radarItemId,
         state: "resolved",
-        resolvedAt: input.resolvedAt
+        resolvedAt: input.resolvedAt,
+        deferredUntil: null,
+        targetCheckInId: null
       });
     },
 
@@ -399,7 +405,32 @@ export function createRadarService(deps: RadarServiceDeps) {
       return deps.updateRecord({
         id: radarItemId,
         state: "scheduled",
-        targetCheckInId: input.targetCheckInId ?? null
+        targetCheckInId: input.targetCheckInId ?? null,
+        deferredUntil: null,
+        resolvedAt: null
+      });
+    },
+
+    async dismiss(
+      session: CurrentSession,
+      radarItemId: RadarItemId,
+      input: RadarDismissMutation
+    ): Promise<RadarDetail> {
+      if (input.id !== radarItemId) {
+        throw new RadarServiceError(
+          "INVALID_INPUT",
+          "Dismiss request does not match this radar item."
+        );
+      }
+
+      await getVisibleRecord(deps, session, radarItemId);
+
+      return deps.updateRecord({
+        id: radarItemId,
+        state: "dismissed",
+        deferredUntil: null,
+        resolvedAt: null,
+        targetCheckInId: null
       });
     }
   };

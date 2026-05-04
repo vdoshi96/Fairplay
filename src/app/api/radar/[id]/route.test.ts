@@ -73,8 +73,7 @@ describe("/api/radar/[id]", () => {
         notes: null,
         desiredTiming: "Before Monday",
         reasonKey: "handoff_needed",
-        urgency: "soon",
-        state: "dismissed"
+        urgency: "soon"
       }),
       context
     );
@@ -85,11 +84,27 @@ describe("/api/radar/[id]", () => {
       id,
       expect.objectContaining({
         topic: "Clarify school morning plan",
-        desiredTiming: "Before Monday",
-        state: "dismissed"
+        desiredTiming: "Before Monday"
       })
     );
   });
+
+  it.each(["resolved", "deferred", "dismissed", "scheduled", "open", "draft"])(
+    "rejects %s state changes in the general edit path",
+    async (state) => {
+      const { PATCH } = await import("./route");
+
+      const response = await PATCH(
+        request("PATCH", {
+          state
+        }),
+        context
+      );
+
+      expect(response.status).toBe(400);
+      expect(update).not.toHaveBeenCalled();
+    }
+  );
 
   it("rejects visibility changes in the general edit path", async () => {
     const { PATCH } = await import("./route");

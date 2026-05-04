@@ -56,9 +56,7 @@ export const RadarUpdateSchema = z
     desiredTiming: z.string().trim().max(280).nullable().optional(),
     responsibilityId: ResponsibilityIdSchema.nullable().optional(),
     reasonKey: RadarReasonKeySchema.optional(),
-    urgency: UrgencySchema.optional(),
-    state: RadarStateSchema.optional(),
-    targetCheckInId: CheckInIdSchema.nullable().optional()
+    urgency: UrgencySchema.optional()
   })
   .strict();
 
@@ -100,6 +98,13 @@ export const RadarResolveMutationSchema = z
   })
   .strict();
 
+export const RadarDismissMutationSchema = z
+  .object({
+    id: RadarItemIdSchema,
+    note: z.string().trim().max(1000).optional()
+  })
+  .strict();
+
 export type RadarSummary = z.infer<typeof RadarSummarySchema>;
 export type RadarDetail = z.infer<typeof RadarDetailSchema>;
 export type RadarCreate = z.infer<typeof RadarCreateSchema>;
@@ -107,3 +112,4 @@ export type RadarUpdate = z.infer<typeof RadarUpdateSchema>;
 export type RadarPublishMutation = z.infer<typeof RadarPublishMutationSchema>;
 export type RadarDeferMutation = z.infer<typeof RadarDeferMutationSchema>;
 export type RadarResolveMutation = z.infer<typeof RadarResolveMutationSchema>;
+export type RadarDismissMutation = z.infer<typeof RadarDismissMutationSchema>;

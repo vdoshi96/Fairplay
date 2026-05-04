@@ -84,7 +84,7 @@ describe("RadarBoard", () => {
     expect(screen.getByText("Settled pickup plan")).toBeVisible();
   });
 
-  it("names the new visibility before publishing a private draft", () => {
+  it("names the new visibility before publishing a private draft", async () => {
     const onPublish = vi.fn();
     render(<RadarBoard items={[item()]} onPublish={onPublish} />);
 
@@ -103,12 +103,73 @@ describe("RadarBoard", () => {
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Confirm publish" }));
 
-    expect(onPublish).toHaveBeenCalledWith(
-      "550e8400-e29b-41d4-a716-446655440010",
-      "private",
-      "check_in_only",
-      true
+    await waitFor(() => {
+      expect(onPublish).toHaveBeenCalledWith(
+        "550e8400-e29b-41d4-a716-446655440010",
+        "private",
+        "check_in_only",
+        true
+      );
+    });
+  });
+
+  it("keeps the publish confirmation keyboard-modal and restores focus on Escape", async () => {
+    render(<RadarBoard items={[item()]} />);
+
+    const trigger = screen.getByRole("button", { name: "Publish" });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    const dialog = screen.getByRole("dialog", {
+      name: "Publish to Shared household?"
+    });
+    const confirmButton = within(dialog).getByRole("button", {
+      name: "Confirm publish"
+    });
+    const cancelButton = within(dialog).getByRole("button", {
+      name: "Keep private"
+    });
+
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    await waitFor(() => expect(confirmButton).toHaveFocus());
+
+    fireEvent.keyDown(dialog, { key: "Tab", shiftKey: true });
+    expect(cancelButton).toHaveFocus();
+
+    fireEvent.keyDown(dialog, { key: "Tab" });
+    expect(confirmButton).toHaveFocus();
+
+    expect(screen.queryByRole("button", { name: "Publish" })).not.toBeInTheDocument();
+
+    fireEvent.keyDown(dialog, { key: "Escape" });
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
+  it("closes the publish confirmation with cancel and restores focus", async () => {
+    render(<RadarBoard items={[item()]} />);
+
+    const trigger = screen.getByRole("button", { name: "Publish" });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    const dialog = screen.getByRole("dialog", {
+      name: "Publish to Shared household?"
+    });
+    const cancelButton = within(dialog).getByRole("button", {
+      name: "Keep private"
+    });
+    await waitFor(() =>
+      expect(
+        within(dialog).getByRole("button", { name: "Confirm publish" })
+      ).toHaveFocus()
     );
+
+    fireEvent.click(cancelButton);
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(trigger).toHaveFocus());
   });
 
   it("adds a created item to the visible production board after the fetch succeeds", async () => {
@@ -148,6 +209,116 @@ describe("RadarBoard", () => {
       ).toBeVisible();
     });
     expect(screen.getByText("Timing: Before Friday")).toBeVisible();
+  });
+
+  it("keeps create input and shows an error when create fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ error: "Server declined the radar item." })
+      })
+    );
+    render(<RadarBoard items={[]} />);
+
+    fireEvent.change(screen.getByLabelText("Topic"), {
+      target: { value: "New timing concern" }
+    });
+    fireEvent.change(screen.getByLabelText("Desired timing"), {
+      target: { value: "Before Friday" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create radar item" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Server declined the radar item."
+    );
+    expect(screen.getByLabelText("Topic")).toHaveValue("New timing concern");
+    expect(screen.getByLabelText("Desired timing")).toHaveValue("Before Friday");
+  });
+
+  it("keeps edit state and shows an error when edit fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ error: "Unable to save the edit." })
+      })
+    );
+    render(
+      <RadarBoard
+        items={[item({ visibility: "shared_household", state: "open" })]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }));
+    fireEvent.change(screen.getByLabelText("Edit topic"), {
+      target: { value: "Edited timing concern" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save edit" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to save the edit."
+    );
+    expect(screen.getByLabelText("Edit topic")).toHaveValue(
+      "Edited timing concern"
+    );
+    expect(screen.getByRole("button", { name: "Save edit" })).toBeVisible();
+  });
+
+  it("keeps publish confirmation open and shows an error when publish fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ error: "Unable to publish right now." })
+      })
+    );
+    render(<RadarBoard items={[item()]} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+    const dialog = screen.getByRole("dialog", {
+      name: "Publish to Shared household?"
+    });
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Confirm publish" })
+    );
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "Unable to publish right now."
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Publish to Shared household?" })
+    ).toBeVisible();
+  });
+
+  it("keeps transition context and shows an error when a transition fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ error: "Unable to defer right now." })
+      })
+    );
+    render(
+      <RadarBoard
+        items={[item({ visibility: "shared_household", state: "open" })]}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Revisit date"), {
+      target: { value: "2026-05-11" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Defer" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to defer right now."
+    );
+    expect(screen.getByLabelText("Revisit date")).toHaveValue("2026-05-11");
+    expect(
+      within(screen.getByRole("region", { name: "Shared and open" })).getByText(
+        "Clarify morning handoff"
+      )
+    ).toBeVisible();
   });
 
   it.each([
@@ -277,5 +448,50 @@ describe("RadarBoard", () => {
       );
     });
     expect(screen.getByText("Revisit: May 11, 2026")).toBeVisible();
+  });
+
+  it("does not show stale revisit metadata outside deferred items", () => {
+    render(
+      <RadarBoard
+        items={[
+          item({
+            id: "550e8400-e29b-41d4-a716-446655440011",
+            topic: "Resolved stale revisit",
+            visibility: "shared_household",
+            state: "resolved",
+            deferredUntil: "2026-05-11T12:00:00.000Z"
+          }),
+          item({
+            id: "550e8400-e29b-41d4-a716-446655440012",
+            topic: "Scheduled stale revisit",
+            visibility: "check_in_only",
+            state: "scheduled",
+            deferredUntil: "2026-05-12T12:00:00.000Z"
+          }),
+          item({
+            id: "550e8400-e29b-41d4-a716-446655440013",
+            topic: "Open stale revisit",
+            visibility: "shared_household",
+            state: "open",
+            deferredUntil: "2026-05-13T12:00:00.000Z"
+          }),
+          item({
+            id: "550e8400-e29b-41d4-a716-446655440014",
+            topic: "Real deferred revisit",
+            visibility: "shared_household",
+            state: "deferred",
+            deferredUntil: "2026-05-14T12:00:00.000Z"
+          })
+        ]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Show resolved" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show deferred" }));
+
+    expect(screen.queryByText("Revisit: May 11, 2026")).not.toBeInTheDocument();
+    expect(screen.queryByText("Revisit: May 12, 2026")).not.toBeInTheDocument();
+    expect(screen.queryByText("Revisit: May 13, 2026")).not.toBeInTheDocument();
+    expect(screen.getByText("Revisit: May 14, 2026")).toBeVisible();
   });
 });

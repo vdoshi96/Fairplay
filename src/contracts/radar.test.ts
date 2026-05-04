@@ -94,7 +94,6 @@ describe("radar JSON contracts", () => {
       RadarUpdateSchema.parse({
         id: "550e8400-e29b-41d4-a716-446655440020",
         urgency: "low",
-        state: "deferred",
         desiredTiming: null
       })
     ).toMatchObject({ urgency: "low", desiredTiming: null });
@@ -115,4 +114,16 @@ describe("radar JSON contracts", () => {
       })
     ).toMatchObject({ resolvedAt: "2026-05-04T00:00:00.000Z" });
   });
+
+  it.each(["resolved", "deferred", "dismissed", "scheduled", "open", "draft"])(
+    "rejects %s state changes in the generic update contract",
+    (state) => {
+      expect(() =>
+        RadarUpdateSchema.parse({
+          id: "550e8400-e29b-41d4-a716-446655440020",
+          state
+        })
+      ).toThrow();
+    }
+  );
 });

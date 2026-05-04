@@ -1,6 +1,14 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode
+} from "react";
 
 import type { RadarCreate, RadarSummary } from "@/contracts/radar";
 import type { RadarReasonKey, RadarState, Urgency, Visibility } from "@/domain/enums";
@@ -93,6 +101,27 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function messageFromError(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+async function mutationErrorMessage(response: Response, fallback: string) {
+  try {
+    const body = (await response.json()) as unknown;
+    if (isRecord(body) && typeof body.error === "string") {
+      return body.error;
+    }
+  } catch {
+    // The status is enough when the server did not return a JSON error body.
+  }
+
+  return fallback;
+}
+
 function isSharedOpen(item: RadarBoardItem) {
   return (
     item.visibility !== "private" &&
@@ -141,13 +170,40 @@ export function RadarBoard({
     fromVisibility: Visibility;
     visibility: Exclude<Visibility, "private">;
   } | null>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTopic, setEditTopic] = useState("");
   const [editDesiredTiming, setEditDesiredTiming] = useState("");
+  const contentRef = useRef<HTMLElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const confirmPublishButtonRef = useRef<HTMLButtonElement>(null);
+  const publishReturnFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     setBoardItems(items);
   }, [items]);
+
+  useEffect(() => {
+    const content = contentRef.current;
+
+    if (!content) {
+      return;
+    }
+
+    if (pendingPublish) {
+      content.setAttribute("aria-hidden", "true");
+      content.setAttribute("inert", "");
+      confirmPublishButtonRef.current?.focus();
+      return () => {
+        content.removeAttribute("aria-hidden");
+        content.removeAttribute("inert");
+      };
+    }
+
+    content.removeAttribute("aria-hidden");
+    content.removeAttribute("inert");
+  }, [pendingPublish]);
 
   function applyItem(nextItem?: void | RadarBoardItem) {
     if (!nextItem) {
@@ -164,13 +220,56 @@ export function RadarBoard({
     });
   }
 
-  async function fetchItem(url: string, init: RequestInit) {
+  async function fetchItem(url: string, init: RequestInit, fallback: string) {
     const response = await fetch(url, init);
     if (!response.ok) {
+      throw new Error(await mutationErrorMessage(response, fallback));
+    }
+
+    const nextItem = (await response.json()) as RadarBoardItem;
+    applyItem(nextItem);
+    return nextItem;
+  }
+
+  function closePublishDialog() {
+    setPendingPublish(null);
+    setPublishError(null);
+    window.requestAnimationFrame(() => {
+      publishReturnFocusRef.current?.focus();
+    });
+  }
+
+  function handlePublishDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closePublishDialog();
       return;
     }
 
-    applyItem((await response.json()) as RadarBoardItem);
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const focusableElements = Array.from(
+      dialogRef.current?.querySelectorAll<HTMLElement>(
+        "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])"
+      ) ?? []
+    ).filter((element) => !element.hasAttribute("disabled"));
+
+    if (focusableElements.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const currentIndex = focusableElements.indexOf(
+      document.activeElement as HTMLElement
+    );
+    const nextIndex = event.shiftKey
+      ? (currentIndex - 1 + focusableElements.length) % focusableElements.length
+      : (currentIndex + 1) % focusableElements.length;
+
+    focusableElements[nextIndex]?.focus();
   }
 
   const groups = useMemo(
@@ -202,20 +301,32 @@ export function RadarBoard({
       visibility
     };
 
-    if (onCreate) {
-      applyItem(await onCreate(body));
-    } else {
-      await fetchItem("/api/radar", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body)
-      });
-    }
+    setMutationError(null);
 
-    setTopic("");
-    setNotes("");
-    setDesiredTiming("");
-    setResponsibilityId("");
+    try {
+      if (onCreate) {
+        applyItem(await onCreate(body));
+      } else {
+        await fetchItem(
+          "/api/radar",
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(body)
+          },
+          "Unable to create the radar item right now."
+        );
+      }
+
+      setTopic("");
+      setNotes("");
+      setDesiredTiming("");
+      setResponsibilityId("");
+    } catch (error) {
+      setMutationError(
+        messageFromError(error, "Unable to create the radar item right now.")
+      );
+    }
   }
 
   async function updateItem(id: string) {
@@ -223,27 +334,39 @@ export function RadarBoard({
       return;
     }
 
-    if (onUpdate) {
-      applyItem(
-        await onUpdate(id, {
-          topic: editTopic,
-          desiredTiming: editDesiredTiming.trim() ? editDesiredTiming : null
-        })
-      );
-    } else {
-      await fetchItem(`/api/radar/${id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          topic: editTopic,
-          desiredTiming: editDesiredTiming.trim() ? editDesiredTiming : null
-        })
-      });
-    }
+    setMutationError(null);
 
-    setEditingId(null);
-    setEditTopic("");
-    setEditDesiredTiming("");
+    try {
+      if (onUpdate) {
+        applyItem(
+          await onUpdate(id, {
+            topic: editTopic,
+            desiredTiming: editDesiredTiming.trim() ? editDesiredTiming : null
+          })
+        );
+      } else {
+        await fetchItem(
+          `/api/radar/${id}`,
+          {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              topic: editTopic,
+              desiredTiming: editDesiredTiming.trim() ? editDesiredTiming : null
+            })
+          },
+          "Unable to save the radar edit right now."
+        );
+      }
+
+      setEditingId(null);
+      setEditTopic("");
+      setEditDesiredTiming("");
+    } catch (error) {
+      setMutationError(
+        messageFromError(error, "Unable to save the radar edit right now.")
+      );
+    }
   }
 
   async function publishPending() {
@@ -252,27 +375,39 @@ export function RadarBoard({
     }
 
     const publish = pendingPublish;
-    setPendingPublish(null);
-    if (onPublish) {
-      applyItem(
-        await onPublish(
-          publish.id,
-          publish.fromVisibility,
-          publish.visibility,
-          true
-        )
+    setPublishError(null);
+    try {
+      if (onPublish) {
+        applyItem(
+          await onPublish(
+            publish.id,
+            publish.fromVisibility,
+            publish.visibility,
+            true
+          )
+        );
+      } else {
+        await fetchItem(
+          `/api/radar/${publish.id}/publish`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              id: publish.id,
+              fromVisibility: publish.fromVisibility,
+              visibility: publish.visibility,
+              confirmPrivateDraftPublish: true
+            })
+          },
+          "Unable to publish this radar item right now."
+        );
+      }
+
+      closePublishDialog();
+    } catch (error) {
+      setPublishError(
+        messageFromError(error, "Unable to publish this radar item right now.")
       );
-    } else {
-      await fetchItem(`/api/radar/${publish.id}/publish`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          id: publish.id,
-          fromVisibility: publish.fromVisibility,
-          visibility: publish.visibility,
-          confirmPrivateDraftPublish: true
-        })
-      });
     }
   }
 
@@ -282,43 +417,68 @@ export function RadarBoard({
   ) {
     const deferredUntil = dateInputToIso(deferDates[id] ?? "");
 
-    if (onTransition) {
-      applyItem(await onTransition(id, action, { deferredUntil }));
-      return;
-    }
+    setMutationError(null);
 
-    if (action === "defer") {
-      await fetchItem(`/api/radar/${id}/defer`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id, deferredUntil })
-      });
-    }
-    if (action === "resolve") {
-      await fetchItem(`/api/radar/${id}/resolve`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id, resolvedAt: new Date().toISOString() })
-      });
-    }
-    if (action === "schedule") {
-      await fetchItem(`/api/radar/${id}/schedule`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ targetCheckInId: null })
-      });
-    }
-    if (action === "dismiss") {
-      await fetchItem(`/api/radar/${id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ state: "dismissed" })
-      });
+    try {
+      if (onTransition) {
+        applyItem(await onTransition(id, action, { deferredUntil }));
+        return;
+      }
+
+      if (action === "defer") {
+        await fetchItem(
+          `/api/radar/${id}/defer`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ id, deferredUntil })
+          },
+          "Unable to defer this radar item right now."
+        );
+      }
+      if (action === "resolve") {
+        await fetchItem(
+          `/api/radar/${id}/resolve`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ id, resolvedAt: new Date().toISOString() })
+          },
+          "Unable to resolve this radar item right now."
+        );
+      }
+      if (action === "schedule") {
+        await fetchItem(
+          `/api/radar/${id}/schedule`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ targetCheckInId: null })
+          },
+          "Unable to schedule this radar item right now."
+        );
+      }
+      if (action === "dismiss") {
+        await fetchItem(
+          `/api/radar/${id}/dismiss`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ id })
+          },
+          "Unable to dismiss this radar item right now."
+        );
+      }
+    } catch (error) {
+      setMutationError(
+        messageFromError(error, "Unable to update this radar item right now.")
+      );
     }
   }
 
   return (
-    <section className="grid gap-5">
+    <>
+    <section className="grid gap-5" ref={contentRef}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="grid gap-1">
           <p className="text-[13px] font-semibold text-fp-muted-ink">Radar</p>
@@ -327,6 +487,15 @@ export function RadarBoard({
           </h1>
         </div>
       </div>
+
+      {mutationError ? (
+        <p
+          className="rounded-[8px] border border-fp-danger/40 bg-white px-3 py-2 text-[14px] leading-5 text-fp-danger"
+          role="alert"
+        >
+          {mutationError}
+        </p>
+      ) : null}
 
       <div className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-4">
         <div className="grid gap-3 sm:grid-cols-2">
@@ -415,6 +584,11 @@ export function RadarBoard({
             onPublish={() => {
               const target = (publishTargets[item.id] ??
                 "shared_household") as Exclude<Visibility, "private">;
+              publishReturnFocusRef.current =
+                document.activeElement instanceof HTMLElement
+                  ? document.activeElement
+                  : null;
+              setPublishError(null);
               setPendingPublish({
                 id: item.id,
                 fromVisibility: item.visibility,
@@ -530,39 +704,58 @@ export function RadarBoard({
         </RadarSection>
       ) : null}
 
-      {pendingPublish ? (
-        <div
-          aria-label={`Publish to ${visibilityLabels[pendingPublish.visibility]}?`}
-          className="fixed inset-x-4 top-24 z-20 mx-auto grid max-w-md gap-3 rounded-[8px] border border-fp-line bg-white p-4 shadow-lg"
-          role="dialog"
-        >
-          <h2 className="text-[18px] font-bold">
+    </section>
+    {pendingPublish ? (
+      <div
+        aria-describedby="publish-confirm-description"
+        aria-labelledby="publish-confirm-title"
+        aria-modal="true"
+        className="fixed inset-0 z-20 grid place-items-start bg-fp-ink/35 px-4 pt-24"
+        onKeyDown={handlePublishDialogKeyDown}
+        ref={dialogRef}
+        role="dialog"
+      >
+        <div className="mx-auto grid w-full max-w-md gap-3 rounded-[8px] border border-fp-line bg-white p-4 shadow-lg">
+          <h2 className="text-[18px] font-bold" id="publish-confirm-title">
             Publish to {visibilityLabels[pendingPublish.visibility]}?
           </h2>
-          <p className="text-[14px] leading-6 text-fp-muted-ink">
+          <p
+            className="text-[14px] leading-6 text-fp-muted-ink"
+            id="publish-confirm-description"
+          >
             This will make this visible as{" "}
             {visibilityLabels[pendingPublish.visibility]}.{" "}
             {SAFETY_COPY.privateDraftPublishConfirmation}
           </p>
+          {publishError ? (
+            <p
+              className="rounded-[8px] border border-fp-danger/40 bg-white px-3 py-2 text-[14px] leading-5 text-fp-danger"
+              role="alert"
+            >
+              {publishError}
+            </p>
+          ) : null}
           <div className="flex gap-2">
             <button
               className="min-h-11 rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white"
               onClick={publishPending}
+              ref={confirmPublishButtonRef}
               type="button"
             >
               Confirm publish
             </button>
             <button
               className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold"
-              onClick={() => setPendingPublish(null)}
+              onClick={closePublishDialog}
               type="button"
             >
               Keep private
             </button>
           </div>
         </div>
-      ) : null}
-    </section>
+      </div>
+    ) : null}
+    </>
   );
 }
 
@@ -789,14 +982,16 @@ function ReadOnlyRadarCard({ item }: { item: RadarBoardItem }) {
 }
 
 function TimingMeta({ item }: { item: RadarBoardItem }) {
-  if (!item.desiredTiming && !item.deferredUntil) {
+  const deferredUntil = item.state === "deferred" ? item.deferredUntil : null;
+
+  if (!item.desiredTiming && !deferredUntil) {
     return null;
   }
 
   return (
     <div className="grid gap-1 text-[13px] leading-5 text-fp-muted-ink">
       {item.desiredTiming ? <p>Timing: {item.desiredTiming}</p> : null}
-      {item.deferredUntil ? <p>Revisit: {formatDate(item.deferredUntil)}</p> : null}
+      {deferredUntil ? <p>Revisit: {formatDate(deferredUntil)}</p> : null}
     </div>
   );
 }
