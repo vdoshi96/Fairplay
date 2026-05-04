@@ -22,3 +22,5 @@
 - Reviewed product/spec/research handoffs for blockers, contradictions, unresolved implementation decisions, IP/privacy/safety risks, and conservative defaults before implementation task decomposition.
 - Added Fairplay v1 task assignment on `codex/research-and-spec`.
 - Replaced the high-level implementation plan with task-scoped worker assignments covering app scaffold, shared contracts, Prisma/Postgres persistence, auth/session/persona APIs, mobile UI/onboarding, responsibilities/load map, radar, guided check-ins, visual integration, README/Vercel readiness, final verification, review gates, and PR strategy.
+- Added Fairplay visual and asset direction task on `codex/research-and-spec`.
+- Defined mobile-first visual tokens, type/spacing/shape direction, original Alex/Max/helper character rules, future image prompts, PWA icon direction, motion guidance, reduced-motion requirements, and original SVG placeholder assets for T09 visual integration.

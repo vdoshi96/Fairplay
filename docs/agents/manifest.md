@@ -15,6 +15,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | Fairplay v1 product architecture | Codex product architecture agent | Completed | `docs/agents/tasks/2026-05-04-product-architecture/` |
 | 2026-05-04 | Fairplay v1 gap review | Codex gap reviewer agent | Completed | `docs/agents/tasks/2026-05-04-gap-review/` |
 | 2026-05-04 | Fairplay v1 task assignment | Codex task assignment agent | Completed | `docs/agents/tasks/2026-05-04-task-assignment/` |
+| 2026-05-04 | Fairplay visual and asset direction | Codex visual/asset agent | Completed | `docs/agents/tasks/2026-05-04-visual-asset-direction/` |
 
 ## Rules
 
@@ -23,3 +24,4 @@ This manifest tracks agent work for the Fairplay repository.
 - Private reference materials in `References/` are not committed unless explicitly cleared and already intentionally tracked.
 - Research agents must keep private-reference output paraphrased and avoid copying source text, card descriptions, exercises, or assets into repo docs.
 - Implementation agents must read `docs/product/ip-safety-review.md` before writing user-facing copy, seed data, templates, prompts, auth/session logic, or shared relationship-support flows.
+- Visual implementation agents must read `docs/product/visual-system.md` and the latest visual-agent handoff before adding assets, motion, or character art.
