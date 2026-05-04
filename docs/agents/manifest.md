@@ -11,6 +11,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | Better Share and idea research | Codex research agent | Completed | `docs/agents/tasks/2026-05-04-better-share-idea-research/` |
 | 2026-05-04 | Trello data model research | Codex Trello/data-model research agent | Completed | `docs/agents/tasks/2026-05-04-trello-data-model-research/` |
 | 2026-05-04 | Spreadsheet and PDF reference research | Codex spreadsheet/PDF research agent | Completed | `docs/agents/tasks/2026-05-04-spreadsheet-pdf-research/` |
+| 2026-05-04 | IP, privacy, and relationship-safety review | Codex IP/privacy/safety agent | Completed | `docs/agents/tasks/2026-05-04-ip-privacy-safety-review/` |
 
 ## Rules
 
@@ -18,3 +19,4 @@ This manifest tracks agent work for the Fairplay repository.
 - Agents must preserve others' work and use non-destructive git commands.
 - Private reference materials in `References/` are not committed unless explicitly cleared and already intentionally tracked.
 - Research agents must keep private-reference output paraphrased and avoid copying source text, card descriptions, exercises, or assets into repo docs.
+- Implementation agents must read `docs/product/ip-safety-review.md` before writing user-facing copy, seed data, templates, prompts, auth/session logic, or shared relationship-support flows.
