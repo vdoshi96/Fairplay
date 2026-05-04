@@ -37,6 +37,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T04 spec compliance review | Codex spec compliance reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t04-spec/` |
 | 2026-05-04 | T04 session idle refresh fix | Codex focused T04 fix worker | Completed and pushed | `docs/agents/tasks/2026-05-04-fix-t04-session-idle-refresh/` |
 | 2026-05-04 | T04 spec compliance re-review | Codex spec compliance re-reviewer | Approved | `docs/agents/tasks/2026-05-04-review-t04-spec-rereview/` |
+| 2026-05-04 | T04 code quality review | Codex code quality reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t04-code-quality/` |
 
 ## Rules
 
