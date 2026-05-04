@@ -36,3 +36,6 @@
 - Started T02 implementation on `codex/v1-app` in `.worktrees/v1-app`.
 - Added shared domain enum arrays, Zod schemas, TypeScript types, username normalization, persona and visibility assertions, aggregate-only load signals, platform-neutral JSON contracts, tiny approved-original demo seed content, safety copy snippets, formatting helpers, and domain test factories.
 - Added T02 task artifacts under `docs/agents/tasks/2026-05-04-implementation-t02-domain-contracts/`.
+- Added T02 spec compliance review artifacts under `docs/agents/tasks/2026-05-04-review-t02-spec/`.
+- Reviewed T02 commit range `3faf932..b8dfb24`; result is CHANGES_REQUESTED because `ResponsibilityUpdateSchema` accepts direct `visibility` changes without private-to-shared transition confirmation.
+- Verified `git status --short`, `git diff --name-only 3faf93278688a8bc209699f81827990d2d67f01a..b8dfb242ecfdaea2ce6a210f23f1131175655307`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/domain src/contracts src/seed`, and `npm run build`.
