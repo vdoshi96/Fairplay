@@ -1,25 +1,31 @@
 "use client";
 
-import { Fragment, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import type { RadarCreate, RadarSummary } from "@/contracts/radar";
 import type { RadarReasonKey, RadarState, Urgency, Visibility } from "@/domain/enums";
 import { SAFETY_COPY } from "@/lib/safety-copy";
 
+type RadarBoardItem = RadarSummary;
+
 type RadarBoardProps = {
-  items: RadarSummary[];
-  onCreate?: (input: RadarCreate) => void | Promise<void>;
-  onUpdate?: (id: string, input: Partial<RadarCreate>) => void | Promise<void>;
+  items: RadarBoardItem[];
+  onCreate?: (input: RadarCreate) => void | Promise<void | RadarBoardItem>;
+  onUpdate?: (
+    id: string,
+    input: Partial<RadarCreate>
+  ) => void | Promise<void | RadarBoardItem>;
   onPublish?: (
     id: string,
     fromVisibility: Visibility,
     visibility: Visibility,
     confirmed: boolean
-  ) => void | Promise<void>;
+  ) => void | Promise<void | RadarBoardItem>;
   onTransition?: (
     id: string,
-    action: "defer" | "resolve" | "dismiss" | "schedule"
-  ) => void | Promise<void>;
+    action: "defer" | "resolve" | "dismiss" | "schedule",
+    input?: { deferredUntil?: string | null }
+  ) => void | Promise<void | RadarBoardItem>;
 };
 
 const reasonOptions: RadarReasonKey[] = [
@@ -76,19 +82,31 @@ function label(value: string) {
     .join(" ");
 }
 
-function isSharedOpen(item: RadarSummary) {
+function dateInputToIso(value: string): string | null {
+  return value ? `${value}T12:00:00.000Z` : null;
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeZone: "UTC"
+  }).format(new Date(value));
+}
+
+function isSharedOpen(item: RadarBoardItem) {
   return (
     item.visibility !== "private" &&
     item.visibility !== "check_in_only" &&
     item.state !== "resolved" &&
     item.state !== "deferred" &&
-    item.state !== "dismissed"
+    item.state !== "dismissed" &&
+    item.state !== "scheduled"
   );
 }
 
-function isCheckInTopic(item: RadarSummary) {
+function isCheckInTopic(item: RadarBoardItem) {
   return (
-    item.visibility === "check_in_only" &&
+    (item.visibility === "check_in_only" || item.state === "scheduled") &&
     item.state !== "resolved" &&
     item.state !== "deferred" &&
     item.state !== "dismissed"
@@ -102,8 +120,10 @@ export function RadarBoard({
   onPublish,
   onTransition
 }: RadarBoardProps) {
+  const [boardItems, setBoardItems] = useState<RadarBoardItem[]>(items);
   const [topic, setTopic] = useState("");
   const [notes, setNotes] = useState("");
+  const [desiredTiming, setDesiredTiming] = useState("");
   const [reasonKey, setReasonKey] =
     useState<RadarReasonKey>("unclear_expectation");
   const [urgency, setUrgency] = useState<Urgency>("normal");
@@ -111,9 +131,11 @@ export function RadarBoard({
   const [responsibilityId, setResponsibilityId] = useState("");
   const [showDeferred, setShowDeferred] = useState(false);
   const [showResolved, setShowResolved] = useState(false);
+  const [showDismissed, setShowDismissed] = useState(false);
   const [publishTargets, setPublishTargets] = useState<Record<string, Visibility>>(
     {}
   );
+  const [deferDates, setDeferDates] = useState<Record<string, string>>({});
   const [pendingPublish, setPendingPublish] = useState<{
     id: string;
     fromVisibility: Visibility;
@@ -121,18 +143,48 @@ export function RadarBoard({
   } | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTopic, setEditTopic] = useState("");
+  const [editDesiredTiming, setEditDesiredTiming] = useState("");
+
+  useEffect(() => {
+    setBoardItems(items);
+  }, [items]);
+
+  function applyItem(nextItem?: void | RadarBoardItem) {
+    if (!nextItem) {
+      return;
+    }
+
+    setBoardItems((current) => {
+      const existingIndex = current.findIndex((item) => item.id === nextItem.id);
+      if (existingIndex === -1) {
+        return [...current, nextItem];
+      }
+
+      return current.map((item) => (item.id === nextItem.id ? nextItem : item));
+    });
+  }
+
+  async function fetchItem(url: string, init: RequestInit) {
+    const response = await fetch(url, init);
+    if (!response.ok) {
+      return;
+    }
+
+    applyItem((await response.json()) as RadarBoardItem);
+  }
 
   const groups = useMemo(
     () => ({
-      privateDrafts: items.filter(
+      privateDrafts: boardItems.filter(
         (item) => item.visibility === "private" && item.state === "draft"
       ),
-      sharedOpen: items.filter(isSharedOpen),
-      checkInTopics: items.filter(isCheckInTopic),
-      deferred: items.filter((item) => item.state === "deferred"),
-      resolved: items.filter((item) => item.state === "resolved")
+      sharedOpen: boardItems.filter(isSharedOpen),
+      checkInTopics: boardItems.filter(isCheckInTopic),
+      deferred: boardItems.filter((item) => item.state === "deferred"),
+      resolved: boardItems.filter((item) => item.state === "resolved"),
+      dismissed: boardItems.filter((item) => item.state === "dismissed")
     }),
-    [items]
+    [boardItems]
   );
 
   async function createItem() {
@@ -143,6 +195,7 @@ export function RadarBoard({
     const body: RadarCreate = {
       topic,
       notes: notes.trim() ? notes : null,
+      desiredTiming: desiredTiming.trim() ? desiredTiming : null,
       responsibilityId: responsibilityId.trim() || null,
       reasonKey,
       urgency,
@@ -150,9 +203,9 @@ export function RadarBoard({
     };
 
     if (onCreate) {
-      await onCreate(body);
+      applyItem(await onCreate(body));
     } else {
-      await fetch("/api/radar", {
+      await fetchItem("/api/radar", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body)
@@ -161,6 +214,7 @@ export function RadarBoard({
 
     setTopic("");
     setNotes("");
+    setDesiredTiming("");
     setResponsibilityId("");
   }
 
@@ -170,81 +224,92 @@ export function RadarBoard({
     }
 
     if (onUpdate) {
-      await onUpdate(id, { topic: editTopic });
+      applyItem(
+        await onUpdate(id, {
+          topic: editTopic,
+          desiredTiming: editDesiredTiming.trim() ? editDesiredTiming : null
+        })
+      );
     } else {
-      await fetch(`/api/radar/${id}`, {
+      await fetchItem(`/api/radar/${id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ topic: editTopic })
+        body: JSON.stringify({
+          topic: editTopic,
+          desiredTiming: editDesiredTiming.trim() ? editDesiredTiming : null
+        })
       });
     }
 
     setEditingId(null);
     setEditTopic("");
+    setEditDesiredTiming("");
   }
 
-  function publishPending() {
+  async function publishPending() {
     if (!pendingPublish) {
       return;
     }
 
     const publish = pendingPublish;
     setPendingPublish(null);
-    void (async () => {
-      if (onPublish) {
+    if (onPublish) {
+      applyItem(
         await onPublish(
           publish.id,
           publish.fromVisibility,
           publish.visibility,
           true
-        );
-      } else {
-        await fetch(`/api/radar/${publish.id}/publish`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            id: publish.id,
-            fromVisibility: publish.fromVisibility,
-            visibility: publish.visibility,
-            confirmPrivateDraftPublish: true
-          })
-        });
-      }
-    })();
+        )
+      );
+    } else {
+      await fetchItem(`/api/radar/${publish.id}/publish`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          id: publish.id,
+          fromVisibility: publish.fromVisibility,
+          visibility: publish.visibility,
+          confirmPrivateDraftPublish: true
+        })
+      });
+    }
   }
 
   async function transition(
     id: string,
     action: "defer" | "resolve" | "dismiss" | "schedule"
   ) {
+    const deferredUntil = dateInputToIso(deferDates[id] ?? "");
+
     if (onTransition) {
-      await onTransition(id, action);
+      applyItem(await onTransition(id, action, { deferredUntil }));
       return;
     }
 
     if (action === "defer") {
-      await fetch(`/api/radar/${id}/defer`, {
+      await fetchItem(`/api/radar/${id}/defer`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({ id, deferredUntil })
       });
     }
     if (action === "resolve") {
-      await fetch(`/api/radar/${id}/resolve`, {
+      await fetchItem(`/api/radar/${id}/resolve`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ id, resolvedAt: new Date().toISOString() })
       });
     }
     if (action === "schedule") {
-      await fetch(`/api/radar/${id}/schedule`, {
+      await fetchItem(`/api/radar/${id}/schedule`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ targetCheckInId: null })
       });
     }
     if (action === "dismiss") {
-      await fetch(`/api/radar/${id}`, {
+      await fetchItem(`/api/radar/${id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ state: "dismissed" })
@@ -283,6 +348,15 @@ export function RadarBoard({
             />
           </label>
         </div>
+        <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+          Desired timing
+          <input
+            className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+            onChange={(event) => setDesiredTiming(event.target.value)}
+            placeholder="Optional timing note"
+            value={desiredTiming}
+          />
+        </label>
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
           Notes
           <textarea
@@ -333,8 +407,11 @@ export function RadarBoard({
             onEdit={() => {
               setEditingId(item.id);
               setEditTopic(item.topic);
+              setEditDesiredTiming(item.desiredTiming ?? "");
             }}
+            editDesiredTiming={editDesiredTiming}
             onEditTopic={setEditTopic}
+            onEditDesiredTiming={setEditDesiredTiming}
             onPublish={() => {
               const target = (publishTargets[item.id] ??
                 "shared_household") as Exclude<Visibility, "private">;
@@ -367,7 +444,14 @@ export function RadarBoard({
             onEdit={() => {
               setEditingId(item.id);
               setEditTopic(item.topic);
+              setEditDesiredTiming(item.desiredTiming ?? "");
             }}
+            deferDate={deferDates[item.id] ?? ""}
+            editDesiredTiming={editDesiredTiming}
+            onDeferDate={(value) =>
+              setDeferDates((current) => ({ ...current, [item.id]: value }))
+            }
+            onEditDesiredTiming={setEditDesiredTiming}
             onEditTopic={setEditTopic}
             onPublish={() => undefined}
             onPublishTarget={() => undefined}
@@ -388,7 +472,14 @@ export function RadarBoard({
             onEdit={() => {
               setEditingId(item.id);
               setEditTopic(item.topic);
+              setEditDesiredTiming(item.desiredTiming ?? "");
             }}
+            deferDate={deferDates[item.id] ?? ""}
+            editDesiredTiming={editDesiredTiming}
+            onDeferDate={(value) =>
+              setDeferDates((current) => ({ ...current, [item.id]: value }))
+            }
+            onEditDesiredTiming={setEditDesiredTiming}
             onEditTopic={setEditTopic}
             onPublish={() => undefined}
             onPublishTarget={() => undefined}
@@ -414,6 +505,13 @@ export function RadarBoard({
         >
           {showResolved ? "Hide resolved" : "Show resolved"}
         </button>
+        <button
+          className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+          onClick={() => setShowDismissed((current) => !current)}
+          type="button"
+        >
+          {showDismissed ? "Hide dismissed" : "Show dismissed"}
+        </button>
       </div>
 
       {showDeferred ? (
@@ -423,6 +521,11 @@ export function RadarBoard({
       ) : null}
       {showResolved ? (
         <RadarSection title="Resolved" items={groups.resolved}>
+          {(item) => <ReadOnlyRadarCard item={item} />}
+        </RadarSection>
+      ) : null}
+      {showDismissed ? (
+        <RadarSection title="Dismissed" items={groups.dismissed}>
           {(item) => <ReadOnlyRadarCard item={item} />}
         </RadarSection>
       ) : null}
@@ -468,8 +571,8 @@ function RadarSection({
   items,
   title
 }: {
-  children: (item: RadarSummary) => ReactNode;
-  items: RadarSummary[];
+  children: (item: RadarBoardItem) => ReactNode;
+  items: RadarBoardItem[];
   title: string;
 }) {
   return (
@@ -496,11 +599,15 @@ function RadarSection({
 }
 
 function RadarCard({
+  deferDate = "",
+  editDesiredTiming,
   editTopic,
   editingId,
   item,
   onCancelEdit,
+  onDeferDate,
   onEdit,
+  onEditDesiredTiming,
   onEditTopic,
   onPublish,
   onPublishTarget,
@@ -508,11 +615,15 @@ function RadarCard({
   onTransition,
   publishTarget
 }: {
+  deferDate?: string;
+  editDesiredTiming: string;
   editTopic: string;
   editingId: string | null;
-  item: RadarSummary;
+  item: RadarBoardItem;
   onCancelEdit: () => void;
+  onDeferDate?: (value: string) => void;
   onEdit: () => void;
+  onEditDesiredTiming: (value: string) => void;
   onEditTopic: (value: string) => void;
   onPublish: () => void;
   onPublishTarget: (visibility: Exclude<Visibility, "private">) => void;
@@ -529,14 +640,24 @@ function RadarCard({
     <article className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-4">
       <div className="grid gap-2">
         {isEditing ? (
-          <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-            Edit topic
-            <input
-              className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
-              onChange={(event) => onEditTopic(event.target.value)}
-              value={editTopic}
-            />
-          </label>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+              Edit topic
+              <input
+                className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+                onChange={(event) => onEditTopic(event.target.value)}
+                value={editTopic}
+              />
+            </label>
+            <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+              Edit desired timing
+              <input
+                className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+                onChange={(event) => onEditDesiredTiming(event.target.value)}
+                value={editDesiredTiming}
+              />
+            </label>
+          </div>
         ) : (
           <h3 className="text-[17px] font-bold leading-6">{item.topic}</h3>
         )}
@@ -554,6 +675,7 @@ function RadarCard({
             {stateLabels[item.state]}
           </span>
         </div>
+        <TimingMeta item={item} />
       </div>
 
       {item.visibility === "private" ? (
@@ -575,6 +697,16 @@ function RadarCard({
           </button>
         </div>
       ) : null}
+
+      <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink sm:max-w-xs">
+        Revisit date
+        <input
+          className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+          onChange={(event) => onDeferDate?.(event.target.value)}
+          type="date"
+          value={deferDate}
+        />
+      </label>
 
       <div className="flex flex-wrap gap-2">
         {isEditing ? (
@@ -636,7 +768,7 @@ function RadarCard({
   );
 }
 
-function ReadOnlyRadarCard({ item }: { item: RadarSummary }) {
+function ReadOnlyRadarCard({ item }: { item: RadarBoardItem }) {
   return (
     <article className="grid gap-2 rounded-[8px] border border-fp-line bg-white p-4">
       <h3 className="text-[17px] font-bold leading-6">{item.topic}</h3>
@@ -651,7 +783,21 @@ function ReadOnlyRadarCard({ item }: { item: RadarSummary }) {
           {stateLabels[item.state]}
         </span>
       </div>
+      <TimingMeta item={item} />
     </article>
+  );
+}
+
+function TimingMeta({ item }: { item: RadarBoardItem }) {
+  if (!item.desiredTiming && !item.deferredUntil) {
+    return null;
+  }
+
+  return (
+    <div className="grid gap-1 text-[13px] leading-5 text-fp-muted-ink">
+      {item.desiredTiming ? <p>Timing: {item.desiredTiming}</p> : null}
+      {item.deferredUntil ? <p>Revisit: {formatDate(item.deferredUntil)}</p> : null}
+    </div>
   );
 }
 

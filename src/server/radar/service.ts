@@ -56,6 +56,7 @@ type UpdateRadarRecordInput = Partial<
     RadarRecord,
     | "topic"
     | "notes"
+    | "desiredTiming"
     | "responsibilityId"
     | "reasonKey"
     | "urgency"
@@ -63,6 +64,7 @@ type UpdateRadarRecordInput = Partial<
     | "state"
     | "targetCheckInId"
     | "resolvedAt"
+    | "deferredUntil"
   >
 > & {
   id: RadarItemId;
@@ -125,7 +127,9 @@ function toSummary(record: RadarRecord): RadarSummary {
     reasonKey: record.reasonKey,
     urgency: record.urgency,
     visibility: record.visibility,
-    state: record.state
+    state: record.state,
+    desiredTiming: record.desiredTiming,
+    deferredUntil: record.deferredUntil
   };
 }
 
@@ -237,6 +241,8 @@ export function createRadarService(deps: RadarServiceDeps) {
         visibility: record.visibility,
         state: record.state,
         notes: record.notes,
+        desiredTiming: record.desiredTiming,
+        deferredUntil: record.deferredUntil,
         targetCheckInId: record.targetCheckInId,
         createdAt: record.createdAt,
         updatedAt: record.updatedAt,
@@ -261,6 +267,7 @@ export function createRadarService(deps: RadarServiceDeps) {
         householdId: session.householdId,
         createdByPersonaId,
         notes: input.notes ?? null,
+        desiredTiming: input.desiredTiming ?? null,
         responsibilityId: input.responsibilityId ?? null,
         visibility: input.visibility ?? "private",
         urgency: input.urgency ?? "normal",
@@ -351,6 +358,7 @@ export function createRadarService(deps: RadarServiceDeps) {
       return deps.updateRecord({
         id: radarItemId,
         state: "deferred",
+        deferredUntil: input.deferredUntil ?? null,
         resolvedAt: null
       });
     },
@@ -408,6 +416,7 @@ function toRadarRecord(item: {
   responsibilityId: string | null;
   topic: string;
   notes: string | null;
+  desiredTiming: string | null;
   reasonKey: RadarReasonKey;
   urgency: Urgency;
   visibility: Visibility;
@@ -416,6 +425,7 @@ function toRadarRecord(item: {
   createdAt: Date;
   updatedAt: Date;
   resolvedAt: Date | null;
+  deferredUntil: Date | null;
 }): RadarRecord {
   return {
     id: item.id,
@@ -424,6 +434,7 @@ function toRadarRecord(item: {
     responsibilityId: item.responsibilityId,
     topic: item.topic,
     notes: item.notes,
+    desiredTiming: item.desiredTiming,
     reasonKey: item.reasonKey,
     urgency: item.urgency,
     visibility: item.visibility,
@@ -431,7 +442,8 @@ function toRadarRecord(item: {
     targetCheckInId: item.targetCheckInId,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
-    resolvedAt: nullableIso(item.resolvedAt)
+    resolvedAt: nullableIso(item.resolvedAt),
+    deferredUntil: nullableIso(item.deferredUntil)
   };
 }
 
@@ -445,6 +457,8 @@ function toRadarDetail(record: RadarRecord): RadarDetail {
     visibility: record.visibility,
     state: record.state,
     notes: record.notes,
+    desiredTiming: record.desiredTiming,
+    deferredUntil: record.deferredUntil,
     targetCheckInId: record.targetCheckInId,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
@@ -524,6 +538,7 @@ export const radarService = createRadarService({
         responsibilityId: input.responsibilityId ?? null,
         topic: input.topic,
         notes: input.notes ?? null,
+        desiredTiming: input.desiredTiming ?? null,
         reasonKey: input.reasonKey,
         urgency: input.urgency,
         visibility: input.visibility ?? "private",
@@ -542,6 +557,7 @@ export const radarService = createRadarService({
       data: {
         topic: input.topic,
         notes: input.notes,
+        desiredTiming: input.desiredTiming,
         responsibilityId: input.responsibilityId,
         reasonKey: input.reasonKey,
         urgency: input.urgency,
@@ -551,7 +567,11 @@ export const radarService = createRadarService({
         resolvedAt:
           input.resolvedAt === undefined || input.resolvedAt === null
             ? input.resolvedAt
-            : new Date(input.resolvedAt)
+            : new Date(input.resolvedAt),
+        deferredUntil:
+          input.deferredUntil === undefined || input.deferredUntil === null
+            ? input.deferredUntil
+            : new Date(input.deferredUntil)
       }
     });
 

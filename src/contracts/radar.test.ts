@@ -20,7 +20,9 @@ describe("radar JSON contracts", () => {
         reasonKey: "unclear_expectation",
         urgency: "normal",
         visibility: "check_in_only",
-        state: "open"
+        state: "open",
+        desiredTiming: "Before the next school week",
+        deferredUntil: null
       })
     ).toMatchObject({ topic: "Clarify weekend grocery timing" });
   });
@@ -65,6 +67,8 @@ describe("radar JSON contracts", () => {
         visibility: "private",
         state: "draft",
         targetCheckInId: null,
+        desiredTiming: "Before the next school week",
+        deferredUntil: null,
         createdAt: "2026-05-04T00:00:00.000Z",
         updatedAt: "2026-05-04T00:00:00.000Z",
         resolvedAt: null
@@ -78,17 +82,22 @@ describe("radar JSON contracts", () => {
         responsibilityId: null,
         reasonKey: "review_due",
         urgency: "soon",
-        visibility: "private"
+        visibility: "private",
+        desiredTiming: "After payday"
       })
-    ).toMatchObject({ visibility: "private" });
+    ).toMatchObject({
+      visibility: "private",
+      desiredTiming: "After payday"
+    });
 
     expect(
       RadarUpdateSchema.parse({
         id: "550e8400-e29b-41d4-a716-446655440020",
         urgency: "low",
-        state: "deferred"
+        state: "deferred",
+        desiredTiming: null
       })
-    ).toMatchObject({ urgency: "low" });
+    ).toMatchObject({ urgency: "low", desiredTiming: null });
 
     expect(
       RadarDeferMutationSchema.parse({

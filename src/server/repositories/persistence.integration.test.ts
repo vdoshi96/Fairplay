@@ -270,6 +270,54 @@ describe("radar repository", () => {
     expect(maxRadar.every((item) => item.visibility !== "private")).toBe(true);
   });
 
+  test("persists desired timing and deferred revisit dates", async () => {
+    const { household, personas } = await createTestHousehold("radar-timing");
+    const [alex] = personas;
+
+    const privateDraft = await createRadarItem({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      topic: "Clarify morning handoff",
+      notes: "Keep this draft private for now.",
+      desiredTiming: "Before the next school week",
+      reasonKey: "unclear_expectation",
+      urgency: "normal",
+      visibility: "private"
+    });
+
+    expect(privateDraft).toMatchObject({
+      desiredTiming: "Before the next school week",
+      deferredUntil: null
+    });
+
+    const deferred = await updateRadarState({
+      householdId: household.id,
+      selectedPersonaId: alex.id,
+      id: privateDraft.id,
+      state: "deferred",
+      deferredUntil: "2026-05-11T12:00:00.000Z"
+    });
+
+    expect(deferred).toMatchObject({
+      state: "deferred",
+      desiredTiming: "Before the next school week",
+      deferredUntil: "2026-05-11T12:00:00.000Z"
+    });
+
+    const listed = await listRadarItemsForPersona({
+      householdId: household.id,
+      selectedPersonaId: alex.id
+    });
+
+    expect(listed).toContainEqual(
+      expect.objectContaining({
+        id: privateDraft.id,
+        desiredTiming: "Before the next school week",
+        deferredUntil: "2026-05-11T12:00:00.000Z"
+      })
+    );
+  });
+
   test("does not expose or mutate another household's private radar draft", async () => {
     const first = await createTestHousehold("radar-scope-a");
     const second = await createTestHousehold("radar-scope-b");

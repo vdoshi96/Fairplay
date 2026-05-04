@@ -42,12 +42,16 @@ describe("/api/radar/[id]", () => {
     get.mockResolvedValue({
       id,
       topic: "Clarify morning handoff",
-      visibility: "private"
+      visibility: "private",
+      desiredTiming: "Before Friday",
+      deferredUntil: null
     });
     update.mockResolvedValue({
       id,
       topic: "Clarify school morning plan",
-      visibility: "private"
+      visibility: "private",
+      desiredTiming: "Before Monday",
+      deferredUntil: null
     });
   });
 
@@ -67,6 +71,7 @@ describe("/api/radar/[id]", () => {
       request("PATCH", {
         topic: "Clarify school morning plan",
         notes: null,
+        desiredTiming: "Before Monday",
         reasonKey: "handoff_needed",
         urgency: "soon",
         state: "dismissed"
@@ -80,6 +85,7 @@ describe("/api/radar/[id]", () => {
       id,
       expect.objectContaining({
         topic: "Clarify school morning plan",
+        desiredTiming: "Before Monday",
         state: "dismissed"
       })
     );

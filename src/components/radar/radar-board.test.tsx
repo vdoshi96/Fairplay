@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { RadarSummary } from "@/contracts/radar";
 import { RadarBoard } from "./radar-board";
@@ -13,11 +13,18 @@ function item(overrides: Partial<RadarSummary> = {}): RadarSummary {
     urgency: "normal",
     visibility: "private",
     state: "draft",
+    desiredTiming: null,
+    deferredUntil: null,
     ...overrides
   };
 }
 
 describe("RadarBoard", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   it("shows visibility labels on every item and groups private, open, check-in, deferred, and resolved items", () => {
     render(
       <RadarBoard
@@ -102,5 +109,173 @@ describe("RadarBoard", () => {
       "check_in_only",
       true
     );
+  });
+
+  it("adds a created item to the visible production board after the fetch succeeds", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...item(),
+          id: "550e8400-e29b-41d4-a716-446655440099",
+          topic: "New timing concern",
+          desiredTiming: "Before Friday",
+          deferredUntil: null,
+          notes: null,
+          targetCheckInId: null,
+          createdAt: "2026-05-04T12:00:00.000Z",
+          updatedAt: "2026-05-04T12:00:00.000Z",
+          resolvedAt: null
+        })
+      })
+    );
+    render(<RadarBoard items={[]} />);
+
+    fireEvent.change(screen.getByLabelText("Topic"), {
+      target: { value: "New timing concern" }
+    });
+    fireEvent.change(screen.getByLabelText("Desired timing"), {
+      target: { value: "Before Friday" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create radar item" }));
+
+    await waitFor(() => {
+      expect(
+        within(screen.getByRole("region", { name: "Private drafts" })).getByText(
+          "New timing concern"
+        )
+      ).toBeVisible();
+    });
+    expect(screen.getByText("Timing: Before Friday")).toBeVisible();
+  });
+
+  it.each([
+    ["publish", "Check-in topics", "Confirm publish"],
+    ["schedule", "Check-in topics", "Schedule"],
+    ["defer", "Deferred", "Defer"],
+    ["resolve", "Resolved", "Resolve"],
+    ["dismiss", "Dismissed", "Dismiss"]
+  ])(
+    "moves an item on the visible production board after %s succeeds",
+    async (action, expectedSection, buttonName) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: async () => ({
+            ...item({
+              visibility: action === "publish" ? "check_in_only" : "shared_household",
+              state:
+                action === "publish"
+                  ? "open"
+                  : action === "schedule"
+                    ? "scheduled"
+                    : action === "defer"
+                      ? "deferred"
+                      : action === "resolve"
+                        ? "resolved"
+                        : "dismissed"
+            }),
+            desiredTiming: "This week",
+            deferredUntil:
+              action === "defer" ? "2026-05-11T12:00:00.000Z" : null,
+            notes: null,
+            targetCheckInId: null,
+            createdAt: "2026-05-04T12:00:00.000Z",
+            updatedAt: "2026-05-04T12:00:00.000Z",
+            resolvedAt:
+              action === "resolve" ? "2026-05-04T13:00:00.000Z" : null
+          })
+        })
+      );
+      render(
+        <RadarBoard
+          items={[
+            item({
+              visibility: action === "publish" ? "private" : "shared_household",
+              state: action === "publish" ? "draft" : "open",
+              desiredTiming: "This week"
+            })
+          ]}
+        />
+      );
+
+      if (action === "publish") {
+        fireEvent.change(screen.getByLabelText("Publish visibility"), {
+          target: { value: "check_in_only" }
+        });
+        fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+      }
+
+      fireEvent.click(screen.getByRole("button", { name: buttonName }));
+      if (expectedSection === "Deferred") {
+        fireEvent.click(screen.getByRole("button", { name: "Show deferred" }));
+      }
+      if (expectedSection === "Resolved") {
+        fireEvent.click(screen.getByRole("button", { name: "Show resolved" }));
+      }
+      if (expectedSection === "Dismissed") {
+        fireEvent.click(screen.getByRole("button", { name: "Show dismissed" }));
+      }
+
+      await waitFor(() => {
+        expect(
+          within(screen.getByRole("region", { name: expectedSection })).getByText(
+            "Clarify morning handoff"
+          )
+        ).toBeVisible();
+      });
+    }
+  );
+
+  it("sends a selected revisit date when deferring and surfaces the returned date", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...item({
+          visibility: "shared_household",
+          state: "deferred",
+          desiredTiming: "This week",
+          deferredUntil: "2026-05-11T12:00:00.000Z"
+        }),
+        notes: null,
+        targetCheckInId: null,
+        createdAt: "2026-05-04T12:00:00.000Z",
+        updatedAt: "2026-05-04T12:00:00.000Z",
+        resolvedAt: null
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <RadarBoard
+        items={[
+          item({
+            visibility: "shared_household",
+            state: "open",
+            desiredTiming: "This week"
+          })
+        ]}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Revisit date"), {
+      target: { value: "2026-05-11" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Defer" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show deferred" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/radar/550e8400-e29b-41d4-a716-446655440010/defer",
+        expect.objectContaining({
+          body: JSON.stringify({
+            id: "550e8400-e29b-41d4-a716-446655440010",
+            deferredUntil: "2026-05-11T12:00:00.000Z"
+          })
+        })
+      );
+    });
+    expect(screen.getByText("Revisit: May 11, 2026")).toBeVisible();
   });
 });

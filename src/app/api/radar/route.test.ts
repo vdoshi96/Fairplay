@@ -45,7 +45,9 @@ describe("/api/radar", () => {
         reasonKey: "unclear_expectation",
         urgency: "normal",
         visibility: "private",
-        state: "draft"
+        state: "draft",
+        desiredTiming: "Before Friday",
+        deferredUntil: null
       }
     ]);
     create.mockResolvedValue({
@@ -56,6 +58,8 @@ describe("/api/radar", () => {
       urgency: "soon",
       visibility: "shared_household",
       state: "open",
+      desiredTiming: "Before Friday",
+      deferredUntil: null,
       notes: null,
       targetCheckInId: null,
       createdAt: "2026-05-04T12:00:00.000Z",
@@ -88,7 +92,8 @@ describe("/api/radar", () => {
         responsibilityId: null,
         reasonKey: "blocked",
         urgency: "soon",
-        visibility: "shared_household"
+        visibility: "shared_household",
+        desiredTiming: "Before Friday"
       })
     );
 
@@ -98,7 +103,8 @@ describe("/api/radar", () => {
       expect.objectContaining({
         topic: "Shared calendar snag",
         reasonKey: "blocked",
-        visibility: "shared_household"
+        visibility: "shared_household",
+        desiredTiming: "Before Friday"
       })
     );
   });

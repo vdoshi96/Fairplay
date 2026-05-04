@@ -23,6 +23,7 @@ export type CreateRadarItemInput = {
   responsibilityId?: ResponsibilityId | null;
   topic: string;
   notes?: string | null;
+  desiredTiming?: string | null;
   reasonKey: RadarReasonKey;
   urgency: Urgency;
   visibility: Visibility;
@@ -41,7 +42,9 @@ function toRadarSummary(item: RadarItem): RadarSummary {
     reasonKey: item.reasonKey,
     urgency: item.urgency,
     visibility: item.visibility,
-    state: item.state
+    state: item.state,
+    desiredTiming: item.desiredTiming,
+    deferredUntil: nullableIso(item.deferredUntil)
   };
 }
 
@@ -107,6 +110,7 @@ export async function createRadarItem(
       responsibilityId: input.responsibilityId ?? null,
       topic: input.topic,
       notes: input.notes ?? null,
+      desiredTiming: input.desiredTiming ?? null,
       reasonKey: input.reasonKey,
       urgency: input.urgency,
       visibility: input.visibility,
@@ -162,6 +166,7 @@ export async function updateRadarState(input: {
   id: RadarItemId;
   state: RadarState;
   resolvedAt?: string | Date | null;
+  deferredUntil?: string | Date | null;
 }): Promise<RadarDetail> {
   const item = await prisma.$transaction(async (tx) => {
     const selectedPersonaCount = await tx.persona.count({
@@ -207,7 +212,11 @@ export async function updateRadarState(input: {
         resolvedAt:
           input.resolvedAt === undefined || input.resolvedAt === null
             ? null
-            : new Date(input.resolvedAt)
+            : new Date(input.resolvedAt),
+        deferredUntil:
+          input.deferredUntil === undefined || input.deferredUntil === null
+            ? null
+            : new Date(input.deferredUntil)
       }
     });
   });

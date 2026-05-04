@@ -284,6 +284,7 @@ model RadarItem {
   createdByPersonaId String
   topic              String
   notes              String?
+  desiredTiming      String?
   reasonKey          RadarReasonKey
   urgency            Urgency
   visibility         Visibility
@@ -292,6 +293,7 @@ model RadarItem {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   resolvedAt         DateTime?
+  deferredUntil      DateTime?
   household          Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
   responsibility     Responsibility? @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
   createdByPersona   Persona         @relation("CreatedRadarItems", fields: [createdByPersonaId], references: [id], onDelete: Restrict)

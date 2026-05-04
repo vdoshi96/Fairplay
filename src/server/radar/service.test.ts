@@ -36,6 +36,7 @@ function record(overrides: Partial<RadarRecord> = {}): RadarRecord {
     responsibilityId: null,
     topic: "Clarify morning handoff",
     notes: "Keep this draft private for now.",
+    desiredTiming: null,
     reasonKey: "unclear_expectation",
     urgency: "normal",
     visibility: "private",
@@ -44,6 +45,7 @@ function record(overrides: Partial<RadarRecord> = {}): RadarRecord {
     createdAt: "2026-05-04T12:00:00.000Z",
     updatedAt: "2026-05-04T12:00:00.000Z",
     resolvedAt: null,
+    deferredUntil: null,
     ...overrides
   };
 }
@@ -60,7 +62,9 @@ function detail(overrides: Partial<RadarDetail> = {}): RadarDetail {
     visibility: base.visibility,
     state: base.state,
     notes: base.notes,
+    desiredTiming: base.desiredTiming,
     targetCheckInId: base.targetCheckInId,
+    deferredUntil: base.deferredUntil,
     createdAt: base.createdAt,
     updatedAt: base.updatedAt,
     resolvedAt: base.resolvedAt
@@ -244,6 +248,7 @@ describe("radar service", () => {
       expect.objectContaining({
         id: radarId,
         state: "deferred",
+        deferredUntil: "2026-05-11T12:00:00.000Z",
         resolvedAt: null
       })
     );
@@ -252,6 +257,31 @@ describe("radar service", () => {
         id: radarId,
         state: "resolved",
         resolvedAt: "2026-05-12T12:00:00.000Z"
+      })
+    );
+  });
+
+  it("passes desired timing through create and update paths", async () => {
+    const deps = makeDeps();
+    const service = createRadarService(deps);
+
+    await service.create(session, {
+      ...createInput,
+      desiredTiming: "Before next Monday"
+    } as RadarCreate);
+    await service.update(session, radarId, {
+      desiredTiming: "After the school meeting"
+    } as Partial<RadarCreate>);
+
+    expect(deps.createRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        desiredTiming: "Before next Monday"
+      })
+    );
+    expect(deps.updateRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: radarId,
+        desiredTiming: "After the school meeting"
       })
     );
   });
