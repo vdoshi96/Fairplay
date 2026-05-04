@@ -39,6 +39,22 @@ function dueReviewDescription(source: ResponsibilityAgendaSource) {
   return source.nextReviewAt ? "Review due" : "Recent responsibility";
 }
 
+function normalizeMaxItems(maxItems: number | undefined) {
+  if (maxItems === undefined || Number.isNaN(maxItems)) {
+    return MAX_AGENDA_ITEMS;
+  }
+
+  if (maxItems === Infinity) {
+    return MAX_AGENDA_ITEMS;
+  }
+
+  if (maxItems === -Infinity) {
+    return 1;
+  }
+
+  return Math.min(Math.max(Math.trunc(maxItems), 1), MAX_AGENDA_ITEMS);
+}
+
 export function buildSuggestedAgenda(
   sources: AgendaSources,
   options: {
@@ -48,7 +64,7 @@ export function buildSuggestedAgenda(
     includeAcknowledgement?: boolean;
   } = {}
 ): AgendaDraftItem[] {
-  const maxItems = Math.min(options.maxItems ?? MAX_AGENDA_ITEMS, MAX_AGENDA_ITEMS);
+  const maxItems = normalizeMaxItems(options.maxItems);
   const selectedRadarIds = options.radarItemIds
     ? new Set(options.radarItemIds)
     : null;

@@ -182,6 +182,36 @@ describe("check-in service", () => {
     expect(preview.items).toHaveLength(5);
   });
 
+  it("normalizes negative agenda size for direct create and preview calls", async () => {
+    const deps = makeDeps({
+      listAgendaSources: vi.fn().mockResolvedValue({
+        radarItems: Array.from({ length: 5 }, (_, index) => ({
+          id: `550e8400-e29b-41d4-a716-44665544009${index}` as const,
+          topic: `Radar topic ${index + 1}`,
+          reasonKey: "unclear_expectation",
+          visibility: "shared_household",
+          state: "open",
+          responsibilityId: null
+        })),
+        responsibilities: Array.from({ length: 5 }, (_, index) => ({
+          id: `550e8400-e29b-41d4-a716-44665544007${index}` as const,
+          title: `Responsibility ${index + 1}`,
+          status: "needs_review",
+          cadence: "weekly",
+          nextReviewAt: "2026-05-01T12:00:00.000Z"
+        }))
+      })
+    });
+    const service = createCheckInService(deps);
+
+    await service.create(session, { maxItems: -1 });
+    const preview = await service.preview(session, { maxItems: -1 });
+
+    expect((deps.createCheckIn as ReturnType<typeof vi.fn>).mock.calls[0][0].items.length)
+      .toBeLessThanOrEqual(5);
+    expect(preview.items.length).toBeLessThanOrEqual(5);
+  });
+
   it("resumes the active check-in instead of creating another one", async () => {
     const deps = makeDeps({ getActiveCheckIn: vi.fn().mockResolvedValue(checkIn()) });
     const service = createCheckInService(deps);

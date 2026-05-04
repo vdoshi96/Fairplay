@@ -212,3 +212,9 @@
 - Added T08 final spec compliance review artifacts under `docs/agents/tasks/2026-05-04-review-t08-spec-final/`.
 - Re-reviewed T08 after agenda cap fix commit `0f6fd575e7c03c0a16ccea2ff689d097c367801f`; result is CHANGES_REQUESTED because create/preview routes reject above-five values and direct `maxItems: 8` service calls are clamped, but direct service calls with negative `maxItems` can still return more than five agenda items through `slice(0, -1)`.
 - Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/server/check-ins src/components/check-ins src/app/api/check-ins`, `npm run test:e2e -- --grep "check-in"`, and `npm run build`; all passed, with route-mocked e2e and the existing Edge Runtime/static-generation build warning noted.
+- Started focused T08 direct-service agenda cap fix on `codex/v1-app` in `.worktrees/v1-app`.
+- Added task artifacts under `docs/agents/tasks/2026-05-04-fix-t08-direct-agenda-cap/`.
+- Added a failing direct service regression proving `maxItems: -1` could produce nine agenda items from ten sources through create/preview generation.
+- Normalized `buildSuggestedAgenda` `maxItems` to an effective integer range of one through `MAX_AGENDA_ITEMS`, covering negative, zero, `NaN`, and infinite numeric inputs.
+- Verified the focused T08 direct agenda cap fix with `npm run lint`, `npm run typecheck`, `npm test -- --run src/server/check-ins`, `npm run build`, and `git diff --check`; all passed, with the existing Edge Runtime/static-generation build warning noted.
+- Pre-commit `git status --short` showed only `docs/agents/controller-log.md`, `docs/agents/manifest.md`, `src/server/check-ins/agenda.ts`, `src/server/check-ins/service.test.ts`, and the new `docs/agents/tasks/2026-05-04-fix-t08-direct-agenda-cap/` task artifacts.

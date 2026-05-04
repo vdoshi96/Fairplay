@@ -67,6 +67,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T08 spec compliance re-review | Codex spec compliance re-reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t08-spec-rereview/` |
 | 2026-05-04 | T08 agenda cap fix | Codex focused T08 agenda-cap fix worker | Completed and pushed | `docs/agents/tasks/2026-05-04-fix-t08-agenda-cap/` |
 | 2026-05-04 | T08 final spec compliance review | Codex final spec compliance reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t08-spec-final/` |
+| 2026-05-04 | T08 direct service agenda cap fix | Codex focused T08 direct-service agenda cap fix worker | Completed and pushed | `docs/agents/tasks/2026-05-04-fix-t08-direct-agenda-cap/` |
 
 ## Rules
 
