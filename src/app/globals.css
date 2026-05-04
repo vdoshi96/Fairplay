@@ -42,3 +42,97 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+@keyframes fp-persona-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes fp-radar-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--fp-radar) 28%, transparent);
+    opacity: 0.86;
+  }
+  100% {
+    box-shadow: 0 0 0 16px color-mix(in srgb, var(--fp-radar) 0%, transparent);
+    opacity: 0.48;
+  }
+}
+
+@keyframes fp-assignment-shift {
+  0% {
+    opacity: 0.72;
+    transform: translateX(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fp-checkin-spark {
+  0% {
+    opacity: 0;
+    transform: scale(0.82) translateY(4px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fp-panel-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fp-motion-persona-bob {
+  animation: fp-persona-bob 4s ease-in-out infinite;
+}
+
+.fp-motion-radar-pulse {
+  animation: fp-radar-pulse 2.2s ease-out infinite;
+}
+
+.fp-motion-assignment-shift {
+  animation: fp-assignment-shift 260ms ease-out both;
+}
+
+.fp-motion-checkin-spark {
+  animation: fp-checkin-spark 480ms ease-out both;
+}
+
+.fp-motion-panel-enter {
+  animation: fp-panel-enter 180ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .fp-motion-persona-bob,
+  .fp-motion-radar-pulse,
+  .fp-motion-assignment-shift,
+  .fp-motion-checkin-spark,
+  .fp-motion-panel-enter {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

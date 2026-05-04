@@ -14,7 +14,7 @@ describe("auth JSON contracts", () => {
     expect(
       CreateHouseholdRequestSchema.parse({
         householdName: "Maple House",
-        username: "maple-house",
+        username: " Maple_House ",
         password: "client-supplied secret",
         timezone: "America/Chicago"
       })
@@ -47,7 +47,7 @@ describe("auth JSON contracts", () => {
   it("accepts documented login and persona selection examples", () => {
     expect(
       LoginRequestSchema.parse({
-        username: "maple-house",
+        username: " Maple House ",
         password: "client-supplied secret"
       })
     ).toMatchObject({ username: "maple-house" });
@@ -89,5 +89,32 @@ describe("auth JSON contracts", () => {
         }
       })
     ).toMatchObject({ session: { householdId: "550e8400-e29b-41d4-a716-446655440000" } });
+  });
+
+  it("rejects unsafe household usernames before create or login handlers run", () => {
+    for (const username of [
+      "   ",
+      "---",
+      "!!",
+      "ma",
+      "maple@house",
+      "maple/house"
+    ]) {
+      expect(() =>
+        CreateHouseholdRequestSchema.parse({
+          householdName: "Maple House",
+          username,
+          password: "client-supplied secret",
+          timezone: "America/Chicago"
+        })
+      ).toThrow();
+
+      expect(() =>
+        LoginRequestSchema.parse({
+          username,
+          password: "client-supplied secret"
+        })
+      ).toThrow();
+    }
   });
 });

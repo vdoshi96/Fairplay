@@ -8,7 +8,8 @@ import {
   ResponsibilityCreateSchema,
   ResponsibilityDetailSchema,
   ResponsibilitySummarySchema,
-  ResponsibilityUpdateSchema
+  ResponsibilityUpdateSchema,
+  ResponsibilityVisibilityMutationSchema
 } from "./responsibilities";
 
 describe("responsibility JSON contracts", () => {
@@ -81,12 +82,20 @@ describe("responsibility JSON contracts", () => {
     ).toMatchObject({ title: "Supply restock" });
 
     expect(
+      ResponsibilityCreateSchema.parse({
+        title: "Morning launch",
+        areaKeys: ["home_base"],
+        hiddenEffortKeys: ["planning"],
+        cadence: "daily"
+      })
+    ).toMatchObject({ visibility: "shared_household" });
+
+    expect(
       ResponsibilityUpdateSchema.parse({
         id: summary.id,
-        status: "needs_review",
         nextReviewAt: "2026-06-01T00:00:00.000Z"
       })
-    ).toMatchObject({ status: "needs_review" });
+    ).toMatchObject({ nextReviewAt: "2026-06-01T00:00:00.000Z" });
 
     expect(ArchiveResponsibilityMutationSchema.parse({ id: summary.id })).toEqual({
       id: summary.id
@@ -123,5 +132,80 @@ describe("responsibility JSON contracts", () => {
         hiddenEffortMix: { doing: 1 }
       })
     ).toMatchObject({ reviewDueCount: 1 });
+  });
+
+  it("rejects direct visibility changes in the general update contract", () => {
+    expect(() =>
+      ResponsibilityUpdateSchema.parse({
+        id: "550e8400-e29b-41d4-a716-446655440010",
+        visibility: "shared_household"
+      })
+    ).toThrow();
+  });
+
+  it("rejects status and assignment changes in the general update contract", () => {
+    const id = "550e8400-e29b-41d4-a716-446655440010";
+
+    for (const status of ["active", "paused", "not_relevant", "archived"]) {
+      expect(() =>
+        ResponsibilityUpdateSchema.parse({
+          id,
+          status
+        })
+      ).toThrow();
+    }
+
+    expect(() =>
+      ResponsibilityUpdateSchema.parse({
+        id,
+        currentAssignments: [
+          { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+        ]
+      })
+    ).toThrow();
+  });
+
+  it("rejects private visibility when creating responsibilities", () => {
+    expect(() =>
+      ResponsibilityCreateSchema.parse({
+        title: "Private responsibility draft",
+        areaKeys: ["home_base"],
+        hiddenEffortKeys: ["planning"],
+        cadence: "daily",
+        visibility: "private"
+      })
+    ).toThrow();
+  });
+
+  it("requires confirmation before changing a private responsibility to visible spaces", () => {
+    const responsibilityId = "550e8400-e29b-41d4-a716-446655440010";
+
+    for (const toVisibility of [
+      "shared_household",
+      "partner_visible",
+      "check_in_only"
+    ]) {
+      expect(() =>
+        ResponsibilityVisibilityMutationSchema.parse({
+          responsibilityId,
+          fromVisibility: "private",
+          toVisibility
+        })
+      ).toThrow();
+
+      expect(
+        ResponsibilityVisibilityMutationSchema.parse({
+          responsibilityId,
+          fromVisibility: "private",
+          toVisibility,
+          confirmedVisibilityChange: true
+        })
+      ).toMatchObject({
+        responsibilityId,
+        fromVisibility: "private",
+        toVisibility,
+        confirmedVisibilityChange: true
+      });
+    }
   });
 });

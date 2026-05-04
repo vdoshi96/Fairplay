@@ -22,7 +22,9 @@ export const RadarSummarySchema = z
     reasonKey: RadarReasonKeySchema,
     urgency: UrgencySchema,
     visibility: VisibilitySchema,
-    state: RadarStateSchema
+    state: RadarStateSchema,
+    desiredTiming: z.string().trim().max(280).nullable(),
+    deferredUntil: NullableIsoDateTimeSchema
   })
   .strict();
 
@@ -38,6 +40,7 @@ export const RadarCreateSchema = z
   .object({
     topic: z.string().trim().min(1).max(160),
     notes: z.string().trim().max(4000).nullable().optional(),
+    desiredTiming: z.string().trim().max(280).nullable().optional(),
     responsibilityId: ResponsibilityIdSchema.nullable().optional(),
     reasonKey: RadarReasonKeySchema,
     urgency: UrgencySchema.default("normal"),
@@ -50,11 +53,10 @@ export const RadarUpdateSchema = z
     id: RadarItemIdSchema,
     topic: z.string().trim().min(1).max(160).optional(),
     notes: z.string().trim().max(4000).nullable().optional(),
+    desiredTiming: z.string().trim().max(280).nullable().optional(),
     responsibilityId: ResponsibilityIdSchema.nullable().optional(),
     reasonKey: RadarReasonKeySchema.optional(),
-    urgency: UrgencySchema.optional(),
-    state: RadarStateSchema.optional(),
-    targetCheckInId: CheckInIdSchema.nullable().optional()
+    urgency: UrgencySchema.optional()
   })
   .strict();
 
@@ -96,6 +98,13 @@ export const RadarResolveMutationSchema = z
   })
   .strict();
 
+export const RadarDismissMutationSchema = z
+  .object({
+    id: RadarItemIdSchema,
+    note: z.string().trim().max(1000).optional()
+  })
+  .strict();
+
 export type RadarSummary = z.infer<typeof RadarSummarySchema>;
 export type RadarDetail = z.infer<typeof RadarDetailSchema>;
 export type RadarCreate = z.infer<typeof RadarCreateSchema>;
@@ -103,3 +112,4 @@ export type RadarUpdate = z.infer<typeof RadarUpdateSchema>;
 export type RadarPublishMutation = z.infer<typeof RadarPublishMutationSchema>;
 export type RadarDeferMutation = z.infer<typeof RadarDeferMutationSchema>;
 export type RadarResolveMutation = z.infer<typeof RadarResolveMutationSchema>;
+export type RadarDismissMutation = z.infer<typeof RadarDismissMutationSchema>;

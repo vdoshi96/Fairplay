@@ -1,0 +1,116 @@
+import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const createHouseholdWithPersonas = vi.fn();
+const createSessionForHousehold = vi.fn();
+
+vi.mock("@/server/repositories/households", () => ({
+  createHouseholdWithPersonas
+}));
+
+vi.mock("@/server/auth/sessions", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/server/auth/sessions")>();
+
+  return {
+    ...actual,
+    createSessionForHousehold
+  };
+});
+
+function request(body: unknown) {
+  return new NextRequest("http://localhost/api/auth/create-household", {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "content-type": "application/json",
+      "user-agent": "Vitest"
+    }
+  });
+}
+
+describe("POST /api/auth/create-household", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    createHouseholdWithPersonas.mockResolvedValue({
+      household: {
+        id: "68d8178b-a0ab-4f6e-a367-5308be369dbb",
+        name: "Our Home",
+        timezone: "America/Chicago"
+      },
+      personas: [
+        {
+          id: "56f3a328-af6d-4d1d-b8c7-603640126633",
+          key: "alex",
+          displayName: "Alex"
+        },
+        {
+          id: "78ab59e8-c346-45a0-94ff-7519ee232b09",
+          key: "max",
+          displayName: "Max"
+        }
+      ],
+      requiresPersonaSelection: true
+    });
+    createSessionForHousehold.mockResolvedValue({
+      rawToken: "raw-session-token",
+      session: {
+        id: "7c338d9d-33a8-4ac8-9e15-a3cb656bd6fa",
+        householdId: "68d8178b-a0ab-4f6e-a367-5308be369dbb",
+        selectedPersonaId: null,
+        createdAt: "2026-05-04T12:00:00.000Z",
+        lastSeenAt: "2026-05-04T12:00:00.000Z",
+        expiresAt: "2026-06-03T12:00:00.000Z",
+        revokedAt: null,
+        userAgentHash: null
+      }
+    });
+  });
+
+  it("stores a password hash, creates a session cookie, and returns no secret fields", async () => {
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      request({
+        householdName: "Our Home",
+        username: "Our_Home",
+        password: "correct horse battery staple",
+        timezone: "America/Chicago"
+      })
+    );
+    const body = await response.json();
+    const persisted = createHouseholdWithPersonas.mock.calls[0][0];
+
+    expect(response.status).toBe(201);
+    expect(persisted.usernameNormalized).toBe("our-home");
+    expect(persisted.passwordHash).not.toBe("correct horse battery staple");
+    expect(persisted.passwordHash).toContain("$argon2id$");
+    expect(persisted.hashAlgorithm).toBe("argon2id");
+    expect(persisted.hashParamsVersion).toBe("v1");
+    expect(response.headers.get("set-cookie")).toContain("fairplay_session=");
+    expect(JSON.stringify(body)).not.toContain("password");
+    expect(JSON.stringify(body)).not.toContain("argon2");
+    expect(body.requiresPersonaSelection).toBe(true);
+  });
+
+  it("returns conflict for a duplicate username without echoing the password", async () => {
+    const { RepositoryError } = await import("@/server/db/errors");
+    createHouseholdWithPersonas.mockRejectedValue(
+      new RepositoryError("CONFLICT", "duplicate")
+    );
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      request({
+        householdName: "Our Home",
+        username: "our-home",
+        password: "correct horse battery staple",
+        timezone: "America/Chicago"
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body.error).toBe("Username unavailable.");
+    expect(JSON.stringify(body)).not.toContain("correct horse battery staple");
+  });
+});
