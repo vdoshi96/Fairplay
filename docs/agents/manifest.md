@@ -10,6 +10,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | Fair Play EPUB research | Codex research agent | Completed | `docs/agents/tasks/2026-05-04-fair-play-epub-research/` |
 | 2026-05-04 | Better Share and idea research | Codex research agent | Completed | `docs/agents/tasks/2026-05-04-better-share-idea-research/` |
 | 2026-05-04 | Trello data model research | Codex Trello/data-model research agent | Completed | `docs/agents/tasks/2026-05-04-trello-data-model-research/` |
+| 2026-05-04 | Spreadsheet and PDF reference research | Codex spreadsheet/PDF research agent | Completed | `docs/agents/tasks/2026-05-04-spreadsheet-pdf-research/` |
 
 ## Rules
 
