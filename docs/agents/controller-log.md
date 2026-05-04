@@ -53,3 +53,6 @@
 - Added regression coverage for safe household username normalization/rejection, auth request normalization, responsibility create default visibility, and private responsibility create rejection.
 - Updated the shared username and responsibility create contracts, and added a simple Vitest `@` alias mapping.
 - Verified the focused T02 contract quality fix with `npm run lint`, `npm run typecheck`, `npm test -- --run src/contracts src/domain`, `npm run build`, and `git diff --check`.
+- Added T02 code quality re-review artifacts under `docs/agents/tasks/2026-05-04-review-t02-code-quality-rereview/`.
+- Re-reviewed T02 after fix commit `a6ec1a3`; result is APPROVED because the safe normalized username boundary, responsibility create visibility restriction, visibility mutation confirmation coverage, and Vitest alias config are now in place.
+- Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/domain src/contracts src/seed`, `npm run build`, and Vite config alias resolution.
