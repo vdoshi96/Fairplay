@@ -16,7 +16,8 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | Fairplay v1 gap review | Codex gap reviewer agent | Completed | `docs/agents/tasks/2026-05-04-gap-review/` |
 | 2026-05-04 | Fairplay v1 task assignment | Codex task assignment agent | Completed | `docs/agents/tasks/2026-05-04-task-assignment/` |
 | 2026-05-04 | Fairplay visual and asset direction | Codex visual/asset agent | Completed | `docs/agents/tasks/2026-05-04-visual-asset-direction/` |
-| 2026-05-04 | T01 app scaffold, dependencies, config, and PWA baseline | Codex implementation worker T01 | Completed locally; push pending | `docs/agents/tasks/2026-05-04-implementation-t01-scaffold/` |
+| 2026-05-04 | T01 app scaffold, dependencies, config, and PWA baseline | Codex implementation worker T01 | Completed | `docs/agents/tasks/2026-05-04-implementation-t01-scaffold/` |
+| 2026-05-04 | T01 spec compliance review | Codex spec compliance reviewer | Completed | `docs/agents/tasks/2026-05-04-review-t01-spec/` |
 
 ## Rules
 

@@ -27,3 +27,6 @@
 - Started T01 implementation on `codex/v1-app` in `.worktrees/v1-app`.
 - Added Next.js App Router scaffold with TypeScript, Tailwind CSS, ESLint, Vitest, Playwright, baseline dependencies, placeholder env example, PWA metadata/manifest/icon routes, and a safe root page linking to future auth entry points.
 - Added a minimal Playwright smoke test for `/` and documented T01 task artifacts under `docs/agents/tasks/2026-05-04-implementation-t01-scaffold/`.
+- Added T01 spec compliance review artifacts under `docs/agents/tasks/2026-05-04-review-t01-spec/`.
+- Reviewed T01 commit range `151b815..33862e8` against the implementation plan and product constraints; result is APPROVED_WITH_NOTES with no blocking spec findings.
+- Verified `npm run lint`, `npm run typecheck`, `npm test -- --run`, standalone `npm run build`, and `npm run test:e2e` pass.
