@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 
 import type {
   CheckInDecision,
@@ -776,8 +777,8 @@ export const checkInService = createCheckInService({
       decisions: []
     }).items[0];
   },
-  async recordDecisionForItem(input) {
-    const decision = await prisma.$transaction(async (tx) => {
+    async recordDecisionForItem(input) {
+    const decision = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const checkIn = await tx.checkIn.findFirst({
         where: {
           id: input.checkInId,
