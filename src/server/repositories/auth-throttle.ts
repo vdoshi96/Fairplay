@@ -1,5 +1,6 @@
-import type { AuthThrottle } from "@prisma/client";
+import type { AuthThrottle, Prisma } from "@prisma/client";
 
+import { isUniqueConstraintError } from "../db/errors";
 import { prisma } from "../db/prisma";
 
 export type AuthThrottleSummary = {
@@ -32,42 +33,74 @@ export async function recordFailedLoginAttempt(input: {
   const attemptedAt = input.attemptedAt ? new Date(input.attemptedAt) : new Date();
   const throttleAfterAttempts = input.throttleAfterAttempts ?? 5;
   const throttleForMs = input.throttleForMs ?? 15 * 60 * 1000;
-  const existing = await prisma.authThrottle.findUnique({
-    where: {
-      usernameNormalized_ipHash: {
-        usernameNormalized: input.usernameNormalized,
-        ipHash: input.ipHash
+  const throttleKey = {
+    usernameNormalized: input.usernameNormalized,
+    ipHash: input.ipHash
+  };
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      return await prisma.$transaction(async (tx) => {
+        const throttle = await incrementFailedAttemptCount({
+          tx,
+          throttleKey,
+          attemptedAt
+        });
+
+        if (throttle.failedAttemptCount < throttleAfterAttempts) {
+          return toAuthThrottleSummary(throttle);
+        }
+
+        const throttledUntil = new Date(attemptedAt.getTime() + throttleForMs);
+        const throttled = await tx.authThrottle.update({
+          where: {
+            id: throttle.id
+          },
+          data: {
+            throttledUntil
+          }
+        });
+
+        return toAuthThrottleSummary(throttled);
+      });
+    } catch (error) {
+      if (attempt === 1 && isUniqueConstraintError(error)) {
+        continue;
       }
+
+      throw error;
     }
-  });
-  const nextFailedAttemptCount = (existing?.failedAttemptCount ?? 0) + 1;
-  const throttledUntil =
-    nextFailedAttemptCount >= throttleAfterAttempts
-      ? new Date(attemptedAt.getTime() + throttleForMs)
-      : existing?.throttledUntil ?? null;
-  const throttle = await prisma.authThrottle.upsert({
+  }
+
+  throw new Error("Unable to record failed login attempt.");
+}
+
+async function incrementFailedAttemptCount(input: {
+  tx: Prisma.TransactionClient;
+  throttleKey: {
+    usernameNormalized: string;
+    ipHash: string;
+  };
+  attemptedAt: Date;
+}) {
+  return input.tx.authThrottle.upsert({
     where: {
-      usernameNormalized_ipHash: {
-        usernameNormalized: input.usernameNormalized,
-        ipHash: input.ipHash
-      }
+      usernameNormalized_ipHash: input.throttleKey
     },
     create: {
-      usernameNormalized: input.usernameNormalized,
-      ipHash: input.ipHash,
+      ...input.throttleKey,
       failedAttemptCount: 1,
-      windowStartedAt: attemptedAt,
-      throttledUntil,
-      lastAttemptAt: attemptedAt
+      windowStartedAt: input.attemptedAt,
+      throttledUntil: null,
+      lastAttemptAt: input.attemptedAt
     },
     update: {
-      failedAttemptCount: nextFailedAttemptCount,
-      throttledUntil,
-      lastAttemptAt: attemptedAt
+      failedAttemptCount: {
+        increment: 1
+      },
+      lastAttemptAt: input.attemptedAt
     }
   });
-
-  return toAuthThrottleSummary(throttle);
 }
 
 export async function getAuthThrottle(input: {

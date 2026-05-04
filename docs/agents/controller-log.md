@@ -73,3 +73,7 @@
 - Added T03 code quality review artifacts under `docs/agents/tasks/2026-05-04-review-t03-code-quality/`.
 - Reviewed T03 persistence quality after commits `5d20d6d` and `f6f358b`; result is CHANGES_REQUESTED because auth-throttle failed-login counting is read-then-write and can lose increments under concurrent serverless requests.
 - Verified `git status --short`, `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm run build`, and `npm test -- --run src/server/repositories`; repository tests failed because Prisma cannot reach `localhost:5432` without local Postgres.
+- Started focused T03 auth throttle atomic fix on `codex/v1-app` in `.worktrees/v1-app`.
+- Replaced auth-throttle read-then-literal failed-attempt writes with a Prisma transaction that uses atomic increment and derives throttling from the persisted count.
+- Added repository integration coverage for repeated failed attempts and concurrent failed attempts against the auth throttle unique username/IP key.
+- Verified `npm run lint`, `npm run typecheck`, and `npm run build` pass; `npm test -- --run src/server/repositories` remains DB-limited because Prisma cannot reach `localhost:5432`.

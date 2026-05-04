@@ -22,11 +22,21 @@ import {
   revokeSession,
   selectSessionPersona
 } from "./sessions";
+import {
+  getAuthThrottle,
+  recordFailedLoginAttempt,
+  resetAuthThrottle
+} from "./auth-throttle";
 
 const createdHouseholdIds = new Set<string>();
+const createdAuthThrottleKeys = new Set<string>();
 
 function uniqueUsername(prefix: string) {
   return `${prefix}-${randomUUID()}`;
+}
+
+function trackAuthThrottle(usernameNormalized: string, ipHash: string) {
+  createdAuthThrottleKeys.add(`${usernameNormalized}\n${ipHash}`);
 }
 
 async function createTestHousehold(prefix = "repo") {
@@ -51,6 +61,17 @@ beforeAll(() => {
 });
 
 afterEach(async () => {
+  const authThrottleKeys = [...createdAuthThrottleKeys];
+  createdAuthThrottleKeys.clear();
+
+  await Promise.all(
+    authThrottleKeys.map((key) => {
+      const [usernameNormalized, ipHash] = key.split("\n");
+
+      return resetAuthThrottle({ usernameNormalized, ipHash });
+    })
+  );
+
   if (createdHouseholdIds.size === 0) {
     return;
   }
@@ -419,6 +440,78 @@ describe("session repository", () => {
         sessionId: session.id
       })
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+});
+
+describe("auth throttle repository", () => {
+  test("records repeated failed attempts and throttles at the configured threshold", async () => {
+    const usernameNormalized = uniqueUsername("auth-throttle-repeat");
+    const ipHash = `ip-${randomUUID()}`;
+    trackAuthThrottle(usernameNormalized, ipHash);
+
+    const first = await recordFailedLoginAttempt({
+      usernameNormalized,
+      ipHash,
+      attemptedAt: "2026-05-04T12:00:00.000Z",
+      throttleAfterAttempts: 3,
+      throttleForMs: 60_000
+    });
+    const second = await recordFailedLoginAttempt({
+      usernameNormalized,
+      ipHash,
+      attemptedAt: "2026-05-04T12:01:00.000Z",
+      throttleAfterAttempts: 3,
+      throttleForMs: 60_000
+    });
+    const third = await recordFailedLoginAttempt({
+      usernameNormalized,
+      ipHash,
+      attemptedAt: "2026-05-04T12:02:00.000Z",
+      throttleAfterAttempts: 3,
+      throttleForMs: 60_000
+    });
+
+    expect(first).toMatchObject({
+      failedAttemptCount: 1,
+      throttledUntil: null
+    });
+    expect(second).toMatchObject({
+      failedAttemptCount: 2,
+      throttledUntil: null
+    });
+    expect(third).toMatchObject({
+      failedAttemptCount: 3,
+      throttledUntil: "2026-05-04T12:03:00.000Z"
+    });
+
+    await expect(getAuthThrottle({ usernameNormalized, ipHash })).resolves.toMatchObject({
+      failedAttemptCount: 3,
+      throttledUntil: "2026-05-04T12:03:00.000Z"
+    });
+  });
+
+  test("does not lose failed attempts recorded concurrently", async () => {
+    const usernameNormalized = uniqueUsername("auth-throttle-concurrent");
+    const ipHash = `ip-${randomUUID()}`;
+    const attemptCount = 8;
+    trackAuthThrottle(usernameNormalized, ipHash);
+
+    await Promise.all(
+      Array.from({ length: attemptCount }, () =>
+        recordFailedLoginAttempt({
+          usernameNormalized,
+          ipHash,
+          attemptedAt: "2026-05-04T12:00:00.000Z",
+          throttleAfterAttempts: 5,
+          throttleForMs: 15 * 60 * 1000
+        })
+      )
+    );
+
+    await expect(getAuthThrottle({ usernameNormalized, ipHash })).resolves.toMatchObject({
+      failedAttemptCount: attemptCount,
+      throttledUntil: "2026-05-04T12:15:00.000Z"
+    });
   });
 });
 
