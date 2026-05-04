@@ -73,6 +73,35 @@ export async function findSessionByTokenHash(
   return session ? toSessionSummary(session) : null;
 }
 
+export async function touchSessionActivity(input: {
+  sessionId: string;
+  householdId: HouseholdId;
+  seenAt: string | Date;
+}): Promise<SessionSummary | null> {
+  const updated = await prisma.session.updateMany({
+    where: {
+      id: input.sessionId,
+      householdId: input.householdId,
+      revokedAt: null
+    },
+    data: {
+      lastSeenAt: new Date(input.seenAt)
+    }
+  });
+
+  if (updated.count !== 1) {
+    return null;
+  }
+
+  const session = await prisma.session.findUnique({
+    where: {
+      id: input.sessionId
+    }
+  });
+
+  return session ? toSessionSummary(session) : null;
+}
+
 export async function selectSessionPersona(input: {
   sessionId: string;
   householdId: HouseholdId;

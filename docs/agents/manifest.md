@@ -35,6 +35,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T03 code quality re-review | Codex code quality re-reviewer | Approved with notes; DB unavailable for integration verification | `docs/agents/tasks/2026-05-04-review-t03-code-quality-rereview/` |
 | 2026-05-04 | T04 auth/session/persona APIs | Codex implementation worker T04 | Completed and pushed; spec review changes requested | `docs/agents/tasks/2026-05-04-implementation-t04-auth-apis/` |
 | 2026-05-04 | T04 spec compliance review | Codex spec compliance reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t04-spec/` |
+| 2026-05-04 | T04 session idle refresh fix | Codex focused T04 fix worker | Completed and pushed | `docs/agents/tasks/2026-05-04-fix-t04-session-idle-refresh/` |
 
 ## Rules
 

@@ -8,6 +8,7 @@ import {
 } from "./sessions";
 import {
   findSessionByTokenHash,
+  touchSessionActivity,
   type SessionSummary
 } from "../repositories/sessions";
 
@@ -47,5 +48,9 @@ export async function getCurrentSession(
     return null;
   }
 
-  return session;
+  return touchSessionActivity({
+    sessionId: session.id,
+    householdId: session.householdId,
+    seenAt: now
+  });
 }
