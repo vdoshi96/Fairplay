@@ -72,7 +72,21 @@ describe("/api/check-ins/[id]/decisions", () => {
       session,
       checkInId,
       itemId,
-      expect.objectContaining({ decisionType: "assign_owner" })
+      expect.objectContaining({
+        decisionType: "assign_owner",
+        reviewOn: "2026-06-04T12:00:00.000Z",
+        responsibilityEffect: expect.objectContaining({
+          kind: "assign_owner",
+          assignments: [
+            {
+              personaKey: "alex",
+              role: "accountable_owner",
+              scope: "outcome"
+            }
+          ],
+          revisitAt: "2026-06-04T12:00:00.000Z"
+        })
+      })
     );
   });
 });

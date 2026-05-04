@@ -55,6 +55,10 @@ export type GuidedCheckIn = {
   decisions?: GuidedDecision[];
 };
 
+export type GuidedAgendaPreview = {
+  items: GuidedCheckInItem[];
+};
+
 export const ResponsibilityEffectSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.enum(["assign_owner", "change_role"]),
@@ -220,6 +224,15 @@ function assertHouseholdRecord(
   }
 }
 
+function assertActiveItem(record: GuidedCheckIn, itemId: CheckInItemId): void {
+  if (
+    record.state !== "active" ||
+    !record.items.some((item) => item.id === itemId)
+  ) {
+    throw new CheckInServiceError("NOT_FOUND", "Check-in item not found.");
+  }
+}
+
 function toCheckInDecision(input: GuidedDecisionInput): CheckInDecision {
   return {
     decisionType: input.decisionType,
@@ -230,8 +243,61 @@ function toCheckInDecision(input: GuidedDecisionInput): CheckInDecision {
   };
 }
 
+function previewItemId(item: AgendaDraftItem, index: number): CheckInItemId {
+  return (
+    item.radarItemId ??
+    item.responsibilityId ??
+    `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`
+  );
+}
+
+function toGuidedPreviewItems(items: AgendaDraftItem[]): GuidedCheckInItem[] {
+  return items.map((item, index) => ({
+    id: previewItemId(item, index),
+    itemType: item.itemType,
+    state: "queued",
+    promptKey: item.promptKey,
+    radarItemId: item.radarItemId,
+    responsibilityId: item.responsibilityId,
+    sortOrder: index,
+    title: item.title,
+    description: item.description,
+    visibility: item.visibility,
+    response: null,
+    decisionId: null
+  }));
+}
+
 export function createCheckInService(deps: CheckInServiceDeps) {
   return {
+    async preview(
+      session: CurrentSession,
+      input: CreateCheckInInput
+    ): Promise<GuidedAgendaPreview> {
+      const selectedPersonaId = requireSelectedPersona(session);
+      const validPersona = await deps.ensurePersonaInHousehold({
+        householdId: session.householdId,
+        personaId: selectedPersonaId
+      });
+
+      if (!validPersona) {
+        throw new CheckInServiceError(
+          "INVALID_INPUT",
+          "Selected persona does not belong to household."
+        );
+      }
+
+      const sources = await deps.listAgendaSources({
+        householdId: session.householdId,
+        selectedPersonaId,
+        asOf: new Date()
+      });
+
+      return {
+        items: toGuidedPreviewItems(buildSuggestedAgenda(sources, input))
+      };
+    },
+
     async create(
       session: CurrentSession,
       input: CreateCheckInInput
@@ -292,6 +358,7 @@ export function createCheckInService(deps: CheckInServiceDeps) {
         checkInId
       });
       assertHouseholdRecord(record, session.householdId);
+      assertActiveItem(record, itemId);
 
       return deps.updateItem({
         householdId: session.householdId,
@@ -613,11 +680,25 @@ export const checkInService = createCheckInService({
       },
       select: { id: true }
     });
-    const item = await prisma.checkInItem.update({
-      where: { id: input.itemId },
+    const update = await prisma.checkInItem.updateMany({
+      where: {
+        id: input.itemId,
+        checkInId: input.checkInId
+      },
       data: {
         state: input.state,
         response: input.response ?? null
+      }
+    });
+
+    if (update.count !== 1) {
+      throw new CheckInServiceError("NOT_FOUND", "Check-in item not found.");
+    }
+
+    const item = await prisma.checkInItem.findFirstOrThrow({
+      where: {
+        id: input.itemId,
+        checkInId: input.checkInId
       },
       include: {
         radarItem: { select: { topic: true, visibility: true } },
@@ -669,11 +750,25 @@ export const checkInService = createCheckInService({
       },
       select: { id: true }
     });
-    const item = await prisma.checkInItem.update({
-      where: { id: input.itemId },
+    const update = await prisma.checkInItem.updateMany({
+      where: {
+        id: input.itemId,
+        checkInId: input.checkInId
+      },
       data: {
         state: "discussed",
         decisionId: input.decisionId
+      }
+    });
+
+    if (update.count !== 1) {
+      throw new CheckInServiceError("NOT_FOUND", "Check-in item not found.");
+    }
+
+    const item = await prisma.checkInItem.findFirstOrThrow({
+      where: {
+        id: input.itemId,
+        checkInId: input.checkInId
       },
       include: {
         radarItem: { select: { topic: true, visibility: true } },

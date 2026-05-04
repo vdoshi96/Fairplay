@@ -13,6 +13,7 @@ const otherHouseholdId = "550e8400-e29b-41d4-a716-446655440099";
 const alexId = "550e8400-e29b-41d4-a716-446655440001";
 const checkInId = "550e8400-e29b-41d4-a716-446655440080";
 const itemId = "550e8400-e29b-41d4-a716-446655440081";
+const otherHouseholdItemId = "550e8400-e29b-41d4-a716-446655440089";
 const radarId = "550e8400-e29b-41d4-a716-446655440090";
 const responsibilityId = "550e8400-e29b-41d4-a716-446655440070";
 
@@ -179,6 +180,24 @@ describe("check-in service", () => {
     expect(deps.createCheckIn).not.toHaveBeenCalled();
   });
 
+  it("previews agenda items without creating or resuming an active check-in", async () => {
+    const deps = makeDeps({ getActiveCheckIn: vi.fn().mockResolvedValue(checkIn()) });
+    const service = createCheckInService(deps);
+
+    const preview = await service.preview(session, { maxItems: 2 });
+
+    expect(deps.getActiveCheckIn).not.toHaveBeenCalled();
+    expect(deps.createCheckIn).not.toHaveBeenCalled();
+    expect(preview.items).toHaveLength(2);
+    expect(preview.items[0]).toEqual(
+      expect.objectContaining({
+        state: "queued",
+        radarItemId: radarId,
+        title: "Clarify morning handoff"
+      })
+    );
+  });
+
   it("updates skipped and deferred item states without creating a decision", async () => {
     const deps = makeDeps();
     const service = createCheckInService(deps);
@@ -195,6 +214,21 @@ describe("check-in service", () => {
     expect(deps.updateItem).toHaveBeenCalledTimes(2);
     expect(deps.createDecision).not.toHaveBeenCalled();
     expect(deps.applyResponsibilityDecision).not.toHaveBeenCalled();
+  });
+
+  it("rejects item updates when the item is not nested in the household check-in", async () => {
+    const deps = makeDeps();
+    const service = createCheckInService(deps);
+
+    await expect(
+      service.updateItem(session, checkInId, otherHouseholdItemId, {
+        state: "skipped",
+        response: "Not today."
+      })
+    ).rejects.toMatchObject({
+      code: "NOT_FOUND"
+    });
+    expect(deps.updateItem).not.toHaveBeenCalled();
   });
 
   it("applies responsibility changes only through the explicit decision path", async () => {

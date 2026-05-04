@@ -20,6 +20,12 @@ async function mockCheckInFlow(page: Page) {
                 <option value="schedule_review">Schedule review</option>
               </select>
             </label>
+            <label>Owner
+              <select id="owner" aria-label="Owner">
+                <option value="alex">Alex</option>
+                <option value="max">Max</option>
+              </select>
+            </label>
             <label>Decision summary <textarea aria-label="Decision summary" id="summary"></textarea></label>
             <label>Review date <input aria-label="Review date" id="review" type="date" /></label>
             <button id="record">Record decision</button>
@@ -71,6 +77,7 @@ test("check-in flow records one decision, defers one topic, and shows summary", 
 
   await page.getByRole("button", { name: "Start check-in" }).click();
   await page.getByLabel("Decision type").selectOption("assign_owner");
+  await page.getByLabel("Owner").selectOption("alex");
   await page.getByLabel("Decision summary").fill("Alex owns meal planning until June review.");
   await page.getByLabel("Review date").fill("2026-06-04");
   await page.getByRole("button", { name: "Record decision" }).click();

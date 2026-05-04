@@ -61,6 +61,10 @@ describe("CheckInFlow", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Preview agenda" }));
     await screen.findByText("Clarify morning handoff");
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/check-ins/preview",
+      expect.objectContaining({ method: "POST" })
+    );
     fireEvent.click(screen.getByRole("button", { name: "Remove Weekly meal outline" }));
     fireEvent.click(screen.getByRole("button", { name: "Start check-in" }));
 
@@ -75,6 +79,88 @@ describe("CheckInFlow", () => {
     });
     expect((fetch as ReturnType<typeof vi.fn>).mock.calls.at(-1)?.[1]?.body)
       .not.toContain("550e8400-e29b-41d4-a716-446655440070");
+  });
+
+  it("starts with selected preview item ids without expanding linked radar responsibilities", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...checkIn,
+          items: [
+            {
+              ...checkIn.items[0],
+              responsibilityId: "550e8400-e29b-41d4-a716-446655440070"
+            }
+          ]
+        })
+      })
+    );
+    render(<NewCheckInLauncher />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview agenda" }));
+    await screen.findByText("Clarify morning handoff");
+    fireEvent.click(screen.getByRole("button", { name: "Start check-in" }));
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenLastCalledWith(
+        "/api/check-ins",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.stringContaining("550e8400-e29b-41d4-a716-446655440090")
+        })
+      );
+    });
+    expect((fetch as ReturnType<typeof vi.fn>).mock.calls.at(-1)?.[1]?.body)
+      .not.toContain("550e8400-e29b-41d4-a716-446655440070");
+  });
+
+  it("sends owner and review date as a structured responsibility decision effect", async () => {
+    const onDecision = vi.fn();
+    render(
+      <CheckInFlow
+        initialCheckIn={{ ...checkIn, items: [checkIn.items[1]] }}
+        onDecision={onDecision}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Decision type"), {
+      target: { value: "assign_owner" }
+    });
+    fireEvent.change(screen.getByLabelText("Owner"), {
+      target: { value: "max" }
+    });
+    fireEvent.change(screen.getByLabelText("Decision summary"), {
+      target: { value: "Max owns meal planning until the next review." }
+    });
+    fireEvent.change(screen.getByLabelText("Review date"), {
+      target: { value: "2026-06-04" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Record decision" }));
+
+    await waitFor(() => {
+      expect(onDecision).toHaveBeenCalledWith(
+        checkIn.id,
+        checkIn.items[1].id,
+        expect.objectContaining({
+          decisionType: "assign_owner",
+          responsibilityId: "550e8400-e29b-41d4-a716-446655440070",
+          reviewOn: "2026-06-04T12:00:00.000Z",
+          responsibilityEffect: {
+            kind: "assign_owner",
+            assignments: [
+              {
+                personaKey: "max",
+                role: "accountable_owner",
+                scope: "outcome"
+              }
+            ],
+            revisitAt: "2026-06-04T12:00:00.000Z"
+          }
+        })
+      );
+    });
   });
 
   it("shows current item, visibility label, and skip/defer controls", async () => {

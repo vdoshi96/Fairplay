@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import type { CheckInItemState, DecisionType } from "@/domain/enums";
+import type { CheckInItemState, DecisionType, PersonaKey } from "@/domain/enums";
 import type {
   GuidedCheckIn,
   GuidedCheckInItem,
@@ -74,6 +74,8 @@ export function CheckInFlow({
     useState<DecisionType>("schedule_review");
   const [decisionSummary, setDecisionSummary] = useState("");
   const [reviewDate, setReviewDate] = useState("");
+  const [responsibilityOwner, setResponsibilityOwner] =
+    useState<PersonaKey>("alex");
   const [message, setMessage] = useState<string | null>(null);
 
   const currentItem = useMemo(
@@ -114,13 +116,35 @@ export function CheckInFlow({
       return;
     }
 
+    const reviewOn = dateInputToIso(reviewDate);
     const decision: GuidedDecisionInput = {
       decisionType,
       summary: decisionSummary.trim(),
       effectiveAt: new Date().toISOString(),
-      reviewOn: dateInputToIso(reviewDate),
+      reviewOn,
       responsibilityId: currentItem.responsibilityId
     };
+
+    if (currentItem.responsibilityId) {
+      if (decisionType === "assign_owner" || decisionType === "change_role") {
+        decision.responsibilityEffect = {
+          kind: decisionType,
+          assignments: [
+            {
+              personaKey: responsibilityOwner,
+              role: "accountable_owner",
+              scope: "outcome"
+            }
+          ],
+          revisitAt: reviewOn ?? undefined
+        };
+      } else if (decisionType === "schedule_review") {
+        decision.responsibilityEffect = {
+          kind: "schedule_review",
+          reviewOn
+        };
+      }
+    }
 
     if (onDecision) {
       await onDecision(checkIn.id, currentItem.id, decision);
@@ -237,6 +261,22 @@ export function CheckInFlow({
             ))}
           </select>
         </label>
+        {currentItem?.responsibilityId &&
+        (decisionType === "assign_owner" || decisionType === "change_role") ? (
+          <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+            Owner
+            <select
+              className="rounded-md border border-stone-300 px-3 py-2"
+              value={responsibilityOwner}
+              onChange={(event) =>
+                setResponsibilityOwner(event.target.value as PersonaKey)
+              }
+            >
+              <option value="alex">Alex</option>
+              <option value="max">Max</option>
+            </select>
+          </label>
+        ) : null}
         <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
           Decision summary
           <textarea
@@ -287,11 +327,14 @@ export function NewCheckInLauncher({
 
   async function previewAgenda() {
     try {
-      const preview = await jsonFetch<GuidedCheckIn>("/api/check-ins", {
-        method: "POST",
-        body: JSON.stringify({ maxItems: 5 }),
-        headers: { "content-type": "application/json" }
-      });
+      const preview = await jsonFetch<{ items: SuggestedItem[] }>(
+        "/api/check-ins/preview",
+        {
+          method: "POST",
+          body: JSON.stringify({ maxItems: 5 }),
+          headers: { "content-type": "application/json" }
+        }
+      );
       setSuggestions(preview.items);
     } catch (previewError) {
       setError(previewError instanceof Error ? previewError.message : "Unable to preview.");
@@ -305,9 +348,11 @@ export function NewCheckInLauncher({
         body: JSON.stringify({
           maxItems: 5,
           radarItemIds: suggestions
+            .filter((item) => item.itemType === "radar")
             .map((item) => item.radarItemId)
             .filter((id): id is string => Boolean(id)),
           responsibilityIds: suggestions
+            .filter((item) => item.itemType === "responsibility")
             .map((item) => item.responsibilityId)
             .filter((id): id is string => Boolean(id))
         }),
