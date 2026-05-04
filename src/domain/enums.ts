@@ -91,6 +91,14 @@ export const SOURCE_REVIEW_STATUSES = [
   "blocked",
   "needs_review"
 ] as const;
+export const RESPONSIBILITY_BOARD_LANES = [
+  "cards_of_concern",
+  "player_1",
+  "player_2",
+  "kid_split",
+  "not_in_play",
+  "trimmed"
+] as const;
 
 export const PersonaKeySchema = z.enum(PERSONA_KEYS);
 export const ResponsibilityStatusSchema = z.enum(RESPONSIBILITY_STATUSES);
@@ -106,6 +114,7 @@ export const CheckInStateSchema = z.enum(CHECK_IN_STATES);
 export const CheckInItemStateSchema = z.enum(CHECK_IN_ITEM_STATES);
 export const DecisionTypeSchema = z.enum(DECISION_TYPES);
 export const SourceReviewStatusSchema = z.enum(SOURCE_REVIEW_STATUSES);
+export const ResponsibilityBoardLaneSchema = z.enum(RESPONSIBILITY_BOARD_LANES);
 
 export type PersonaKey = z.infer<typeof PersonaKeySchema>;
 export type ResponsibilityStatus = z.infer<typeof ResponsibilityStatusSchema>;
@@ -121,6 +130,7 @@ export type CheckInState = z.infer<typeof CheckInStateSchema>;
 export type CheckInItemState = z.infer<typeof CheckInItemStateSchema>;
 export type DecisionType = z.infer<typeof DecisionTypeSchema>;
 export type SourceReviewStatus = z.infer<typeof SourceReviewStatusSchema>;
+export type ResponsibilityBoardLane = z.infer<typeof ResponsibilityBoardLaneSchema>;
 
 export function assertValidPersonaKey(value: unknown): PersonaKey {
   const result = PersonaKeySchema.safeParse(value);

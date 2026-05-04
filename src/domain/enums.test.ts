@@ -29,6 +29,8 @@ import {
   SourceReviewStatusSchema,
   UrgencySchema,
   VisibilitySchema,
+  RESPONSIBILITY_BOARD_LANES,
+  ResponsibilityBoardLaneSchema,
   assertValidPersonaKey
 } from "./enums";
 
@@ -125,6 +127,14 @@ describe("domain enum contracts", () => {
       "blocked",
       "needs_review"
     ]);
+    expect(RESPONSIBILITY_BOARD_LANES).toEqual([
+      "cards_of_concern",
+      "player_1",
+      "player_2",
+      "kid_split",
+      "not_in_play",
+      "trimmed"
+    ]);
   });
 
   it("provides Zod schemas for every enum", () => {
@@ -142,6 +152,11 @@ describe("domain enum contracts", () => {
     expect(CheckInItemStateSchema.parse("queued")).toBe("queued");
     expect(DecisionTypeSchema.parse("schedule_review")).toBe("schedule_review");
     expect(SourceReviewStatusSchema.parse("approved_original")).toBe("approved_original");
+    expect(ResponsibilityBoardLaneSchema.parse("not_in_play")).toBe("not_in_play");
+  });
+
+  it("rejects invalid board lanes", () => {
+    expect(() => ResponsibilityBoardLaneSchema.parse("backlog")).toThrow();
   });
 
   it("asserts valid persona keys", () => {
