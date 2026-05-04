@@ -58,4 +58,27 @@ describe("GET /api/load-snapshot", () => {
     expect(body.ownerDistribution).toEqual({ alex: 0, max: 0, unassigned: 0 });
     expect(JSON.stringify(body)).not.toMatch(/score|winner|loser|grade/i);
   });
+
+  it("returns auth required when overview needs a selected persona", async () => {
+    getCurrentSession.mockResolvedValue({
+      ...session,
+      selectedPersonaId: null
+    });
+    listOverview.mockRejectedValue({
+      code: "AUTH_REQUIRED"
+    });
+    const { GET } = await import("./route");
+
+    const response = await GET(
+      new NextRequest("http://localhost/api/load-snapshot", {
+        headers: {
+          cookie: "fairplay_session=raw-session-token"
+        }
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body.error).toBe("Authentication required.");
+  });
 });

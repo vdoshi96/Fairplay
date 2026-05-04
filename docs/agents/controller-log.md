@@ -152,3 +152,7 @@
 - Added T06 code quality re-review artifacts under `docs/agents/tasks/2026-05-04-review-t06-code-quality-rereview/`.
 - Re-reviewed T06 after fix commit `85108b11982c01276b1c5172e9c02e350c723295`; result is CHANGES_REQUESTED because the original generic PATCH and radar privacy findings are resolved, but `/api/load-snapshot` now calls the selected-persona-required overview service without translating `AUTH_REQUIRED`.
 - Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/server/responsibilities src/components/responsibilities src/app/api/responsibilities`, `npm run test:e2e -- --grep "responsibility|load map"`, and `npm run build`; all passed, with existing non-blocking e2e color warnings and the existing Next.js Edge Runtime/static-generation build warning.
+- Started focused T06 load-snapshot auth-required fix on `codex/v1-app` in `.worktrees/v1-app`.
+- Added task artifacts under `docs/agents/tasks/2026-05-04-fix-t06-load-snapshot-auth-required/`.
+- Added route coverage for authenticated sessions with `selectedPersonaId: null`, then updated `/api/load-snapshot` to translate responsibility service `AUTH_REQUIRED` into the same 401-style response used by `/api/responsibilities`.
+- Verified the focused T06 load-snapshot auth-required fix with `npm run lint`, `npm run typecheck`, `npm test -- --run src/app/api/load-snapshot src/app/api/responsibilities src/server/responsibilities`, `npm run build`, and `git diff --check`; all passed, with the existing Next.js Edge Runtime/static-generation build warning.
