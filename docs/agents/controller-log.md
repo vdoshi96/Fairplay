@@ -20,3 +20,5 @@
 - Defined v1 product scope, mobile-first routes/flows, platform-neutral API/domain boundaries, Postgres/Prisma/Vercel architecture direction, household username/password login with Alex/Max persona selection, core data entities, original demo seed taxonomy boundaries, and relationship-safety/IP guardrails.
 - Added Fairplay v1 gap review task on `codex/research-and-spec`.
 - Reviewed product/spec/research handoffs for blockers, contradictions, unresolved implementation decisions, IP/privacy/safety risks, and conservative defaults before implementation task decomposition.
+- Added Fairplay v1 task assignment on `codex/research-and-spec`.
+- Replaced the high-level implementation plan with task-scoped worker assignments covering app scaffold, shared contracts, Prisma/Postgres persistence, auth/session/persona APIs, mobile UI/onboarding, responsibilities/load map, radar, guided check-ins, visual integration, README/Vercel readiness, final verification, review gates, and PR strategy.
