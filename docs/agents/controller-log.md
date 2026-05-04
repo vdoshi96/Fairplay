@@ -18,3 +18,5 @@
 - Defined pre-design constraints for source-derived IP, household login/session privacy, private/shared visibility, non-clinical relationship support, unsafe-relationship boundaries, non-punitive metrics, and implementation review readiness.
 - Added Fairplay v1 product architecture task on `codex/research-and-spec`.
 - Defined v1 product scope, mobile-first routes/flows, platform-neutral API/domain boundaries, Postgres/Prisma/Vercel architecture direction, household username/password login with Alex/Max persona selection, core data entities, original demo seed taxonomy boundaries, and relationship-safety/IP guardrails.
+- Added Fairplay v1 gap review task on `codex/research-and-spec`.
+- Reviewed product/spec/research handoffs for blockers, contradictions, unresolved implementation decisions, IP/privacy/safety risks, and conservative defaults before implementation task decomposition.

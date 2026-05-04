@@ -13,6 +13,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | Spreadsheet and PDF reference research | Codex spreadsheet/PDF research agent | Completed | `docs/agents/tasks/2026-05-04-spreadsheet-pdf-research/` |
 | 2026-05-04 | IP, privacy, and relationship-safety review | Codex IP/privacy/safety agent | Completed | `docs/agents/tasks/2026-05-04-ip-privacy-safety-review/` |
 | 2026-05-04 | Fairplay v1 product architecture | Codex product architecture agent | Completed | `docs/agents/tasks/2026-05-04-product-architecture/` |
+| 2026-05-04 | Fairplay v1 gap review | Codex gap reviewer agent | Completed | `docs/agents/tasks/2026-05-04-gap-review/` |
 
 ## Rules
 

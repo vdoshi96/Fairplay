@@ -217,3 +217,15 @@ No app scaffold or deployment instructions are added by this architecture task.
 - Which Vercel Marketplace Postgres provider the implementation will connect.
 - Final safety-reviewed onboarding copy.
 - Final review of demo seed content before it enters code, tests, or screenshots.
+
+## Resolved Defaults and Remaining Gaps
+
+Implementation decomposition may proceed with no blocking product contradiction found. Use these conservative defaults unless a later product review changes them:
+
+- Add `/app/onboarding` as the skippable post-persona setup route referenced by user flows.
+- Keep fixed v1 persona keys and default display names, `alex` and `max`; treat custom persona naming as future scope unless explicitly added to the implementation plan.
+- Treat persona-private drafts as server-persisted, persona-filtered UX records, not true secrecy from someone who knows the shared household credentials.
+- Keep responsibilities shared-household by default; reserve private visibility for radar drafts unless a specific v1 flow adds private responsibility drafts.
+- Use Argon2id with versioned parameters, server-managed opaque sessions, idle and absolute expiration, logout revocation, and failed-login throttling by normalized username and IP.
+- Implement PWA support as responsive mobile-first UI, metadata, manifest, and icons; defer offline caching of sensitive household data.
+- Do not add partner invites, a full starter library, individual accounts, export/deletion controls, billing, or native iOS work in v1 implementation.
