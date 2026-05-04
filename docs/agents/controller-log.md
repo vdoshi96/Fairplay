@@ -43,3 +43,6 @@
 - Added regression coverage and contract changes so generic responsibility updates reject direct `visibility` while `ResponsibilityVisibilityMutationSchema` requires confirmation for private-to-visible transitions.
 - Verified the focused T02 fix with `npm run lint`, `npm run typecheck`, `npm test -- --run src/contracts src/domain`, `npm run build`, and `git diff --check`.
 - Pushed the T02 responsibility visibility confirmation fix to `origin/codex/v1-app`.
+- Added T02 spec compliance re-review artifacts under `docs/agents/tasks/2026-05-04-review-t02-spec-rereview/`.
+- Re-reviewed T02 after fix commit `3e3235e`; result is APPROVED because `ResponsibilityUpdateSchema` rejects direct visibility updates and `ResponsibilityVisibilityMutationSchema` requires confirmation for all private-to-visible responsibility transitions.
+- Verified `git status --short`, `npm run lint`, `npm run typecheck`, `npm test -- --run src/domain src/contracts src/seed`, and `npm run build`.

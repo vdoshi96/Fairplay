@@ -22,6 +22,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T02 shared domain contracts and reviewed seed content | Codex implementation worker T02 | Completed locally; review pending | `docs/agents/tasks/2026-05-04-implementation-t02-domain-contracts/` |
 | 2026-05-04 | T02 spec compliance review | Codex spec compliance reviewer | Changes requested | `docs/agents/tasks/2026-05-04-review-t02-spec/` |
 | 2026-05-04 | T02 responsibility visibility confirmation fix | Codex focused T02 fix worker | Completed and pushed | `docs/agents/tasks/2026-05-04-fix-t02-responsibility-visibility/` |
+| 2026-05-04 | T02 spec compliance re-review | Codex spec compliance re-reviewer | Approved | `docs/agents/tasks/2026-05-04-review-t02-spec-rereview/` |
 
 ## Rules
 
