@@ -80,3 +80,8 @@
 - Added T03 code quality re-review artifacts under `docs/agents/tasks/2026-05-04-review-t03-code-quality-rereview/`.
 - Re-reviewed T03 after auth-throttle fix commit `df4ee13fcb2c08b7126fffb378ea2b277b6c1d0e`; result is APPROVED_WITH_NOTES because the atomic increment fix resolves the prior concurrency finding and tests were added, with live repository integration verification still blocked by no Postgres at `localhost:5432`.
 - Verified `git status --short`, `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm run build`, and `npm test -- --run src/server/repositories`; repository tests failed for the expected DB connection limitation.
+- Started T04 auth/session/persona API implementation on `codex/v1-app` in `.worktrees/v1-app`.
+- Added Argon2id password hashing metadata and verification, opaque session-token creation with HMAC token hashing, secure session cookie helpers, current-session validation with idle/absolute expiration checks, failed-login throttle wrappers, create-household/login/logout/me/persona-selection route handlers, and `/app/**` middleware redirects.
+- Added T04 task artifacts under `docs/agents/tasks/2026-05-04-implementation-t04-auth-apis/`.
+- Added focused tests for password verification and wrong-password rejection, raw session token non-persistence, create household, duplicate username, login success/generic failure/throttle, logout, cross-household persona rejection, middleware redirects, and expired throttle-window reset.
+- Verified T04 with `npm run lint`, `npm run typecheck`, `npm test -- --run src/server/auth src/app/api/auth src/app/api/personas`, `npm test -- --run src/middleware.test.ts`, `npm run build`, and `git diff --check`; all passed.

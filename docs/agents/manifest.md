@@ -33,6 +33,7 @@ This manifest tracks agent work for the Fairplay repository.
 | 2026-05-04 | T03 code quality review | Codex code quality reviewer | Changes requested; DB unavailable for integration verification | `docs/agents/tasks/2026-05-04-review-t03-code-quality/` |
 | 2026-05-04 | T03 auth throttle atomic fix | Codex focused T03 auth-throttle fix worker | Completed with concerns; DB unavailable for integration verification | `docs/agents/tasks/2026-05-04-fix-t03-auth-throttle-atomic/` |
 | 2026-05-04 | T03 code quality re-review | Codex code quality re-reviewer | Approved with notes; DB unavailable for integration verification | `docs/agents/tasks/2026-05-04-review-t03-code-quality-rereview/` |
+| 2026-05-04 | T04 auth/session/persona APIs | Codex implementation worker T04 | Completed locally; push pending | `docs/agents/tasks/2026-05-04-implementation-t04-auth-apis/` |
 
 ## Rules
 
