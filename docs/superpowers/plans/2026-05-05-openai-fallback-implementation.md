@@ -18,7 +18,7 @@
 
 - [ ] Write failing config tests for enabled/disabled fallback env resolution.
 - [ ] Write failing OpenAI client tests for Responses API structured card output and image base64 output.
-- [ ] Write failing provider-neutral wrapper tests for Qwen-first, fallback-on-Qwen-failure, disabled fallback, and Qwen-only ASR.
+- [ ] Write failing provider-neutral wrapper tests for Qwen-first, fallback-on-Qwen-failure, disabled fallback, and ASR fallback behavior.
 - [ ] Run focused AI tests and confirm they fail because the fallback modules do not exist yet.
 
 ## Task 2: Shared Card Generation Utilities
@@ -55,7 +55,7 @@
 - Modify `src/server/ai-card-drafts/service.test.ts` only if type imports require it
 
 - [ ] Export `transcribeAudio`, `structureTaskAsCard`, and `generateCardCover` from the wrapper.
-- [ ] Delegate audio transcription directly to Qwen.
+- [ ] For audio transcription, call Qwen first and OpenAI only after a thrown error when fallback is enabled.
 - [ ] For structuring and image generation, call Qwen first and OpenAI only after a thrown error when fallback is enabled.
 - [ ] Change the AI draft service default deps to import the wrapper.
 

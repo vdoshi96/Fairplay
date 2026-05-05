@@ -6,7 +6,8 @@ import type { OpenAiEnabledFallbackConfig } from "./openai-config";
 import {
   generateCardCoverWithOpenAi,
   OpenAiGenerationError,
-  structureTaskAsCardWithOpenAi
+  structureTaskAsCardWithOpenAi,
+  transcribeAudioWithOpenAi
 } from "./openai-card-generator";
 
 const config: OpenAiEnabledFallbackConfig = {
@@ -14,6 +15,8 @@ const config: OpenAiEnabledFallbackConfig = {
   baseUrl: "https://api.openai.example/v1",
   textApiKey: "text-secret",
   textModel: "gpt-5-nano",
+  asrApiKey: "asr-secret",
+  asrModel: "gpt-4o-mini-transcribe",
   imageApiKey: "image-secret",
   imageModel: "gpt-image-1-mini"
 };
@@ -42,6 +45,61 @@ const validCard = {
 };
 
 describe("OpenAI fallback card generator", () => {
+  it("transcribes audio through the Transcriptions API with context prompt", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        text: "Dog medicine every month."
+      })
+    );
+
+    const transcript = await transcribeAudioWithOpenAi(
+      {
+        bytes: new Uint8Array([1, 2, 3]),
+        mimeType: "audio/webm",
+        contextText: "Household task capture"
+      },
+      { fetch: fetchMock, config }
+    );
+
+    expect(transcript).toBe("Dog medicine every month.");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.openai.example/v1/audio/transcriptions",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          authorization: "Bearer asr-secret"
+        })
+      })
+    );
+    const request = fetchMock.mock.calls[0][1];
+    expect(request.headers).not.toHaveProperty("content-type");
+    expect(request.body).toBeInstanceOf(FormData);
+    const form = request.body as FormData;
+    expect(form.get("model")).toBe("gpt-4o-mini-transcribe");
+    expect(form.get("response_format")).toBe("json");
+    expect(form.get("prompt")).toBe(
+      "Context for this short household task recording: Household task capture"
+    );
+    const file = form.get("file");
+    expect(file).toBeInstanceOf(File);
+    expect((file as File).name).toBe("recording.webm");
+    expect((file as File).type).toBe("audio/webm");
+  });
+
+  it("throws a generation error when OpenAI transcription returns no text", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ text: "" }));
+
+    await expect(
+      transcribeAudioWithOpenAi(
+        {
+          bytes: new Uint8Array([1, 2, 3]),
+          mimeType: "audio/webm"
+        },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toBeInstanceOf(OpenAiGenerationError);
+  });
+
   it("structures a task through the Responses API with strict JSON schema output", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({

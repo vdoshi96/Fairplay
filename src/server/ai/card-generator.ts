@@ -3,17 +3,35 @@ import "server-only";
 import {
   generateCardCover as generateCardCoverWithQwen,
   structureTaskAsCard as structureTaskAsCardWithQwen,
-  transcribeAudio,
+  transcribeAudio as transcribeAudioWithQwen,
   type GeneratedCoverImage,
   type StructuredAiCard
 } from "./qwen-card-generator";
 import { getOpenAiFallbackConfig } from "./openai-config";
 import {
   generateCardCoverWithOpenAi,
-  structureTaskAsCardWithOpenAi
+  structureTaskAsCardWithOpenAi,
+  transcribeAudioWithOpenAi
 } from "./openai-card-generator";
 
-export { transcribeAudio, type GeneratedCoverImage, type StructuredAiCard };
+export type { GeneratedCoverImage, StructuredAiCard };
+
+export async function transcribeAudio(input: {
+  bytes: Uint8Array;
+  mimeType: string;
+  contextText?: string;
+}): Promise<string> {
+  try {
+    return await transcribeAudioWithQwen(input);
+  } catch (primaryError) {
+    const fallbackConfig = getOpenAiFallbackConfig();
+    if (!fallbackConfig.enabled) {
+      throw primaryError;
+    }
+
+    return transcribeAudioWithOpenAi(input, { config: fallbackConfig });
+  }
+}
 
 export async function structureTaskAsCard(
   input: { taskText: string; existingDraft?: Partial<StructuredAiCard> }
