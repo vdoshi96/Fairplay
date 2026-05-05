@@ -13,6 +13,13 @@ vi.mock("@/server/auth/current-session", () => ({
   getCurrentSession
 }));
 
+vi.mock("@/server/ai/diagnostics", () => ({
+  createAiRequestDiagnostics: (input: { route: string }) => ({
+    requestId: "fp_ai_test",
+    route: input.route
+  })
+}));
+
 vi.mock("@/server/ai-card-drafts/service", () => ({
   aiCardDraftService: {
     get,
@@ -105,7 +112,15 @@ describe("/api/ai-card-drafts/[id]", () => {
       const response = await POST(request(), context);
 
       expect(response.status).toBe(expectedStatus);
-      expect(serviceMethod).toHaveBeenCalledWith(session, id);
+      if (_label === "retry" || _label === "regenerate image") {
+        expect(serviceMethod).toHaveBeenCalledWith(
+          session,
+          id,
+          expect.objectContaining({ requestId: "fp_ai_test" })
+        );
+      } else {
+        expect(serviceMethod).toHaveBeenCalledWith(session, id);
+      }
     }
   );
 
@@ -176,6 +191,33 @@ describe("/api/ai-card-drafts/[id]", () => {
 
       expect(response.status).toBe(404);
       expect(body).toEqual({ error: "Not found." });
+    }
+  );
+
+  it.each([
+    ["retry", "./retry/route", retry],
+    ["regenerate image", "./regenerate-image/route", regenerateImage]
+  ])(
+    "maps generation failures to safe JSON for %s",
+    async (_label, routePath, serviceMethod) => {
+      serviceMethod.mockRejectedValue(
+        Object.assign(new Error("raw provider body must not leak"), {
+          code: "GENERATION_FAILED",
+          draftId: id
+        })
+      );
+      const { POST } = await import(routePath);
+
+      const response = await POST(request(), context);
+      const body = await response.json();
+
+      expect(response.status).toBe(502);
+      expect(body).toEqual({
+        error: "AI card draft generation failed.",
+        code: "GENERATION_FAILED",
+        draftId: id,
+        requestId: "fp_ai_test"
+      });
     }
   );
 });

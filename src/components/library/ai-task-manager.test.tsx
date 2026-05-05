@@ -175,6 +175,32 @@ describe("AiTaskManager", () => {
     expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
+  it("shows safe generation failure JSON and refreshes so failed drafts can appear", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({
+        error: "AI card draft generation failed.",
+        code: "GENERATION_FAILED",
+        draftId: draftIds.failed,
+        requestId: "fp_ai_test"
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AiTaskManager drafts={[]} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.type(
+      screen.getByLabelText("Describe the card"),
+      "Make a card for packing lunches."
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Create draft" }));
+
+    expect(
+      await screen.findByText("AI card draft generation failed. Reference fp_ai_test.")
+    ).toBeVisible();
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
   it("records audio into a Blob and submits multipart form data", async () => {
     const stream = { getTracks: () => [{ stop: vi.fn() }] };
     const fetchMock = vi.fn().mockResolvedValue({

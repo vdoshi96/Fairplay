@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import type { AiDiagnosticsContext } from "@/server/ai/diagnostics";
+
 const AiCardDraftIdSchema = z.string().uuid();
 
 export type AiCardDraftRouteContext = {
@@ -35,7 +37,10 @@ export function invalidRequest() {
   return NextResponse.json({ error: "Invalid request." }, { status: 400 });
 }
 
-export function serviceErrorResponse(error: unknown): NextResponse {
+export function serviceErrorResponse(
+  error: unknown,
+  diagnostics?: AiDiagnosticsContext
+): NextResponse {
   const code =
     error && typeof error === "object" && "code" in error ? error.code : null;
 
@@ -49,6 +54,24 @@ export function serviceErrorResponse(error: unknown): NextResponse {
 
   if (code === "NOT_FOUND") {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
+
+  if (code === "GENERATION_FAILED") {
+    const draftId =
+      error && typeof error === "object" && "draftId" in error &&
+      typeof error.draftId === "string"
+        ? error.draftId
+        : undefined;
+
+    return NextResponse.json(
+      {
+        error: "AI card draft generation failed.",
+        code: "GENERATION_FAILED",
+        ...(diagnostics ? { requestId: diagnostics.requestId } : {}),
+        ...(draftId ? { draftId } : {})
+      },
+      { status: 502 }
+    );
   }
 
   throw error;

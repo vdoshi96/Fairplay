@@ -89,6 +89,89 @@ describe("provider-neutral card generator", () => {
     );
   });
 
+  it("logs the Qwen primary failure before OpenAI fallback starts", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    vi.mocked(qwen.structureTaskAsCard).mockRejectedValue(
+      Object.assign(new Error("Qwen down"), {
+        code: "QWEN_GENERATION_FAILED",
+        provider: "qwen",
+        model: "qwen3.6-max-preview",
+        status: 503,
+        providerRequestId: "qwen_req_123"
+      })
+    );
+    vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
+    vi.mocked(structureTaskAsCardWithOpenAi).mockResolvedValue(generatedCard);
+
+    await structureTaskAsCard(
+      { taskText: "Dog medicine" },
+      { requestId: "fp_ai_test", route: "/api/ai-card-drafts" }
+    );
+
+    expect(warn.mock.calls.map((call) => JSON.parse(call[1] as string).event)).toEqual([
+      "provider_failure",
+      "provider_fallback_start"
+    ]);
+    expect(JSON.parse(warn.mock.calls[0][1] as string)).toMatchObject({
+      requestId: "fp_ai_test",
+      event: "provider_failure",
+      provider: "qwen",
+      model: "qwen3.6-max-preview",
+      status: 503,
+      providerRequestId: "qwen_req_123"
+    });
+    expect(warn.mock.calls.join(" ")).not.toMatch(/Dog medicine|api[_-]?key|prompt/i);
+    warn.mockRestore();
+  });
+
+  it("logs primary and fallback failures separately when OpenAI fallback fails", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    vi.mocked(qwen.structureTaskAsCard).mockRejectedValue(
+      Object.assign(new Error("Qwen down"), {
+        code: "QWEN_GENERATION_FAILED",
+        provider: "qwen",
+        model: "qwen3.6-max-preview",
+        status: 503
+      })
+    );
+    vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
+    vi.mocked(structureTaskAsCardWithOpenAi).mockRejectedValue(
+      Object.assign(new Error("OpenAI down"), {
+        code: "OPENAI_GENERATION_FAILED",
+        provider: "openai",
+        model: "gpt-5-nano",
+        status: 429
+      })
+    );
+
+    await expect(
+      structureTaskAsCard(
+        { taskText: "Dog medicine" },
+        { requestId: "fp_ai_test", route: "/api/ai-card-drafts" }
+      )
+    ).rejects.toMatchObject({
+      code: "AI_PROVIDER_FALLBACK_FAILED",
+      message: "AI provider fallback failed after primary provider failure.",
+      provider: "openai",
+      model: "gpt-5-nano",
+      status: 429
+    });
+
+    expect(warn.mock.calls.map((call) => JSON.parse(call[1] as string).event)).toEqual([
+      "provider_failure",
+      "provider_fallback_start",
+      "provider_fallback_failure"
+    ]);
+    expect(JSON.parse(warn.mock.calls[2][1] as string)).toMatchObject({
+      event: "provider_fallback_failure",
+      provider: "openai",
+      model: "gpt-5-nano",
+      status: 429
+    });
+    expect(warn.mock.calls.join(" ")).not.toMatch(/Dog medicine|api[_-]?key|prompt/i);
+    warn.mockRestore();
+  });
+
   it("rethrows the Qwen structuring error when fallback is disabled", async () => {
     const qwenError = new Error("Qwen down");
     vi.mocked(qwen.structureTaskAsCard).mockRejectedValue(qwenError);

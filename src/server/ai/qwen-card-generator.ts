@@ -12,6 +12,7 @@ import {
   type GeneratedCoverImage,
   type StructuredAiCard
 } from "./card-generation-shared";
+import { providerRequestIdFromHeaders } from "./diagnostics";
 import { getQwenConfig, type QwenConfig } from "./qwen-config";
 
 export type { GeneratedCoverImage, StructuredAiCard } from "./card-generation-shared";
@@ -41,10 +42,24 @@ type ImageGenerationResponse = {
 
 export class QwenGenerationError extends Error {
   readonly code = "QWEN_GENERATION_FAILED";
+  readonly provider = "qwen";
+  readonly model?: string;
+  readonly providerRequestId?: string;
+  readonly status?: number;
 
-  constructor(message: string) {
+  constructor(
+    message: string,
+    metadata: {
+      model?: string;
+      providerRequestId?: string;
+      status?: number;
+    } = {}
+  ) {
     super(message);
     this.name = "QwenGenerationError";
+    this.model = metadata.model;
+    this.providerRequestId = metadata.providerRequestId;
+    this.status = metadata.status;
   }
 }
 
@@ -91,7 +106,8 @@ export async function transcribeAudio(
   });
   const body = await readProviderJson<ChatCompletionResponse>(
     response,
-    "Qwen ASR request failed"
+    "Qwen ASR request failed",
+    config.asrModel
   );
   const content = extractTextContent(body);
 
@@ -125,7 +141,8 @@ export async function structureTaskAsCard(
   });
   const body = await readProviderJson<ChatCompletionResponse>(
     response,
-    "Qwen card structuring request failed"
+    "Qwen card structuring request failed",
+    config.cardModel
   );
   const content = extractTextContent(body);
 
@@ -172,7 +189,8 @@ export async function generateCardCover(
   );
   const body = await readProviderJson<ImageGenerationResponse>(
     response,
-    "Qwen image generation request failed"
+    "Qwen image generation request failed",
+    config.imageModel
   );
   const imageUrl = extractImageUrl(body);
 
@@ -188,7 +206,12 @@ export async function generateCardCover(
   const imageResponse = await fetchImpl(safeImageUrl);
   if (!imageResponse.ok) {
     throw new QwenGenerationError(
-      `Qwen generated image download failed with status ${imageResponse.status}.`
+      `Qwen generated image download failed with status ${imageResponse.status}.`,
+      {
+        model: config.imageModel,
+        providerRequestId: providerRequestIdFromHeaders(imageResponse.headers),
+        status: imageResponse.status
+      }
     );
   }
 
@@ -240,9 +263,17 @@ function toDataUrl(bytes: Uint8Array, mimeType: string) {
   return `data:${mimeType};base64,${Buffer.from(bytes).toString("base64")}`;
 }
 
-async function readProviderJson<T>(response: Response, errorMessage: string): Promise<T> {
+async function readProviderJson<T>(
+  response: Response,
+  errorMessage: string,
+  model: string
+): Promise<T> {
   if (!response.ok) {
-    throw new QwenGenerationError(`${errorMessage} with status ${response.status}.`);
+    throw new QwenGenerationError(`${errorMessage} with status ${response.status}.`, {
+      model,
+      providerRequestId: providerRequestIdFromHeaders(response.headers),
+      status: response.status
+    });
   }
 
   try {

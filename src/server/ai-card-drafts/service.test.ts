@@ -260,14 +260,31 @@ describe("AI card draft service", () => {
   });
 
   it("keeps structured fields and records a failed draft when image generation fails", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const deps = makeDeps({
-      generateCardCover: vi.fn().mockRejectedValue(new Error("image provider down"))
+      generateCardCover: vi.fn().mockRejectedValue(
+        Object.assign(new Error("image provider down with sk-secret"), {
+          code: "QWEN_GENERATION_FAILED",
+          provider: "qwen",
+          model: "qwen-image-2.0-pro",
+          status: 500,
+          providerRequestId: "qwen_req_123"
+        })
+      )
     });
     const service = createAiCardDraftService(deps);
 
     await expect(
-      service.createFromText(session, { inputText: "Dog medicine" })
-    ).rejects.toMatchObject({ code: "GENERATION_FAILED" });
+      service.createFromText(
+        session,
+        { inputText: "Dog medicine" },
+        { requestId: "fp_ai_test", route: "/api/ai-card-drafts" }
+      )
+    ).rejects.toMatchObject({
+      code: "GENERATION_FAILED",
+      draftId,
+      message: "AI card draft generation failed."
+    });
 
     expect(deps.saveGeneration).toHaveBeenCalledWith({
       householdId,
@@ -278,8 +295,36 @@ describe("AI card draft service", () => {
       householdId,
       draftId,
       failureCode: "GENERATION_FAILED",
-      failureMessage: "image provider down"
+      failureMessage: "AI card draft generation failed."
     });
+    expect(warn).toHaveBeenCalledWith(
+      "[fairplay-ai-diagnostics]",
+      expect.stringContaining("\"event\":\"generation_failed\"")
+    );
+    expect(warn.mock.calls[0].join(" ")).toContain("fp_ai_test");
+    expect(warn.mock.calls[0].join(" ")).not.toMatch(/Dog medicine|sk-secret|prompt/i);
+    warn.mockRestore();
+  });
+
+  it("passes diagnostics context into generation dependencies", async () => {
+    const deps = makeDeps();
+    const service = createAiCardDraftService(deps);
+    const diagnostics = { requestId: "fp_ai_test", route: "/api/ai-card-drafts" };
+
+    await service.createFromText(session, { inputText: "Dog medicine" }, diagnostics);
+
+    expect(deps.structureTaskAsCard).toHaveBeenCalledWith(
+      { taskText: "Dog medicine" },
+      diagnostics
+    );
+    expect(deps.generateCardCover).toHaveBeenCalledWith(
+      {
+        title: generatedCard.title,
+        imagePrompt: generatedCard.imagePrompt,
+        negativePrompt: generatedCard.imageNegativePrompt
+      },
+      diagnostics
+    );
   });
 
   it("validates household ownership through get/list/update/retry/regenerate/cover operations", async () => {

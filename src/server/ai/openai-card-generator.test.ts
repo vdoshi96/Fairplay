@@ -100,6 +100,28 @@ describe("OpenAI fallback card generator", () => {
     ).rejects.toBeInstanceOf(OpenAiGenerationError);
   });
 
+  it("adds safe metadata to non-OK OpenAI provider errors", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response("do not log raw provider body", {
+        status: 429,
+        headers: { "x-request-id": "openai_req_123" }
+      })
+    );
+
+    await expect(
+      structureTaskAsCardWithOpenAi(
+        { taskText: "Dog Meds" },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toMatchObject({
+      code: "OPENAI_GENERATION_FAILED",
+      provider: "openai",
+      model: "gpt-5-nano",
+      status: 429,
+      providerRequestId: "openai_req_123"
+    });
+  });
+
   it("structures a task through the Responses API with strict JSON schema output", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({

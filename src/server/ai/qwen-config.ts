@@ -1,5 +1,7 @@
 import "server-only";
 
+import { unsafeValueLooksPresent } from "./diagnostics";
+
 export type QwenConfig = {
   cardApiKey: string;
   cardModel: string;
@@ -32,7 +34,9 @@ const envMapping = {
 export function getQwenConfig(
   env: Record<string, string | undefined> = process.env
 ): QwenConfig {
-  const missingNames = Object.values(envMapping).filter((name) => !env[name]);
+  const missingNames = Object.values(envMapping).filter(
+    (name) => !unsafeValueLooksPresent(env[name])
+  );
 
   if (missingNames.length > 0) {
     throw new QwenConfigError(missingNames);

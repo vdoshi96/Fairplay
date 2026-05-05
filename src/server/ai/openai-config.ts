@@ -1,5 +1,7 @@
 import "server-only";
 
+import { unsafeValueLooksPresent } from "./diagnostics";
+
 export type OpenAiDisabledFallbackConfig = {
   enabled: false;
 };
@@ -45,7 +47,9 @@ export function getOpenAiFallbackConfig(
     return { enabled: false };
   }
 
-  const missingNames = Object.values(envMapping).filter((name) => !env[name]);
+  const missingNames = Object.values(envMapping).filter(
+    (name) => !unsafeValueLooksPresent(env[name])
+  );
   if (missingNames.length > 0) {
     throw new OpenAiFallbackConfigError(missingNames);
   }

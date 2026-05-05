@@ -12,6 +12,11 @@ import {
   type GeneratedCoverImage,
   type StructuredAiCard
 } from "@/server/ai/card-generator";
+import {
+  logAiGenerationDiagnostic,
+  serializeAiError,
+  type AiDiagnosticsContext
+} from "@/server/ai/diagnostics";
 import type { CurrentSession } from "@/server/auth/current-session";
 import {
   acceptAiCardDraftAsResponsibility,
@@ -40,11 +45,17 @@ export type AiCardDraftServiceErrorCode =
 
 export class AiCardDraftServiceError extends Error {
   readonly code: AiCardDraftServiceErrorCode;
+  readonly draftId?: AiCardDraftId;
 
-  constructor(code: AiCardDraftServiceErrorCode, message: string) {
+  constructor(
+    code: AiCardDraftServiceErrorCode,
+    message: string,
+    options: { draftId?: AiCardDraftId } = {}
+  ) {
     super(message);
     this.name = "AiCardDraftServiceError";
     this.code = code;
+    this.draftId = options.draftId;
   }
 }
 
@@ -111,20 +122,29 @@ export type AiCardDraftServiceDeps = {
     householdId: HouseholdId;
     draftId: AiCardDraftId;
   }) => Promise<{ bytes: Uint8Array | Buffer; mimeType: string } | null>;
-  transcribeAudio: (input: {
-    bytes: Uint8Array | Buffer;
-    mimeType: string;
-    contextText?: string;
-  }) => Promise<string>;
-  structureTaskAsCard: (input: {
-    taskText: string;
-    existingDraft?: Partial<StructuredAiCard>;
-  }) => Promise<StructuredAiCard>;
-  generateCardCover: (input: {
-    title: string;
-    imagePrompt: string;
-    negativePrompt: string;
-  }) => Promise<GeneratedCoverImage>;
+  transcribeAudio: (
+    input: {
+      bytes: Uint8Array | Buffer;
+      mimeType: string;
+      contextText?: string;
+    },
+    diagnostics?: AiDiagnosticsContext
+  ) => Promise<string>;
+  structureTaskAsCard: (
+    input: {
+      taskText: string;
+      existingDraft?: Partial<StructuredAiCard>;
+    },
+    diagnostics?: AiDiagnosticsContext
+  ) => Promise<StructuredAiCard>;
+  generateCardCover: (
+    input: {
+      title: string;
+      imagePrompt: string;
+      negativePrompt: string;
+    },
+    diagnostics?: AiDiagnosticsContext
+  ) => Promise<GeneratedCoverImage>;
   acceptDraftAsResponsibility: typeof acceptAiCardDraftAsResponsibility;
 };
 
@@ -161,10 +181,6 @@ function requireSelectedPersona(session: CurrentSession): PersonaId {
   }
 
   return session.selectedPersonaId;
-}
-
-function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "AI card draft generation failed.";
 }
 
 function mapRepositoryServiceError(error: unknown): never {
@@ -288,14 +304,18 @@ async function generateCover(
   deps: AiCardDraftServiceDeps,
   householdId: HouseholdId,
   draftId: AiCardDraftId,
-  card: StructuredAiCard
+  card: StructuredAiCard,
+  diagnostics?: AiDiagnosticsContext
 ) {
   await deps.markStage({ householdId, draftId, stage: "generating_image" });
-  const cover = await deps.generateCardCover({
+  const coverInput = {
     title: card.title,
     imagePrompt: card.imagePrompt,
     negativePrompt: card.imageNegativePrompt
-  });
+  };
+  const cover = diagnostics
+    ? await deps.generateCardCover(coverInput, diagnostics)
+    : await deps.generateCardCover(coverInput);
   await deps.markStage({ householdId, draftId, stage: "saving_image" });
   await deps.saveCover({
     householdId,
@@ -313,6 +333,7 @@ async function structureAndGenerate(
     draftId: AiCardDraftId;
     taskText: string;
     existingDraft?: Partial<StructuredAiCard>;
+    diagnostics?: AiDiagnosticsContext;
   }
 ) {
   await deps.markStage({
@@ -320,32 +341,56 @@ async function structureAndGenerate(
     draftId: input.draftId,
     stage: "structuring"
   });
-  const card = await deps.structureTaskAsCard({
+  const structureInput = {
     taskText: input.taskText,
     ...(input.existingDraft ? { existingDraft: input.existingDraft } : {})
-  });
+  };
+  const card = input.diagnostics
+    ? await deps.structureTaskAsCard(structureInput, input.diagnostics)
+    : await deps.structureTaskAsCard(structureInput);
   await deps.saveGeneration({
     householdId: input.householdId,
     draftId: input.draftId,
     card
   });
-  return generateCover(deps, input.householdId, input.draftId, card);
+  return generateCover(
+    deps,
+    input.householdId,
+    input.draftId,
+    card,
+    input.diagnostics
+  );
 }
 
 async function failDraft(
   deps: AiCardDraftServiceDeps,
   householdId: HouseholdId,
   draftId: AiCardDraftId,
-  error: unknown
+  error: unknown,
+  diagnostics?: AiDiagnosticsContext
 ): Promise<never> {
-  const message = errorMessage(error);
+  const message = "AI card draft generation failed.";
   await deps.saveFailure({
     householdId,
     draftId,
     failureCode: "GENERATION_FAILED",
     failureMessage: message
   });
-  throw new AiCardDraftServiceError("GENERATION_FAILED", message);
+  if (diagnostics) {
+    const serialized = serializeAiError(error);
+    logAiGenerationDiagnostic({
+      ...diagnostics,
+      draftId,
+      errorCode: serialized.code,
+      errorName: serialized.name,
+      event: "generation_failed",
+      model: serialized.model,
+      provider: serialized.provider,
+      providerRequestId: serialized.providerRequestId,
+      status: serialized.status
+    });
+  }
+  throw new AiCardDraftServiceError("GENERATION_FAILED", message, { draftId });
 }
 
 function assertAudioSize(bytes: Uint8Array | Buffer) {
@@ -376,7 +421,8 @@ export function createAiCardDraftService(
 
     async createFromText(
       session: CurrentSession,
-      input: { inputText: string }
+      input: { inputText: string },
+      diagnostics?: AiDiagnosticsContext
     ): Promise<AiCardDraftDetail> {
       const createdByPersonaId = requireSelectedPersona(session);
       if (!input.inputText.trim()) {
@@ -394,10 +440,11 @@ export function createAiCardDraftService(
         return await structureAndGenerate(deps, {
           householdId: session.householdId,
           draftId: draft.id,
-          taskText: input.inputText
+          taskText: input.inputText,
+          diagnostics
         });
       } catch (error) {
-        return failDraft(deps, session.householdId, draft.id, error);
+        return failDraft(deps, session.householdId, draft.id, error, diagnostics);
       }
     },
 
@@ -407,7 +454,8 @@ export function createAiCardDraftService(
         audioBytes: Uint8Array | Buffer;
         audioMimeType: string;
         contextText?: string;
-      }
+      },
+      diagnostics?: AiDiagnosticsContext
     ): Promise<AiCardDraftDetail> {
       const createdByPersonaId = requireSelectedPersona(session);
       assertAudioSize(input.audioBytes);
@@ -426,11 +474,14 @@ export function createAiCardDraftService(
           draftId: draft.id,
           stage: "transcribing"
         });
-        const transcript = await deps.transcribeAudio({
+        const transcriptionInput = {
           bytes: input.audioBytes,
           mimeType: input.audioMimeType,
           contextText: input.contextText
-        });
+        };
+        const transcript = diagnostics
+          ? await deps.transcribeAudio(transcriptionInput, diagnostics)
+          : await deps.transcribeAudio(transcriptionInput);
         await deps.saveGeneration({
           householdId: session.householdId,
           draftId: draft.id,
@@ -440,10 +491,11 @@ export function createAiCardDraftService(
         return await structureAndGenerate(deps, {
           householdId: session.householdId,
           draftId: draft.id,
-          taskText: transcript
+          taskText: transcript,
+          diagnostics
         });
       } catch (error) {
-        return failDraft(deps, session.householdId, draft.id, error);
+        return failDraft(deps, session.householdId, draft.id, error, diagnostics);
       }
     },
 
@@ -464,7 +516,8 @@ export function createAiCardDraftService(
 
     async retry(
       session: CurrentSession,
-      draftId: AiCardDraftId
+      draftId: AiCardDraftId,
+      diagnostics?: AiDiagnosticsContext
     ): Promise<AiCardDraftDetail> {
       requireSelectedPersona(session);
       const draft = await getRequiredDraft(deps, session, draftId);
@@ -479,7 +532,13 @@ export function createAiCardDraftService(
           }
         })();
         if (card) {
-          return await generateCover(deps, session.householdId, draftId, card);
+          return await generateCover(
+            deps,
+            session.householdId,
+            draftId,
+            card,
+            diagnostics
+          );
         }
 
         if (draft.sourceInputType === "audio" && !draft.audioTranscript) {
@@ -499,10 +558,13 @@ export function createAiCardDraftService(
             draftId,
             stage: "transcribing"
           });
-          const transcript = await deps.transcribeAudio({
+          const transcriptionInput = {
             bytes: audio.bytes,
             mimeType: audio.mimeType
-          });
+          };
+          const transcript = diagnostics
+            ? await deps.transcribeAudio(transcriptionInput, diagnostics)
+            : await deps.transcribeAudio(transcriptionInput);
           await deps.saveGeneration({
             householdId: session.householdId,
             draftId,
@@ -511,7 +573,8 @@ export function createAiCardDraftService(
           return await structureAndGenerate(deps, {
             householdId: session.householdId,
             draftId,
-            taskText: transcript
+            taskText: transcript,
+            diagnostics
           });
         }
 
@@ -526,19 +589,21 @@ export function createAiCardDraftService(
         return await structureAndGenerate(deps, {
           householdId: session.householdId,
           draftId,
-          taskText
+          taskText,
+          diagnostics
         });
       } catch (error) {
         if (error instanceof AiCardDraftServiceError && error.code !== "GENERATION_FAILED") {
           throw error;
         }
-        return failDraft(deps, session.householdId, draftId, error);
+        return failDraft(deps, session.householdId, draftId, error, diagnostics);
       }
     },
 
     async regenerateImage(
       session: CurrentSession,
-      draftId: AiCardDraftId
+      draftId: AiCardDraftId,
+      diagnostics?: AiDiagnosticsContext
     ): Promise<AiCardDraftDetail> {
       requireSelectedPersona(session);
       const draft = await getRequiredDraft(deps, session, draftId);
@@ -546,9 +611,15 @@ export function createAiCardDraftService(
       const card = requireGeneratedFields(draft);
 
       try {
-        return await generateCover(deps, session.householdId, draftId, card);
+        return await generateCover(
+          deps,
+          session.householdId,
+          draftId,
+          card,
+          diagnostics
+        );
       } catch (error) {
-        return failDraft(deps, session.householdId, draftId, error);
+        return failDraft(deps, session.householdId, draftId, error, diagnostics);
       }
     },
 
