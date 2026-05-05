@@ -400,6 +400,26 @@ describe("AI card draft repository", () => {
       boardLane: "not_in_play",
       householdStandard: generatedCard.minimumStandard
     });
+    await expect(
+      prisma.responsibility.findUniqueOrThrow({
+        where: { id: responsibility.id },
+        select: {
+          sourceDefinition: true,
+          sourceConception: true,
+          sourcePlanning: true,
+          sourceExecution: true,
+          sourceMinimumStandard: true,
+          sourceCoverAssetPath: true
+        }
+      })
+    ).resolves.toEqual({
+      sourceDefinition: generatedCard.definition,
+      sourceConception: generatedCard.conception,
+      sourcePlanning: generatedCard.planning,
+      sourceExecution: generatedCard.execution,
+      sourceMinimumStandard: generatedCard.minimumStandard,
+      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
+    });
 
     await expect(
       acceptAiCardDraftAsResponsibility({

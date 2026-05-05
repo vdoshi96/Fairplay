@@ -143,18 +143,24 @@ const responsibilityInclude = {
   lifecycleNotes: true
 } satisfies Prisma.ResponsibilityInclude;
 
-export async function createResponsibility(
+type ResponsibilityWriteClient = Pick<
+  Prisma.TransactionClient,
+  "persona" | "responsibilityTemplate" | "responsibility"
+>;
+
+export async function createResponsibilityWithClient(
+  client: ResponsibilityWriteClient,
   input: CreateResponsibilityInput
 ): Promise<ResponsibilityDetail> {
   const [creatorCount, templateCount] = await Promise.all([
-    prisma.persona.count({
+    client.persona.count({
       where: {
         id: input.createdByPersonaId,
         householdId: input.householdId
       }
     }),
     input.templateId
-      ? prisma.responsibilityTemplate.count({
+      ? client.responsibilityTemplate.count({
           where: {
             id: input.templateId
           }
@@ -170,7 +176,7 @@ export async function createResponsibility(
     throw new RepositoryError("INVALID_INPUT", "Responsibility template does not exist.");
   }
 
-  const responsibility = await prisma.responsibility.create({
+  const responsibility = await client.responsibility.create({
     data: {
       householdId: input.householdId,
       createdByPersonaId: input.createdByPersonaId,
@@ -199,6 +205,12 @@ export async function createResponsibility(
   });
 
   return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
+}
+
+export async function createResponsibility(
+  input: CreateResponsibilityInput
+): Promise<ResponsibilityDetail> {
+  return createResponsibilityWithClient(prisma, input);
 }
 
 export async function addResponsibilityAssignments(input: {

@@ -13,7 +13,6 @@ import {
   type StructuredAiCard
 } from "@/server/ai/qwen-card-generator";
 import type { CurrentSession } from "@/server/auth/current-session";
-import { createResponsibility } from "@/server/repositories/responsibilities";
 import {
   acceptAiCardDraftAsResponsibility,
   cancelAiCardDraft,
@@ -126,7 +125,6 @@ export type AiCardDraftServiceDeps = {
     imagePrompt: string;
     negativePrompt: string;
   }) => Promise<GeneratedCoverImage>;
-  createResponsibility: typeof createResponsibility;
   acceptDraftAsResponsibility: typeof acceptAiCardDraftAsResponsibility;
 };
 
@@ -151,7 +149,6 @@ const defaultDeps: AiCardDraftServiceDeps = {
   transcribeAudio,
   structureTaskAsCard,
   generateCardCover,
-  createResponsibility,
   acceptDraftAsResponsibility: acceptAiCardDraftAsResponsibility
 };
 

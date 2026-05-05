@@ -2,11 +2,7 @@ import type {
   AiCardDraft,
   AiCardDraftStatus,
   AiCardGenerationStage,
-  AiCardSourceInputType,
-  Prisma,
-  Responsibility,
-  ResponsibilityAssignment,
-  ResponsibilityLifecycleNotes
+  AiCardSourceInputType
 } from "@prisma/client";
 
 import type {
@@ -14,14 +10,12 @@ import type {
   AiCardDraftSummary,
   AiCardDraftUpdate
 } from "@/contracts/ai-card-drafts";
-import type {
-  ResponsibilityAssignmentSummary,
-  ResponsibilityDetail
-} from "@/contracts/responsibilities";
+import type { ResponsibilityDetail } from "@/contracts/responsibilities";
 import type { StructuredAiCard } from "@/server/ai/qwen-card-generator";
 import type { HouseholdId, PersonaId, ResponsibilityId } from "../../domain/ids";
 import { RepositoryError } from "../db/errors";
 import { prisma } from "../db/prisma";
+import { createResponsibilityWithClient } from "./responsibilities";
 
 export type AiCardDraftId = string;
 
@@ -42,15 +36,6 @@ export type ScopedAiCardDraftInput = {
 export type SaveAiCardDraftGenerationInput = ScopedAiCardDraftInput & {
   card?: StructuredAiCard;
   audioTranscript?: string | null;
-};
-
-type ResponsibilityWithRelations = Responsibility & {
-  assignments: (ResponsibilityAssignment & {
-    persona: {
-      key: "alex" | "max";
-    };
-  })[];
-  lifecycleNotes: ResponsibilityLifecycleNotes | null;
 };
 
 function coverUrl(draft: Pick<AiCardDraft, "id" | "coverImageBytes">) {
@@ -107,86 +92,6 @@ function toDetail(draft: AiCardDraft): AiCardDraftDetail {
     imageNegativePrompt: draft.imageNegativePrompt
   };
 }
-
-function nullableIso(date: Date | null): string | null {
-  return date ? date.toISOString() : null;
-}
-
-function currentAssignments(
-  assignments: ResponsibilityWithRelations["assignments"]
-): ResponsibilityAssignmentSummary[] {
-  return assignments
-    .filter((assignment) => assignment.endsAt === null)
-    .sort((left, right) => left.createdAt.getTime() - right.createdAt.getTime())
-    .map((assignment) => ({
-      personaKey: assignment.persona.key,
-      role: assignment.role,
-      scope: assignment.scope
-    }));
-}
-
-function toLifecycleNotes(
-  notes: ResponsibilityLifecycleNotes | null
-): ResponsibilityDetail["lifecycleNotes"] {
-  if (!notes) {
-    return null;
-  }
-
-  return {
-    noticeDecideNotes: notes.noticeDecideNotes,
-    planPrepareNotes: notes.planPrepareNotes,
-    executeFollowThroughNotes: notes.executeFollowThroughNotes,
-    dependencies: notes.dependencies,
-    blockers: notes.blockers,
-    supportNeeded: notes.supportNeeded,
-    handoffNotes: notes.handoffNotes,
-    updatedAt: notes.updatedAt.toISOString()
-  };
-}
-
-function toResponsibilityDetail(
-  responsibility: ResponsibilityWithRelations
-): ResponsibilityDetail {
-  return {
-    id: responsibility.id,
-    title: responsibility.title,
-    areaKeys: responsibility.areaKeys,
-    hiddenEffortKeys: responsibility.hiddenEffortKeys,
-    cadence: responsibility.cadence,
-    relevantDays: responsibility.relevantDays,
-    status: responsibility.status,
-    visibility: responsibility.visibility,
-    boardLane: responsibility.boardLane,
-    boardSortOrder: responsibility.boardSortOrder,
-    linkedRadarItems: [],
-    currentAssignments: currentAssignments(responsibility.assignments),
-    nextReviewAt: nullableIso(responsibility.nextReviewAt),
-    summary: responsibility.summary,
-    householdStandard: responsibility.householdStandard,
-    notes: responsibility.notes,
-    lifecycleNotes: toLifecycleNotes(responsibility.lifecycleNotes),
-    lastReviewedAt: nullableIso(responsibility.lastReviewedAt),
-    createdAt: responsibility.createdAt.toISOString(),
-    updatedAt: responsibility.updatedAt.toISOString(),
-    archivedAt: nullableIso(responsibility.archivedAt)
-  };
-}
-
-const responsibilityInclude = {
-  assignments: {
-    include: {
-      persona: {
-        select: {
-          key: true
-        }
-      }
-    },
-    orderBy: {
-      createdAt: "asc"
-    }
-  },
-  lifecycleNotes: true
-} satisfies Prisma.ResponsibilityInclude;
 
 async function getScopedDraft(input: ScopedAiCardDraftInput) {
   return prisma.aiCardDraft.findFirst({
@@ -553,8 +458,7 @@ export async function acceptAiCardDraftAsResponsibility(input: {
     const sourceCoverAssetPath = draft.coverImageBytes
       ? `/api/ai-card-drafts/${draft.id}/cover`
       : null;
-    const responsibility = await tx.responsibility.create({
-      data: {
+    const responsibility = await createResponsibilityWithClient(tx, {
         householdId: input.householdId,
         createdByPersonaId: input.createdByPersonaId,
         title: card.title,
@@ -575,8 +479,6 @@ export async function acceptAiCardDraftAsResponsibility(input: {
         sourceExecution: card.execution,
         sourceMinimumStandard: card.minimumStandard,
         sourceCoverAssetPath
-      },
-      include: responsibilityInclude
     });
 
     await tx.aiCardDraft.update({
@@ -588,7 +490,7 @@ export async function acceptAiCardDraftAsResponsibility(input: {
       }
     });
 
-    return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
+    return responsibility;
   });
 }
 

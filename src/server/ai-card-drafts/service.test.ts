@@ -163,7 +163,6 @@ function makeDeps(overrides: Partial<AiCardDraftServiceDeps> = {}): AiCardDraftS
       bytes: new Uint8Array([9, 8, 7]),
       mimeType: "image/png"
     }),
-    createResponsibility: vi.fn().mockResolvedValue(responsibility()),
     acceptDraftAsResponsibility: vi.fn().mockResolvedValue(responsibility()),
     ...overrides
   };
@@ -386,7 +385,6 @@ describe("AI card draft service", () => {
       createdByPersonaId: alexId,
       draftId
     });
-    expect(deps.createResponsibility).not.toHaveBeenCalled();
     expect(deps.markAccepted).not.toHaveBeenCalled();
     expect(deps.deleteAudio).not.toHaveBeenCalled();
   });
@@ -402,7 +400,6 @@ describe("AI card draft service", () => {
       await expect(service.putInPlay(session, draftId)).rejects.toMatchObject({
         code: "INVALID_INPUT"
       });
-      expect(deps.createResponsibility).not.toHaveBeenCalled();
       expect(deps.markAccepted).not.toHaveBeenCalled();
       expect(deps.deleteAudio).not.toHaveBeenCalled();
     }
