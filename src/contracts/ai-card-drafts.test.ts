@@ -45,13 +45,17 @@ describe("AiCardDraft contracts", () => {
     const update = AiCardDraftUpdateSchema.parse({
       title: "Pet meds",
       hiddenEffortKeys: ["follow_through"],
-      cadence: "monthly"
+      cadence: "monthly",
+      imagePrompt: "A tidy pet medication calendar with a small pill organizer.",
+      imageNegativePrompt: "No brand names, no cluttered countertop."
     });
 
     expect(update).toEqual({
       title: "Pet meds",
       hiddenEffortKeys: ["follow_through"],
-      cadence: "monthly"
+      cadence: "monthly",
+      imagePrompt: "A tidy pet medication calendar with a small pill organizer.",
+      imageNegativePrompt: "No brand names, no cluttered countertop."
     });
   });
 });

@@ -89,7 +89,9 @@ export const AiCardDraftUpdateSchema = z
     conception: NullableGeneratedTextSchema.optional(),
     planning: NullableGeneratedTextSchema.optional(),
     execution: NullableGeneratedTextSchema.optional(),
-    minimumStandard: NullableGeneratedTextSchema.optional()
+    minimumStandard: NullableGeneratedTextSchema.optional(),
+    imagePrompt: NullableGeneratedTextSchema.optional(),
+    imageNegativePrompt: NullableGeneratedTextSchema.optional()
   })
   .strict();
 
