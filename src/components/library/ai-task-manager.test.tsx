@@ -271,6 +271,47 @@ describe("AiTaskManager", () => {
     await waitFor(() => expect(stopTrack).toHaveBeenCalledTimes(1));
   });
 
+  it("stops a late recording stream when capture closes before permission resolves", async () => {
+    const stopTrack = vi.fn();
+    const stream = { getTracks: () => [{ stop: stopTrack }] };
+    let resolveUserMedia: (mediaStream: typeof stream) => void = () => {};
+    const getUserMedia = vi.fn(
+      () =>
+        new Promise<typeof stream>((resolve) => {
+          resolveUserMedia = resolve;
+        })
+    );
+
+    class MockMediaRecorder extends EventTarget {
+      state = "inactive";
+
+      start() {
+        this.state = "recording";
+      }
+
+      stop() {
+        this.state = "inactive";
+        this.dispatchEvent(new Event("stop"));
+      }
+    }
+
+    vi.stubGlobal("MediaRecorder", MockMediaRecorder);
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia }
+    });
+
+    render(<AiTaskManager drafts={[]} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close capture" }));
+    resolveUserMedia(stream);
+
+    await waitFor(() => expect(stopTrack).toHaveBeenCalledTimes(1));
+    expect(screen.queryByRole("button", { name: "Stop recording" })).not.toBeInTheDocument();
+  });
+
   it("fetches review detail, saves edits, and regenerates the image", async () => {
     const draftDetail = detail();
     const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {

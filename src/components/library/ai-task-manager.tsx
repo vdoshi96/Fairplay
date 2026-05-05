@@ -306,6 +306,8 @@ export function AiCardCaptureSheet({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const isMountedRef = useRef(true);
+  const recordingRequestCanceledRef = useRef(false);
   const shouldCaptureAudioRef = useRef(false);
   const voiceAvailable = useMemo(
     () =>
@@ -324,20 +326,28 @@ export function AiCardCaptureSheet({
 
   const stopActiveRecording = useCallback(
     (captureAudio: boolean) => {
+      recordingRequestCanceledRef.current = true;
       shouldCaptureAudioRef.current = captureAudio;
       const recorder = recorderRef.current;
       if (recorder && recorder.state !== "inactive") {
         recorder.stop();
       }
       recorderRef.current = null;
-      setIsRecording(false);
+      if (isMountedRef.current) {
+        setIsRecording(false);
+      }
       stopStream();
     },
     [stopStream]
   );
 
   useEffect(() => {
-    return () => stopActiveRecording(false);
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      stopActiveRecording(false);
+    };
   }, [stopActiveRecording]);
 
   async function startRecording() {
@@ -348,9 +358,15 @@ export function AiCardCaptureSheet({
     setRecordingError(null);
     setAudioBlob(null);
     chunksRef.current = [];
+    recordingRequestCanceledRef.current = false;
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (recordingRequestCanceledRef.current || !isMountedRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
       streamRef.current = stream;
       const recorder = new MediaRecorder(stream);
       recorderRef.current = recorder;
@@ -371,9 +387,13 @@ export function AiCardCaptureSheet({
         stopStream();
       });
       recorder.start();
-      setIsRecording(true);
+      if (isMountedRef.current) {
+        setIsRecording(true);
+      }
     } catch {
-      setRecordingError("Voice capture could not start.");
+      if (isMountedRef.current && !recordingRequestCanceledRef.current) {
+        setRecordingError("Voice capture could not start.");
+      }
     }
   }
 
