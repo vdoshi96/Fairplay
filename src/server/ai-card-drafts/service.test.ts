@@ -324,6 +324,21 @@ describe("AI card draft service", () => {
     });
   });
 
+  it.each(["accepted", "canceled"] as const)(
+    "rejects image regeneration for %s drafts",
+    async (status) => {
+      const deps = makeDeps({
+        getDraft: vi.fn().mockResolvedValue(readyDraft({ status }))
+      });
+      const service = createAiCardDraftService(deps);
+
+      await expect(service.regenerateImage(session, draftId)).rejects.toMatchObject({
+        code: "INVALID_INPUT"
+      });
+      expect(deps.generateCardCover).not.toHaveBeenCalled();
+    }
+  );
+
   it("puts a ready draft in play with generated source fields and deletes audio", async () => {
     const deps = makeDeps({
       getDraft: vi.fn().mockResolvedValue(readyDraft())

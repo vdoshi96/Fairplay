@@ -223,6 +223,15 @@ function requireGeneratedFields(draft: AiCardDraftDetail): StructuredAiCard {
   };
 }
 
+function assertCanRegenerateImage(draft: AiCardDraftDetail) {
+  if (draft.status !== "ready" && draft.status !== "failed") {
+    throw new AiCardDraftServiceError(
+      "INVALID_INPUT",
+      "Image regeneration is only available for ready or failed drafts."
+    );
+  }
+}
+
 function sourceText(draft: AiCardDraftDetail) {
   return draft.audioTranscript ?? draft.inputText ?? null;
 }
@@ -483,6 +492,7 @@ export function createAiCardDraftService(
     ): Promise<AiCardDraftDetail> {
       requireSelectedPersona(session);
       const draft = await getRequiredDraft(deps, session, draftId);
+      assertCanRegenerateImage(draft);
       const card = requireGeneratedFields(draft);
 
       try {
