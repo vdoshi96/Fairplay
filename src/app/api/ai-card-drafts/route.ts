@@ -12,6 +12,8 @@ import {
 
 export const runtime = "nodejs";
 
+const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
+
 type AudioUpload = FormDataEntryValue & {
   arrayBuffer: () => Promise<ArrayBuffer>;
   size: number;
@@ -69,6 +71,17 @@ async function createFromMultipart(
   request: NextRequest,
   session: NonNullable<Awaited<ReturnType<typeof getCurrentSession>>>
 ) {
+  const contentLength = request.headers.get("content-length");
+  if (contentLength) {
+    const parsedContentLength = Number(contentLength);
+    if (
+      !Number.isSafeInteger(parsedContentLength) ||
+      parsedContentLength > MAX_AUDIO_BYTES
+    ) {
+      return invalidRequest();
+    }
+  }
+
   let formData: FormData;
   try {
     formData = await request.formData();
@@ -78,6 +91,9 @@ async function createFromMultipart(
 
   const audio = formData.get("audio");
   if (!isAudioUpload(audio) || audio.size === 0) {
+    return invalidRequest();
+  }
+  if (audio.size > MAX_AUDIO_BYTES) {
     return invalidRequest();
   }
 

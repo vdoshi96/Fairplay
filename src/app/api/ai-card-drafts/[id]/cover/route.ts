@@ -12,6 +12,13 @@ import {
 
 export const runtime = "nodejs";
 
+const SAFE_COVER_MIME_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif"
+]);
+
 export async function GET(
   request: NextRequest,
   context: AiCardDraftRouteContext
@@ -29,6 +36,10 @@ export async function GET(
 
   try {
     const cover = await aiCardDraftService.getCover(session, draftId);
+    if (!SAFE_COVER_MIME_TYPES.has(cover.mimeType)) {
+      return invalidRequest();
+    }
+
     const bytes =
       cover.bytes instanceof Buffer ? cover.bytes : Buffer.from(cover.bytes);
     const body = bytes.buffer.slice(
@@ -38,7 +49,9 @@ export async function GET(
 
     return new Response(body, {
       headers: {
-        "content-type": cover.mimeType
+        "cache-control": "private, no-store",
+        "content-type": cover.mimeType,
+        "x-content-type-options": "nosniff"
       }
     });
   } catch (error) {

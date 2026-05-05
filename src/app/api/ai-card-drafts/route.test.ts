@@ -35,7 +35,7 @@ function jsonRequest(method: "GET" | "POST", body?: unknown) {
   });
 }
 
-function multipartRequest(parts: string[]) {
+function multipartRequest(parts: string[], headers?: HeadersInit) {
   const boundary = "fairplay-test-boundary";
 
   return new NextRequest("http://localhost/api/ai-card-drafts", {
@@ -47,7 +47,8 @@ function multipartRequest(parts: string[]) {
     ].join("\r\n"),
     headers: {
       "content-type": `multipart/form-data; boundary=${boundary}`,
-      cookie: "fairplay_session=raw-session-token"
+      cookie: "fairplay_session=raw-session-token",
+      ...headers
     }
   });
 }
@@ -183,6 +184,44 @@ describe("/api/ai-card-drafts", () => {
     );
 
     expect(response.status).toBe(400);
+    expect(createFromAudio).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 before parsing multipart requests over the route size cap", async () => {
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      multipartRequest(
+        [multipartFilePart("audio", "voice-note.webm", "audio/webm", "abc")],
+        { "content-length": String(10 * 1024 * 1024 + 1) }
+      )
+    );
+
+    expect(response.status).toBe(400);
+    expect(createFromAudio).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 before buffering audio files over the route size cap", async () => {
+    const audio = {
+      size: 10 * 1024 * 1024 + 1,
+      type: "audio/webm",
+      arrayBuffer: vi.fn()
+    };
+    const formData = new FormData();
+    vi.spyOn(formData, "get").mockImplementation((key: string) =>
+      key === "audio" ? audio as unknown as File : null
+    );
+    vi.spyOn(NextRequest.prototype, "formData").mockResolvedValueOnce(formData);
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      multipartRequest([
+        multipartFilePart("audio", "voice-note.webm", "audio/webm", "abc")
+      ])
+    );
+
+    expect(response.status).toBe(400);
+    expect(audio.arrayBuffer).not.toHaveBeenCalled();
     expect(createFromAudio).not.toHaveBeenCalled();
   });
 });

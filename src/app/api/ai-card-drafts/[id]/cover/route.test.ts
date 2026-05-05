@@ -53,8 +53,24 @@ describe("GET /api/ai-card-drafts/[id]/cover", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/png");
+    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect([...bytes]).toEqual([137, 80, 78, 71]);
     expect(getCover).toHaveBeenCalledWith(session, id);
+  });
+
+  it("rejects unsafe stored cover MIME types", async () => {
+    getCover.mockResolvedValue({
+      bytes: Buffer.from("<svg></svg>"),
+      mimeType: "image/svg+xml"
+    });
+    const { GET } = await import("./route");
+
+    const response = await GET(request(), { params: Promise.resolve({ id }) });
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Invalid request." });
   });
 
   it("requires authentication", async () => {
