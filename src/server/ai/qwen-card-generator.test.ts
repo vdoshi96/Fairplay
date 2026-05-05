@@ -235,6 +235,42 @@ describe("Qwen card generator", () => {
     );
   });
 
+  it("normalizes supported raster cover MIME types before persistence", async () => {
+    const imageBytes = new Uint8Array([137, 80, 78, 71]);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.png" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(imageBytes, {
+          status: 200,
+          headers: { "content-type": "image/png; charset=binary" }
+        })
+      );
+
+    const cover = await generateCardCover(
+      {
+        title: "Dog Meds",
+        imagePrompt: "heartworm medicine calendar card",
+        negativePrompt: "people, logos"
+      },
+      { fetch: fetchMock, config }
+    );
+
+    expect(cover).toEqual({ bytes: imageBytes, mimeType: "image/png" });
+  });
+
   it("throws a generation error when image response has no image URL", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({
@@ -298,6 +334,41 @@ describe("Qwen card generator", () => {
         new Response("not an image", {
           status: 200,
           headers: { "content-type": "text/plain" }
+        })
+      );
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toBeInstanceOf(QwenGenerationError);
+  });
+
+  it("throws a generation error when downloaded cover is SVG", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.svg" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response("<svg />", {
+          status: 200,
+          headers: { "content-type": "image/svg+xml" }
         })
       );
 

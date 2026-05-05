@@ -280,9 +280,13 @@ export async function generateCardCover(
     );
   }
 
-  const mimeType = imageResponse.headers.get("content-type") ?? "image/png";
-  if (!isImageMimeType(mimeType)) {
-    throw new QwenGenerationError("Qwen generated image download was not an image.");
+  const mimeType = safeRasterImageMimeType(
+    imageResponse.headers.get("content-type") ?? "image/png"
+  );
+  if (!mimeType) {
+    throw new QwenGenerationError(
+      "Qwen generated image download was not a supported raster image."
+    );
   }
 
   const contentLength = imageResponse.headers.get("content-length");
@@ -366,8 +370,17 @@ function parseDownloadableImageUrl(value: string) {
   return parsed.toString();
 }
 
-function isImageMimeType(value: string) {
-  return value.toLowerCase().split(";")[0].trim().startsWith("image/");
+const SAFE_RASTER_IMAGE_MIME_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif"
+]);
+
+function safeRasterImageMimeType(value: string) {
+  const mimeType = value.toLowerCase().split(";")[0]?.trim() ?? "";
+
+  return SAFE_RASTER_IMAGE_MIME_TYPES.has(mimeType) ? mimeType : null;
 }
 
 async function readProviderJson<T>(response: Response, errorMessage: string): Promise<T> {
