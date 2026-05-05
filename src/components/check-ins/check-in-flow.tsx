@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { CheckInItemState, DecisionType, PersonaKey } from "@/domain/enums";
 import type {
@@ -11,6 +11,10 @@ import type {
 import { SAFETY_COPY } from "@/lib/safety-copy";
 import { FEATURE_GUIDES } from "@/components/guide/guide-content";
 import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
+import {
+  completeGuidePractice,
+  useGuidePracticeRequest
+} from "@/components/guide/guide-practice";
 import { MotionPanel, MotionSpark } from "@/components/motion/fairplay-motion";
 import { CheckInVisual } from "@/components/visuals/fairplay-visuals";
 
@@ -89,7 +93,14 @@ export function CheckInFlow({
   const [pendingAction, setPendingAction] = useState<
     "skip" | "defer" | "decision" | "complete" | null
   >(null);
+  const [dummyCheckInComplete, setDummyCheckInComplete] = useState(false);
   const errorRef = useRef<HTMLParagraphElement>(null);
+  const completeDummyCheckIn = useCallback(() => {
+    setDummyCheckInComplete(true);
+    completeGuidePractice("check-in-complete");
+  }, []);
+
+  useGuidePracticeRequest("check-in-complete", completeDummyCheckIn);
 
   const currentItem = useMemo(
     () => checkIn.items[currentIndex] ?? checkIn.items.at(-1) ?? null,
@@ -247,7 +258,7 @@ export function CheckInFlow({
       <section
         aria-label="Check-in summary"
         className="mx-auto grid w-full max-w-2xl gap-4 px-4 py-6"
-        data-guide-id="check-in-complete"
+        data-guide-id="check-in-complete-summary"
       >
         <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
           <div className="flex items-center gap-3">
@@ -422,13 +433,21 @@ export function CheckInFlow({
 
       <button
         className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
-        data-guide-id="check-in-complete"
+        data-guide-id="check-in-complete-action"
         type="button"
         disabled={Boolean(pendingAction)}
         onClick={completeCheckIn}
       >
         Complete check-in
       </button>
+      {dummyCheckInComplete ? (
+        <p
+          className="rounded-[8px] border border-fp-line bg-white p-3 text-sm font-semibold text-fp-muted-ink"
+          role="status"
+        >
+          Dummy check-in completed.
+        </p>
+      ) : null}
     </main>
   );
 }
@@ -443,6 +462,13 @@ export function NewCheckInLauncher({
   const [suggestions, setSuggestions] = useState<SuggestedItem[]>(initialSuggestions);
   const [startedCheckIn, setStartedCheckIn] = useState<GuidedCheckIn | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dummyCheckInComplete, setDummyCheckInComplete] = useState(false);
+  const completeDummyCheckIn = useCallback(() => {
+    setDummyCheckInComplete(true);
+    completeGuidePractice("check-in-complete");
+  }, []);
+
+  useGuidePracticeRequest("check-in-complete", completeDummyCheckIn);
 
   async function previewAgenda() {
     try {
@@ -533,12 +559,31 @@ export function NewCheckInLauncher({
       </section>
       <button
         className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
-        data-guide-id="check-in-complete"
         type="button"
         onClick={startCheckIn}
       >
         Start check-in
       </button>
+      <div
+        className="grid gap-2 rounded-[8px] border border-dashed border-fp-line bg-white p-3"
+        data-guide-id="check-in-complete-action"
+      >
+        <p className="text-sm font-semibold text-fp-ink">
+          Practice completing a check-in
+        </p>
+        <button
+          className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
+          onClick={completeDummyCheckIn}
+          type="button"
+        >
+          Complete dummy check-in
+        </button>
+        {dummyCheckInComplete ? (
+          <p className="text-sm font-semibold text-fp-muted-ink" role="status">
+            Dummy check-in completed.
+          </p>
+        ) : null}
+      </div>
     </main>
   );
 }

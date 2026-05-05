@@ -321,9 +321,14 @@ describe("RadarBoard", () => {
       />
     );
 
-    expect(
-      document.querySelector('[data-guide-id="radar-actions"]')
-    ).toBeInTheDocument();
+    const radarActions = document.querySelector('[data-guide-id="radar-actions"]');
+    expect(radarActions).toBeInTheDocument();
+    expect(radarActions).toHaveTextContent("Schedule");
+    expect(radarActions).toHaveTextContent("Defer");
+    expect(radarActions).toHaveTextContent("Resolve");
+    expect(radarActions).not.toHaveTextContent("Show deferred");
+    expect(radarActions).not.toHaveTextContent("Show resolved");
+    expect(radarActions).not.toHaveTextContent("Show dismissed");
 
     fireEvent.change(screen.getByLabelText("Revisit date"), {
       target: { value: "2026-05-11" }

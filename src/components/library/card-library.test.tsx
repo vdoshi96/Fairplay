@@ -56,12 +56,15 @@ const aiDrafts: AiCardDraftSummary[] = [
 ];
 
 describe("CardLibrary", () => {
-  it("renders an AI Task Manager button above source card filters", () => {
-    render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
+  it("renders greg and little alex horne above source card filters", () => {
+    const { container } = render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
 
     expect(
-      screen.getByRole("button", { name: "AI Task Manager" })
+      screen.getByRole("button", { name: "greg - the taskmaster" })
     ).toBeVisible();
+    expect(screen.getByText("hi im little alex horne")).toBeVisible();
+    expect(container.querySelector('[data-guide-id="library-ai-task-manager"]'))
+      .not.toBeNull();
     expect(screen.getByRole("region", { name: "AI-created cards" })).toBeVisible();
     expect(screen.getByText("Laundry reset")).toBeVisible();
   });
@@ -96,6 +99,8 @@ describe("CardLibrary", () => {
       "data-guide-id",
       "library-put-in-play"
     );
+    expect(document.querySelectorAll('[data-guide-id="library-put-in-play"]'))
+      .toHaveLength(1);
     expect(screen.queryByText("Homework")).not.toBeInTheDocument();
     expect(screen.getByText("Laundry reset")).toBeVisible();
 
@@ -120,5 +125,29 @@ describe("CardLibrary", () => {
     expect(screen.getByRole("article", { name: /homework/i })).toHaveClass(
       "min-h-[420px]"
     );
+  });
+
+  it("walks through dummy Library practice without creating a real card", async () => {
+    const onCreateFromTemplate = vi.fn();
+    render(
+      <CardLibrary
+        aiDrafts={aiDrafts}
+        onCreateFromTemplate={onCreateFromTemplate}
+        templates={templates}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+
+    expect(screen.getByRole("dialog", { name: "Library guide" })).toBeVisible();
+    expect(screen.getByText("Step 1 of 4")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+
+    await userEvent.click(screen.getByRole("button", { name: "Open greg in dummy mode" }));
+
+    expect(screen.getByRole("region", { name: "Capture AI card draft" })).toBeVisible();
+    expect(screen.getByText("Dummy greg tray opened.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
+    expect(onCreateFromTemplate).not.toHaveBeenCalled();
   });
 });

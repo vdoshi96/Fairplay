@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -14,6 +15,10 @@ import type { RadarReasonKey, RadarState, Urgency, Visibility } from "@/domain/e
 import { SAFETY_COPY } from "@/lib/safety-copy";
 import { FEATURE_GUIDES } from "@/components/guide/guide-content";
 import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
+import {
+  completeGuidePractice,
+  useGuidePracticeRequest
+} from "@/components/guide/guide-practice";
 import { MotionPanel } from "@/components/motion/fairplay-motion";
 import { RadarVisual } from "@/components/visuals/fairplay-visuals";
 
@@ -164,6 +169,7 @@ export function RadarBoard({
   const [showDeferred, setShowDeferred] = useState(false);
   const [showResolved, setShowResolved] = useState(false);
   const [showDismissed, setShowDismissed] = useState(false);
+  const [practiceResolved, setPracticeResolved] = useState(false);
   const [publishTargets, setPublishTargets] = useState<Record<string, Visibility>>(
     {}
   );
@@ -182,10 +188,16 @@ export function RadarBoard({
   const dialogRef = useRef<HTMLDivElement>(null);
   const confirmPublishButtonRef = useRef<HTMLButtonElement>(null);
   const publishReturnFocusRef = useRef<HTMLElement | null>(null);
+  const resolveDummyRadar = useCallback(() => {
+    setPracticeResolved(true);
+    completeGuidePractice("radar-actions");
+  }, []);
 
   useEffect(() => {
     setBoardItems(items);
   }, [items]);
+
+  useGuidePracticeRequest("radar-actions", resolveDummyRadar);
 
   useEffect(() => {
     const content = contentRef.current;
@@ -288,6 +300,8 @@ export function RadarBoard({
     }),
     [boardItems]
   );
+  const radarActionsGuideItemId =
+    groups.sharedOpen[0]?.id ?? groups.checkInTopics[0]?.id ?? null;
 
   async function createItem() {
     if (!topic.trim()) {
@@ -615,6 +629,9 @@ export function RadarBoard({
             }
             onSaveEdit={() => updateItem(item.id)}
             onTransition={transition}
+            actionsGuideId={
+              item.id === radarActionsGuideItemId ? "radar-actions" : undefined
+            }
             publishTarget={
               (publishTargets[item.id] ??
                 "shared_household") as Exclude<Visibility, "private">
@@ -646,6 +663,9 @@ export function RadarBoard({
             onPublishTarget={() => undefined}
             onSaveEdit={() => updateItem(item.id)}
             onTransition={transition}
+            actionsGuideId={
+              item.id === radarActionsGuideItemId ? "radar-actions" : undefined
+            }
             publishTarget="shared_household"
           />
         )}
@@ -674,12 +694,47 @@ export function RadarBoard({
             onPublishTarget={() => undefined}
             onSaveEdit={() => updateItem(item.id)}
             onTransition={transition}
+            actionsGuideId={
+              item.id === radarActionsGuideItemId ? "radar-actions" : undefined
+            }
             publishTarget="check_in_only"
           />
         )}
       </RadarSection>
 
-      <div className="flex flex-wrap gap-2" data-guide-id="radar-actions">
+      {!radarActionsGuideItemId ? (
+        <div
+          className="grid gap-2 rounded-[8px] border border-dashed border-fp-line bg-white p-3"
+          data-guide-id="radar-actions"
+        >
+          <p className="text-[13px] font-bold text-fp-ink">
+            Practice radar actions
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              type="button"
+            >
+              Schedule
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              type="button"
+            >
+              Defer
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              onClick={resolveDummyRadar}
+              type="button"
+            >
+              Resolve
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap gap-2">
         <button
           className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
           onClick={() => setShowDeferred((current) => !current)}
@@ -702,6 +757,14 @@ export function RadarBoard({
           {showDismissed ? "Hide dismissed" : "Show dismissed"}
         </button>
       </div>
+      {practiceResolved ? (
+        <p
+          className="rounded-[8px] border border-fp-line bg-white p-3 text-[14px] font-semibold text-fp-muted-ink"
+          role="status"
+        >
+          Dummy radar item resolved.
+        </p>
+      ) : null}
 
       {showDeferred ? (
         <RadarSection title="Deferred" items={groups.deferred}>
@@ -807,6 +870,7 @@ function RadarSection({
 }
 
 function RadarCard({
+  actionsGuideId,
   deferDate = "",
   editDesiredTiming,
   editTopic,
@@ -823,6 +887,7 @@ function RadarCard({
   onTransition,
   publishTarget
 }: {
+  actionsGuideId?: string;
   deferDate?: string;
   editDesiredTiming: string;
   editTopic: string;
@@ -916,7 +981,7 @@ function RadarCard({
         />
       </label>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" data-guide-id={actionsGuideId}>
         {isEditing ? (
           <>
             <button

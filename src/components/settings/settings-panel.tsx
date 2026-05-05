@@ -1,13 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import {
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from "react";
 import { useRouter } from "next/navigation";
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
 import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import { FEATURE_GUIDES } from "@/components/guide/guide-content";
+import {
+  completeGuidePractice,
+  useGuidePracticeRequest
+} from "@/components/guide/guide-practice";
 
 type SettingsPanelProps = {
   household: HouseholdSummary;
@@ -27,6 +37,12 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
   const switchTriggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const continueButtonRef = useRef<HTMLButtonElement>(null);
+  const openDummyLearningHub = useCallback(() => {
+    setActionStatus("Dummy learning hub opened.");
+    completeGuidePractice("settings-learning-hub");
+  }, []);
+
+  useGuidePracticeRequest("settings-learning-hub", openDummyLearningHub);
 
   useEffect(() => {
     const content = contentRef.current;

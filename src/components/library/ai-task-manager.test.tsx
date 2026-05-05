@@ -86,10 +86,12 @@ describe("AiTaskManager", () => {
     vi.restoreAllMocks();
   });
 
-  it("opens capture controls for text and voice from the AI Task Manager button", async () => {
+  it("opens capture controls for text and voice from the greg button", async () => {
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
 
     expect(screen.getByRole("region", { name: "Capture AI card draft" })).toBeVisible();
     expect(screen.getByLabelText("Describe the card")).toBeVisible();
@@ -154,7 +156,9 @@ describe("AiTaskManager", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
     await userEvent.type(
       screen.getByLabelText("Describe the card"),
       "Make a card for packing lunches."
@@ -215,7 +219,9 @@ describe("AiTaskManager", () => {
 
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
     await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
     expect(screen.getByRole("button", { name: "Stop recording" })).toBeVisible();
 
@@ -264,7 +270,9 @@ describe("AiTaskManager", () => {
 
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
     await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
     fireEvent.click(screen.getByRole("button", { name: "Close capture" }));
 
@@ -303,7 +311,9 @@ describe("AiTaskManager", () => {
 
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
     await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
     fireEvent.click(screen.getByRole("button", { name: "Close capture" }));
     resolveUserMedia(stream);
