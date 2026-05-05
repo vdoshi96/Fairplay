@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
+import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import type {
   CardTemplateLabel,
   CardTemplateSummary
@@ -10,11 +11,13 @@ import type {
 import { CARD_TEMPLATE_LABELS } from "@/contracts/card-templates";
 import { FEATURE_GUIDES } from "@/components/guide/guide-content";
 import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
+import { AiTaskManager } from "@/components/library/ai-task-manager";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 
 type CardLibraryProps = {
   templates: CardTemplateSummary[];
+  aiDrafts?: AiCardDraftSummary[];
   onCreateFromTemplate?: (templateId: string) => void;
 };
 
@@ -31,6 +34,7 @@ const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> =
 };
 
 export function CardLibrary({
+  aiDrafts = [],
   templates,
   onCreateFromTemplate
 }: CardLibraryProps) {
@@ -59,6 +63,8 @@ export function CardLibrary({
 
   return (
     <section className="grid gap-5">
+      <AiTaskManager drafts={aiDrafts} />
+
       <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_auto] lg:items-end">
         <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
           Search cards

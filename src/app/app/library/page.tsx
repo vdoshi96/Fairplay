@@ -4,12 +4,14 @@ import { revalidatePath } from "next/cache";
 import { NextRequest } from "next/server";
 
 import { CardLibrary } from "@/components/library/card-library";
+import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import type { CardTemplateSummary } from "@/contracts/card-templates";
 import { FAIRPLAY_SOURCE_CARDS } from "@/seed/fairplay-source-cards";
+import { aiCardDraftService } from "@/server/ai-card-drafts/service";
 import { getCurrentSession } from "@/server/auth/current-session";
 import { createResponsibilityFromTemplate } from "@/server/repositories/card-templates";
 
-export default function LibraryPage() {
+export default async function LibraryPage() {
   const templates: CardTemplateSummary[] = FAIRPLAY_SOURCE_CARDS.map((card) => ({
     id: card.id,
     slug: card.slug,
@@ -19,6 +21,10 @@ export default function LibraryPage() {
     coverAssetPath: card.coverAssetPath,
     defaultLane: card.defaultLane
   }));
+  const session = await getPageSession();
+  const aiDrafts: AiCardDraftSummary[] = session?.selectedPersonaId
+    ? await aiCardDraftService.list(session)
+    : [];
 
   async function createFromTemplate(templateId: string) {
     "use server";
@@ -52,6 +58,7 @@ export default function LibraryPage() {
         </h1>
       </div>
       <CardLibrary
+        aiDrafts={aiDrafts}
         onCreateFromTemplate={createFromTemplate}
         templates={templates}
       />
