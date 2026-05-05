@@ -15,6 +15,7 @@ const pathname = vi.hoisted(() => vi.fn(() => "/app/load-map"));
 
 vi.mock("next/navigation", () => ({
   usePathname: pathname,
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
     push: routerPush,
     replace: routerReplace
@@ -60,15 +61,36 @@ describe("protected app UI", () => {
       "/app/settings"
     );
     expect(
-      screen.getByRole("heading", { name: "Household overview" })
+      screen.getByRole("heading", { name: "Learn Fairplay in layers" })
     ).toBeVisible();
-    expect(screen.getAllByRole("link", { name: "Load Map" }).length).toBeGreaterThan(
-      0
+    expect(
+      screen
+        .getAllByRole("link", { name: "Crash course" })
+        .some((link) => link.getAttribute("href") === "/app/crash-course")
+    ).toBe(true);
+    expect(screen.getByRole("link", { name: "App Guide 101" })).toHaveAttribute(
+      "href",
+      "/app/home#app-guide-101"
     );
-    expect(screen.getAllByRole("link", { name: "Radar" }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: "Check-ins" }).length).toBeGreaterThan(
-      0
+    expect(screen.getByRole("link", { name: "Card library" })).toHaveAttribute(
+      "href",
+      "/app/library"
     );
+    expect(
+      screen.getByRole("link", { name: "Learn this feature: Load Map" })
+    ).toHaveAttribute("href", "/app/load-map?guide=loadMap");
+    expect(
+      screen.getByRole("link", { name: "Learn this feature: Library" })
+    ).toHaveAttribute("href", "/app/library?guide=library");
+    expect(
+      screen.getByRole("link", { name: "Learn this feature: Radar" })
+    ).toHaveAttribute("href", "/app/radar?guide=radar");
+    expect(
+      screen.getByRole("link", { name: "Learn this feature: Check-ins" })
+    ).toHaveAttribute("href", "/app/check-ins/new?guide=checkIns");
+    expect(
+      screen.getByRole("link", { name: "Learn this feature: Settings" })
+    ).toHaveAttribute("href", "/app/settings?guide=settings");
   });
 
   it("renders premium route chrome with active load map and personal-use entries", () => {

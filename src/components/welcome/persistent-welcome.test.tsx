@@ -41,7 +41,7 @@ describe("PersistentWelcome", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("links to the crash course, library, and load map without dismissing", () => {
+  it("links to the crash course, app guide, and card library without dismissing", () => {
     const onDismiss = vi.fn();
     render(<PersistentWelcome dismissed={false} onDismiss={onDismiss} />);
 
@@ -49,14 +49,15 @@ describe("PersistentWelcome", () => {
       "href",
       "/app/crash-course"
     );
-    expect(screen.getByRole("link", { name: "Browse library" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open App Guide 101" })).toHaveAttribute(
+      "href",
+      "/app/home#app-guide-101"
+    );
+    expect(screen.getByRole("link", { name: "Browse card library" })).toHaveAttribute(
       "href",
       "/app/library"
     );
-    expect(screen.getByRole("link", { name: "Open load map" })).toHaveAttribute(
-      "href",
-      "/app/load-map"
-    );
+    expect(screen.queryByRole("link", { name: "Open load map" })).not.toBeInTheDocument();
     expect(onDismiss).not.toHaveBeenCalled();
   });
 
