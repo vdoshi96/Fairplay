@@ -2,9 +2,12 @@ import { randomUUID } from "node:crypto";
 
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
+import type { StructuredAiCard } from "@/server/ai/qwen-card-generator";
 import { prisma } from "../db/prisma";
+import { RepositoryError } from "../db/errors";
 import { createHouseholdWithPersonas } from "./households";
 import {
+  acceptAiCardDraftAsResponsibility,
   cancelAiCardDraft,
   createAiCardDraft,
   deleteAiCardDraftAudio,
@@ -37,6 +40,51 @@ async function createTestHousehold(prefix = "ai-draft") {
   });
   createdHouseholdIds.add(result.household.id);
   return result;
+}
+
+const generatedCard: StructuredAiCard = {
+  title: "Dog Medicine",
+  summary: "Keep the dog medicine cadence visible.",
+  areaKeys: ["pet_care"],
+  hiddenEffortKeys: ["noticing", "planning"],
+  cadence: "monthly",
+  definition: "Track the medicine schedule.",
+  conception: "Notice refill and dose timing.",
+  planning: "Put the next dose on the household calendar.",
+  execution: "Give the medicine and record it.",
+  minimumStandard: "Medicine is given by the due date.",
+  imagePrompt: "dog medicine calendar still life",
+  imageNegativePrompt: "people, logos"
+};
+
+async function createReadyAudioDraft() {
+  const { household, personas } = await createTestHousehold();
+  const draft = await createAiCardDraft({
+    householdId: household.id,
+    createdByPersonaId: personas[0].id,
+    sourceInputType: "audio",
+    audioBytes: new Uint8Array([1, 2, 3]),
+    audioMimeType: "audio/webm"
+  });
+
+  await saveAiCardDraftGeneration({
+    householdId: household.id,
+    draftId: draft.id,
+    card: generatedCard
+  });
+  await saveAiCardDraftCover({
+    householdId: household.id,
+    draftId: draft.id,
+    bytes: new Uint8Array([9, 8, 7]),
+    mimeType: "image/png"
+  });
+  await markAiCardDraftStage({
+    householdId: household.id,
+    draftId: draft.id,
+    stage: "ready"
+  });
+
+  return { household, personas, draft };
 }
 
 beforeAll(() => {
@@ -224,6 +272,11 @@ describe("AI card draft repository", () => {
         imageNegativePrompt: "logos"
       }
     });
+    await markAiCardDraftStage({
+      householdId: household.id,
+      draftId: draft.id,
+      stage: "generating_image"
+    });
     await saveAiCardDraftCover({
       householdId: household.id,
       draftId: draft.id,
@@ -268,6 +321,16 @@ describe("AI card draft repository", () => {
       hiddenEffortKeys: ["doing"],
       cadence: "weekly",
       visibility: "shared_household"
+    });
+    await saveAiCardDraftGeneration({
+      householdId: household.id,
+      draftId: accepted.id,
+      card: generatedCard
+    });
+    await markAiCardDraftStage({
+      householdId: household.id,
+      draftId: accepted.id,
+      stage: "ready"
     });
 
     await markAiCardDraftAccepted({
@@ -319,5 +382,143 @@ describe("AI card draft repository", () => {
     expect(stored.status).toBe("processing");
     expect(stored.audioBytes).toBeNull();
     expect(stored.audioDeletedAt).not.toBeNull();
+  });
+
+  it("atomically accepts a ready draft once, creates a responsibility, and deletes audio", async () => {
+    const { household, personas, draft } = await createReadyAudioDraft();
+
+    const responsibility = await acceptAiCardDraftAsResponsibility({
+      householdId: household.id,
+      draftId: draft.id,
+      createdByPersonaId: personas[0].id
+    });
+
+    expect(responsibility).toMatchObject({
+      title: generatedCard.title,
+      status: "active",
+      visibility: "shared_household",
+      boardLane: "not_in_play",
+      householdStandard: generatedCard.minimumStandard
+    });
+
+    await expect(
+      acceptAiCardDraftAsResponsibility({
+        householdId: household.id,
+        draftId: draft.id,
+        createdByPersonaId: personas[0].id
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    const storedDraft = await prisma.aiCardDraft.findUniqueOrThrow({
+      where: { id: draft.id },
+      select: {
+        status: true,
+        acceptedResponsibilityId: true,
+        audioBytes: true,
+        audioMimeType: true,
+        audioDeletedAt: true
+      }
+    });
+    expect(storedDraft).toMatchObject({
+      status: "accepted",
+      acceptedResponsibilityId: responsibility.id,
+      audioBytes: null,
+      audioMimeType: null
+    });
+    expect(storedDraft.audioDeletedAt).not.toBeNull();
+
+    await expect(
+      prisma.responsibility.count({
+        where: {
+          householdId: household.id,
+          title: generatedCard.title
+        }
+      })
+    ).resolves.toBe(1);
+  });
+
+  it("blocks late generation writes after a draft is canceled", async () => {
+    const { household, personas } = await createTestHousehold();
+    const draft = await createAiCardDraft({
+      householdId: household.id,
+      createdByPersonaId: personas[0].id,
+      sourceInputType: "text",
+      inputText: "Late write test"
+    });
+
+    await cancelAiCardDraft({ householdId: household.id, draftId: draft.id });
+
+    await expect(
+      markAiCardDraftStage({
+        householdId: household.id,
+        draftId: draft.id,
+        stage: "ready"
+      })
+    ).rejects.toBeInstanceOf(RepositoryError);
+    await expect(
+      saveAiCardDraftGeneration({
+        householdId: household.id,
+        draftId: draft.id,
+        card: generatedCard
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    await expect(
+      saveAiCardDraftCover({
+        householdId: household.id,
+        draftId: draft.id,
+        bytes: new Uint8Array([1]),
+        mimeType: "image/png"
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    await expect(
+      saveAiCardDraftFailure({
+        householdId: household.id,
+        draftId: draft.id,
+        failureCode: "LATE",
+        failureMessage: "Too late."
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    await expect(
+      getAiCardDraft({ householdId: household.id, draftId: draft.id })
+    ).resolves.toMatchObject({
+      status: "canceled",
+      title: null,
+      coverUrl: null,
+      failureMessage: null
+    });
+  });
+
+  it("blocks edits after a draft is accepted or canceled", async () => {
+    const { household, personas, draft } = await createReadyAudioDraft();
+    await acceptAiCardDraftAsResponsibility({
+      householdId: household.id,
+      draftId: draft.id,
+      createdByPersonaId: personas[0].id
+    });
+
+    await expect(
+      updateAiCardDraft({
+        householdId: household.id,
+        draftId: draft.id,
+        update: { title: "Edited after accept" }
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    const canceled = await createAiCardDraft({
+      householdId: household.id,
+      createdByPersonaId: personas[0].id,
+      sourceInputType: "text",
+      inputText: "Canceled edit"
+    });
+    await cancelAiCardDraft({ householdId: household.id, draftId: canceled.id });
+
+    await expect(
+      updateAiCardDraft({
+        householdId: household.id,
+        draftId: canceled.id,
+        update: { title: "Edited after cancel" }
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
   });
 });

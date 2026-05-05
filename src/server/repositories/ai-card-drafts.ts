@@ -2,7 +2,11 @@ import type {
   AiCardDraft,
   AiCardDraftStatus,
   AiCardGenerationStage,
-  AiCardSourceInputType
+  AiCardSourceInputType,
+  Prisma,
+  Responsibility,
+  ResponsibilityAssignment,
+  ResponsibilityLifecycleNotes
 } from "@prisma/client";
 
 import type {
@@ -10,6 +14,10 @@ import type {
   AiCardDraftSummary,
   AiCardDraftUpdate
 } from "@/contracts/ai-card-drafts";
+import type {
+  ResponsibilityAssignmentSummary,
+  ResponsibilityDetail
+} from "@/contracts/responsibilities";
 import type { StructuredAiCard } from "@/server/ai/qwen-card-generator";
 import type { HouseholdId, PersonaId, ResponsibilityId } from "../../domain/ids";
 import { RepositoryError } from "../db/errors";
@@ -34,6 +42,15 @@ export type ScopedAiCardDraftInput = {
 export type SaveAiCardDraftGenerationInput = ScopedAiCardDraftInput & {
   card?: StructuredAiCard;
   audioTranscript?: string | null;
+};
+
+type ResponsibilityWithRelations = Responsibility & {
+  assignments: (ResponsibilityAssignment & {
+    persona: {
+      key: "alex" | "max";
+    };
+  })[];
+  lifecycleNotes: ResponsibilityLifecycleNotes | null;
 };
 
 function coverUrl(draft: Pick<AiCardDraft, "id" | "coverImageBytes">) {
@@ -91,6 +108,86 @@ function toDetail(draft: AiCardDraft): AiCardDraftDetail {
   };
 }
 
+function nullableIso(date: Date | null): string | null {
+  return date ? date.toISOString() : null;
+}
+
+function currentAssignments(
+  assignments: ResponsibilityWithRelations["assignments"]
+): ResponsibilityAssignmentSummary[] {
+  return assignments
+    .filter((assignment) => assignment.endsAt === null)
+    .sort((left, right) => left.createdAt.getTime() - right.createdAt.getTime())
+    .map((assignment) => ({
+      personaKey: assignment.persona.key,
+      role: assignment.role,
+      scope: assignment.scope
+    }));
+}
+
+function toLifecycleNotes(
+  notes: ResponsibilityLifecycleNotes | null
+): ResponsibilityDetail["lifecycleNotes"] {
+  if (!notes) {
+    return null;
+  }
+
+  return {
+    noticeDecideNotes: notes.noticeDecideNotes,
+    planPrepareNotes: notes.planPrepareNotes,
+    executeFollowThroughNotes: notes.executeFollowThroughNotes,
+    dependencies: notes.dependencies,
+    blockers: notes.blockers,
+    supportNeeded: notes.supportNeeded,
+    handoffNotes: notes.handoffNotes,
+    updatedAt: notes.updatedAt.toISOString()
+  };
+}
+
+function toResponsibilityDetail(
+  responsibility: ResponsibilityWithRelations
+): ResponsibilityDetail {
+  return {
+    id: responsibility.id,
+    title: responsibility.title,
+    areaKeys: responsibility.areaKeys,
+    hiddenEffortKeys: responsibility.hiddenEffortKeys,
+    cadence: responsibility.cadence,
+    relevantDays: responsibility.relevantDays,
+    status: responsibility.status,
+    visibility: responsibility.visibility,
+    boardLane: responsibility.boardLane,
+    boardSortOrder: responsibility.boardSortOrder,
+    linkedRadarItems: [],
+    currentAssignments: currentAssignments(responsibility.assignments),
+    nextReviewAt: nullableIso(responsibility.nextReviewAt),
+    summary: responsibility.summary,
+    householdStandard: responsibility.householdStandard,
+    notes: responsibility.notes,
+    lifecycleNotes: toLifecycleNotes(responsibility.lifecycleNotes),
+    lastReviewedAt: nullableIso(responsibility.lastReviewedAt),
+    createdAt: responsibility.createdAt.toISOString(),
+    updatedAt: responsibility.updatedAt.toISOString(),
+    archivedAt: nullableIso(responsibility.archivedAt)
+  };
+}
+
+const responsibilityInclude = {
+  assignments: {
+    include: {
+      persona: {
+        select: {
+          key: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "asc"
+    }
+  },
+  lifecycleNotes: true
+} satisfies Prisma.ResponsibilityInclude;
+
 async function getScopedDraft(input: ScopedAiCardDraftInput) {
   return prisma.aiCardDraft.findFirst({
     where: {
@@ -102,17 +199,28 @@ async function getScopedDraft(input: ScopedAiCardDraftInput) {
 
 async function updateScopedDraft(
   input: ScopedAiCardDraftInput,
-  data: Parameters<typeof prisma.aiCardDraft.updateMany>[0]["data"]
+  data: Parameters<typeof prisma.aiCardDraft.updateMany>[0]["data"],
+  options: { allowedStatuses?: AiCardDraftStatus[] } = {}
 ) {
   const result = await prisma.aiCardDraft.updateMany({
     where: {
       id: input.draftId,
-      householdId: input.householdId
+      householdId: input.householdId,
+      ...(options.allowedStatuses
+        ? { status: { in: options.allowedStatuses } }
+        : {})
     },
     data
   });
 
   if (result.count !== 1) {
+    const existing = await getScopedDraft(input);
+    if (existing) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "AI card draft is not in an editable lifecycle state."
+      );
+    }
     throw new RepositoryError("NOT_FOUND", "AI card draft not found for household.");
   }
 
@@ -142,6 +250,43 @@ function toPrismaBytes(bytes: Uint8Array | Buffer): Uint8Array<ArrayBuffer> {
   const copied = new Uint8Array(bytes.byteLength);
   copied.set(bytes);
   return copied;
+}
+
+function requireGeneratedDraftFields(draft: AiCardDraft): StructuredAiCard {
+  if (
+    !draft.title ||
+    !draft.summary ||
+    draft.areaKeys.length === 0 ||
+    draft.hiddenEffortKeys.length === 0 ||
+    !draft.cadence ||
+    !draft.definition ||
+    !draft.conception ||
+    !draft.planning ||
+    !draft.execution ||
+    !draft.minimumStandard ||
+    !draft.imagePrompt ||
+    !draft.imageNegativePrompt
+  ) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "AI card draft is missing generated fields."
+    );
+  }
+
+  return {
+    title: draft.title,
+    summary: draft.summary,
+    areaKeys: draft.areaKeys,
+    hiddenEffortKeys: draft.hiddenEffortKeys,
+    cadence: draft.cadence,
+    definition: draft.definition,
+    conception: draft.conception,
+    planning: draft.planning,
+    execution: draft.execution,
+    minimumStandard: draft.minimumStandard,
+    imagePrompt: draft.imagePrompt,
+    imageNegativePrompt: draft.imageNegativePrompt
+  };
 }
 
 export async function createAiCardDraft(
@@ -201,11 +346,15 @@ export async function updateAiCardDraft(input: {
   draftId: AiCardDraftId;
   update: AiCardDraftUpdate;
 }): Promise<AiCardDraftDetail> {
-  const draft = await updateScopedDraft(input, {
-    ...input.update,
-    failureCode: null,
-    failureMessage: null
-  });
+  const draft = await updateScopedDraft(
+    input,
+    {
+      ...input.update,
+      failureCode: null,
+      failureMessage: null
+    },
+    { allowedStatuses: ["processing", "ready", "failed"] }
+  );
 
   return toDetail(draft);
 }
@@ -219,13 +368,17 @@ export async function markAiCardDraftStage(input: ScopedAiCardDraftInput & {
       : input.stage === "failed"
         ? "failed"
         : "processing";
-  const draft = await updateScopedDraft(input, {
-    generationStage: input.stage,
-    status,
-    readyAt: input.stage === "ready" ? new Date() : undefined,
-    failureCode: input.stage === "failed" ? undefined : null,
-    failureMessage: input.stage === "failed" ? undefined : null
-  });
+  const draft = await updateScopedDraft(
+    input,
+    {
+      generationStage: input.stage,
+      status,
+      readyAt: input.stage === "ready" ? new Date() : undefined,
+      failureCode: input.stage === "failed" ? undefined : null,
+      failureMessage: input.stage === "failed" ? undefined : null
+    },
+    { allowedStatuses: ["processing", "ready", "failed"] }
+  );
 
   return toDetail(draft);
 }
@@ -233,15 +386,19 @@ export async function markAiCardDraftStage(input: ScopedAiCardDraftInput & {
 export async function saveAiCardDraftGeneration(
   input: SaveAiCardDraftGenerationInput
 ): Promise<AiCardDraftDetail> {
-  const draft = await updateScopedDraft(input, {
-    ...(input.card ? generationData(input.card) : {}),
-    ...(input.audioTranscript !== undefined
-      ? { audioTranscript: input.audioTranscript }
-      : {}),
-    status: "processing",
-    failureCode: null,
-    failureMessage: null
-  });
+  const draft = await updateScopedDraft(
+    input,
+    {
+      ...(input.card ? generationData(input.card) : {}),
+      ...(input.audioTranscript !== undefined
+        ? { audioTranscript: input.audioTranscript }
+        : {}),
+      status: "processing",
+      failureCode: null,
+      failureMessage: null
+    },
+    { allowedStatuses: ["processing"] }
+  );
 
   return toDetail(draft);
 }
@@ -250,12 +407,16 @@ export async function saveAiCardDraftFailure(input: ScopedAiCardDraftInput & {
   failureCode: string;
   failureMessage: string;
 }): Promise<AiCardDraftDetail> {
-  const draft = await updateScopedDraft(input, {
-    status: "failed",
-    generationStage: "failed",
-    failureCode: input.failureCode,
-    failureMessage: input.failureMessage
-  });
+  const draft = await updateScopedDraft(
+    input,
+    {
+      status: "failed",
+      generationStage: "failed",
+      failureCode: input.failureCode,
+      failureMessage: input.failureMessage
+    },
+    { allowedStatuses: ["processing", "failed"] }
+  );
 
   return toDetail(draft);
 }
@@ -264,10 +425,14 @@ export async function saveAiCardDraftCover(input: ScopedAiCardDraftInput & {
   bytes: Uint8Array | Buffer;
   mimeType: string;
 }): Promise<AiCardDraftDetail> {
-  const draft = await updateScopedDraft(input, {
-    coverImageBytes: toPrismaBytes(input.bytes),
-    coverImageMimeType: input.mimeType
-  });
+  const draft = await updateScopedDraft(
+    input,
+    {
+      coverImageBytes: toPrismaBytes(input.bytes),
+      coverImageMimeType: input.mimeType
+    },
+    { allowedStatuses: ["processing"] }
+  );
 
   return toDetail(draft);
 }
@@ -301,16 +466,130 @@ export async function cancelAiCardDraft(
 export async function markAiCardDraftAccepted(input: ScopedAiCardDraftInput & {
   acceptedResponsibilityId: ResponsibilityId;
 }): Promise<AiCardDraftDetail> {
-  const draft = await updateScopedDraft(input, {
-    status: "accepted",
-    acceptedAt: new Date(),
-    acceptedResponsibilityId: input.acceptedResponsibilityId,
-    audioBytes: null,
-    audioMimeType: null,
-    audioDeletedAt: new Date()
-  });
+  const draft = await updateScopedDraft(
+    input,
+    {
+      status: "accepted",
+      acceptedAt: new Date(),
+      acceptedResponsibilityId: input.acceptedResponsibilityId,
+      audioBytes: null,
+      audioMimeType: null,
+      audioDeletedAt: new Date()
+    },
+    { allowedStatuses: ["ready"] }
+  );
 
   return toDetail(draft);
+}
+
+export async function acceptAiCardDraftAsResponsibility(input: {
+  householdId: HouseholdId;
+  draftId: AiCardDraftId;
+  createdByPersonaId: PersonaId;
+}): Promise<ResponsibilityDetail> {
+  return prisma.$transaction(async (tx) => {
+    const now = new Date();
+    const claimed = await tx.aiCardDraft.updateMany({
+      where: {
+        id: input.draftId,
+        householdId: input.householdId,
+        status: "ready",
+        acceptedResponsibilityId: null
+      },
+      data: {
+        status: "accepted",
+        acceptedAt: now,
+        audioBytes: null,
+        audioMimeType: null,
+        audioDeletedAt: now
+      }
+    });
+
+    if (claimed.count !== 1) {
+      const existing = await tx.aiCardDraft.findFirst({
+        where: {
+          id: input.draftId,
+          householdId: input.householdId
+        },
+        select: {
+          id: true
+        }
+      });
+      if (!existing) {
+        throw new RepositoryError(
+          "NOT_FOUND",
+          "AI card draft not found for household."
+        );
+      }
+
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "AI card draft is not ready to accept."
+      );
+    }
+
+    const [draft, creatorCount] = await Promise.all([
+      tx.aiCardDraft.findUniqueOrThrow({
+        where: {
+          id: input.draftId
+        }
+      }),
+      tx.persona.count({
+        where: {
+          id: input.createdByPersonaId,
+          householdId: input.householdId
+        }
+      })
+    ]);
+
+    if (creatorCount !== 1) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Creator persona does not belong to household."
+      );
+    }
+
+    const card = requireGeneratedDraftFields(draft);
+    const sourceCoverAssetPath = draft.coverImageBytes
+      ? `/api/ai-card-drafts/${draft.id}/cover`
+      : null;
+    const responsibility = await tx.responsibility.create({
+      data: {
+        householdId: input.householdId,
+        createdByPersonaId: input.createdByPersonaId,
+        title: card.title,
+        summary: card.summary,
+        areaKeys: card.areaKeys,
+        hiddenEffortKeys: card.hiddenEffortKeys,
+        cadence: card.cadence,
+        relevantDays: [],
+        status: "active",
+        visibility: "shared_household",
+        boardLane: "not_in_play",
+        boardSortOrder: 0,
+        householdStandard: card.minimumStandard,
+        notes: null,
+        sourceDefinition: card.definition,
+        sourceConception: card.conception,
+        sourcePlanning: card.planning,
+        sourceExecution: card.execution,
+        sourceMinimumStandard: card.minimumStandard,
+        sourceCoverAssetPath
+      },
+      include: responsibilityInclude
+    });
+
+    await tx.aiCardDraft.update({
+      where: {
+        id: input.draftId
+      },
+      data: {
+        acceptedResponsibilityId: responsibility.id
+      }
+    });
+
+    return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
+  });
 }
 
 export async function getAiCardDraftCover(

@@ -6,6 +6,7 @@ import type { AiCardDraftDetail, AiCardDraftSummary } from "@/contracts/ai-card-
 import type { ResponsibilityDetail } from "@/contracts/responsibilities";
 import type { StructuredAiCard } from "@/server/ai/qwen-card-generator";
 import type { CurrentSession } from "@/server/auth/current-session";
+import { RepositoryError } from "@/server/db/errors";
 import {
   createAiCardDraftService,
   type AiCardDraftServiceDeps
@@ -163,6 +164,7 @@ function makeDeps(overrides: Partial<AiCardDraftServiceDeps> = {}): AiCardDraftS
       mimeType: "image/png"
     }),
     createResponsibility: vi.fn().mockResolvedValue(responsibility()),
+    acceptDraftAsResponsibility: vi.fn().mockResolvedValue(responsibility()),
     ...overrides
   };
 }
@@ -320,6 +322,21 @@ describe("AI card draft service", () => {
     }
   );
 
+  it.each(["accepted", "canceled"] as const)(
+    "rejects updates for %s drafts",
+    async (status) => {
+      const deps = makeDeps({
+        getDraft: vi.fn().mockResolvedValue(readyDraft({ status }))
+      });
+      const service = createAiCardDraftService(deps);
+
+      await expect(
+        service.update(session, draftId, { title: "Late edit" })
+      ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+      expect(deps.updateDraft).not.toHaveBeenCalled();
+    }
+  );
+
   it("regenerates images from existing structured fields", async () => {
     const deps = makeDeps({
       getDraft: vi.fn().mockResolvedValue(readyDraft())
@@ -364,33 +381,14 @@ describe("AI card draft service", () => {
     const created = await service.putInPlay(session, draftId);
 
     expect(created.id).toBe(responsibilityId);
-    expect(deps.createResponsibility).toHaveBeenCalledWith({
+    expect(deps.acceptDraftAsResponsibility).toHaveBeenCalledWith({
       householdId,
       createdByPersonaId: alexId,
-      title: generatedCard.title,
-      summary: generatedCard.summary,
-      areaKeys: generatedCard.areaKeys,
-      hiddenEffortKeys: generatedCard.hiddenEffortKeys,
-      cadence: generatedCard.cadence,
-      relevantDays: [],
-      status: "active",
-      visibility: "shared_household",
-      boardLane: "not_in_play",
-      householdStandard: generatedCard.minimumStandard,
-      notes: null,
-      sourceDefinition: generatedCard.definition,
-      sourceConception: generatedCard.conception,
-      sourcePlanning: generatedCard.planning,
-      sourceExecution: generatedCard.execution,
-      sourceMinimumStandard: generatedCard.minimumStandard,
-      sourceCoverAssetPath: `/api/ai-card-drafts/${draftId}/cover`
+      draftId
     });
-    expect(deps.markAccepted).toHaveBeenCalledWith({
-      householdId,
-      draftId,
-      acceptedResponsibilityId: responsibilityId
-    });
-    expect(deps.deleteAudio).toHaveBeenCalledWith({ householdId, draftId });
+    expect(deps.createResponsibility).not.toHaveBeenCalled();
+    expect(deps.markAccepted).not.toHaveBeenCalled();
+    expect(deps.deleteAudio).not.toHaveBeenCalled();
   });
 
   it.each(["failed", "accepted", "canceled"] as const)(
@@ -409,6 +407,22 @@ describe("AI card draft service", () => {
       expect(deps.deleteAudio).not.toHaveBeenCalled();
     }
   );
+
+  it("maps atomic accept races to a service invalid input error", async () => {
+    const deps = makeDeps({
+      getDraft: vi.fn().mockResolvedValue(readyDraft()),
+      acceptDraftAsResponsibility: vi
+        .fn()
+        .mockRejectedValue(
+          new RepositoryError("INVALID_INPUT", "AI card draft is not ready to accept.")
+        )
+    });
+    const service = createAiCardDraftService(deps);
+
+    await expect(service.putInPlay(session, draftId)).rejects.toMatchObject({
+      code: "INVALID_INPUT"
+    });
+  });
 
   it("cancels drafts and deletes audio", async () => {
     const deps = makeDeps();

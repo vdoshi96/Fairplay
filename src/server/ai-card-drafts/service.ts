@@ -15,6 +15,7 @@ import {
 import type { CurrentSession } from "@/server/auth/current-session";
 import { createResponsibility } from "@/server/repositories/responsibilities";
 import {
+  acceptAiCardDraftAsResponsibility,
   cancelAiCardDraft,
   createAiCardDraft,
   deleteAiCardDraftAudio,
@@ -30,6 +31,7 @@ import {
   updateAiCardDraft,
   type AiCardDraftId
 } from "@/server/repositories/ai-card-drafts";
+import { RepositoryError } from "@/server/db/errors";
 
 export type AiCardDraftServiceErrorCode =
   | "AUTH_REQUIRED"
@@ -125,6 +127,7 @@ export type AiCardDraftServiceDeps = {
     negativePrompt: string;
   }) => Promise<GeneratedCoverImage>;
   createResponsibility: typeof createResponsibility;
+  acceptDraftAsResponsibility: typeof acceptAiCardDraftAsResponsibility;
 };
 
 type AiCardGenerationStage = AiCardDraftDetail["generationStage"];
@@ -148,7 +151,8 @@ const defaultDeps: AiCardDraftServiceDeps = {
   transcribeAudio,
   structureTaskAsCard,
   generateCardCover,
-  createResponsibility
+  createResponsibility,
+  acceptDraftAsResponsibility: acceptAiCardDraftAsResponsibility
 };
 
 function requireSelectedPersona(session: CurrentSession): PersonaId {
@@ -164,6 +168,17 @@ function requireSelectedPersona(session: CurrentSession): PersonaId {
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : "AI card draft generation failed.";
+}
+
+function mapRepositoryServiceError(error: unknown): never {
+  if (
+    error instanceof RepositoryError &&
+    (error.code === "NOT_FOUND" || error.code === "INVALID_INPUT")
+  ) {
+    throw new AiCardDraftServiceError(error.code, error.message);
+  }
+
+  throw error;
 }
 
 async function getRequiredDraft(
@@ -246,6 +261,15 @@ function assertCanPutInPlay(draft: AiCardDraftDetail) {
     throw new AiCardDraftServiceError(
       "INVALID_INPUT",
       "Only ready AI card drafts can be put in play."
+    );
+  }
+}
+
+function assertCanUpdate(draft: AiCardDraftDetail) {
+  if (draft.status === "accepted" || draft.status === "canceled") {
+    throw new AiCardDraftServiceError(
+      "INVALID_INPUT",
+      "Accepted or canceled AI card drafts cannot be edited."
     );
   }
 }
@@ -423,7 +447,8 @@ export function createAiCardDraftService(
       update: AiCardDraftUpdate
     ): Promise<AiCardDraftDetail> {
       requireSelectedPersona(session);
-      await getRequiredDraft(deps, session, draftId);
+      const draft = await getRequiredDraft(deps, session, draftId);
+      assertCanUpdate(draft);
       return deps.updateDraft({
         householdId: session.householdId,
         draftId,
@@ -528,41 +553,15 @@ export function createAiCardDraftService(
       const createdByPersonaId = requireSelectedPersona(session);
       const draft = await getRequiredDraft(deps, session, draftId);
       assertCanPutInPlay(draft);
-      const card = requireGeneratedFields(draft);
-      const sourceCoverAssetPath = draft.coverUrl ?? `/api/ai-card-drafts/${draftId}/cover`;
-      const responsibility = await deps.createResponsibility({
-        householdId: session.householdId,
-        createdByPersonaId,
-        title: card.title,
-        summary: card.summary,
-        areaKeys: card.areaKeys,
-        hiddenEffortKeys: card.hiddenEffortKeys,
-        cadence: card.cadence,
-        relevantDays: [],
-        status: "active",
-        visibility: "shared_household",
-        boardLane: "not_in_play",
-        householdStandard: card.minimumStandard,
-        notes: null,
-        sourceDefinition: card.definition,
-        sourceConception: card.conception,
-        sourcePlanning: card.planning,
-        sourceExecution: card.execution,
-        sourceMinimumStandard: card.minimumStandard,
-        sourceCoverAssetPath
-      });
-
-      await deps.markAccepted({
-        householdId: session.householdId,
-        draftId,
-        acceptedResponsibilityId: responsibility.id
-      });
-      await deps.deleteAudio({
-        householdId: session.householdId,
-        draftId
-      });
-
-      return responsibility;
+      try {
+        return await deps.acceptDraftAsResponsibility({
+          householdId: session.householdId,
+          createdByPersonaId,
+          draftId
+        });
+      } catch (error) {
+        mapRepositoryServiceError(error);
+      }
     },
 
     async cancel(
