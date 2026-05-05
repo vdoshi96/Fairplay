@@ -86,10 +86,12 @@ describe("AiTaskManager", () => {
     vi.restoreAllMocks();
   });
 
-  it("opens capture controls for text and voice from the AI Task Manager button", async () => {
+  it("opens capture controls for text and voice from the greg button", async () => {
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
 
     expect(screen.getByRole("region", { name: "Capture AI card draft" })).toBeVisible();
     expect(screen.getByLabelText("Describe the card")).toBeVisible();
@@ -154,7 +156,9 @@ describe("AiTaskManager", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
     await userEvent.type(
       screen.getByLabelText("Describe the card"),
       "Make a card for packing lunches."
@@ -172,6 +176,34 @@ describe("AiTaskManager", () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
       inputText: "Make a card for packing lunches."
     });
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows safe generation failure JSON and refreshes so failed drafts can appear", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({
+        error: "AI card draft generation failed.",
+        code: "GENERATION_FAILED",
+        draftId: draftIds.failed,
+        requestId: "fp_ai_test"
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AiTaskManager drafts={[]} />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
+    await userEvent.type(
+      screen.getByLabelText("Describe the card"),
+      "Make a card for packing lunches."
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Create draft" }));
+
+    expect(
+      await screen.findByText("AI card draft generation failed. Reference fp_ai_test.")
+    ).toBeVisible();
     expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
@@ -215,7 +247,9 @@ describe("AiTaskManager", () => {
 
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
     await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
     expect(screen.getByRole("button", { name: "Stop recording" })).toBeVisible();
 
@@ -264,7 +298,9 @@ describe("AiTaskManager", () => {
 
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
     await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
     fireEvent.click(screen.getByRole("button", { name: "Close capture" }));
 
@@ -303,7 +339,9 @@ describe("AiTaskManager", () => {
 
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
     await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
     fireEvent.click(screen.getByRole("button", { name: "Close capture" }));
     resolveUserMedia(stream);

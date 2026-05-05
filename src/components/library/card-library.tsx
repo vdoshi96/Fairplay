@@ -112,7 +112,7 @@ export function CardLibrary({
 
       {filteredTemplates.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredTemplates.map((template) => (
+          {filteredTemplates.map((template, index) => (
             <article
               aria-label={template.title}
               className="grid min-h-[420px] grid-rows-[192px_1fr_auto] overflow-hidden rounded border border-fp-line bg-white shadow-[var(--fp-shadow-soft)]"
@@ -148,7 +148,7 @@ export function CardLibrary({
               <div className="border-t border-fp-line p-4">
                 <Button
                   className="w-full"
-                  data-guide-id="library-put-in-play"
+                  data-guide-id={index === 0 ? "library-put-in-play" : undefined}
                   disabled={!onCreateFromTemplate}
                   onClick={() => onCreateFromTemplate?.(template.id)}
                   variant="primary"

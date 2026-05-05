@@ -2,8 +2,10 @@ import "server-only";
 
 import {
   approvedImageModelSummary,
-  isApprovedOpenAiImageModel
+  isApprovedOpenAiImageModel,
+  type ApprovedOpenAiImageModel
 } from "./approved-image-models";
+import { unsafeValueLooksPresent } from "./diagnostics";
 
 export type OpenAiDisabledFallbackConfig = {
   enabled: false;
@@ -17,7 +19,7 @@ export type OpenAiEnabledFallbackConfig = {
   asrApiKey: string;
   asrModel: string;
   imageApiKey: string;
-  imageModel: string;
+  imageModel: ApprovedOpenAiImageModel;
 };
 
 export type OpenAiFallbackConfig =
@@ -61,7 +63,9 @@ export function getOpenAiFallbackConfig(
     return { enabled: false };
   }
 
-  const missingNames = Object.values(envMapping).filter((name) => !env[name]);
+  const missingNames = Object.values(envMapping).filter(
+    (name) => !unsafeValueLooksPresent(env[name])
+  );
   if (missingNames.length > 0) {
     throw new OpenAiFallbackConfigError(missingNames);
   }

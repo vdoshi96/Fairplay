@@ -31,7 +31,7 @@ const featureCards: Array<{
     title: "Load Map"
   },
   {
-    body: "Browse source cards before deciding what belongs in your household system.",
+    body: "Create AI draft cards with greg, then browse source cards before deciding what belongs in your household system.",
     guideHref: "/app/library?guide=library",
     guideId: "library",
     title: "Library"

@@ -77,6 +77,20 @@ describe("Qwen card generator", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("treats blank and placeholder Qwen env values as missing", () => {
+    expect(() =>
+      getQwenConfig({
+        QWEN_CARD_API_KEY: "replace-with-qwen-key-for-card-structuring-and-asr",
+        QWEN_CARD_MODEL: "qwen3.6-max-preview",
+        QWEN_ASR_MODEL: "   ",
+        QWEN_OPENAI_BASE_URL: "https://qwen.example/compatible-mode/v1",
+        QWEN_IMAGE_API_KEY: "image-secret",
+        QWEN_IMAGE_MODEL: "qwen-image-2.0-pro",
+        QWEN_IMAGE_BASE_URL: "https://qwen.example/api/v1"
+      })
+    ).toThrow(/QWEN_CARD_API_KEY, QWEN_ASR_MODEL/);
+  });
+
   it("structures a task as strict Fairplay card JSON", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({
@@ -332,6 +346,25 @@ describe("Qwen card generator", () => {
         { fetch: fetchMock, config }
       )
     ).rejects.toBeInstanceOf(QwenGenerationError);
+  });
+
+  it("adds safe metadata to non-OK Qwen provider errors", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response("do not log raw provider body", {
+        status: 401,
+        headers: { "x-request-id": "qwen_req_123" }
+      })
+    );
+
+    await expect(
+      structureTaskAsCard({ taskText: "Dog Meds" }, { fetch: fetchMock, config })
+    ).rejects.toMatchObject({
+      code: "QWEN_GENERATION_FAILED",
+      provider: "qwen",
+      model: "qwen3.6-max-preview",
+      status: 401,
+      providerRequestId: "qwen_req_123"
+    });
   });
 
   it("throws a generation error for generated image URLs with unsupported schemes", async () => {

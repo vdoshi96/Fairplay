@@ -60,7 +60,7 @@ describe("OpenAI fallback card generator", () => {
           config: {
             ...config,
             imageModel: "gpt-image-2"
-          }
+          } as unknown as OpenAiEnabledFallbackConfig
         }
       )
     ).rejects.toThrow("Unsupported OpenAI image model configured");
@@ -121,6 +121,28 @@ describe("OpenAI fallback card generator", () => {
         { fetch: fetchMock, config }
       )
     ).rejects.toBeInstanceOf(OpenAiGenerationError);
+  });
+
+  it("adds safe metadata to non-OK OpenAI provider errors", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response("do not log raw provider body", {
+        status: 429,
+        headers: { "x-request-id": "openai_req_123" }
+      })
+    );
+
+    await expect(
+      structureTaskAsCardWithOpenAi(
+        { taskText: "Dog Meds" },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toMatchObject({
+      code: "OPENAI_GENERATION_FAILED",
+      provider: "openai",
+      model: "gpt-5-nano",
+      status: 429,
+      providerRequestId: "openai_req_123"
+    });
   });
 
   it("structures a task through the Responses API with strict JSON schema output", async () => {
@@ -228,6 +250,30 @@ describe("OpenAI fallback card generator", () => {
         { fetch: fetchMock, config }
       )
     ).rejects.toBeInstanceOf(OpenAiGenerationError);
+  });
+
+  it("rejects unapproved direct OpenAI image config before sending a request", async () => {
+    const fetchMock = vi.fn();
+    const unsafeConfig = {
+      ...config,
+      imageModel: "gpt-image-2"
+    } as unknown as OpenAiEnabledFallbackConfig;
+
+    await expect(
+      generateCardCoverWithOpenAi(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config: unsafeConfig }
+      )
+    ).rejects.toMatchObject({
+      code: "OPENAI_GENERATION_FAILED",
+      model: "gpt-image-2",
+      provider: "openai"
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("throws a generation error when base64 output is not a supported raster image", async () => {

@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  GUIDE_PRACTICE_COMPLETE_EVENT,
+  requestGuidePractice
+} from "./guide-practice";
 import type { GuideStep } from "./guide-content";
 
 export type { GuideStep } from "./guide-content";
@@ -25,9 +29,14 @@ const highlightPadding = 8;
 export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [highlightBox, setHighlightBox] = useState<HighlightBox | null>(null);
+  const [completedPracticeStepIds, setCompletedPracticeStepIds] = useState<Set<string>>(
+    () => new Set()
+  );
   const dialogRef = useRef<HTMLDivElement>(null);
   const activeStep = steps[Math.min(activeIndex, Math.max(steps.length - 1, 0))];
   const isLastStep = activeIndex >= steps.length - 1;
+  const practiceComplete =
+    !activeStep?.practice || completedPracticeStepIds.has(activeStep.id);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -46,7 +55,34 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
   }, [activeIndex]);
 
   useEffect(() => {
-    function updateHighlight() {
+    if (!activeStep?.practice) {
+      return;
+    }
+
+    function handlePracticeComplete(event: Event) {
+      const detail = (event as CustomEvent<{ eventId?: string }>).detail;
+
+      if (detail?.eventId === activeStep.practice?.eventId) {
+        setCompletedPracticeStepIds((current) => {
+          const next = new Set(current);
+          next.add(activeStep.id);
+          return next;
+        });
+      }
+    }
+
+    window.addEventListener(GUIDE_PRACTICE_COMPLETE_EVENT, handlePracticeComplete);
+
+    return () => {
+      window.removeEventListener(
+        GUIDE_PRACTICE_COMPLETE_EVENT,
+        handlePracticeComplete
+      );
+    };
+  }, [activeStep]);
+
+  useEffect(() => {
+    function updateHighlight({ scroll }: { scroll: boolean }) {
       if (!activeStep) {
         setHighlightBox(null);
         return;
@@ -60,7 +96,15 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
         return;
       }
 
+      if (scroll) {
+        target.scrollIntoView?.({ block: "center", inline: "nearest" });
+      }
       const rect = target.getBoundingClientRect();
+      if (!targetIsVisible(rect)) {
+        setHighlightBox(null);
+        return;
+      }
+
       setHighlightBox({
         height: rect.height + highlightPadding * 2,
         left: rect.left - highlightPadding,
@@ -69,13 +113,14 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       });
     }
 
-    updateHighlight();
-    window.addEventListener("resize", updateHighlight);
-    window.addEventListener("scroll", updateHighlight, true);
+    updateHighlight({ scroll: true });
+    const remeasureHighlight = () => updateHighlight({ scroll: false });
+    window.addEventListener("resize", remeasureHighlight);
+    window.addEventListener("scroll", remeasureHighlight, true);
 
     return () => {
-      window.removeEventListener("resize", updateHighlight);
-      window.removeEventListener("scroll", updateHighlight, true);
+      window.removeEventListener("resize", remeasureHighlight);
+      window.removeEventListener("scroll", remeasureHighlight, true);
     };
   }, [activeStep]);
 
@@ -120,6 +165,24 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
           </p>
           <h2 className="text-[22px] font-bold leading-7">{activeStep.title}</h2>
           <p className="text-[15px] leading-6 text-fp-muted-ink">{activeStep.body}</p>
+          {activeStep.practice ? (
+            <div className="grid gap-2 rounded-[8px] border border-fp-line bg-fp-surface px-3 py-3 text-[14px] leading-5 text-fp-muted-ink">
+              <p>{activeStep.practice.prompt}</p>
+              <button
+                className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink outline-none transition hover:bg-fp-soft focus:ring-2 focus:ring-fp-ink/25 disabled:opacity-60"
+                disabled={practiceComplete}
+                onClick={() => requestGuidePractice(activeStep.practice?.eventId ?? "")}
+                type="button"
+              >
+                {activeStep.practice.actionLabel}
+              </button>
+              {practiceComplete ? (
+                <p className="font-semibold text-fp-ink">
+                  {activeStep.practice.completionMessage}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           {!highlightBox ? (
             <p className="rounded-[8px] border border-fp-line bg-fp-surface px-3 py-2 text-[14px] leading-5 text-fp-muted-ink">
               This part of the page is not visible right now.
@@ -139,6 +202,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
               Back
             </Button>
             <Button
+              disabled={!practiceComplete}
               onClick={() => {
                 if (isLastStep) {
                   onExit();
@@ -155,5 +219,21 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
         </div>
       </section>
     </div>
+  );
+}
+
+function targetIsVisible(rect: DOMRect): boolean {
+  if (rect.width <= 0 || rect.height <= 0) {
+    return false;
+  }
+
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+  return (
+    rect.bottom > 0 &&
+    rect.right > 0 &&
+    rect.left < viewportWidth &&
+    rect.top < viewportHeight
   );
 }

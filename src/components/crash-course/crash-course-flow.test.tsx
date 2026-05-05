@@ -72,6 +72,36 @@ describe("crash course flow", () => {
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
+  it("shows a celebration splash after the course has been completed", () => {
+    render(
+      <CrashCourseFlow
+        completed
+        completionContextLabel="Alex's Fairplay crash course"
+        currentStep={CRASH_COURSE_LESSONS.length - 1}
+      />
+    );
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Hooray! Congrats on finishing Alex's Fairplay crash course."
+      })
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        "You now know how Fairplay treats ownership, planning, standards, handoffs, radar, and repair."
+      )
+    ).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Open the Load Map" })
+    ).toHaveAttribute("href", "/app/load-map");
+    expect(
+      screen.queryByRole("button", { name: "Finish course" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Skip crash course" })
+    ).not.toBeInTheDocument();
+  });
+
   it("includes an interactive standard rewrite prompt in lesson 4", () => {
     render(<CrashCourseFlow currentStep={3} />);
 

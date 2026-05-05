@@ -49,7 +49,22 @@ describe("OpenAI fallback config", () => {
     ).toThrow(OpenAiFallbackConfigError);
   });
 
-  it("rejects gpt-image-2 and other unapproved OpenAI image fallbacks", () => {
+  it("treats blank and placeholder fallback env values as missing", () => {
+    expect(() =>
+      getOpenAiFallbackConfig({
+        AI_PROVIDER_FALLBACK_ENABLED: "true",
+        OPENAI_BASE_URL: "https://api.openai.example/v1",
+        OPENAI_TEXT_API_KEY: "text-secret",
+        OPENAI_TEXT_MODEL: "replace-with-openai-text-model",
+        OPENAI_ASR_API_KEY: "asr-secret",
+        OPENAI_ASR_MODEL: "gpt-4o-mini-transcribe",
+        OPENAI_IMAGE_API_KEY: "   ",
+        OPENAI_IMAGE_MODEL: "gpt-image-1-mini"
+      })
+    ).toThrow(/OPENAI_TEXT_MODEL, OPENAI_IMAGE_API_KEY/);
+  });
+
+  it("rejects unapproved OpenAI image fallback models", () => {
     expect(() =>
       getOpenAiFallbackConfig({
         AI_PROVIDER_FALLBACK_ENABLED: "true",
