@@ -4,7 +4,7 @@ vi.mock("server-only", () => ({}));
 
 import type { AiCardDraftDetail, AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import type { ResponsibilityDetail } from "@/contracts/responsibilities";
-import type { StructuredAiCard } from "@/server/ai/qwen-card-generator";
+import type { StructuredAiCard } from "@/server/ai/card-generator";
 import type { CurrentSession } from "@/server/auth/current-session";
 import { RepositoryError } from "@/server/db/errors";
 import {

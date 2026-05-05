@@ -11,7 +11,7 @@ import type {
   AiCardDraftUpdate
 } from "@/contracts/ai-card-drafts";
 import type { ResponsibilityDetail } from "@/contracts/responsibilities";
-import type { StructuredAiCard } from "@/server/ai/qwen-card-generator";
+import type { StructuredAiCard } from "@/server/ai/card-generation-shared";
 import type { HouseholdId, PersonaId, ResponsibilityId } from "../../domain/ids";
 import { RepositoryError } from "../db/errors";
 import { prisma } from "../db/prisma";
