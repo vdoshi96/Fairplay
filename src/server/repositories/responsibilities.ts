@@ -6,6 +6,7 @@ import type {
   Prisma,
   Responsibility,
   ResponsibilityAssignment,
+  ResponsibilityBoardLane,
   ResponsibilityLifecycleNotes,
   ResponsibilityStatus,
   Visibility
@@ -44,6 +45,14 @@ export type CreateResponsibilityInput = {
   householdStandard?: string | null;
   notes?: string | null;
   nextReviewAt?: string | null;
+  boardLane?: ResponsibilityBoardLane;
+  boardSortOrder?: number;
+  sourceDefinition?: string | null;
+  sourceConception?: string | null;
+  sourcePlanning?: string | null;
+  sourceExecution?: string | null;
+  sourceMinimumStandard?: string | null;
+  sourceCoverAssetPath?: string | null;
 };
 
 function nullableIso(date: Date | null): string | null {
@@ -174,8 +183,16 @@ export async function createResponsibility(
       relevantDays: input.relevantDays ?? [],
       status: input.status ?? "unassigned",
       visibility: input.visibility,
+      boardLane: input.boardLane ?? "cards_of_concern",
+      boardSortOrder: input.boardSortOrder ?? 0,
       householdStandard: input.householdStandard ?? null,
       notes: input.notes ?? null,
+      sourceDefinition: input.sourceDefinition ?? null,
+      sourceConception: input.sourceConception ?? null,
+      sourcePlanning: input.sourcePlanning ?? null,
+      sourceExecution: input.sourceExecution ?? null,
+      sourceMinimumStandard: input.sourceMinimumStandard ?? null,
+      sourceCoverAssetPath: input.sourceCoverAssetPath ?? null,
       nextReviewAt: input.nextReviewAt ? new Date(input.nextReviewAt) : null
     },
     include: responsibilityInclude
@@ -281,6 +298,63 @@ export async function getResponsibilityDetail(input: {
   return responsibility
     ? toResponsibilityDetail(responsibility as ResponsibilityWithRelations)
     : null;
+}
+
+export async function updateResponsibilityBoardPlacement(input: {
+  householdId: HouseholdId;
+  responsibilityId: ResponsibilityId;
+  toLane: ResponsibilityBoardLane;
+  sortOrder: number;
+  actorPersonaId?: PersonaId;
+  note?: string;
+}): Promise<ResponsibilityDetail> {
+  const responsibility = await prisma.$transaction(async (tx) => {
+    const existing = await tx.responsibility.findFirst({
+      where: {
+        id: input.responsibilityId,
+        householdId: input.householdId
+      },
+      select: {
+        id: true,
+        boardLane: true,
+        boardSortOrder: true
+      }
+    });
+
+    if (!existing) {
+      throw new RepositoryError("NOT_FOUND", "Responsibility not found for household.");
+    }
+
+    await tx.responsibilityEvent.create({
+      data: {
+        householdId: input.householdId,
+        responsibilityId: input.responsibilityId,
+        actorPersonaId: input.actorPersonaId ?? null,
+        eventType: "board_lane_changed",
+        payload: {
+          fromLane: existing.boardLane,
+          toLane: input.toLane,
+          fromSortOrder: existing.boardSortOrder,
+          toSortOrder: input.sortOrder,
+          note: input.note ?? null
+        },
+        occurredAt: new Date()
+      }
+    });
+
+    return tx.responsibility.update({
+      where: {
+        id: input.responsibilityId
+      },
+      data: {
+        boardLane: input.toLane,
+        boardSortOrder: input.sortOrder
+      },
+      include: responsibilityInclude
+    });
+  });
+
+  return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
 }
 
 export async function listResponsibilitiesForHousehold(
