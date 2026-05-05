@@ -7,11 +7,13 @@ import { SettingsPanel } from "./settings-panel";
 
 const routerPush = vi.hoisted(() => vi.fn());
 const routerReplace = vi.hoisted(() => vi.fn());
+const routerRefresh = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: routerPush,
-    replace: routerReplace
+    replace: routerReplace,
+    refresh: routerRefresh
   })
 }));
 
@@ -48,6 +50,8 @@ describe("settings panel", () => {
   afterEach(() => {
     routerPush.mockReset();
     routerReplace.mockReset();
+    routerRefresh.mockReset();
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -118,5 +122,57 @@ describe("settings panel", () => {
     fireEvent.click(continueButton);
 
     expect(routerPush).toHaveBeenCalledWith("/choose-persona?next=/app/home");
+  });
+
+  it("restarts the crash course through onboarding preferences", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({})
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderSettings();
+
+    fireEvent.click(screen.getByRole("button", { name: "Restart crash course" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/preferences/onboarding",
+      expect.objectContaining({
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" }
+      })
+    );
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+      crashCourseCurrentStep: 0,
+      crashCourseSkippedAt: null,
+      crashCourseCompletedAt: null
+    });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).crashCourseReplayRequestedAt)
+      .toEqual(expect.any(String));
+    expect(routerPush).toHaveBeenCalledWith("/app/crash-course");
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the persistent welcome again through the replay API", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({})
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderSettings();
+
+    fireEvent.click(screen.getByRole("button", { name: "Show welcome again" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/preferences/welcome/replay",
+      expect.objectContaining({
+        method: "POST"
+      })
+    );
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Welcome will show again across the app."
+    );
   });
 });

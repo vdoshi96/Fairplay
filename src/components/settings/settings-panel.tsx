@@ -15,6 +15,10 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
   const router = useRouter();
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [preferenceAction, setPreferenceAction] = useState<
+    "restart-course" | "show-welcome" | null
+  >(null);
+  const [actionStatus, setActionStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const contentRef = useRef<HTMLElement>(null);
   const switchTriggerRef = useRef<HTMLButtonElement>(null);
@@ -59,6 +63,59 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
     } catch {
       setError("Unable to log out right now. Please try again.");
       setLoggingOut(false);
+    }
+  }
+
+  async function restartCrashCourse() {
+    setPreferenceAction("restart-course");
+    setActionStatus(null);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/preferences/onboarding", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          crashCourseCurrentStep: 0,
+          crashCourseSkippedAt: null,
+          crashCourseCompletedAt: null,
+          crashCourseReplayRequestedAt: new Date().toISOString()
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("restart-course");
+      }
+
+      router.push("/app/crash-course");
+      router.refresh();
+    } catch {
+      setError("Unable to restart the crash course right now. Please try again.");
+    } finally {
+      setPreferenceAction(null);
+    }
+  }
+
+  async function showWelcomeAgain() {
+    setPreferenceAction("show-welcome");
+    setActionStatus(null);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/preferences/welcome/replay", {
+        method: "POST"
+      });
+
+      if (!response.ok) {
+        throw new Error("show-welcome");
+      }
+
+      setActionStatus("Welcome will show again across the app.");
+      router.refresh();
+    } catch {
+      setError("Unable to show the welcome again right now. Please try again.");
+    } finally {
+      setPreferenceAction(null);
     }
   }
 
@@ -121,6 +178,15 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
           </p>
         ) : null}
 
+        {actionStatus ? (
+          <p
+            className="rounded-[8px] border border-fp-line bg-white px-3 py-2 text-[14px] font-semibold leading-5 text-fp-muted-ink"
+            role="status"
+          >
+            {actionStatus}
+          </p>
+        ) : null}
+
         <section className="rounded-[8px] border border-fp-line bg-white p-4">
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Household
@@ -156,6 +222,38 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
           >
             Switch persona
           </button>
+        </section>
+
+        <section className="rounded-[8px] border border-fp-line bg-white p-4">
+          <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
+            Guided start
+          </h2>
+          <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
+            Replay the welcome splash or start the crash course from the first
+            lesson for the active persona.
+          </p>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <button
+              className="min-h-11 rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={preferenceAction !== null}
+              onClick={() => void restartCrashCourse()}
+              type="button"
+            >
+              {preferenceAction === "restart-course"
+                ? "Restarting..."
+                : "Restart crash course"}
+            </button>
+            <button
+              className="min-h-11 rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={preferenceAction !== null}
+              onClick={() => void showWelcomeAgain()}
+              type="button"
+            >
+              {preferenceAction === "show-welcome"
+                ? "Showing welcome..."
+                : "Show welcome again"}
+            </button>
+          </div>
         </section>
 
         <section className="rounded-[8px] border border-fp-line bg-white p-4">
