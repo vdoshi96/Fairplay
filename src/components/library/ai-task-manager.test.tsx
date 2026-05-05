@@ -2,7 +2,10 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
+import type {
+  AiCardDraftDetail,
+  AiCardDraftSummary
+} from "@/contracts/ai-card-drafts";
 import { AiTaskManager } from "./ai-task-manager";
 
 const routerPush = vi.hoisted(() => vi.fn());
@@ -42,6 +45,33 @@ function draft(
     acceptedResponsibilityId: overrides.acceptedResponsibilityId ?? null,
     createdAt: overrides.createdAt ?? now,
     updatedAt: overrides.updatedAt ?? now
+  };
+}
+
+function detail(overrides: Partial<AiCardDraftDetail> = {}): AiCardDraftDetail {
+  return {
+    ...draft({
+      id: overrides.id ?? draftIds.ready,
+      status: overrides.status ?? "ready",
+      generationStage: overrides.generationStage ?? "ready",
+      title: overrides.title ?? "Laundry reset",
+      summary: overrides.summary ?? "Keep laundry moving from hamper to folded.",
+      areaKeys: overrides.areaKeys ?? ["home"],
+      hiddenEffortKeys: overrides.hiddenEffortKeys ?? ["planning"],
+      cadence: overrides.cadence ?? "weekly",
+      coverUrl:
+        overrides.coverUrl ??
+        `/api/ai-card-drafts/${draftIds.ready}/cover`
+    }),
+    inputText: overrides.inputText ?? "Laundry is piling up.",
+    audioTranscript: overrides.audioTranscript ?? null,
+    definition: overrides.definition ?? "Own the laundry flow.",
+    conception: overrides.conception ?? "Notice hampers before they overflow.",
+    planning: overrides.planning ?? "Start loads when there is enough time.",
+    execution: overrides.execution ?? "Wash, dry, fold, and put away.",
+    minimumStandard: overrides.minimumStandard ?? "Laundry is folded by Sunday.",
+    imagePrompt: overrides.imagePrompt ?? "A tidy laundry room",
+    imageNegativePrompt: overrides.imageNegativePrompt ?? null
   };
 }
 
@@ -205,5 +235,146 @@ describe("AiTaskManager", () => {
     const body = fetchMock.mock.calls[0][1].body as FormData;
     expect(body.get("audio")).toBeInstanceOf(Blob);
     expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops the recording stream when capture closes while recording", async () => {
+    const stopTrack = vi.fn();
+    const stream = { getTracks: () => [{ stop: stopTrack }] };
+
+    class MockMediaRecorder extends EventTarget {
+      state = "inactive";
+
+      start() {
+        this.state = "recording";
+      }
+
+      stop() {
+        this.state = "inactive";
+        this.dispatchEvent(new Event("stop"));
+      }
+    }
+
+    vi.stubGlobal("MediaRecorder", MockMediaRecorder);
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        getUserMedia: vi.fn().mockResolvedValue(stream)
+      }
+    });
+
+    render(<AiTaskManager drafts={[]} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close capture" }));
+
+    await waitFor(() => expect(stopTrack).toHaveBeenCalledTimes(1));
+  });
+
+  it("fetches review detail, saves edits, and regenerates the image", async () => {
+    const draftDetail = detail();
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url === `/api/ai-card-drafts/${draftIds.ready}` && !init) {
+        return {
+          ok: true,
+          json: async () => draftDetail
+        };
+      }
+
+      if (url === `/api/ai-card-drafts/${draftIds.ready}` && init?.method === "PATCH") {
+        return {
+          ok: true,
+          json: async () => ({
+            ...draftDetail,
+            title: "Laundry command center"
+          })
+        };
+      }
+
+      if (
+        url === `/api/ai-card-drafts/${draftIds.ready}/regenerate-image` &&
+        init?.method === "POST"
+      ) {
+        return {
+          ok: true,
+          json: async () => draftDetail
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <AiTaskManager
+        drafts={[
+          draft({
+            id: draftIds.ready,
+            status: "ready",
+            generationStage: "ready",
+            title: "Laundry reset",
+            summary: "Keep the laundry moving from hamper to folded."
+          })
+        ]}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Review" }));
+
+    expect(await screen.findByLabelText("Draft title")).toHaveValue("Laundry reset");
+    expect(screen.getByLabelText("Definition")).toHaveValue("Own the laundry flow.");
+    expect(screen.getByLabelText("Conception")).toHaveValue(
+      "Notice hampers before they overflow."
+    );
+    expect(screen.getByLabelText("Planning")).toHaveValue(
+      "Start loads when there is enough time."
+    );
+    expect(screen.getByLabelText("Execution")).toHaveValue(
+      "Wash, dry, fold, and put away."
+    );
+    expect(screen.getByLabelText("Minimum standard")).toHaveValue(
+      "Laundry is folded by Sunday."
+    );
+
+    await userEvent.clear(screen.getByLabelText("Draft title"));
+    await userEvent.type(screen.getByLabelText("Draft title"), "Laundry command center");
+    await userEvent.clear(screen.getByLabelText("Area keys"));
+    await userEvent.type(screen.getByLabelText("Area keys"), "home, kids");
+    await userEvent.clear(screen.getByLabelText("Hidden effort keys"));
+    await userEvent.type(
+      screen.getByLabelText("Hidden effort keys"),
+      "planning, follow_through"
+    );
+    await userEvent.selectOptions(screen.getByLabelText("Cadence"), "daily");
+    await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/ai-card-drafts/${draftIds.ready}`,
+        expect.objectContaining({
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" }
+        })
+      )
+    );
+    const patchCall = fetchMock.mock.calls.find(
+      ([url, init]) => url === `/api/ai-card-drafts/${draftIds.ready}` && init?.method === "PATCH"
+    );
+    expect(JSON.parse((patchCall?.[1] as RequestInit).body as string)).toMatchObject({
+      title: "Laundry command center",
+      areaKeys: ["home", "kids"],
+      hiddenEffortKeys: ["planning", "follow_through"],
+      cadence: "daily"
+    });
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(screen.getByRole("button", { name: "Regenerate image" }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/ai-card-drafts/${draftIds.ready}/regenerate-image`,
+        { method: "POST" }
+      )
+    );
+    expect(routerRefresh).toHaveBeenCalledTimes(2);
   });
 });

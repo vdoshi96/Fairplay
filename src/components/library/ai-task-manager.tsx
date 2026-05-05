@@ -14,9 +14,14 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
+import type {
+  AiCardDraftDetail,
+  AiCardDraftSummary,
+  AiCardDraftUpdate
+} from "@/contracts/ai-card-drafts";
+import { CADENCES } from "@/domain/enums";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Sheet } from "@/components/ui/sheet";
@@ -29,7 +34,9 @@ type PendingAction =
   | "capture"
   | `cancel:${string}`
   | `put-in-play:${string}`
+  | `regenerate-image:${string}`
   | `retry:${string}`
+  | `save:${string}`
   | null;
 
 const statusLabels: Record<AiCardDraftSummary["status"], string> = {
@@ -175,6 +182,7 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
         <AiCardReviewPanel
           draft={reviewDraft}
           isPuttingInPlay={pendingAction === `put-in-play:${reviewDraft.id}`}
+          onActionError={setError}
           onClose={() => setReviewDraft(null)}
           onPutInPlay={() => putInPlay(reviewDraft.id)}
         />
@@ -298,6 +306,7 @@ export function AiCardCaptureSheet({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const shouldCaptureAudioRef = useRef(false);
   const voiceAvailable = useMemo(
     () =>
       typeof MediaRecorder !== "undefined" &&
@@ -307,6 +316,29 @@ export function AiCardCaptureSheet({
   );
   const trimmedInput = inputText.trim();
   const canSubmit = !isSubmitting && (trimmedInput.length > 0 || audioBlob !== null);
+
+  const stopStream = useCallback(() => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+  }, []);
+
+  const stopActiveRecording = useCallback(
+    (captureAudio: boolean) => {
+      shouldCaptureAudioRef.current = captureAudio;
+      const recorder = recorderRef.current;
+      if (recorder && recorder.state !== "inactive") {
+        recorder.stop();
+      }
+      recorderRef.current = null;
+      setIsRecording(false);
+      stopStream();
+    },
+    [stopStream]
+  );
+
+  useEffect(() => {
+    return () => stopActiveRecording(false);
+  }, [stopActiveRecording]);
 
   async function startRecording() {
     if (!voiceAvailable) {
@@ -329,10 +361,14 @@ export function AiCardCaptureSheet({
         }
       });
       recorder.addEventListener("stop", () => {
+        if (!shouldCaptureAudioRef.current) {
+          chunksRef.current = [];
+          stopStream();
+          return;
+        }
         const type = chunksRef.current[0]?.type || "audio/webm";
         setAudioBlob(new Blob(chunksRef.current, { type }));
-        streamRef.current?.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
+        stopStream();
       });
       recorder.start();
       setIsRecording(true);
@@ -342,8 +378,12 @@ export function AiCardCaptureSheet({
   }
 
   function stopRecording() {
-    recorderRef.current?.stop();
-    setIsRecording(false);
+    stopActiveRecording(true);
+  }
+
+  function cancel() {
+    stopActiveRecording(false);
+    onCancel();
   }
 
   async function submit() {
@@ -352,6 +392,7 @@ export function AiCardCaptureSheet({
     }
 
     if (audioBlob) {
+      stopActiveRecording(false);
       const formData = new FormData();
       formData.append("audio", audioBlob, "fairplay-card-draft.webm");
       if (trimmedInput) {
@@ -361,6 +402,7 @@ export function AiCardCaptureSheet({
       return;
     }
 
+    stopActiveRecording(false);
     await onSubmit({ inputText: trimmedInput });
   }
 
@@ -373,7 +415,7 @@ export function AiCardCaptureSheet({
             Describe the work, or record a quick voice note.
           </p>
         </div>
-        <Button aria-label="Close capture" onClick={onCancel} variant="ghost">
+        <Button aria-label="Close capture" onClick={cancel} variant="ghost">
           <X aria-hidden="true" size={16} />
         </Button>
       </div>
@@ -424,7 +466,7 @@ export function AiCardCaptureSheet({
           {isSubmitting ? <Loader2 aria-hidden="true" size={16} /> : <Send aria-hidden="true" size={16} />}
           Create draft
         </Button>
-        <Button disabled={isSubmitting} onClick={onCancel}>
+        <Button disabled={isSubmitting} onClick={cancel}>
           Cancel
         </Button>
       </div>
@@ -435,24 +477,122 @@ export function AiCardCaptureSheet({
 export function AiCardReviewPanel({
   draft,
   isPuttingInPlay,
+  onActionError,
   onClose,
   onPutInPlay
 }: {
   draft: AiCardDraftSummary;
   isPuttingInPlay: boolean;
+  onActionError: (message: string | null) => void;
   onClose: () => void;
   onPutInPlay: () => void;
 }) {
+  const router = useRouter();
+  const [detail, setDetail] = useState<AiCardDraftDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [form, setForm] = useState<ReviewForm>(() => reviewFormFromDraft(draft));
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadDetail() {
+      setIsLoading(true);
+      onActionError(null);
+
+      try {
+        const response = await fetch(`/api/ai-card-drafts/${draft.id}`);
+        if (!response.ok) {
+          throw new Error("The draft could not be loaded.");
+        }
+        const loaded = (await response.json()) as AiCardDraftDetail;
+        if (active) {
+          setDetail(loaded);
+          setForm(reviewFormFromDraft(loaded));
+        }
+      } catch (caught) {
+        if (active) {
+          onActionError(caught instanceof Error ? caught.message : "The draft could not be loaded.");
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadDetail();
+
+    return () => {
+      active = false;
+    };
+  }, [draft.id, onActionError]);
+
+  async function saveChanges() {
+    if (!detail || !form.title.trim()) {
+      return;
+    }
+
+    setIsSaving(true);
+    onActionError(null);
+
+    try {
+      const update = reviewFormToUpdate(form);
+      const response = await fetch(`/api/ai-card-drafts/${draft.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(update)
+      });
+      if (!response.ok) {
+        throw new Error("The draft could not be saved.");
+      }
+      const saved = (await response.json()) as AiCardDraftDetail;
+      setDetail(saved);
+      setForm(reviewFormFromDraft(saved));
+      router.refresh();
+    } catch (caught) {
+      onActionError(caught instanceof Error ? caught.message : "The draft could not be saved.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function regenerateImage() {
+    setIsRegenerating(true);
+    onActionError(null);
+
+    try {
+      const response = await fetch(
+        `/api/ai-card-drafts/${draft.id}/regenerate-image`,
+        { method: "POST" }
+      );
+      if (!response.ok) {
+        throw new Error("The image could not be regenerated.");
+      }
+      const regenerated = (await response.json()) as AiCardDraftDetail;
+      setDetail(regenerated);
+      setForm(reviewFormFromDraft(regenerated));
+      router.refresh();
+    } catch (caught) {
+      onActionError(caught instanceof Error ? caught.message : "The image could not be regenerated.");
+    } finally {
+      setIsRegenerating(false);
+    }
+  }
+
+  const coverUrl = detail?.coverUrl ?? draft.coverUrl;
+
   return (
     <Sheet aria-label="Review AI card draft" className="grid gap-4">
-      <div className="grid gap-4 lg:grid-cols-[160px_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[180px_1fr]">
         <div className="grid aspect-[5/7] place-items-center overflow-hidden rounded border border-fp-line bg-white">
-          {draft.coverUrl ? (
+          {coverUrl ? (
             <Image
-              alt={`${draft.title ?? "AI card"} cover`}
+              alt={`${form.title || draft.title || "AI card"} cover`}
               className="h-full w-full object-contain p-2"
               height={700}
-              src={draft.coverUrl}
+              src={coverUrl}
               unoptimized
               width={500}
             />
@@ -465,32 +605,220 @@ export function AiCardReviewPanel({
             <div className="grid gap-1">
               <Chip>{statusLabels[draft.status]}</Chip>
               <h3 className="text-[22px] font-bold leading-7 text-fp-ink">
-                {draft.title ?? draft.promptPreview}
+                {form.title || draft.title || draft.promptPreview}
               </h3>
             </div>
             <Button aria-label="Close review" onClick={onClose} variant="ghost">
               <X aria-hidden="true" size={16} />
             </Button>
           </div>
-          <p className="text-[14px] leading-6 text-fp-muted-ink">
-            {draft.summary ?? draft.promptPreview}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {draft.areaKeys.map((area) => (
-              <Chip key={area}>{area}</Chip>
-            ))}
-            {draft.hiddenEffortKeys.map((effort) => (
-              <Chip key={effort}>{effort}</Chip>
-            ))}
-            {draft.cadence ? <Chip>{draft.cadence}</Chip> : null}
+
+          {isLoading ? (
+            <p className="text-[14px] font-semibold text-fp-muted-ink">
+              Loading draft...
+            </p>
+          ) : null}
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <TextInput
+              label="Draft title"
+              onChange={(value) => setForm((current) => ({ ...current, title: value }))}
+              value={form.title}
+            />
+            <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+              Cadence
+              <select
+                aria-label="Cadence"
+                className="min-h-10 rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, cadence: event.target.value }))
+                }
+                value={form.cadence}
+              >
+                <option value="">Not set</option>
+                {CADENCES.map((cadence) => (
+                  <option key={cadence} value={cadence}>
+                    {cadence}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
-          <Button disabled={isPuttingInPlay} onClick={onPutInPlay} variant="primary">
-            <Send aria-hidden="true" size={16} />
-            Put in play
-          </Button>
+          <TextArea
+            label="Summary"
+            onChange={(value) => setForm((current) => ({ ...current, summary: value }))}
+            value={form.summary}
+          />
+          <div className="grid gap-3 md:grid-cols-2">
+            <TextInput
+              label="Area keys"
+              onChange={(value) => setForm((current) => ({ ...current, areaKeys: value }))}
+              value={form.areaKeys}
+            />
+            <TextInput
+              label="Hidden effort keys"
+              onChange={(value) =>
+                setForm((current) => ({ ...current, hiddenEffortKeys: value }))
+              }
+              value={form.hiddenEffortKeys}
+            />
+          </div>
+          <TextArea
+            label="Definition"
+            onChange={(value) => setForm((current) => ({ ...current, definition: value }))}
+            value={form.definition}
+          />
+          <div className="grid gap-3 md:grid-cols-3">
+            <TextArea
+              label="Conception"
+              onChange={(value) => setForm((current) => ({ ...current, conception: value }))}
+              value={form.conception}
+            />
+            <TextArea
+              label="Planning"
+              onChange={(value) => setForm((current) => ({ ...current, planning: value }))}
+              value={form.planning}
+            />
+            <TextArea
+              label="Execution"
+              onChange={(value) => setForm((current) => ({ ...current, execution: value }))}
+              value={form.execution}
+            />
+          </div>
+          <TextArea
+            label="Minimum standard"
+            onChange={(value) =>
+              setForm((current) => ({ ...current, minimumStandard: value }))
+            }
+            value={form.minimumStandard}
+          />
+          <div className="flex flex-wrap gap-2">
+            <Button
+              disabled={isLoading || isSaving || !form.title.trim()}
+              onClick={saveChanges}
+              variant="primary"
+            >
+              <CheckCircle2 aria-hidden="true" size={16} />
+              Save changes
+            </Button>
+            <Button
+              disabled={isLoading || isRegenerating}
+              onClick={regenerateImage}
+            >
+              <RefreshCcw aria-hidden="true" size={16} />
+              Regenerate image
+            </Button>
+            <Button disabled={isPuttingInPlay || isSaving} onClick={onPutInPlay}>
+              <Send aria-hidden="true" size={16} />
+              Put in play
+            </Button>
+          </div>
         </div>
       </div>
     </Sheet>
+  );
+}
+
+type ReviewForm = {
+  areaKeys: string;
+  cadence: string;
+  conception: string;
+  definition: string;
+  execution: string;
+  hiddenEffortKeys: string;
+  minimumStandard: string;
+  planning: string;
+  summary: string;
+  title: string;
+};
+
+function reviewFormFromDraft(
+  draft: AiCardDraftDetail | AiCardDraftSummary
+): ReviewForm {
+  return {
+    areaKeys: draft.areaKeys.join(", "),
+    cadence: draft.cadence ?? "",
+    conception: "conception" in draft ? draft.conception ?? "" : "",
+    definition: "definition" in draft ? draft.definition ?? "" : "",
+    execution: "execution" in draft ? draft.execution ?? "" : "",
+    hiddenEffortKeys: draft.hiddenEffortKeys.join(", "),
+    minimumStandard: "minimumStandard" in draft ? draft.minimumStandard ?? "" : "",
+    planning: "planning" in draft ? draft.planning ?? "" : "",
+    summary: draft.summary ?? "",
+    title: draft.title ?? draft.promptPreview
+  };
+}
+
+function reviewFormToUpdate(form: ReviewForm): AiCardDraftUpdate {
+  return {
+    title: form.title.trim(),
+    summary: nullableText(form.summary),
+    areaKeys: commaSeparatedValues(form.areaKeys),
+    hiddenEffortKeys: commaSeparatedValues(
+      form.hiddenEffortKeys
+    ) as AiCardDraftUpdate["hiddenEffortKeys"],
+    ...(form.cadence ? { cadence: form.cadence as AiCardDraftUpdate["cadence"] } : {}),
+    definition: nullableText(form.definition),
+    conception: nullableText(form.conception),
+    planning: nullableText(form.planning),
+    execution: nullableText(form.execution),
+    minimumStandard: nullableText(form.minimumStandard)
+  };
+}
+
+function commaSeparatedValues(value: string) {
+  return value
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function nullableText(value: string) {
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function TextInput({
+  label,
+  onChange,
+  value
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  return (
+    <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+      {label}
+      <input
+        aria-label={label}
+        className="min-h-10 rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+        onChange={(event) => onChange(event.target.value)}
+        value={value}
+      />
+    </label>
+  );
+}
+
+function TextArea({
+  label,
+  onChange,
+  value
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  return (
+    <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+      {label}
+      <textarea
+        aria-label={label}
+        className="min-h-24 rounded border border-fp-line bg-white px-3 py-2 text-[14px] leading-6 text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+        onChange={(event) => onChange(event.target.value)}
+        value={value}
+      />
+    </label>
   );
 }
 
