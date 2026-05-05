@@ -7,6 +7,7 @@ type AuthPageShellProps = {
   summary: string;
   children: ReactNode;
   footer: ReactNode;
+  visual?: ReactNode;
 };
 
 export function AuthPageShell({
@@ -14,44 +15,57 @@ export function AuthPageShell({
   eyebrow,
   footer,
   summary,
-  title
+  title,
+  visual
 }: AuthPageShellProps) {
+  const hasVisual = Boolean(visual);
+
   return (
     <main className="min-h-screen bg-fp-paper px-4 py-6 text-fp-ink sm:px-6">
-      <section className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-md content-center gap-6">
-        <Link
-          className="inline-flex w-fit items-center gap-2 rounded-[8px] text-[15px] font-bold outline-none focus:ring-2 focus:ring-fp-ink/25"
-          href="/"
-        >
-          <span
-            aria-hidden="true"
-            className="grid h-10 w-10 place-items-center rounded-[8px] border border-fp-line bg-white"
+      <section
+        className={
+          hasVisual
+            ? "mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-5xl content-center gap-8 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-center"
+            : "mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-md content-center gap-6"
+        }
+      >
+        <div className="grid gap-6">
+          <Link
+            className="inline-flex w-fit items-center gap-2 rounded-[8px] text-[15px] font-bold outline-none focus:ring-2 focus:ring-fp-ink/25"
+            href="/"
           >
-            <span className="relative h-5 w-5 rounded-full border-2 border-fp-shared">
-              <span className="absolute -left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-fp-alex" />
-              <span className="absolute -right-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-fp-max" />
+            <span
+              aria-hidden="true"
+              className="grid h-10 w-10 place-items-center rounded-[8px] border border-fp-line bg-white"
+            >
+              <span className="relative h-5 w-5 rounded-full border-2 border-fp-shared">
+                <span className="absolute -left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-fp-alex" />
+                <span className="absolute -right-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-fp-max" />
+              </span>
             </span>
-          </span>
-          Fairplay
-        </Link>
+            Fairplay
+          </Link>
 
-        <div className="grid gap-2">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
-            {eyebrow}
-          </p>
-          <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-            {title}
-          </h1>
-          <p className="text-[15px] leading-6 text-fp-muted-ink">{summary}</p>
+          <div className="grid gap-2">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
+              {eyebrow}
+            </p>
+            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+              {title}
+            </h1>
+            <p className="text-[15px] leading-6 text-fp-muted-ink">{summary}</p>
+          </div>
+
+          <div className="rounded-[8px] border border-fp-line bg-fp-surface p-4">
+            {children}
+          </div>
+
+          <div className="text-center text-[14px] leading-5 text-fp-muted-ink">
+            {footer}
+          </div>
         </div>
 
-        <div className="rounded-[8px] border border-fp-line bg-fp-surface p-4">
-          {children}
-        </div>
-
-        <div className="text-center text-[14px] leading-5 text-fp-muted-ink">
-          {footer}
-        </div>
+        {visual ? <div className="order-last">{visual}</div> : null}
       </section>
     </main>
   );

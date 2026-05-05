@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { AuthPageShell } from "./auth-page-shell";
 import { LoginForm } from "./login-form";
+import { LoginSplashIllustration } from "./login-splash-illustration";
 
 export function LoginPageClient() {
   const router = useRouter();
@@ -20,8 +21,9 @@ export function LoginPageClient() {
           </Link>
         </>
       }
-      summary="Use the shared household username and password, then choose Alex or Max for this session."
+      summary="Settle into the household rhythm with shared credentials, then choose Alex or Max for this session."
       title="Log in to Fairplay"
+      visual={<LoginSplashIllustration />}
     >
       <LoginForm
         onAuthenticated={() => {
