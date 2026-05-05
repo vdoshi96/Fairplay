@@ -357,7 +357,7 @@ function parseDownloadableImageUrl(value: string) {
     throw new QwenGenerationError("Qwen image generation response included an invalid image URL.");
   }
 
-  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+  if (parsed.protocol !== "https:") {
     throw new QwenGenerationError(
       "Qwen image generation response included an unsupported image URL scheme."
     );
