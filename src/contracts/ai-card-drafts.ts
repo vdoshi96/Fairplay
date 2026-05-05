@@ -32,7 +32,9 @@ export const AiCardSourceInputTypeSchema = z.enum(AI_CARD_SOURCE_INPUT_TYPES);
 const NullableGeneratedTextSchema = z.string().trim().max(3000).nullable();
 const AiCardDraftCoverUrlSchema = z
   .string()
-  .regex(/^\/api\/ai-card-drafts\/[0-9a-f-]{36}\/cover$/);
+  .regex(
+    /^\/api\/ai-card-drafts\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\/cover$/i
+  );
 
 export const AiCardDraftCreateSchema = z
   .object({
