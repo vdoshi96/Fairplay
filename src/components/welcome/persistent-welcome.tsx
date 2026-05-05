@@ -16,9 +16,9 @@ const welcomeLinks = [
     label: "Start crash course"
   },
   {
-    href: "/app/home#app-guide-101",
+    href: "/app/home#learn-a-feature",
     icon: GraduationCap,
-    label: "Open App Guide 101"
+    label: "Learn a feature"
   },
   {
     href: "/app/library",
@@ -84,8 +84,8 @@ export function PersistentWelcome({
             Welcome to Fairplay
           </h2>
           <p className="max-w-3xl text-[15px] leading-6 text-fp-muted-ink">
-            Start with the course, browse the full card library, or open App
-            Guide 101. This welcome stays here until you close it.
+            Start with the course, browse the full card library, or learn one
+            feature at a time. This welcome stays here until you close it.
           </p>
         </div>
 

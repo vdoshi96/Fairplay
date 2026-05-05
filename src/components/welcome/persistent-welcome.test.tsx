@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PersistentWelcome } from "./persistent-welcome";
 
+const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
+
 describe("PersistentWelcome", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -41,7 +43,7 @@ describe("PersistentWelcome", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("links to the crash course, app guide, and card library without dismissing", () => {
+  it("links to the crash course, learn-a-feature area, and card library without dismissing", () => {
     const onDismiss = vi.fn();
     render(<PersistentWelcome dismissed={false} onDismiss={onDismiss} />);
 
@@ -49,14 +51,15 @@ describe("PersistentWelcome", () => {
       "href",
       "/app/crash-course"
     );
-    expect(screen.getByRole("link", { name: "Open App Guide 101" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Learn a feature" })).toHaveAttribute(
       "href",
-      "/app/home#app-guide-101"
+      "/app/home#learn-a-feature"
     );
     expect(screen.getByRole("link", { name: "Browse card library" })).toHaveAttribute(
       "href",
       "/app/library"
     );
+    expect(screen.queryByText(retiredGuideLabel)).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Open load map" })).not.toBeInTheDocument();
     expect(onDismiss).not.toHaveBeenCalled();
   });

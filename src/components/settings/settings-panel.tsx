@@ -267,9 +267,9 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
             </button>
             <Link
               className="flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-center text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
-              href="/app/home#app-guide-101"
+              href="/app/home#learn-a-feature"
             >
-              Open App Guide 101
+              Open learning hub
             </Link>
           </div>
           <div className="mt-4">

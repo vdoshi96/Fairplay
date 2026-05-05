@@ -45,6 +45,9 @@ describe("auth forms", () => {
     expect(
       screen.getByRole("img", { name: "Animated Fairplay household garden scene" })
     ).toBeVisible();
+    expect(screen.getByTestId("login-splash-garden-path")).toBeVisible();
+    expect(screen.getByTestId("login-splash-character-group")).toBeVisible();
+    expect(screen.getByTestId("login-splash-floating-cards")).toBeVisible();
     expect(screen.getByLabelText("Household username")).toBeVisible();
   });
 

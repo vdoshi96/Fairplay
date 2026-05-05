@@ -31,6 +31,8 @@ const selectedPersona: PersonaSummary = {
   avatarKey: "alex"
 };
 
+const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
+
 function renderSettings() {
   render(<SettingsPanel household={household} selectedPersona={selectedPersona} />);
 }
@@ -177,7 +179,7 @@ describe("settings panel", () => {
     );
   });
 
-  it("marks settings guide targets and links to App Guide 101", () => {
+  it("marks settings guide targets and links back to replay learning", () => {
     const { container } = render(
       <SettingsPanel household={household} selectedPersona={selectedPersona} />
     );
@@ -187,10 +189,11 @@ describe("settings panel", () => {
       container.querySelector('[data-guide-id="settings-guided-start"]')
     ).not.toBeNull();
     expect(container.querySelector('[data-guide-id="settings-logout"]')).not.toBeNull();
-    expect(screen.getByRole("link", { name: "Open App Guide 101" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open learning hub" })).toHaveAttribute(
       "href",
-      "/app/home#app-guide-101"
+      "/app/home#learn-a-feature"
     );
+    expect(screen.queryByText(retiredGuideLabel)).not.toBeInTheDocument();
     expect(
       screen.getByText(
         "Replay feature tours from each feature page using Learn this feature."

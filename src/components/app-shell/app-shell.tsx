@@ -43,6 +43,10 @@ function isActiveRoute(pathname: string, href: string) {
 
 export function AppShell({ children, household, selectedPersona }: AppShellProps) {
   const pathname = usePathname();
+  const isImmersiveRoute = pathname === "/app/crash-course";
+  const mainClassName = isImmersiveRoute
+    ? "w-full pb-24 lg:pb-0"
+    : "mx-auto w-full max-w-6xl px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10 lg:pt-8";
 
   return (
     <div className="min-h-screen bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
@@ -137,7 +141,11 @@ export function AppShell({ children, household, selectedPersona }: AppShellProps
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10 lg:pt-8">
+        <main
+          className={mainClassName}
+          data-layout={isImmersiveRoute ? "immersive" : "standard"}
+          data-testid="app-main"
+        >
           {children}
         </main>
 
