@@ -134,6 +134,29 @@ enum ResponsibilityBoardLane {
   trimmed
 }
 
+enum AiCardDraftStatus {
+  processing
+  ready
+  failed
+  accepted
+  canceled
+}
+
+enum AiCardGenerationStage {
+  queued
+  transcribing
+  structuring
+  generating_image
+  saving_image
+  ready
+  failed
+}
+
+enum AiCardSourceInputType {
+  text
+  audio
+}
+
 model Household {
   id                 String                 @id @default(uuid())
   name               String
@@ -150,6 +173,7 @@ model Household {
   decisions          Decision[]
   events             ResponsibilityEvent[]
   loadSnapshots      LoadSnapshot[]
+  aiCardDrafts       AiCardDraft[]
 }
 
 model HouseholdCredential {
@@ -182,6 +206,7 @@ model Persona {
   createdDecisions                 Decision[]                     @relation("CreatedDecisions")
   actedResponsibilityEvents        ResponsibilityEvent[]          @relation("ActedResponsibilityEvents")
   onboardingPreferences            PersonaOnboardingPreferences?
+  createdAiCardDrafts              AiCardDraft[]                  @relation("CreatedAiCardDrafts")
 
   @@unique([householdId, key])
 }
@@ -254,11 +279,54 @@ model Responsibility {
   checkInItems          CheckInItem[]
   decisions             Decision[]
   events                ResponsibilityEvent[]
+  acceptedAiCardDraft   AiCardDraft?                   @relation("AcceptedAiCardDraft")
 
   @@index([householdId])
   @@index([householdId, boardLane, boardSortOrder])
   @@index([status])
   @@index([templateId])
+}
+
+model AiCardDraft {
+  id                       String                @id @default(uuid())
+  householdId              String
+  createdByPersonaId       String
+  sourceInputType          AiCardSourceInputType
+  inputText                String?
+  audioBytes               Bytes?
+  audioMimeType            String?
+  audioTranscript          String?
+  status                   AiCardDraftStatus     @default(processing)
+  generationStage          AiCardGenerationStage @default(queued)
+  failureCode              String?
+  failureMessage           String?
+  title                    String?
+  summary                  String?
+  areaKeys                 String[]
+  hiddenEffortKeys         HiddenEffortKey[]
+  cadence                  Cadence?
+  definition               String?
+  conception               String?
+  planning                 String?
+  execution                String?
+  minimumStandard          String?
+  imagePrompt              String?
+  imageNegativePrompt      String?
+  coverImageBytes          Bytes?
+  coverImageMimeType       String?
+  acceptedResponsibilityId String?               @unique
+  readyAt                  DateTime?
+  acceptedAt               DateTime?
+  canceledAt               DateTime?
+  audioDeletedAt           DateTime?
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  household                Household             @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  createdByPersona         Persona               @relation("CreatedAiCardDrafts", fields: [createdByPersonaId], references: [id], onDelete: Cascade)
+  acceptedResponsibility   Responsibility?       @relation("AcceptedAiCardDraft", fields: [acceptedResponsibilityId], references: [id], onDelete: SetNull)
+
+  @@index([householdId, status, createdAt])
+  @@index([createdByPersonaId])
 }
 
 model ResponsibilityAssignment {
