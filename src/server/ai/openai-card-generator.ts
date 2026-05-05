@@ -40,6 +40,10 @@ type ImageGenerationResponse = {
   output_format?: unknown;
 };
 
+type TranscriptionResponse = {
+  text?: unknown;
+};
+
 export class OpenAiGenerationError extends Error {
   readonly code = "OPENAI_GENERATION_FAILED";
 
@@ -47,6 +51,41 @@ export class OpenAiGenerationError extends Error {
     super(message);
     this.name = "OpenAiGenerationError";
   }
+}
+
+export async function transcribeAudioWithOpenAi(
+  input: { bytes: Uint8Array; mimeType: string; contextText?: string },
+  deps: OpenAiGeneratorDeps = {}
+): Promise<string> {
+  const config = resolveConfig(deps);
+  const fetchImpl = resolveFetch(deps);
+  const formData = new FormData();
+  formData.append("file", audioBlob(input.bytes, input.mimeType), audioFileName(input.mimeType));
+  formData.append("model", config.asrModel);
+  formData.append("response_format", "json");
+
+  if (input.contextText?.trim()) {
+    formData.append(
+      "prompt",
+      `Context for this short household task recording: ${input.contextText.trim()}`
+    );
+  }
+
+  const response = await fetchImpl(`${trimSlash(config.baseUrl)}/audio/transcriptions`, {
+    method: "POST",
+    headers: authHeaders(config.asrApiKey),
+    body: formData
+  });
+  const body = await readProviderJson<TranscriptionResponse>(
+    response,
+    "OpenAI ASR request failed"
+  );
+
+  if (typeof body.text !== "string" || !body.text.trim()) {
+    throw new OpenAiGenerationError("OpenAI ASR response did not include text content.");
+  }
+
+  return body.text.trim();
 }
 
 export async function structureTaskAsCardWithOpenAi(
@@ -175,8 +214,42 @@ function jsonHeaders(apiKey: string) {
   };
 }
 
+function authHeaders(apiKey: string) {
+  return {
+    authorization: `Bearer ${apiKey}`
+  };
+}
+
 function trimSlash(value: string) {
   return value.replace(/\/+$/, "");
+}
+
+function audioBlob(bytes: Uint8Array, mimeType: string) {
+  const copy = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(copy).set(bytes);
+  return new Blob([copy], { type: mimeType });
+}
+
+function audioFileName(mimeType: string) {
+  const normalized = mimeType.toLowerCase().split(";")[0]?.trim();
+  switch (normalized) {
+    case "audio/mpeg":
+    case "audio/mp3":
+      return "recording.mp3";
+    case "audio/mp4":
+      return "recording.mp4";
+    case "audio/mpga":
+      return "recording.mpga";
+    case "audio/m4a":
+    case "audio/x-m4a":
+      return "recording.m4a";
+    case "audio/wav":
+    case "audio/x-wav":
+      return "recording.wav";
+    case "audio/webm":
+    default:
+      return "recording.webm";
+  }
 }
 
 async function readProviderJson<T>(response: Response, errorMessage: string): Promise<T> {

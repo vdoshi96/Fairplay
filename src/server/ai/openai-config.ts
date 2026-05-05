@@ -9,6 +9,8 @@ export type OpenAiEnabledFallbackConfig = {
   baseUrl: string;
   textApiKey: string;
   textModel: string;
+  asrApiKey: string;
+  asrModel: string;
   imageApiKey: string;
   imageModel: string;
 };
@@ -30,6 +32,8 @@ const envMapping = {
   baseUrl: "OPENAI_BASE_URL",
   textApiKey: "OPENAI_TEXT_API_KEY",
   textModel: "OPENAI_TEXT_MODEL",
+  asrApiKey: "OPENAI_ASR_API_KEY",
+  asrModel: "OPENAI_ASR_MODEL",
   imageApiKey: "OPENAI_IMAGE_API_KEY",
   imageModel: "OPENAI_IMAGE_MODEL"
 } as const satisfies Record<keyof Omit<OpenAiEnabledFallbackConfig, "enabled">, string>;
@@ -51,6 +55,8 @@ export function getOpenAiFallbackConfig(
     baseUrl: env.OPENAI_BASE_URL as string,
     textApiKey: env.OPENAI_TEXT_API_KEY as string,
     textModel: env.OPENAI_TEXT_MODEL as string,
+    asrApiKey: env.OPENAI_ASR_API_KEY as string,
+    asrModel: env.OPENAI_ASR_MODEL as string,
     imageApiKey: env.OPENAI_IMAGE_API_KEY as string,
     imageModel: env.OPENAI_IMAGE_MODEL as string
   };

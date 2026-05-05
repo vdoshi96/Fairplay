@@ -36,18 +36,20 @@ The card key is used for Qwen OpenAI-compatible structuring and ASR. The image k
 
 ## OpenAI Fallback
 
-Qwen remains the primary provider. When `AI_PROVIDER_FALLBACK_ENABLED=true`, card structuring and card-front image generation fall back to OpenAI only after the matching Qwen step throws. Audio transcription remains Qwen-only in this version.
+Qwen remains the primary provider. When `AI_PROVIDER_FALLBACK_ENABLED=true`, audio transcription, card structuring, and card-front image generation fall back to OpenAI only after the matching Qwen step throws.
 
 Required fallback variables:
 
 - `AI_PROVIDER_FALLBACK_ENABLED=true`
 - `OPENAI_BASE_URL=https://api.openai.com/v1`
+- `OPENAI_ASR_MODEL=gpt-4o-mini-transcribe`
+- `OPENAI_ASR_API_KEY`
 - `OPENAI_TEXT_MODEL=gpt-5-nano`
 - `OPENAI_TEXT_API_KEY`
 - `OPENAI_IMAGE_MODEL=gpt-image-1-mini`
 - `OPENAI_IMAGE_API_KEY`
 
-OpenAI card structuring uses the Responses API with strict JSON schema output and the same card validation as Qwen. OpenAI image generation requests a low-cost portrait PNG, validates the returned raster bytes or URL download, and persists only server-owned cover bytes.
+OpenAI ASR uses the Audio Transcriptions API with multipart form data and preserves the short capture context as a transcription prompt. OpenAI card structuring uses the Responses API with strict JSON schema output and the same card validation as Qwen. OpenAI image generation requests a low-cost portrait PNG, validates the returned raster bytes or URL download, and persists only server-owned cover bytes.
 
 ## Audio Retention
 

@@ -175,7 +175,7 @@ V1 may implement generation synchronously inside the `POST /api/ai-card-drafts` 
 - Missing Qwen configuration returns a safe server error and a failed draft state.
 - Invalid Qwen JSON returns failed state with retry.
 - Image generation failure keeps the structured text and allows image retry.
-- ASR failure keeps a failed draft with retry/cancel.
+- ASR failure keeps a failed draft with retry/cancel after configured ASR providers have failed.
 - Audio too large returns 400 before storage.
 - Provider URLs are never exposed as durable cover paths.
 

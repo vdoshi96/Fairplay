@@ -14,7 +14,8 @@ vi.mock("./openai-config", () => ({
 
 vi.mock("./openai-card-generator", () => ({
   generateCardCoverWithOpenAi: vi.fn(),
-  structureTaskAsCardWithOpenAi: vi.fn()
+  structureTaskAsCardWithOpenAi: vi.fn(),
+  transcribeAudioWithOpenAi: vi.fn()
 }));
 
 import {
@@ -25,7 +26,8 @@ import {
 import { getOpenAiFallbackConfig } from "./openai-config";
 import {
   generateCardCoverWithOpenAi,
-  structureTaskAsCardWithOpenAi
+  structureTaskAsCardWithOpenAi,
+  transcribeAudioWithOpenAi
 } from "./openai-card-generator";
 import * as qwen from "./qwen-card-generator";
 import type { StructuredAiCard } from "./card-generation-shared";
@@ -35,6 +37,8 @@ const enabledFallback = {
   baseUrl: "https://api.openai.example/v1",
   textApiKey: "text-secret",
   textModel: "gpt-5-nano",
+  asrApiKey: "asr-secret",
+  asrModel: "gpt-4o-mini-transcribe",
   imageApiKey: "image-secret",
   imageModel: "gpt-image-1-mini"
 } as const;
@@ -120,7 +124,7 @@ describe("provider-neutral card generator", () => {
     );
   });
 
-  it("keeps audio transcription on Qwen only", async () => {
+  it("uses Qwen for audio transcription when Qwen succeeds", async () => {
     vi.mocked(qwen.transcribeAudio).mockResolvedValue("Dog medicine every month.");
 
     await expect(
@@ -128,7 +132,42 @@ describe("provider-neutral card generator", () => {
     ).resolves.toBe("Dog medicine every month.");
 
     expect(getOpenAiFallbackConfig).not.toHaveBeenCalled();
+    expect(transcribeAudioWithOpenAi).not.toHaveBeenCalled();
     expect(structureTaskAsCardWithOpenAi).not.toHaveBeenCalled();
     expect(generateCardCoverWithOpenAi).not.toHaveBeenCalled();
+  });
+
+  it("falls back to OpenAI audio transcription after Qwen ASR fails when enabled", async () => {
+    vi.mocked(qwen.transcribeAudio).mockRejectedValue(new Error("Qwen ASR down"));
+    vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
+    vi.mocked(transcribeAudioWithOpenAi).mockResolvedValue("Dog medicine every month.");
+
+    await expect(
+      transcribeAudio({
+        bytes: new Uint8Array([1, 2]),
+        mimeType: "audio/webm",
+        contextText: "Household task capture"
+      })
+    ).resolves.toBe("Dog medicine every month.");
+
+    expect(transcribeAudioWithOpenAi).toHaveBeenCalledWith(
+      {
+        bytes: new Uint8Array([1, 2]),
+        mimeType: "audio/webm",
+        contextText: "Household task capture"
+      },
+      expect.objectContaining({ config: enabledFallback })
+    );
+  });
+
+  it("rethrows the Qwen ASR error when transcription fallback is disabled", async () => {
+    const qwenError = new Error("Qwen ASR down");
+    vi.mocked(qwen.transcribeAudio).mockRejectedValue(qwenError);
+    vi.mocked(getOpenAiFallbackConfig).mockReturnValue({ enabled: false });
+
+    await expect(
+      transcribeAudio({ bytes: new Uint8Array([1, 2]), mimeType: "audio/webm" })
+    ).rejects.toBe(qwenError);
+    expect(transcribeAudioWithOpenAi).not.toHaveBeenCalled();
   });
 });
