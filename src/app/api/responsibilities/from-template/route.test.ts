@@ -72,4 +72,19 @@ describe("POST /api/responsibilities/from-template", () => {
     expect(response.status).toBe(401);
     expect(createResponsibilityFromTemplate).not.toHaveBeenCalled();
   });
+
+  it("lets the repository use the template default lane when omitted", async () => {
+    const { POST } = await import("./route");
+
+    const response = await POST(request({ templateId: "tpl_auto" }));
+
+    expect(response.status).toBe(201);
+    expect(createResponsibilityFromTemplate).toHaveBeenCalledWith({
+      householdId: session.householdId,
+      actorPersonaId: session.selectedPersonaId,
+      templateId: "tpl_auto",
+      lane: undefined,
+      titleOverride: undefined
+    });
+  });
 });

@@ -180,7 +180,7 @@ export const ResponsibilityFromTemplateMutationSchema = z
   .object({
     templateId: z.string().trim().min(1),
     actorPersonaId: PersonaIdSchema,
-    lane: ResponsibilityBoardLaneSchema.default("cards_of_concern"),
+    lane: ResponsibilityBoardLaneSchema.optional(),
     titleOverride: z.string().trim().min(1).max(140).optional()
   })
   .strict();

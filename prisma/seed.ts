@@ -11,36 +11,35 @@ async function main() {
   };
 
   for (const template of FAIRPLAY_SOURCE_CARDS) {
-    const areaKeys = template.labels.map((label) =>
-      label
-        .toLowerCase()
-        .replace(/&/g, "and")
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_+|_+$/g, "")
-    );
+    const sourceData = {
+      sourceCardId: template.sourceCardId,
+      title: template.title,
+      summary: template.summary,
+      areaKeys: [...template.labels],
+      defaultCadence: template.defaultCadence,
+      hiddenEffortKeys: [...template.hiddenEffortKeys],
+      sourceReviewStatus: "approved_original" as const,
+      contentVersion: template.sourceVersion,
+      definition: template.definition,
+      conception: template.conception,
+      planning: template.planning,
+      execution: template.execution,
+      minimumStandard: template.minimumStandard,
+      coverAssetPath: template.coverAssetPath,
+      defaultLane: template.defaultLane,
+      sourceVersion: template.sourceVersion,
+      importedAt: new Date(template.importedAt)
+    };
 
     await prisma.responsibilityTemplate.upsert({
       where: {
         slug: template.slug
       },
-      update: {
-        title: template.title,
-        summary: template.summary,
-        areaKeys,
-        defaultCadence: template.defaultCadence,
-        hiddenEffortKeys: [...template.hiddenEffortKeys],
-        sourceReviewStatus: "needs_review",
-        contentVersion: template.sourceVersion
-      },
+      update: sourceData,
       create: {
+        id: template.id,
         slug: template.slug,
-        title: template.title,
-        summary: template.summary,
-        areaKeys,
-        defaultCadence: template.defaultCadence,
-        hiddenEffortKeys: [...template.hiddenEffortKeys],
-        sourceReviewStatus: "needs_review",
-        contentVersion: template.sourceVersion
+        ...sourceData
       }
     });
   }

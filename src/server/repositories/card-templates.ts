@@ -8,6 +8,7 @@ import {
   type CardTemplateSummary
 } from "../../contracts/card-templates";
 import type { HouseholdId, PersonaId } from "../../domain/ids";
+import { FAIRPLAY_SOURCE_CARDS } from "../../seed/fairplay-source-cards";
 import { RepositoryError } from "../db/errors";
 import { prisma } from "../db/prisma";
 import {
@@ -41,6 +42,7 @@ const templateSelect = {
 type TemplateRecord = Prisma.ResponsibilityTemplateGetPayload<{
   select: typeof templateSelect;
 }>;
+type SourceCardTemplate = (typeof FAIRPLAY_SOURCE_CARDS)[number];
 
 export type CreateResponsibilityFromTemplateInput = {
   householdId: HouseholdId;
@@ -58,6 +60,81 @@ function labelsFromAreaKeys(areaKeys: string[]): CardTemplateLabel[] {
 
 function coverAssetPath(template: Pick<TemplateRecord, "coverAssetPath" | "slug">) {
   return template.coverAssetPath ?? `/assets/fairplay/cards/${template.slug}.png`;
+}
+
+function sourceTemplateForIdentifier(identifier: string): SourceCardTemplate | null {
+  return (
+    FAIRPLAY_SOURCE_CARDS.find(
+      (template) =>
+        template.id === identifier ||
+        template.sourceCardId === identifier ||
+        template.slug === identifier
+    ) ?? null
+  );
+}
+
+function sourceTemplateData(template: SourceCardTemplate) {
+  return {
+    sourceCardId: template.sourceCardId,
+    title: template.title,
+    summary: template.summary,
+    areaKeys: [...template.labels],
+    defaultCadence: template.defaultCadence,
+    hiddenEffortKeys: [...template.hiddenEffortKeys],
+    sourceReviewStatus: "approved_original" as const,
+    contentVersion: template.sourceVersion,
+    definition: template.definition,
+    conception: template.conception,
+    planning: template.planning,
+    execution: template.execution,
+    minimumStandard: template.minimumStandard,
+    coverAssetPath: template.coverAssetPath,
+    defaultLane: template.defaultLane,
+    sourceVersion: template.sourceVersion,
+    importedAt: new Date(template.importedAt)
+  };
+}
+
+async function upsertSourceTemplate(
+  template: SourceCardTemplate
+): Promise<TemplateRecord> {
+  const data = sourceTemplateData(template);
+
+  return prisma.responsibilityTemplate.upsert({
+    where: {
+      slug: template.slug
+    },
+    update: data,
+    create: {
+      id: template.id,
+      slug: template.slug,
+      ...data
+    },
+    select: templateSelect
+  });
+}
+
+async function findTemplateByIdentifier(
+  identifier: string
+): Promise<TemplateRecord | null> {
+  const template = await prisma.responsibilityTemplate.findFirst({
+    where: {
+      OR: [
+        { id: identifier },
+        { sourceCardId: identifier },
+        { slug: identifier }
+      ]
+    },
+    select: templateSelect
+  });
+
+  if (template) {
+    return template;
+  }
+
+  const sourceTemplate = sourceTemplateForIdentifier(identifier);
+
+  return sourceTemplate ? upsertSourceTemplate(sourceTemplate) : null;
 }
 
 function toSummary(template: TemplateRecord): CardTemplateSummary {
@@ -132,12 +209,7 @@ export async function listCardTemplates(
 export async function getCardTemplate(
   templateId: string
 ): Promise<CardTemplateDetail | null> {
-  const template = await prisma.responsibilityTemplate.findUnique({
-    where: {
-      id: templateId
-    },
-    select: templateSelect
-  });
+  const template = await findTemplateByIdentifier(templateId);
 
   return template ? toDetail(template) : null;
 }
@@ -145,12 +217,7 @@ export async function getCardTemplate(
 export async function createResponsibilityFromTemplate(
   input: CreateResponsibilityFromTemplateInput
 ) {
-  const template = await prisma.responsibilityTemplate.findUnique({
-    where: {
-      id: input.templateId
-    },
-    select: templateSelect
-  });
+  const template = await findTemplateByIdentifier(input.templateId);
 
   if (!template) {
     throw new RepositoryError("NOT_FOUND", "Card template not found.");

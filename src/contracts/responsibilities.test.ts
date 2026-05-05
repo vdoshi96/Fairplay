@@ -267,5 +267,15 @@ describe("Responsibility board contracts", () => {
         lane: "cards_of_concern"
       })
     ).toMatchObject({ lane: "cards_of_concern" });
+
+    expect(
+      ResponsibilityFromTemplateMutationSchema.parse({
+        templateId: "tpl_auto",
+        actorPersonaId: "550e8400-e29b-41d4-a716-446655440020"
+      })
+    ).toMatchObject({
+      templateId: "tpl_auto",
+      actorPersonaId: "550e8400-e29b-41d4-a716-446655440020"
+    });
   });
 });

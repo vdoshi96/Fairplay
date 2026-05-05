@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { prisma } from "../db/prisma";
+import { FAIRPLAY_SOURCE_CARDS } from "../../seed/fairplay-source-cards";
 import { createHouseholdWithPersonas } from "./households";
 import {
   createResponsibilityFromTemplate,
@@ -192,6 +193,48 @@ describe("card template repository", () => {
       templateId: template.id,
       sourceDefinition: "Groceries definition",
       sourceCoverAssetPath: "/assets/fairplay/cards/groceries.png"
+    });
+  });
+
+  it("creates from a stable source card id and uses the source template default lane", async () => {
+    const sourceCard = FAIRPLAY_SOURCE_CARDS.find(
+      (template) => template.slug === "auto"
+    );
+    expect(sourceCard).toBeDefined();
+
+    const { household, personas } = await createHouseholdWithPersonas({
+      householdName: "Static Source Home",
+      usernameNormalized: uniqueUsername("static-source-home"),
+      timezone: "America/Chicago",
+      passwordHash: `argon2id-test-hash-${randomUUID()}`,
+      hashAlgorithm: "argon2id",
+      hashParamsVersion: "test"
+    });
+    createdHouseholdIds.add(household.id);
+
+    const created = await createResponsibilityFromTemplate({
+      householdId: household.id,
+      actorPersonaId: personas[0].id,
+      templateId: sourceCard!.id
+    });
+
+    expect(created).toMatchObject({
+      title: sourceCard!.title,
+      areaKeys: sourceCard!.labels,
+      boardLane: sourceCard!.defaultLane,
+      householdStandard: sourceCard!.minimumStandard
+    });
+    await expect(
+      prisma.responsibility.findUniqueOrThrow({
+        where: { id: created.id },
+        select: {
+          sourceDefinition: true,
+          sourceCoverAssetPath: true
+        }
+      })
+    ).resolves.toEqual({
+      sourceDefinition: sourceCard!.definition,
+      sourceCoverAssetPath: sourceCard!.coverAssetPath
     });
   });
 });
