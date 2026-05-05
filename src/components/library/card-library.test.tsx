@@ -2,10 +2,15 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
+import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import type { CardTemplateSummary } from "@/contracts/card-templates";
 import { CardLibrary } from "./card-library";
 
 vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn()
+  }),
   useSearchParams: () => new URLSearchParams()
 }));
 
@@ -30,11 +35,42 @@ const templates: CardTemplateSummary[] = [
   }
 ];
 
+const aiDrafts: AiCardDraftSummary[] = [
+  {
+    id: "550e8400-e29b-41d4-a716-446655440012",
+    title: "Laundry reset",
+    promptPreview: "Laundry keeps slipping after school.",
+    status: "ready",
+    generationStage: "ready",
+    sourceInputType: "text",
+    summary: "Keep laundry moving from hamper to folded.",
+    areaKeys: [],
+    hiddenEffortKeys: [],
+    cadence: null,
+    coverUrl: null,
+    failureMessage: null,
+    acceptedResponsibilityId: null,
+    createdAt: "2026-05-05T12:00:00.000Z",
+    updatedAt: "2026-05-05T12:00:00.000Z"
+  }
+];
+
 describe("CardLibrary", () => {
+  it("renders an AI Task Manager button above source card filters", () => {
+    render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
+
+    expect(
+      screen.getByRole("button", { name: "AI Task Manager" })
+    ).toBeVisible();
+    expect(screen.getByRole("region", { name: "AI-created cards" })).toBeVisible();
+    expect(screen.getByText("Laundry reset")).toBeVisible();
+  });
+
   it("searches source cards and starts a household card from a template", async () => {
     const onCreateFromTemplate = vi.fn();
     render(
       <CardLibrary
+        aiDrafts={aiDrafts}
         onCreateFromTemplate={onCreateFromTemplate}
         templates={templates}
       />
@@ -61,6 +97,7 @@ describe("CardLibrary", () => {
       "library-put-in-play"
     );
     expect(screen.queryByText("Homework")).not.toBeInTheDocument();
+    expect(screen.getByText("Laundry reset")).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: /put Auto in play/i }));
 
@@ -68,7 +105,7 @@ describe("CardLibrary", () => {
   });
 
   it("filters by source label while preserving stable card presentation", async () => {
-    render(<CardLibrary templates={templates} />);
+    render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
 
     expect(screen.getByLabelText("Source labels")).toHaveAttribute(
       "data-guide-id",
@@ -79,6 +116,7 @@ describe("CardLibrary", () => {
 
     expect(screen.getByText("Homework")).toBeVisible();
     expect(screen.queryByText("Auto")).not.toBeInTheDocument();
+    expect(screen.getByText("Laundry reset")).toBeVisible();
     expect(screen.getByRole("article", { name: /homework/i })).toHaveClass(
       "min-h-[420px]"
     );
