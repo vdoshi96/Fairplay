@@ -271,6 +271,15 @@ function assertCanUpdate(draft: AiCardDraftDetail) {
   }
 }
 
+function assertCanCancel(draft: AiCardDraftDetail) {
+  if (draft.status === "accepted" || draft.status === "canceled") {
+    throw new AiCardDraftServiceError(
+      "INVALID_INPUT",
+      "Accepted or canceled AI card drafts cannot be canceled."
+    );
+  }
+}
+
 function sourceText(draft: AiCardDraftDetail) {
   return draft.audioTranscript ?? draft.inputText ?? null;
 }
@@ -566,7 +575,8 @@ export function createAiCardDraftService(
       draftId: AiCardDraftId
     ): Promise<AiCardDraftDetail> {
       requireSelectedPersona(session);
-      await getRequiredDraft(deps, session, draftId);
+      const draft = await getRequiredDraft(deps, session, draftId);
+      assertCanCancel(draft);
       const canceled = await deps.cancelDraft({
         householdId: session.householdId,
         draftId

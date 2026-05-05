@@ -357,13 +357,17 @@ export async function deleteAiCardDraftAudio(
 export async function cancelAiCardDraft(
   input: ScopedAiCardDraftInput
 ): Promise<AiCardDraftDetail> {
-  const draft = await updateScopedDraft(input, {
-    status: "canceled",
-    canceledAt: new Date(),
-    audioBytes: null,
-    audioMimeType: null,
-    audioDeletedAt: new Date()
-  });
+  const draft = await updateScopedDraft(
+    input,
+    {
+      status: "canceled",
+      canceledAt: new Date(),
+      audioBytes: null,
+      audioMimeType: null,
+      audioDeletedAt: new Date()
+    },
+    { allowedStatuses: ["processing", "ready", "failed"] }
+  );
 
   return toDetail(draft);
 }
@@ -371,6 +375,20 @@ export async function cancelAiCardDraft(
 export async function markAiCardDraftAccepted(input: ScopedAiCardDraftInput & {
   acceptedResponsibilityId: ResponsibilityId;
 }): Promise<AiCardDraftDetail> {
+  const responsibilityCount = await prisma.responsibility.count({
+    where: {
+      id: input.acceptedResponsibilityId,
+      householdId: input.householdId
+    }
+  });
+
+  if (responsibilityCount !== 1) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Accepted responsibility does not belong to household."
+    );
+  }
+
   const draft = await updateScopedDraft(
     input,
     {
@@ -454,10 +472,15 @@ export async function acceptAiCardDraftAsResponsibility(input: {
       );
     }
 
+    if (!draft.coverImageBytes || !draft.coverImageMimeType) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "AI card draft needs a generated cover before acceptance."
+      );
+    }
+
     const card = requireGeneratedDraftFields(draft);
-    const sourceCoverAssetPath = draft.coverImageBytes
-      ? `/api/ai-card-drafts/${draft.id}/cover`
-      : null;
+    const sourceCoverAssetPath = `/api/ai-card-drafts/${draft.id}/cover`;
     const responsibility = await createResponsibilityWithClient(tx, {
         householdId: input.householdId,
         createdByPersonaId: input.createdByPersonaId,

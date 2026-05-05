@@ -430,4 +430,20 @@ describe("AI card draft service", () => {
     expect(deps.cancelDraft).toHaveBeenCalledWith({ householdId, draftId });
     expect(deps.deleteAudio).toHaveBeenCalledWith({ householdId, draftId });
   });
+
+  it.each(["accepted", "canceled"] as const)(
+    "rejects canceling %s drafts",
+    async (status) => {
+      const deps = makeDeps({
+        getDraft: vi.fn().mockResolvedValue(readyDraft({ status }))
+      });
+      const service = createAiCardDraftService(deps);
+
+      await expect(service.cancel(session, draftId)).rejects.toMatchObject({
+        code: "INVALID_INPUT"
+      });
+      expect(deps.cancelDraft).not.toHaveBeenCalled();
+      expect(deps.deleteAudio).not.toHaveBeenCalled();
+    }
+  );
 });

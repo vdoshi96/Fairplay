@@ -384,6 +384,31 @@ describe("AI card draft repository", () => {
     expect(stored.audioDeletedAt).not.toBeNull();
   });
 
+  it("rejects canceling accepted and already canceled drafts", async () => {
+    const { household, personas, draft } = await createReadyAudioDraft();
+
+    await acceptAiCardDraftAsResponsibility({
+      householdId: household.id,
+      draftId: draft.id,
+      createdByPersonaId: personas[0].id
+    });
+    await expect(
+      cancelAiCardDraft({ householdId: household.id, draftId: draft.id })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    const canceled = await createAiCardDraft({
+      householdId: household.id,
+      createdByPersonaId: personas[0].id,
+      sourceInputType: "text",
+      inputText: "Already canceled"
+    });
+    await cancelAiCardDraft({ householdId: household.id, draftId: canceled.id });
+
+    await expect(
+      cancelAiCardDraft({ householdId: household.id, draftId: canceled.id })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+  });
+
   it("atomically accepts a ready draft once, creates a responsibility, and deletes audio", async () => {
     const { household, personas, draft } = await createReadyAudioDraft();
 
@@ -455,6 +480,79 @@ describe("AI card draft repository", () => {
         }
       })
     ).resolves.toBe(1);
+  });
+
+  it("rejects accepting a draft without cover bytes", async () => {
+    const { household, personas } = await createTestHousehold();
+    const draft = await createAiCardDraft({
+      householdId: household.id,
+      createdByPersonaId: personas[0].id,
+      sourceInputType: "text",
+      inputText: "No cover"
+    });
+    await saveAiCardDraftGeneration({
+      householdId: household.id,
+      draftId: draft.id,
+      card: generatedCard
+    });
+    await markAiCardDraftStage({
+      householdId: household.id,
+      draftId: draft.id,
+      stage: "ready"
+    });
+
+    await expect(
+      acceptAiCardDraftAsResponsibility({
+        householdId: household.id,
+        draftId: draft.id,
+        createdByPersonaId: personas[0].id
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    await expect(
+      prisma.responsibility.count({
+        where: {
+          householdId: household.id,
+          title: generatedCard.title
+        }
+      })
+    ).resolves.toBe(0);
+    await expect(
+      getAiCardDraft({ householdId: household.id, draftId: draft.id })
+    ).resolves.toMatchObject({
+      status: "ready",
+      acceptedResponsibilityId: null
+    });
+  });
+
+  it("rejects marking accepted with a responsibility from another household", async () => {
+    const { household, draft } = await createReadyAudioDraft();
+    const other = await createTestHousehold("ai-draft-other");
+    const otherResponsibility = await createResponsibility({
+      householdId: other.household.id,
+      createdByPersonaId: other.personas[0].id,
+      title: "Other household responsibility",
+      summary: null,
+      areaKeys: ["home_admin"],
+      hiddenEffortKeys: ["doing"],
+      cadence: "weekly",
+      visibility: "shared_household"
+    });
+
+    await expect(
+      markAiCardDraftAccepted({
+        householdId: household.id,
+        draftId: draft.id,
+        acceptedResponsibilityId: otherResponsibility.id
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    await expect(
+      getAiCardDraft({ householdId: household.id, draftId: draft.id })
+    ).resolves.toMatchObject({
+      status: "ready",
+      acceptedResponsibilityId: null
+    });
   });
 
   it("blocks late generation writes after a draft is canceled", async () => {
