@@ -38,6 +38,7 @@ Required variables:
 - `SESSION_SECRET`: long random secret for server-managed sessions. Use a different value per environment.
 - `AUTH_COOKIE_NAME`: defaults to `fairplay_session`.
 - `APP_BASE_URL`: app origin, such as `http://localhost:3000` locally.
+- `QWEN_CARD_API_KEY`, `QWEN_IMAGE_API_KEY`, and the Qwen model/base URL variables from `.env.example`: required for AI Task Manager text, audio transcription, and card-front generation.
 
 Environment variables must be configured outside source. Do not commit `.env`, `.env.local`, managed database credentials, real session secrets, plaintext passwords, seed real household records, or private reference materials.
 
