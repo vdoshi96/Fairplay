@@ -40,6 +40,8 @@ const envMapping = {
   imageModel: "OPENAI_IMAGE_MODEL"
 } as const satisfies Record<keyof Omit<OpenAiEnabledFallbackConfig, "enabled">, string>;
 
+const APPROVED_OPENAI_IMAGE_MODEL = "gpt-image-1-mini";
+
 export function getOpenAiFallbackConfig(
   env: Record<string, string | undefined> = process.env
 ): OpenAiFallbackConfig {
@@ -52,6 +54,10 @@ export function getOpenAiFallbackConfig(
   );
   if (missingNames.length > 0) {
     throw new OpenAiFallbackConfigError(missingNames);
+  }
+
+  if (env.OPENAI_IMAGE_MODEL !== APPROVED_OPENAI_IMAGE_MODEL) {
+    throw new OpenAiFallbackConfigError(["OPENAI_IMAGE_MODEL"]);
   }
 
   return {
