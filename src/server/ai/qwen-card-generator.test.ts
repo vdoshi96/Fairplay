@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
 import { getQwenConfig, QwenConfigError, type QwenConfig } from "./qwen-config";
 import {
   generateCardCover,
@@ -105,6 +107,15 @@ describe("Qwen card generator", () => {
     expect(transcript).toBe("Dog meds every first Monday.");
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.model).toBe("qwen3-asr-flash");
+    expect(body.messages[0]).toEqual({
+      role: "system",
+      content: [
+        {
+          type: "text",
+          text: "Context for this short household task recording: Household card capture"
+        }
+      ]
+    });
     expect(body.messages).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -120,6 +131,49 @@ describe("Qwen card generator", () => {
         })
       ])
     );
+  });
+
+  it("keeps image guardrails first while capping long prompts", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.png" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([1, 2, 3]), {
+          status: 200,
+          headers: { "content-type": "image/png" }
+        })
+      );
+
+    await generateCardCover(
+      {
+        title: "Very Long Card",
+        imagePrompt: "generated prompt ".repeat(200),
+        negativePrompt: "generated negative ".repeat(200)
+      },
+      { fetch: fetchMock, config }
+    );
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    const prompt = body.input.messages[0].content[0].text;
+    const negativePrompt = body.parameters.negative_prompt;
+    expect(prompt).toHaveLength(800);
+    expect(prompt.startsWith("Create an original 5:7 portrait Fairplay")).toBe(true);
+    expect(prompt).toContain("Do not copy public source decks");
+    expect(negativePrompt).toHaveLength(500);
+    expect(negativePrompt.startsWith("copied public source deck style")).toBe(true);
+    expect(negativePrompt).toContain("gendered chore stereotypes");
   });
 
   it("generates a card cover and returns downloaded bytes", async () => {
@@ -189,6 +243,63 @@ describe("Qwen card generator", () => {
         }
       })
     );
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toBeInstanceOf(QwenGenerationError);
+  });
+
+  it("throws a generation error for generated image URLs with unsupported schemes", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        output: {
+          choices: [{ message: { content: [{ image: "file:///tmp/cover.png" }] } }]
+        }
+      })
+    );
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toBeInstanceOf(QwenGenerationError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws a generation error when downloaded cover is not an image", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.txt" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response("not an image", {
+          status: 200,
+          headers: { "content-type": "text/plain" }
+        })
+      );
 
     await expect(
       generateCardCover(

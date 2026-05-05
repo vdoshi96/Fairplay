@@ -1,9 +1,9 @@
+import "server-only";
+
 import { z } from "zod";
 
-import {
-  CadenceSchema,
-  HiddenEffortKeySchema
-} from "@/domain/enums";
+import { AreaKeySchema } from "@/contracts/responsibilities";
+import { CadenceSchema, HiddenEffortKeySchema } from "@/domain/enums";
 import { getQwenConfig, type QwenConfig } from "./qwen-config";
 
 export type StructuredAiCard = {
@@ -44,6 +44,10 @@ export type QwenGeneratorDeps = {
   config?: QwenConfig;
 };
 
+const MAX_IMAGE_PROMPT_CHARS = 800;
+const MAX_IMAGE_NEGATIVE_PROMPT_CHARS = 500;
+const MAX_GENERATED_IMAGE_BYTES = 5 * 1024 * 1024;
+
 type ChatCompletionResponse = {
   choices?: Array<{
     message?: {
@@ -66,7 +70,7 @@ const StructuredAiCardSchema = z
   .object({
     title: z.string().trim().min(1),
     summary: z.string().trim().min(1),
-    areaKeys: z.array(z.string().trim().min(1)).min(1),
+    areaKeys: z.array(AreaKeySchema).min(1),
     hiddenEffortKeys: z.array(HiddenEffortKeySchema).min(1),
     cadence: CadenceSchema,
     definition: z.string().trim().min(1),
@@ -126,7 +130,12 @@ export async function transcribeAudio(
   if (input.contextText?.trim()) {
     messages.push({
       role: "system",
-      content: `Context for this short household task recording: ${input.contextText.trim()}`
+      content: [
+        {
+          type: "text",
+          text: `Context for this short household task recording: ${input.contextText.trim()}`
+        }
+      ]
     });
   }
 
@@ -225,10 +234,8 @@ export async function generateCardCover(
 ): Promise<GeneratedCoverImage> {
   const config = resolveConfig(deps);
   const fetchImpl = resolveFetch(deps);
-  const prompt = [`Title: ${input.title}`, input.imagePrompt, imageStylePrompt].join("\n");
-  const negativePrompt = [input.negativePrompt, imageNegativePrompt]
-    .filter((part) => part.trim())
-    .join(", ");
+  const prompt = buildImagePrompt(input.title, input.imagePrompt);
+  const negativePrompt = buildImageNegativePrompt(input.negativePrompt);
 
   const response = await fetchImpl(
     `${trimSlash(config.imageBaseUrl)}/services/aigc/multimodal-generation/generation`,
@@ -265,16 +272,32 @@ export async function generateCardCover(
     throw new QwenGenerationError("Qwen image generation response did not include an image URL.");
   }
 
-  const imageResponse = await fetchImpl(imageUrl);
+  const safeImageUrl = parseDownloadableImageUrl(imageUrl);
+  const imageResponse = await fetchImpl(safeImageUrl);
   if (!imageResponse.ok) {
     throw new QwenGenerationError(
       `Qwen generated image download failed with status ${imageResponse.status}.`
     );
   }
 
+  const mimeType = imageResponse.headers.get("content-type") ?? "image/png";
+  if (!isImageMimeType(mimeType)) {
+    throw new QwenGenerationError("Qwen generated image download was not an image.");
+  }
+
+  const contentLength = imageResponse.headers.get("content-length");
+  if (contentLength && Number(contentLength) > MAX_GENERATED_IMAGE_BYTES) {
+    throw new QwenGenerationError("Qwen generated image exceeded the maximum size.");
+  }
+
+  const bytes = new Uint8Array(await imageResponse.arrayBuffer());
+  if (bytes.byteLength > MAX_GENERATED_IMAGE_BYTES) {
+    throw new QwenGenerationError("Qwen generated image exceeded the maximum size.");
+  }
+
   return {
-    bytes: new Uint8Array(await imageResponse.arrayBuffer()),
-    mimeType: imageResponse.headers.get("content-type") ?? "image/png"
+    bytes,
+    mimeType
   };
 }
 
@@ -299,6 +322,52 @@ function trimSlash(value: string) {
 
 function toDataUrl(bytes: Uint8Array, mimeType: string) {
   return `data:${mimeType};base64,${Buffer.from(bytes).toString("base64")}`;
+}
+
+function buildImagePrompt(title: string, generatedPrompt: string) {
+  return capText(
+    [
+      imageStylePrompt,
+      `Title: ${title.trim()}`,
+      generatedPrompt.trim()
+    ].join("\n"),
+    MAX_IMAGE_PROMPT_CHARS
+  );
+}
+
+function buildImageNegativePrompt(generatedNegativePrompt: string) {
+  return capText(
+    [imageNegativePrompt, generatedNegativePrompt.trim()]
+      .filter((part) => part.length > 0)
+      .join(", "),
+    MAX_IMAGE_NEGATIVE_PROMPT_CHARS
+  );
+}
+
+function capText(value: string, maxChars: number) {
+  return value.length <= maxChars ? value : value.slice(0, maxChars);
+}
+
+function parseDownloadableImageUrl(value: string) {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new QwenGenerationError("Qwen image generation response included an invalid image URL.");
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new QwenGenerationError(
+      "Qwen image generation response included an unsupported image URL scheme."
+    );
+  }
+
+  return parsed.toString();
+}
+
+function isImageMimeType(value: string) {
+  return value.toLowerCase().split(";")[0].trim().startsWith("image/");
 }
 
 async function readProviderJson<T>(response: Response, errorMessage: string): Promise<T> {
