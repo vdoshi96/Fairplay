@@ -15,6 +15,7 @@ import {
 } from "./card-generation-shared";
 import {
   getOpenAiFallbackConfig,
+  isApprovedOpenAiImageModel,
   type OpenAiEnabledFallbackConfig
 } from "./openai-config";
 import { providerRequestIdFromHeaders } from "./diagnostics";
@@ -210,6 +211,7 @@ export async function generateCardCoverWithOpenAi(
 
 function resolveConfig(deps: OpenAiGeneratorDeps): OpenAiEnabledFallbackConfig {
   if (deps.config) {
+    assertApprovedConfig(deps.config);
     return deps.config;
   }
 
@@ -219,6 +221,14 @@ function resolveConfig(deps: OpenAiGeneratorDeps): OpenAiEnabledFallbackConfig {
   }
 
   return config;
+}
+
+function assertApprovedConfig(config: OpenAiEnabledFallbackConfig): void {
+  if (!isApprovedOpenAiImageModel(config.imageModel)) {
+    throw new OpenAiGenerationError("OpenAI image fallback model is not approved.", {
+      model: config.imageModel
+    });
+  }
 }
 
 function resolveFetch(deps: OpenAiGeneratorDeps): typeof fetch {

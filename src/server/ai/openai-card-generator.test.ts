@@ -229,6 +229,30 @@ describe("OpenAI fallback card generator", () => {
     ).rejects.toBeInstanceOf(OpenAiGenerationError);
   });
 
+  it("rejects unapproved direct OpenAI image config before sending a request", async () => {
+    const fetchMock = vi.fn();
+    const unsafeConfig = {
+      ...config,
+      imageModel: "gpt-image-2"
+    } as unknown as OpenAiEnabledFallbackConfig;
+
+    await expect(
+      generateCardCoverWithOpenAi(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config: unsafeConfig }
+      )
+    ).rejects.toMatchObject({
+      code: "OPENAI_GENERATION_FAILED",
+      model: "gpt-image-2",
+      provider: "openai"
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("throws a generation error when base64 output is not a supported raster image", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({
