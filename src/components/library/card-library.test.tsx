@@ -5,6 +5,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { CardTemplateSummary } from "@/contracts/card-templates";
 import { CardLibrary } from "./card-library";
 
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams()
+}));
+
 const templates: CardTemplateSummary[] = [
   {
     id: "tpl_auto",
@@ -36,6 +40,14 @@ describe("CardLibrary", () => {
       />
     );
 
+    expect(
+      screen.getByRole("button", { name: "Learn this feature" })
+    ).toBeVisible();
+    expect(screen.getByRole("searchbox", { name: /search cards/i })).toHaveAttribute(
+      "data-guide-id",
+      "library-search"
+    );
+
     await userEvent.type(screen.getByRole("searchbox", { name: /search cards/i }), "auto");
 
     const autoCard = screen.getByRole("article", { name: /auto/i });
@@ -43,6 +55,10 @@ describe("CardLibrary", () => {
     expect(within(autoCard).getByRole("img", { name: /auto cover/i })).toHaveAttribute(
       "src",
       "/assets/fairplay/cards/auto.png"
+    );
+    expect(screen.getByRole("button", { name: /put Auto in play/i })).toHaveAttribute(
+      "data-guide-id",
+      "library-put-in-play"
     );
     expect(screen.queryByText("Homework")).not.toBeInTheDocument();
 
@@ -53,6 +69,11 @@ describe("CardLibrary", () => {
 
   it("filters by source label while preserving stable card presentation", async () => {
     render(<CardLibrary templates={templates} />);
+
+    expect(screen.getByLabelText("Source labels")).toHaveAttribute(
+      "data-guide-id",
+      "library-labels"
+    );
 
     await userEvent.click(screen.getByRole("button", { name: "Kids" }));
 

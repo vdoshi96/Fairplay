@@ -4,7 +4,18 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PersonaSummary } from "@/contracts/personas";
 import { CreateHouseholdForm } from "./create-household-form";
 import { LoginForm } from "./login-form";
+import { LoginPageClient } from "./login-page-client";
 import { PersonaChooser } from "./persona-chooser";
+
+const routerPush = vi.hoisted(() => vi.fn());
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: routerPush,
+    replace: vi.fn()
+  }),
+  useSearchParams: () => new URLSearchParams()
+}));
 
 const personas: PersonaSummary[] = [
   {
@@ -24,6 +35,17 @@ const personas: PersonaSummary[] = [
 describe("auth forms", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    routerPush.mockReset();
+  });
+
+  it("renders login page content with the household garden splash", () => {
+    render(<LoginPageClient />);
+
+    expect(screen.getByRole("heading", { name: "Log in to Fairplay" })).toBeVisible();
+    expect(
+      screen.getByRole("img", { name: "Animated Fairplay household garden scene" })
+    ).toBeVisible();
+    expect(screen.getByLabelText("Household username")).toBeVisible();
   });
 
   it("validates login fields before submitting", async () => {

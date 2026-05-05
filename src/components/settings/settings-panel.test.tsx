@@ -10,6 +10,7 @@ const routerReplace = vi.hoisted(() => vi.fn());
 const routerRefresh = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
     push: routerPush,
     replace: routerReplace,
@@ -174,5 +175,26 @@ describe("settings panel", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Welcome will show again across the app."
     );
+  });
+
+  it("marks settings guide targets and links to App Guide 101", () => {
+    const { container } = render(
+      <SettingsPanel household={household} selectedPersona={selectedPersona} />
+    );
+
+    expect(container.querySelector('[data-guide-id="settings-persona"]')).not.toBeNull();
+    expect(
+      container.querySelector('[data-guide-id="settings-guided-start"]')
+    ).not.toBeNull();
+    expect(container.querySelector('[data-guide-id="settings-logout"]')).not.toBeNull();
+    expect(screen.getByRole("link", { name: "Open App Guide 101" })).toHaveAttribute(
+      "href",
+      "/app/home#app-guide-101"
+    );
+    expect(
+      screen.getByText(
+        "Replay feature tours from each feature page using Learn this feature."
+      )
+    ).toBeVisible();
   });
 });

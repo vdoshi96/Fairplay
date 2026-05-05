@@ -108,6 +108,26 @@ a {
   }
 }
 
+@keyframes fp-cloud-drift {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(8px);
+  }
+}
+
+@keyframes fp-leaf-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
 @keyframes fp-panel-enter {
   0% {
     opacity: 0;
@@ -135,6 +155,15 @@ a {
   animation: fp-checkin-spark 480ms ease-out both;
 }
 
+.fp-motion-cloud-drift {
+  animation: fp-cloud-drift 8s ease-in-out infinite;
+}
+
+.fp-motion-leaf-sway {
+  animation: fp-leaf-sway 4s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
 .fp-motion-panel-enter {
   animation: fp-panel-enter 180ms ease-out both;
 }
@@ -153,6 +182,8 @@ a {
   .fp-motion-radar-pulse,
   .fp-motion-assignment-shift,
   .fp-motion-checkin-spark,
+  .fp-motion-cloud-drift,
+  .fp-motion-leaf-sway,
   .fp-motion-panel-enter {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

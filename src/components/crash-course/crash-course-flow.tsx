@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { CRASH_COURSE_LESSONS } from "./crash-course-content";
+import { CrashCourseScene } from "./crash-course-scene";
 
 type CrashCourseFlowProps = {
   currentStep?: number;
@@ -47,21 +48,27 @@ export function CrashCourseFlow({
       aria-labelledby="crash-course-title"
       className="grid gap-5 rounded-[8px] border border-fp-line bg-white p-5 shadow-sm"
     >
-      <div className="grid gap-2">
-        <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
-          {progressLabel}
-        </p>
-        <h1
-          id="crash-course-title"
-          className="text-[28px] font-bold leading-[34px] text-fp-ink"
-        >
-          {lesson.title}
-        </h1>
-        {lesson.exampleCardTitle ? (
-          <p className="text-[14px] font-semibold leading-5 text-fp-ink">
-            Example card: {lesson.exampleCardTitle}
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(240px,0.78fr)] md:items-center">
+        <div className="order-2 grid gap-2 md:order-1">
+          <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
+            {progressLabel}
           </p>
-        ) : null}
+          <h1
+            id="crash-course-title"
+            className="text-[28px] font-bold leading-[34px] text-fp-ink"
+          >
+            {lesson.title}
+          </h1>
+          {lesson.exampleCardTitle ? (
+            <p className="text-[14px] font-semibold leading-5 text-fp-ink">
+              Example card: {lesson.exampleCardTitle}
+            </p>
+          ) : null}
+        </div>
+        <CrashCourseScene
+          className="order-1 h-[220px] md:order-2"
+          scene={lesson.scene}
+        />
       </div>
 
       <div className="grid gap-3 text-[15px] leading-6 text-fp-muted-ink">

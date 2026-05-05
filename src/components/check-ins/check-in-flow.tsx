@@ -9,6 +9,8 @@ import type {
   GuidedDecisionInput
 } from "@/server/check-ins/service";
 import { SAFETY_COPY } from "@/lib/safety-copy";
+import { FEATURE_GUIDES } from "@/components/guide/guide-content";
+import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import { MotionPanel, MotionSpark } from "@/components/motion/fairplay-motion";
 import { CheckInVisual } from "@/components/visuals/fairplay-visuals";
 
@@ -245,6 +247,7 @@ export function CheckInFlow({
       <section
         aria-label="Check-in summary"
         className="mx-auto grid w-full max-w-2xl gap-4 px-4 py-6"
+        data-guide-id="check-in-complete"
       >
         <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
           <div className="flex items-center gap-3">
@@ -269,9 +272,12 @@ export function CheckInFlow({
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 py-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-stone-950">Guided check-in</h1>
-        <span className="text-sm text-stone-600">
-          {Math.min(currentIndex + 1, checkIn.items.length)} of {checkIn.items.length}
-        </span>
+        <div className="grid gap-2 justify-items-end">
+          <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />
+          <span className="text-sm text-stone-600">
+            {Math.min(currentIndex + 1, checkIn.items.length)} of {checkIn.items.length}
+          </span>
+        </div>
       </div>
 
       {error ? (
@@ -301,6 +307,7 @@ export function CheckInFlow({
           <section
             aria-label="Current item"
             className="flex flex-col gap-4 rounded-[8px] border border-fp-line bg-white p-4"
+            data-guide-id="check-in-agenda"
           >
             <div className="flex flex-col gap-2">
               <p className="text-xs font-medium uppercase tracking-wide text-fp-muted-ink">
@@ -353,67 +360,69 @@ export function CheckInFlow({
         <section
           aria-label="Decision form"
           className="flex flex-col gap-3 rounded-[8px] border border-fp-line bg-white p-4"
+          data-guide-id="check-in-decision"
         >
-        <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-          Decision type
-          <select
-            className="rounded-md border border-stone-300 px-3 py-2"
-            value={decisionType}
-            onChange={(event) => setDecisionType(event.target.value as DecisionType)}
-          >
-            {decisionTypes.map((type) => (
-              <option key={type} value={type}>
-                {label(type)}
-              </option>
-            ))}
-          </select>
-        </label>
-        {currentItem?.responsibilityId &&
-        (decisionType === "assign_owner" || decisionType === "change_role") ? (
           <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-            Owner
+            Decision type
             <select
               className="rounded-md border border-stone-300 px-3 py-2"
-              value={responsibilityOwner}
-              onChange={(event) =>
-                setResponsibilityOwner(event.target.value as PersonaKey)
-              }
+              value={decisionType}
+              onChange={(event) => setDecisionType(event.target.value as DecisionType)}
             >
-              <option value="alex">Alex</option>
-              <option value="max">Max</option>
+              {decisionTypes.map((type) => (
+                <option key={type} value={type}>
+                  {label(type)}
+                </option>
+              ))}
             </select>
           </label>
-        ) : null}
-        <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-          Decision summary
-          <textarea
-            className="min-h-24 rounded-md border border-stone-300 px-3 py-2"
-            value={decisionSummary}
-            onChange={(event) => setDecisionSummary(event.target.value)}
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
-          Review date
-          <input
-            className="rounded-md border border-stone-300 px-3 py-2"
-            type="date"
-            value={reviewDate}
-            onChange={(event) => setReviewDate(event.target.value)}
-          />
-        </label>
-        <button
-          className="rounded-md bg-stone-950 px-3 py-2 text-sm font-medium text-white"
-          type="button"
-          disabled={Boolean(pendingAction)}
-          onClick={recordDecision}
-        >
-          Record decision
-        </button>
+          {currentItem?.responsibilityId &&
+          (decisionType === "assign_owner" || decisionType === "change_role") ? (
+            <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+              Owner
+              <select
+                className="rounded-md border border-stone-300 px-3 py-2"
+                value={responsibilityOwner}
+                onChange={(event) =>
+                  setResponsibilityOwner(event.target.value as PersonaKey)
+                }
+              >
+                <option value="alex">Alex</option>
+                <option value="max">Max</option>
+              </select>
+            </label>
+          ) : null}
+          <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+            Decision summary
+            <textarea
+              className="min-h-24 rounded-md border border-stone-300 px-3 py-2"
+              value={decisionSummary}
+              onChange={(event) => setDecisionSummary(event.target.value)}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-stone-700">
+            Review date
+            <input
+              className="rounded-md border border-stone-300 px-3 py-2"
+              type="date"
+              value={reviewDate}
+              onChange={(event) => setReviewDate(event.target.value)}
+            />
+          </label>
+          <button
+            className="rounded-md bg-stone-950 px-3 py-2 text-sm font-medium text-white"
+            type="button"
+            disabled={Boolean(pendingAction)}
+            onClick={recordDecision}
+          >
+            Record decision
+          </button>
         </section>
       </MotionPanel>
 
       <button
         className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
+        data-guide-id="check-in-complete"
         type="button"
         disabled={Boolean(pendingAction)}
         onClick={completeCheckIn}
@@ -482,7 +491,10 @@ export function NewCheckInLauncher({
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 py-6">
       <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
         <h1 className="text-2xl font-semibold text-stone-950">New check-in</h1>
-        <CheckInVisual className="justify-self-start sm:justify-self-end" />
+        <div className="grid gap-3 justify-self-start sm:justify-self-end sm:justify-items-end">
+          <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />
+          <CheckInVisual className="justify-self-start sm:justify-self-end" />
+        </div>
       </div>
       {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
       <button
@@ -492,7 +504,11 @@ export function NewCheckInLauncher({
       >
         Preview agenda
       </button>
-      <section aria-label="Agenda preview" className="flex flex-col gap-3">
+      <section
+        aria-label="Agenda preview"
+        className="flex flex-col gap-3"
+        data-guide-id="check-in-agenda"
+      >
         {suggestions.map((item) => (
           <MotionPanel key={item.id}>
             <article className="flex items-start justify-between gap-3 rounded-md border border-stone-200 bg-white p-3">
@@ -517,6 +533,7 @@ export function NewCheckInLauncher({
       </section>
       <button
         className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
+        data-guide-id="check-in-complete"
         type="button"
         onClick={startCheckIn}
       >

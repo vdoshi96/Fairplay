@@ -1,10 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
+import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
+import { FEATURE_GUIDES } from "@/components/guide/guide-content";
 
 type SettingsPanelProps = {
   household: HouseholdSummary;
@@ -207,7 +210,10 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
           </dl>
         </section>
 
-        <section className="rounded-[8px] border border-fp-line bg-white p-4">
+        <section
+          className="rounded-[8px] border border-fp-line bg-white p-4"
+          data-guide-id="settings-persona"
+        >
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Persona
           </h2>
@@ -224,7 +230,10 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
           </button>
         </section>
 
-        <section className="rounded-[8px] border border-fp-line bg-white p-4">
+        <section
+          className="rounded-[8px] border border-fp-line bg-white p-4"
+          data-guide-id="settings-guided-start"
+        >
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Guided start
           </h2>
@@ -232,7 +241,10 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
             Replay the welcome splash or start the crash course from the first
             lesson for the active persona.
           </p>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
+            Replay feature tours from each feature page using Learn this feature.
+          </p>
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <button
               className="min-h-11 rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-70"
               disabled={preferenceAction !== null}
@@ -253,6 +265,18 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
                 ? "Showing welcome..."
                 : "Show welcome again"}
             </button>
+            <Link
+              className="flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-center text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
+              href="/app/home#app-guide-101"
+            >
+              Open App Guide 101
+            </Link>
+          </div>
+          <div className="mt-4">
+            <FeatureGuideLauncher
+              guide={FEATURE_GUIDES.settings}
+              showDescription={false}
+            />
           </div>
         </section>
 
@@ -268,6 +292,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
 
         <button
           className="min-h-11 rounded-[8px] border border-fp-danger/40 bg-white px-4 text-[14px] font-semibold text-fp-danger outline-none focus:ring-2 focus:ring-fp-danger/25 disabled:cursor-not-allowed disabled:opacity-70"
+          data-guide-id="settings-logout"
           disabled={loggingOut}
           onClick={() => void logout()}
           type="button"

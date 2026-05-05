@@ -12,6 +12,8 @@ import {
 import type { RadarCreate, RadarSummary } from "@/contracts/radar";
 import type { RadarReasonKey, RadarState, Urgency, Visibility } from "@/domain/enums";
 import { SAFETY_COPY } from "@/lib/safety-copy";
+import { FEATURE_GUIDES } from "@/components/guide/guide-content";
+import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import { MotionPanel } from "@/components/motion/fairplay-motion";
 import { RadarVisual } from "@/components/visuals/fairplay-visuals";
 
@@ -487,12 +489,15 @@ export function RadarBoard({
             Concern board
           </h1>
         </div>
-        <div className="relative w-36 justify-self-start sm:w-44 sm:justify-self-end">
-          <span
-            aria-hidden="true"
-            className="fp-motion-radar-pulse absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full"
-          />
-          <RadarVisual className="relative rounded-[8px]" />
+        <div className="grid gap-3 justify-self-start sm:justify-self-end sm:justify-items-end">
+          <FeatureGuideLauncher guide={FEATURE_GUIDES.radar} showDescription={false} />
+          <div className="relative w-36 sm:w-44">
+            <span
+              aria-hidden="true"
+              className="fp-motion-radar-pulse absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            />
+            <RadarVisual className="relative rounded-[8px]" />
+          </div>
         </div>
       </div>
 
@@ -511,6 +516,7 @@ export function RadarBoard({
             Topic
             <input
               className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+              data-guide-id="radar-create"
               onChange={(event) => setTopic(event.target.value)}
               value={topic}
             />
@@ -556,6 +562,7 @@ export function RadarBoard({
             value={urgency}
           />
           <Select
+            dataGuideId="radar-visibility"
             label="Visibility"
             onChange={(value) => setVisibility(value as Visibility)}
             options={visibilityOptions}
@@ -672,7 +679,7 @@ export function RadarBoard({
         )}
       </RadarSection>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" data-guide-id="radar-actions">
         <button
           className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
           onClick={() => setShowDeferred((current) => !current)}
@@ -1005,11 +1012,13 @@ function TimingMeta({ item }: { item: RadarBoardItem }) {
 }
 
 function Select<T extends string>({
+  dataGuideId,
   label: labelText,
   onChange,
   options,
   value
 }: {
+  dataGuideId?: string;
   label: string;
   onChange: (value: T) => void;
   options: readonly T[];
@@ -1020,6 +1029,7 @@ function Select<T extends string>({
       {labelText}
       <select
         className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+        data-guide-id={dataGuideId}
         onChange={(event) => onChange(event.target.value as T)}
         value={value}
       >

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BookOpen, LayoutDashboard, Sparkles, X } from "lucide-react";
+import { BookOpen, GraduationCap, Sparkles, X } from "lucide-react";
 
 type PersistentWelcomeProps = {
   dismissed: boolean;
@@ -16,14 +16,14 @@ const welcomeLinks = [
     label: "Start crash course"
   },
   {
-    href: "/app/library",
-    icon: BookOpen,
-    label: "Browse library"
+    href: "/app/home#app-guide-101",
+    icon: GraduationCap,
+    label: "Open App Guide 101"
   },
   {
-    href: "/app/load-map",
-    icon: LayoutDashboard,
-    label: "Open load map"
+    href: "/app/library",
+    icon: BookOpen,
+    label: "Browse card library"
   }
 ] as const;
 
@@ -84,8 +84,8 @@ export function PersistentWelcome({
             Welcome to Fairplay
           </h2>
           <p className="max-w-3xl text-[15px] leading-6 text-fp-muted-ink">
-            Start with the course, browse the full card library, or open the load
-            map. This welcome stays here until you close it.
+            Start with the course, browse the full card library, or open App
+            Guide 101. This welcome stays here until you close it.
           </p>
         </div>
 

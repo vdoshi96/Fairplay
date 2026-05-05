@@ -64,6 +64,23 @@ describe("onboarding preference repository", () => {
     expect(new Date(preferences.updatedAt).toString()).not.toBe("Invalid Date");
   });
 
+  it("returns one preference record when default initialization races", async () => {
+    const persona = await createTestPersona();
+
+    const initialized = await Promise.all(
+      Array.from({ length: 8 }, () => getOnboardingPreferences(persona.id))
+    );
+
+    expect(initialized).toHaveLength(8);
+    expect(initialized.every((preference) => preference.personaId === persona.id))
+      .toBe(true);
+    await expect(
+      prisma.personaOnboardingPreferences.count({
+        where: { personaId: persona.id }
+      })
+    ).resolves.toBe(1);
+  });
+
   it("updates crash-course progress and clears welcome dismissal for replay", async () => {
     const persona = await createTestPersona();
     const dismissedAt = "2026-05-04T12:00:00.000Z";

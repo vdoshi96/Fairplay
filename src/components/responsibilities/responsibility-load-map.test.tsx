@@ -8,6 +8,10 @@ import type {
 } from "@/contracts/responsibilities";
 import { ResponsibilityLoadMap } from "./responsibility-load-map";
 
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams()
+}));
+
 function responsibility(
   overrides: Partial<ResponsibilitySummary> = {}
 ): ResponsibilitySummary {
@@ -178,6 +182,22 @@ describe("ResponsibilityLoadMap", () => {
     const concernLane = screen.getByRole("region", { name: "Cards of Concern" });
     const playerOneLane = screen.getByRole("region", { name: "Player 1" });
 
+    expect(
+      screen.getByRole("button", { name: "Learn this feature" })
+    ).toBeVisible();
+    expect(screen.getByTestId("load-map-board")).toHaveAttribute(
+      "data-guide-id",
+      "load-map-board"
+    );
+    expect(screen.getByTestId("load-map-board")).toContainElement(
+      document.querySelector('[data-guide-id="load-map-lanes"]')
+    );
+    expect(
+      document.querySelector('[data-guide-id="load-map-filters"]')
+    ).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-guide-id="load-map-move"]')
+    ).toBeInTheDocument();
     expect(
       within(reserveLane).getByRole("heading", { name: "Not in Play" })
     ).toBeVisible();
