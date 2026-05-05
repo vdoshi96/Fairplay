@@ -105,6 +105,10 @@ describe("protected app UI", () => {
   it("renders premium route chrome with active load map and personal-use entries", () => {
     renderProtectedUi(<AppHomePage />);
 
+    expect(screen.getByTestId("app-main")).toHaveAttribute(
+      "data-layout",
+      "standard"
+    );
     expect(screen.getAllByRole("navigation", { name: "Primary" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: /Library/i })[0]).toHaveAttribute(
       "href",
@@ -115,6 +119,21 @@ describe("protected app UI", () => {
       "/app/crash-course"
     );
     expect(screen.getAllByRole("link", { name: /Load map/i })[0]).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+  });
+
+  it("lets the crash course route use the full app canvas", () => {
+    pathname.mockReturnValue("/app/crash-course");
+
+    renderProtectedUi(<div>Immersive crash course</div>);
+
+    const main = screen.getByTestId("app-main");
+    expect(main).toHaveAttribute("data-layout", "immersive");
+    expect(main.className).toContain("w-full");
+    expect(main.className).not.toContain("max-w-6xl");
+    expect(screen.getAllByRole("link", { name: /Crash course/i })[0]).toHaveAttribute(
       "aria-current",
       "page"
     );

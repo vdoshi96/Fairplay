@@ -94,23 +94,11 @@ export default function AppCrashCoursePage() {
   }
 
   return (
-    <section className="grid gap-5">
-      <div className="grid gap-2">
-        <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
-          Crash course
-        </p>
-        <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-          Learn the household operating model
-        </h1>
-        <p className="text-[15px] leading-6 text-fp-muted-ink">
-          A short, replayable guide to ownership, standards, handoffs, and
-          check-ins before changing the board.
-        </p>
-      </div>
-
+    <section className="relative min-h-[100svh]">
+      <div className="pointer-events-none fixed right-4 top-20 z-30 grid max-w-sm gap-2 sm:right-6 lg:top-6">
       {loading ? (
         <p
-          className="rounded-[8px] border border-fp-line bg-white p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink"
+          className="pointer-events-auto rounded-[8px] border border-fp-line bg-white/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
           role="status"
         >
           Loading saved crash course progress...
@@ -119,7 +107,7 @@ export default function AppCrashCoursePage() {
 
       {error ? (
         <p
-          className="rounded-[8px] border border-fp-danger/40 bg-white p-3 text-[14px] font-semibold leading-5 text-fp-danger"
+          className="pointer-events-auto rounded-[8px] border border-fp-danger/40 bg-white/95 p-3 text-[14px] font-semibold leading-5 text-fp-danger shadow-[var(--fp-shadow-soft)] backdrop-blur"
           role="alert"
         >
           {error}
@@ -128,7 +116,7 @@ export default function AppCrashCoursePage() {
 
       {saving ? (
         <p
-          className="rounded-[8px] border border-fp-line bg-white p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink"
+          className="pointer-events-auto rounded-[8px] border border-fp-line bg-white/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
           role="status"
         >
           Saving crash course progress...
@@ -137,7 +125,7 @@ export default function AppCrashCoursePage() {
 
       {status !== "active" ? (
         <p
-          className="rounded-[8px] border border-fp-line bg-white p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink"
+          className="pointer-events-auto rounded-[8px] border border-fp-line bg-white/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
           role="status"
         >
           {status === "completed"
@@ -145,6 +133,7 @@ export default function AppCrashCoursePage() {
             : "Course skipped for your active persona."}
         </p>
       ) : null}
+      </div>
 
       <CrashCourseFlow
         currentStep={currentStep}

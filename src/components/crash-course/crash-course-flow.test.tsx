@@ -20,6 +20,25 @@ describe("crash course flow", () => {
     ]);
   });
 
+  it("renders lessons inside a full-viewport immersive stage", () => {
+    render(<CrashCourseFlow currentStep={1} />);
+
+    const stage = screen.getByTestId("crash-course-stage");
+    const panel = screen.getByTestId("crash-course-lesson-panel");
+    const scene = screen.getByRole("img", {
+      name: "Owner and helper learning scene"
+    });
+
+    expect(stage.className).toContain("min-h-[100svh]");
+    expect(stage.className).toContain("overflow-hidden");
+    expect(stage.className).toContain("relative");
+    expect(panel.className).toContain("z-10");
+    expect(panel.className).toContain("bg-white/");
+    expect(scene).toHaveAttribute("data-scene-scale", "immersive-background");
+    expect(scene.className).toContain("absolute");
+    expect(scene.className).toContain("inset-0");
+  });
+
   it("moves through lessons and records progress callbacks", () => {
     const onProgress = vi.fn();
     render(<CrashCourseFlow currentStep={1} onProgress={onProgress} />);
