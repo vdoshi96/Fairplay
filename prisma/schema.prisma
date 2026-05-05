@@ -246,7 +246,7 @@ model Responsibility {
   updatedAt             DateTime                       @updatedAt
   archivedAt            DateTime?
   household             Household                      @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  createdByPersona      Persona                        @relation("CreatedResponsibilities", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  createdByPersona      Persona                        @relation("CreatedResponsibilities", fields: [createdByPersonaId], references: [id], onDelete: Cascade)
   template              ResponsibilityTemplate?        @relation(fields: [templateId], references: [id], onDelete: SetNull)
   assignments           ResponsibilityAssignment[]
   lifecycleNotes        ResponsibilityLifecycleNotes?
@@ -273,8 +273,8 @@ model ResponsibilityAssignment {
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
   responsibility        Responsibility  @relation(fields: [responsibilityId], references: [id], onDelete: Cascade)
-  persona               Persona         @relation("PersonaAssignments", fields: [personaId], references: [id], onDelete: Restrict)
-  createdByPersona      Persona         @relation("CreatedAssignments", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  persona               Persona         @relation("PersonaAssignments", fields: [personaId], references: [id], onDelete: Cascade)
+  createdByPersona      Persona         @relation("CreatedAssignments", fields: [createdByPersonaId], references: [id], onDelete: Cascade)
 
   @@index([responsibilityId, startsAt])
   @@index([personaId])
@@ -339,7 +339,7 @@ model RadarItem {
   deferredUntil      DateTime?
   household          Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
   responsibility     Responsibility? @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
-  createdByPersona   Persona         @relation("CreatedRadarItems", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  createdByPersona   Persona         @relation("CreatedRadarItems", fields: [createdByPersonaId], references: [id], onDelete: Cascade)
   targetCheckIn      CheckIn?        @relation("TargetCheckInRadarItems", fields: [targetCheckInId], references: [id], onDelete: SetNull)
   checkInItems       CheckInItem[]
 
@@ -403,7 +403,7 @@ model Decision {
   household          Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
   checkIn            CheckIn?        @relation(fields: [checkInId], references: [id], onDelete: SetNull)
   responsibility     Responsibility? @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
-  createdByPersona   Persona         @relation("CreatedDecisions", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  createdByPersona   Persona         @relation("CreatedDecisions", fields: [createdByPersonaId], references: [id], onDelete: Cascade)
   checkInItem        CheckInItem?
 
   @@index([householdId])

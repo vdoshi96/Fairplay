@@ -20,13 +20,20 @@
 - Controller image polish:
   - Swapped new source-card cover renderers from raw `<img>` tags to Next `Image` with local `coverAssetPath` assets.
   - Verified `npm run lint`, `npm run typecheck`, and card/library component tests pass.
+- Local Postgres follow-up:
+  - Installed `postgresql@16` with Homebrew and started it with `brew services start postgresql@16`.
+  - Created the `fairplay` role/database and applied all Prisma migrations through `20260504203000_cascade_persona_owned_records`.
+  - Seeded the local database with `npm run prisma:seed`.
+  - Updated persona-owned record foreign keys from restrictive deletes to cascade so household cleanup works in repository integration tests.
+  - Verified `npm run lint`, `npm run typecheck`, full `npm test`, `npm run build`, and `npm run test:e2e` pass with the local Postgres `DATABASE_URL`.
 
 ## Challenges
 
 - The full 100-card data import is content-heavy and should be isolated from UI work.
 - Schema changes are a dependency for board placement, preferences, and source-card APIs.
 - Cover assets must be stored in GitHub rather than hotlinked from Trello.
+- Docker is unavailable on this machine, so local DB verification uses Homebrew Postgres instead of `npm run db:up`.
 
 ## Next Handoff
 
-- Start with source template contracts/schema and UI primitives in parallel only when file ownership is disjoint.
+- Review PR #4, promote it from draft when ready, then merge after GitHub checks are green.

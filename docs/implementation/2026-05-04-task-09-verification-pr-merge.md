@@ -5,33 +5,40 @@
 - Verify the personal-use redesign branch end to end as far as the local environment allows.
 - Push the implementation branch to GitHub.
 - Open a draft PR for review.
-- Do not merge until DB-backed repository tests can run against Postgres and any PR checks pass.
+- Keep the PR draft until the reviewer is comfortable with the redesign scope and GitHub checks are green.
 
 ## Outputs
 
 - Branch: `codex/personal-use-redesign`.
-- Latest implementation commit before this report: `17a4133 fix: use optimized local card images`.
+- Latest implementation commit before the local Postgres follow-up: `3e71c42 docs: record redesign verification status`.
 - Source assets: `public/assets/fairplay/cards/` contains 100 PNG cover assets.
 - Runtime seed/contracts scan: no `https://trello.com`, `coverUrl`, or `sourceCoverUrl` references remain in source seed/contracts/runtime seed files.
+- Local Postgres was installed with Homebrew, started with `brew services start postgresql@16`, and configured with role/database `fairplay`.
+- Added migration `20260504203000_cascade_persona_owned_records` so household cleanup can cascade through persona-owned records used by repository integration tests.
 
 ## Verification Results
 
 - `npm run lint`: passed with exit code 0.
 - `npm run typecheck`: passed with exit code 0.
-- `npm run prisma:validate && npm run prisma:generate`: passed with exit code 0.
+- `npm run prisma:validate`: passed with exit code 0.
+- `npm run prisma:generate`: passed with exit code 0.
+- `DATABASE_URL='postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public' npx prisma migrate deploy`: applied all migrations through `20260504203000_cascade_persona_owned_records`.
+- `npm run prisma:seed`: seeded the local database successfully.
 - `npx vitest run --exclude 'src/server/repositories/persistence.integration.test.ts' --exclude 'src/server/repositories/card-templates.test.ts' --exclude 'src/server/repositories/preferences.test.ts'`: passed, 65 files and 239 tests.
+- `DATABASE_URL='postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public' npm test -- src/server/repositories/card-templates.test.ts src/server/repositories/preferences.test.ts src/server/repositories/persistence.integration.test.ts`: passed, 3 files and 19 tests.
+- `DATABASE_URL='postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public' npm test`: passed, 68 files and 258 tests.
 - `npm run build`: passed with exit code 0.
-- `npm test`: attempted the full suite; 65 files and 239 tests passed, while 3 DB-backed repository files failed because Postgres was unreachable at `localhost:5432`.
-- `npm run db:up`: failed with `docker: command not found`, confirming the local environment cannot start the expected Postgres container.
+- `DATABASE_URL='postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public' npm run build`: passed with exit code 0.
+- `DATABASE_URL='postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public' npm run test:e2e`: passed, 10 Playwright tests.
 
 ## Challenges
 
-- DB-backed repository and integration tests remain unverified locally because Docker is not installed and no Postgres server is reachable at `localhost:5432`.
-- Browser verification against protected app routes was not run locally because the protected app depends on the same database-backed auth/session flow.
-- The PR should stay draft until DB integration tests and browser checks can run in an environment with Postgres.
+- Docker is still not installed, so `npm run db:up` remains unavailable locally. Homebrew Postgres now provides the local database for migration, repository, unit, build, and browser verification.
+- The initial DB-backed test run exposed a real cleanup failure: deleting a household cascaded into records that also had restrictive persona foreign keys. Changing those intra-household persona relations to cascade fixed cleanup without changing source-card or board behavior.
+- The PR is still draft so the redesign can be reviewed intentionally before merge.
 
 ## Next Handoff
 
-- Run `npm run db:up`, `npm run db:wait`, migrations, seed, and full `npm test` in an environment with Docker/Postgres.
-- Then run browser verification for create household, persistent welcome, crash-course replay, card library, and load-board move persistence.
-- Merge only after checks pass and local `main` can fast-forward to `origin/main`.
+- Review PR #4 and the task reports under `docs/implementation/`.
+- Promote the PR from draft when the review is ready.
+- Merge only after GitHub checks pass, then fast-forward local `main` to match `origin/main`.
