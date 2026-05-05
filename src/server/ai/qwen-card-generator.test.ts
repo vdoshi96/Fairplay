@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { getQwenConfig, QwenConfigError, type QwenConfig } from "./qwen-config";
+import {
+  getQwenConfig,
+  QwenConfigError,
+  QwenImageModelConfigError,
+  type QwenConfig
+} from "./qwen-config";
 import {
   generateCardCover,
   QwenGenerationError,
@@ -33,6 +38,43 @@ describe("Qwen card generator", () => {
     expect(() => getQwenConfig({ QWEN_CARD_API_KEY: "present" })).toThrow(
       QwenConfigError
     );
+  });
+
+  it("rejects unapproved Qwen image models before generation can run", () => {
+    expect(() =>
+      getQwenConfig({
+        QWEN_CARD_API_KEY: "card-secret",
+        QWEN_CARD_MODEL: "qwen3.6-max-preview",
+        QWEN_ASR_MODEL: "qwen3-asr-flash",
+        QWEN_OPENAI_BASE_URL: "https://qwen.example/compatible-mode/v1",
+        QWEN_IMAGE_API_KEY: "image-secret",
+        QWEN_IMAGE_MODEL: "qwen-image-2.0",
+        QWEN_IMAGE_BASE_URL: "https://qwen.example/api/v1"
+      })
+    ).toThrow(QwenImageModelConfigError);
+  });
+
+  it("rejects unapproved dependency-injected Qwen image models before network calls", async () => {
+    const fetchMock = vi.fn();
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        {
+          fetch: fetchMock,
+          config: {
+            ...config,
+            imageModel: "qwen-image-2.0"
+          }
+        }
+      )
+    ).rejects.toThrow("Unsupported Qwen image model configured");
+
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("structures a task as strict Fairplay card JSON", async () => {

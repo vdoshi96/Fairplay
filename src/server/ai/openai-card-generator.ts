@@ -14,6 +14,10 @@ import {
   type StructuredAiCard
 } from "./card-generation-shared";
 import {
+  approvedImageModelSummary,
+  isApprovedOpenAiImageModel
+} from "./approved-image-models";
+import {
   getOpenAiFallbackConfig,
   type OpenAiEnabledFallbackConfig
 } from "./openai-config";
@@ -191,10 +195,17 @@ export async function generateCardCoverWithOpenAi(
 }
 
 function resolveConfig(deps: OpenAiGeneratorDeps): OpenAiEnabledFallbackConfig {
-  if (deps.config) {
-    return deps.config;
+  const config = deps.config ?? getEnabledOpenAiFallbackConfig();
+  if (!isApprovedOpenAiImageModel(config.imageModel)) {
+    throw new OpenAiGenerationError(
+      `Unsupported OpenAI image model configured in OPENAI_IMAGE_MODEL. Approved image models: ${approvedImageModelSummary()}.`
+    );
   }
 
+  return config;
+}
+
+function getEnabledOpenAiFallbackConfig(): OpenAiEnabledFallbackConfig {
   const config = getOpenAiFallbackConfig();
   if (!config.enabled) {
     throw new OpenAiGenerationError("OpenAI fallback is disabled.");

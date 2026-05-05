@@ -1,5 +1,10 @@
 import "server-only";
 
+import {
+  approvedImageModelSummary,
+  isApprovedQwenImageModel
+} from "./approved-image-models";
+
 export type QwenConfig = {
   cardApiKey: string;
   cardModel: string;
@@ -16,6 +21,17 @@ export class QwenConfigError extends Error {
   constructor(missingNames: string[]) {
     super(`Missing required Qwen configuration: ${missingNames.join(", ")}`);
     this.name = "QwenConfigError";
+  }
+}
+
+export class QwenImageModelConfigError extends Error {
+  readonly code = "QWEN_IMAGE_MODEL_UNAPPROVED";
+
+  constructor() {
+    super(
+      `Unsupported Qwen image model configured in QWEN_IMAGE_MODEL. Approved image models: ${approvedImageModelSummary()}.`
+    );
+    this.name = "QwenImageModelConfigError";
   }
 }
 
@@ -38,13 +54,18 @@ export function getQwenConfig(
     throw new QwenConfigError(missingNames);
   }
 
+  const imageModel = env.QWEN_IMAGE_MODEL as string;
+  if (!isApprovedQwenImageModel(imageModel)) {
+    throw new QwenImageModelConfigError();
+  }
+
   return {
     cardApiKey: env.QWEN_CARD_API_KEY as string,
     cardModel: env.QWEN_CARD_MODEL as string,
     asrModel: env.QWEN_ASR_MODEL as string,
     openAiBaseUrl: env.QWEN_OPENAI_BASE_URL as string,
     imageApiKey: env.QWEN_IMAGE_API_KEY as string,
-    imageModel: env.QWEN_IMAGE_MODEL as string,
+    imageModel,
     imageBaseUrl: env.QWEN_IMAGE_BASE_URL as string
   };
 }

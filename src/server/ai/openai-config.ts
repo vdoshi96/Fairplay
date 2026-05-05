@@ -1,5 +1,10 @@
 import "server-only";
 
+import {
+  approvedImageModelSummary,
+  isApprovedOpenAiImageModel
+} from "./approved-image-models";
+
 export type OpenAiDisabledFallbackConfig = {
   enabled: false;
 };
@@ -28,6 +33,17 @@ export class OpenAiFallbackConfigError extends Error {
   }
 }
 
+export class OpenAiImageModelConfigError extends Error {
+  readonly code = "OPENAI_IMAGE_MODEL_UNAPPROVED";
+
+  constructor() {
+    super(
+      `Unsupported OpenAI image model configured in OPENAI_IMAGE_MODEL. Approved image models: ${approvedImageModelSummary()}.`
+    );
+    this.name = "OpenAiImageModelConfigError";
+  }
+}
+
 const envMapping = {
   baseUrl: "OPENAI_BASE_URL",
   textApiKey: "OPENAI_TEXT_API_KEY",
@@ -50,6 +66,11 @@ export function getOpenAiFallbackConfig(
     throw new OpenAiFallbackConfigError(missingNames);
   }
 
+  const imageModel = env.OPENAI_IMAGE_MODEL as string;
+  if (!isApprovedOpenAiImageModel(imageModel)) {
+    throw new OpenAiImageModelConfigError();
+  }
+
   return {
     enabled: true,
     baseUrl: env.OPENAI_BASE_URL as string,
@@ -58,6 +79,6 @@ export function getOpenAiFallbackConfig(
     asrApiKey: env.OPENAI_ASR_API_KEY as string,
     asrModel: env.OPENAI_ASR_MODEL as string,
     imageApiKey: env.OPENAI_IMAGE_API_KEY as string,
-    imageModel: env.OPENAI_IMAGE_MODEL as string
+    imageModel
   };
 }

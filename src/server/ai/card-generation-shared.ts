@@ -196,6 +196,28 @@ export function detectedRasterImageMimeType(bytes: Uint8Array) {
   return null;
 }
 
+export function validPngDimensions(bytes: Uint8Array) {
+  if (detectedRasterImageMimeType(bytes) !== "image/png" || bytes.byteLength < 24) {
+    return null;
+  }
+  if (ascii(bytes, 12, 16) !== "IHDR") {
+    return null;
+  }
+
+  return {
+    height: readUint32(bytes, 20),
+    width: readUint32(bytes, 16)
+  };
+}
+
+export function isFiveBySevenPng(bytes: Uint8Array) {
+  const dimensions = validPngDimensions(bytes);
+
+  return dimensions
+    ? dimensions.width * 7 === dimensions.height * 5
+    : false;
+}
+
 export function parseDownloadableImageUrl(
   value: string,
   makeError: (message: string) => Error,
@@ -220,4 +242,13 @@ export function parseDownloadableImageUrl(
 
 function ascii(bytes: Uint8Array, start: number, end: number) {
   return String.fromCharCode(...bytes.slice(start, end));
+}
+
+function readUint32(bytes: Uint8Array, offset: number) {
+  return (
+    bytes[offset] * 0x1000000 +
+    (bytes[offset + 1] << 16) +
+    (bytes[offset + 2] << 8) +
+    bytes[offset + 3]
+  );
 }

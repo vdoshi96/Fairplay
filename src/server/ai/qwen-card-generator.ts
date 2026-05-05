@@ -12,6 +12,7 @@ import {
   type GeneratedCoverImage,
   type StructuredAiCard
 } from "./card-generation-shared";
+import { approvedImageModelSummary, isApprovedQwenImageModel } from "./approved-image-models";
 import { getQwenConfig, type QwenConfig } from "./qwen-config";
 
 export type { GeneratedCoverImage, StructuredAiCard } from "./card-generation-shared";
@@ -218,7 +219,14 @@ export async function generateCardCover(
 }
 
 function resolveConfig(deps: QwenGeneratorDeps): QwenConfig {
-  return deps.config ?? getQwenConfig();
+  const config = deps.config ?? getQwenConfig();
+  if (!isApprovedQwenImageModel(config.imageModel)) {
+    throw new QwenGenerationError(
+      `Unsupported Qwen image model configured in QWEN_IMAGE_MODEL. Approved image models: ${approvedImageModelSummary()}.`
+    );
+  }
+
+  return config;
 }
 
 function resolveFetch(deps: QwenGeneratorDeps): typeof fetch {

@@ -8,6 +8,7 @@ import {
   type StructuredAiCard
 } from "./qwen-card-generator";
 import { getOpenAiFallbackConfig } from "./openai-config";
+import { isFiveBySevenPng } from "./card-generation-shared";
 import {
   generateCardCoverWithOpenAi,
   structureTaskAsCardWithOpenAi,
@@ -61,6 +62,11 @@ export async function generateCardCover(input: {
       throw primaryError;
     }
 
-    return generateCardCoverWithOpenAi(input, { config: fallbackConfig });
+    const cover = await generateCardCoverWithOpenAi(input, { config: fallbackConfig });
+    if (cover.mimeType !== "image/png" || !isFiveBySevenPng(cover.bytes)) {
+      throw primaryError;
+    }
+
+    return cover;
   }
 }
