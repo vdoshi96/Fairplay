@@ -59,6 +59,13 @@ describe("ResponsibilityLoadMap", () => {
     );
 
     expect(screen.getByText("No responsibilities mapped yet.")).toBeVisible();
+    expect(screen.getByTestId("load-map-practice-board")).toHaveAttribute(
+      "data-guide-id",
+      "load-map-board"
+    );
+    expect(
+      document.querySelector('[data-guide-id="load-map-move-target"]')
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Add responsibility" })).toHaveAttribute(
       "href",
       "/app/responsibilities/new"
@@ -196,8 +203,10 @@ describe("ResponsibilityLoadMap", () => {
       document.querySelector('[data-guide-id="load-map-filters"]')
     ).toBeInTheDocument();
     expect(
-      document.querySelector('[data-guide-id="load-map-move"]')
+      document.querySelector('[data-guide-id="load-map-move-target"]')
     ).toBeInTheDocument();
+    expect(document.querySelectorAll('[data-guide-id="load-map-move-target"]'))
+      .toHaveLength(1);
     expect(
       within(reserveLane).getByRole("heading", { name: "Not in Play" })
     ).toBeVisible();
@@ -208,6 +217,27 @@ describe("ResponsibilityLoadMap", () => {
     expect(screen.getByRole("heading", { name: "Player 2" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "Kid Split" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "Trimmed" })).toBeVisible();
+  });
+
+  it("keeps a dummy move target when filters hide every real card", () => {
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        responsibilities={[responsibility({ title: "Auto", boardLane: "not_in_play" })]}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Search responsibilities"), {
+      target: { value: "missing card" }
+    });
+
+    expect(screen.getByText("No responsibilities match these filters.")).toBeVisible();
+    expect(screen.getByTestId("load-map-practice-board")).toHaveAttribute(
+      "data-guide-id",
+      "load-map-board"
+    );
+    expect(document.querySelectorAll('[data-guide-id="load-map-move-target"]'))
+      .toHaveLength(1);
   });
 
   it("moves a card through the keyboard action menu", async () => {

@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Link from "next/link";
-import { useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 
 import type {
   LoadSnapshotSummary,
@@ -27,6 +27,10 @@ import type {
 import type { HiddenEffortKey, ResponsibilityBoardLane } from "@/domain/enums";
 import { FEATURE_GUIDES } from "@/components/guide/guide-content";
 import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
+import {
+  completeGuidePractice,
+  useGuidePracticeRequest
+} from "@/components/guide/guide-practice";
 import { AssignmentShift, MotionPanel } from "@/components/motion/fairplay-motion";
 import { HelperMascot } from "@/components/visuals/fairplay-visuals";
 import { BOARD_LANES, type BoardLaneTone } from "./board-lanes";
@@ -141,6 +145,13 @@ export function ResponsibilityLoadMap({
   >("all");
   const [searchText, setSearchText] = useState("");
   const [openMoveMenuId, setOpenMoveMenuId] = useState<string | null>(null);
+  const [practiceMoved, setPracticeMoved] = useState(false);
+  const completeMovePractice = useCallback(() => {
+    setPracticeMoved(true);
+    completeGuidePractice("load-map-move");
+  }, []);
+
+  useGuidePracticeRequest("load-map-move", completeMovePractice);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 }
@@ -213,6 +224,7 @@ export function ResponsibilityLoadMap({
 
     return groups;
   }, [filteredResponsibilities]);
+  const firstMoveTargetId = filteredResponsibilities[0]?.id ?? null;
 
   const handleMove = (move: ResponsibilityBoardMove) => {
     setOpenMoveMenuId(null);
@@ -377,6 +389,10 @@ export function ResponsibilityLoadMap({
             <p className="text-[14px] leading-6 text-fp-muted-ink">
               Add one household responsibility and decide what needs attention first.
             </p>
+            <LoadMapPracticeBoard
+              moved={practiceMoved}
+              onMove={completeMovePractice}
+            />
             <Link
               className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-bold sm:w-fit"
               href="/app/responsibilities/new"
@@ -392,9 +408,19 @@ export function ResponsibilityLoadMap({
           onDragEnd={handleDragEnd}
           sensors={sensors}
         >
-          <div data-guide-id="load-map-board" data-testid="load-map-board">
+          <div
+            data-guide-id={
+              filteredResponsibilities.length > 0 ? "load-map-board" : undefined
+            }
+            data-testid="load-map-board"
+          >
             <div className="-mx-4 overflow-x-auto px-4 pb-3">
-              <div className="flex min-w-max gap-3" data-guide-id="load-map-lanes">
+              <div
+                className="flex min-w-max gap-3"
+                data-guide-id={
+                  filteredResponsibilities.length > 0 ? "load-map-lanes" : undefined
+                }
+              >
                 {BOARD_LANES.map((lane) => {
                   const laneResponsibilities =
                     responsibilitiesByLane.get(lane.key) ?? [];
@@ -403,6 +429,7 @@ export function ResponsibilityLoadMap({
                     <BoardLaneColumn
                       key={lane.key}
                       lane={lane}
+                      moveGuideTargetId={firstMoveTargetId}
                       onMove={handleMove}
                       openMoveMenuId={openMoveMenuId}
                       responsibilities={laneResponsibilities}
@@ -414,9 +441,15 @@ export function ResponsibilityLoadMap({
             </div>
           </div>
           {filteredResponsibilities.length === 0 ? (
-            <p className="rounded-[8px] border border-fp-line bg-white p-4 text-[14px] text-fp-muted-ink">
-              No responsibilities match these filters.
-            </p>
+            <div className="grid gap-3">
+              <p className="rounded-[8px] border border-fp-line bg-white p-4 text-[14px] text-fp-muted-ink">
+                No responsibilities match these filters.
+              </p>
+              <LoadMapPracticeBoard
+                moved={practiceMoved}
+                onMove={completeMovePractice}
+              />
+            </div>
           ) : null}
         </DndContext>
       )}
@@ -426,12 +459,14 @@ export function ResponsibilityLoadMap({
 
 function BoardLaneColumn({
   lane,
+  moveGuideTargetId,
   onMove,
   openMoveMenuId,
   responsibilities,
   setOpenMoveMenuId
 }: {
   lane: (typeof BOARD_LANES)[number];
+  moveGuideTargetId: string | null;
   onMove: (move: ResponsibilityBoardMove) => void;
   openMoveMenuId: string | null;
   responsibilities: ResponsibilitySummary[];
@@ -488,6 +523,11 @@ function BoardLaneColumn({
         <div className="mt-3 grid flex-1 content-start gap-3 overflow-y-auto pr-1">
           {responsibilities.map((responsibility) => (
             <SortableResponsibilityCard
+              dataGuideId={
+                responsibility.id === moveGuideTargetId
+                  ? "load-map-move-target"
+                  : undefined
+              }
               key={responsibility.id}
               onMove={onMove}
               openMoveMenuId={openMoveMenuId}
@@ -506,12 +546,58 @@ function BoardLaneColumn({
   );
 }
 
+function LoadMapPracticeBoard({
+  moved,
+  onMove
+}: {
+  moved: boolean;
+  onMove: () => void;
+}) {
+  return (
+    <div
+      className="grid gap-2 rounded-[8px] border border-dashed border-fp-line bg-fp-surface p-3"
+      data-guide-id="load-map-board"
+      data-testid="load-map-practice-board"
+    >
+      <p className="text-[13px] font-bold text-fp-ink">Practice board</p>
+      <div className="grid gap-2 sm:grid-cols-2" data-guide-id="load-map-lanes">
+        <div className="rounded-[8px] border border-fp-line bg-white p-3">
+          <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
+            Not in Play
+          </p>
+          <div className="mt-2 rounded-[8px] border border-fp-line bg-fp-soft p-3">
+            <p className="text-[13px] font-bold text-fp-ink">Dummy lunch plan</p>
+            <button
+              className="mt-2 min-h-9 w-full rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink"
+              data-guide-id="load-map-move-target"
+              onClick={onMove}
+              type="button"
+            >
+              Move dummy card
+            </button>
+          </div>
+        </div>
+        <div className="rounded-[8px] border border-fp-line bg-white p-3">
+          <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
+            Player 1
+          </p>
+          <p className="mt-2 rounded-[8px] border border-dashed border-fp-line bg-fp-soft p-3 text-[13px] text-fp-muted-ink">
+            {moved ? "Dummy card moved to Player 1." : "Practice landing lane"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SortableResponsibilityCard({
+  dataGuideId,
   onMove,
   openMoveMenuId,
   responsibility,
   setOpenMoveMenuId
 }: {
+  dataGuideId?: string;
   onMove: (move: ResponsibilityBoardMove) => void;
   openMoveMenuId: string | null;
   responsibility: ResponsibilitySummary;
@@ -578,7 +664,7 @@ function SortableResponsibilityCard({
             aria-expanded={moveMenuOpen}
             aria-haspopup="menu"
             className="inline-flex min-h-9 w-full items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-3 text-[13px] font-bold text-fp-ink outline-none hover:bg-white focus:ring-2 focus:ring-fp-ink/20"
-            data-guide-id="load-map-move"
+            data-guide-id={dataGuideId}
             onClick={() =>
               setOpenMoveMenuId(moveMenuOpen ? null : responsibility.id)
             }

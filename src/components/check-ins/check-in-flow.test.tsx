@@ -85,6 +85,10 @@ describe("CheckInFlow", () => {
       expect.objectContaining({ method: "POST" })
     );
     fireEvent.click(screen.getByRole("button", { name: "Remove Weekly meal outline" }));
+    expect(screen.getByRole("button", { name: "Start check-in" })).not.toHaveAttribute(
+      "data-guide-id",
+      "check-in-complete"
+    );
     fireEvent.click(screen.getByRole("button", { name: "Start check-in" }));
 
     await waitFor(() => {
@@ -226,7 +230,7 @@ describe("CheckInFlow", () => {
     );
     expect(screen.getByRole("button", { name: "Complete check-in" })).toHaveAttribute(
       "data-guide-id",
-      "check-in-complete"
+      "check-in-complete-action"
     );
 
     fireEvent.change(screen.getByLabelText("Decision type"), {
@@ -265,6 +269,7 @@ describe("CheckInFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Complete check-in" }));
 
     const region = await screen.findByRole("region", { name: "Check-in summary" });
+    expect(region).toHaveAttribute("data-guide-id", "check-in-complete-summary");
     expect(within(region).getByText(/Review the meal plan in June/)).toBeVisible();
   });
 

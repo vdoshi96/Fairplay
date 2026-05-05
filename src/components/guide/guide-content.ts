@@ -10,6 +10,14 @@ export type GuideStep = {
   title: string;
   body: string;
   targetId: string;
+  practice?: GuidePractice;
+};
+
+export type GuidePractice = {
+  actionLabel: string;
+  completionMessage: string;
+  eventId: string;
+  prompt: string;
 };
 
 export type FeatureGuide = {
@@ -41,7 +49,13 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
         id: "move",
         title: "Move cards when the household decision changes",
         body: "Drag cards or use the move menu. Moving a card should mean the lane now reflects the real agreement.",
-        targetId: "load-map-move"
+        targetId: "load-map-move-target",
+        practice: {
+          actionLabel: "Move dummy card to Player 1",
+          completionMessage: "Dummy card moved to Player 1.",
+          eventId: "load-map-move",
+          prompt: "Practice moving a dummy card without changing your real board."
+        }
       },
       {
         id: "filters",
@@ -54,8 +68,20 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
   library: {
     id: "library",
     title: "Library",
-    description: "Learn search, labels, source cards, and putting a card in play.",
+    description: "Learn AI card drafts, search, labels, source cards, and putting a card in play.",
     steps: [
+      {
+        id: "ai-task-manager",
+        title: "Use greg - the taskmaster",
+        body: "Greg turns a quick text or voice note into a draft card you can review before it joins the household system.",
+        targetId: "library-ai-task-manager",
+        practice: {
+          actionLabel: "Open greg in dummy mode",
+          completionMessage: "Dummy greg tray opened.",
+          eventId: "library-ai-task-manager",
+          prompt: "Open a pretend capture tray so you can see where an AI-created card starts."
+        }
+      },
       {
         id: "search",
         title: "Search the source deck",
@@ -97,7 +123,13 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
         id: "actions",
         title: "Resolve, defer, or schedule",
         body: "Radar topics should move toward a calm next step: decide now, defer with context, schedule, or resolve.",
-        targetId: "radar-actions"
+        targetId: "radar-actions",
+        practice: {
+          actionLabel: "Resolve dummy radar item",
+          completionMessage: "Dummy radar item resolved.",
+          eventId: "radar-actions",
+          prompt: "Practice choosing a next step on a dummy radar topic."
+        }
       }
     ]
   },
@@ -122,7 +154,13 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
         id: "complete",
         title: "Complete with a clear next step",
         body: "Completion summarizes decisions and keeps the board from becoming a memory test.",
-        targetId: "check-in-complete"
+        targetId: "check-in-complete-action",
+        practice: {
+          actionLabel: "Complete dummy check-in",
+          completionMessage: "Dummy check-in completed.",
+          eventId: "check-in-complete",
+          prompt: "Practice completing a check-in without saving a real summary."
+        }
       }
     ]
   },
@@ -140,8 +178,14 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
       {
         id: "guided-start",
         title: "Replay learning whenever you need it",
-        body: "Restart the crash course, show the welcome again, or open the app guide from here.",
-        targetId: "settings-guided-start"
+        body: "Restart the crash course, show the welcome again, or open the learning hub from here.",
+        targetId: "settings-guided-start",
+        practice: {
+          actionLabel: "Open dummy learning hub",
+          completionMessage: "Dummy learning hub opened.",
+          eventId: "settings-learning-hub",
+          prompt: "Practice finding the learning hub without leaving this page."
+        }
       },
       {
         id: "logout",

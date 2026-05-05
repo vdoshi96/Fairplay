@@ -63,16 +63,20 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
 
   const linkedGuide = page.getByRole("dialog", { name: "Library guide" });
   await expect(linkedGuide).toBeVisible();
-  await expect(page.getByText("Step 1 of 3")).toBeVisible();
+  await expect(page.getByText("Step 1 of 4")).toBeVisible();
+  await expect(page.getByText("Use greg - the taskmaster")).toBeVisible();
   await expect(page.getByTestId("guide-highlight")).toBeVisible();
+  await expect(linkedGuide.getByRole("button", { name: "Next", exact: true }))
+    .toBeDisabled();
 
   await page.getByLabel("Guided tour backdrop").click();
   await expect(linkedGuide).toBeVisible();
 
+  await linkedGuide.getByRole("button", { name: "Open greg in dummy mode" }).click();
   await linkedGuide.getByRole("button", { name: "Next", exact: true }).click();
-  await expect(page.getByText("Labels group related work")).toBeVisible();
-  await linkedGuide.getByRole("button", { name: "Back", exact: true }).click();
   await expect(page.getByText("Search the source deck")).toBeVisible();
+  await linkedGuide.getByRole("button", { name: "Back", exact: true }).click();
+  await expect(page.getByText("Use greg - the taskmaster")).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Skip", exact: true }).click();
   await expect(linkedGuide).not.toBeVisible();
 
