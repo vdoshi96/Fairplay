@@ -45,6 +45,29 @@ const validCard = {
 };
 
 describe("OpenAI fallback card generator", () => {
+  it("rejects unapproved dependency-injected image models before network calls", async () => {
+    const fetchMock = vi.fn();
+
+    await expect(
+      generateCardCoverWithOpenAi(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        {
+          fetch: fetchMock,
+          config: {
+            ...config,
+            imageModel: "gpt-image-2"
+          } as unknown as OpenAiEnabledFallbackConfig
+        }
+      )
+    ).rejects.toThrow("Unsupported OpenAI image model configured");
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("transcribes audio through the Transcriptions API with context prompt", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({

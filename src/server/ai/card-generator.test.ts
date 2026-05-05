@@ -183,8 +183,11 @@ describe("provider-neutral card generator", () => {
     expect(structureTaskAsCardWithOpenAi).not.toHaveBeenCalled();
   });
 
-  it("falls back to OpenAI image generation after Qwen image generation fails", async () => {
-    const cover = { bytes: new Uint8Array([1, 2, 3]), mimeType: "image/png" };
+  it("falls back to OpenAI image generation after Qwen image generation fails with a valid 5:7 PNG", async () => {
+    const cover = {
+      bytes: tinyPngWithDimensions(500, 700),
+      mimeType: "image/png"
+    };
     vi.mocked(qwen.generateCardCover).mockRejectedValue(new Error("Qwen image down"));
     vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
     vi.mocked(generateCardCoverWithOpenAi).mockResolvedValue(cover);
@@ -205,6 +208,27 @@ describe("provider-neutral card generator", () => {
       },
       expect.objectContaining({ config: enabledFallback })
     );
+  });
+
+  it("fails closed with OpenAI metadata when image fallback returns a non-5:7 cover", async () => {
+    vi.mocked(qwen.generateCardCover).mockRejectedValue(new Error("Qwen image down"));
+    vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
+    vi.mocked(generateCardCoverWithOpenAi).mockResolvedValue({
+      bytes: tinyPngWithDimensions(1024, 1536),
+      mimeType: "image/png"
+    });
+
+    await expect(
+      generateCardCover({
+        title: "Dog Medicine",
+        imagePrompt: "calendar still life",
+        negativePrompt: "people"
+      })
+    ).rejects.toMatchObject({
+      code: "AI_PROVIDER_FALLBACK_FAILED",
+      model: "gpt-image-1-mini",
+      provider: "openai"
+    });
   });
 
   it("uses Qwen for audio transcription when Qwen succeeds", async () => {
@@ -254,3 +278,19 @@ describe("provider-neutral card generator", () => {
     expect(transcribeAudioWithOpenAi).not.toHaveBeenCalled();
   });
 });
+
+function tinyPngWithDimensions(width: number, height: number) {
+  const bytes = new Uint8Array(24);
+  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
+  bytes.set([0x49, 0x48, 0x44, 0x52], 12);
+  writeUint32(bytes, 16, width);
+  writeUint32(bytes, 20, height);
+  return bytes;
+}
+
+function writeUint32(bytes: Uint8Array, offset: number, value: number) {
+  bytes[offset] = (value >>> 24) & 0xff;
+  bytes[offset + 1] = (value >>> 16) & 0xff;
+  bytes[offset + 2] = (value >>> 8) & 0xff;
+  bytes[offset + 3] = value & 0xff;
+}

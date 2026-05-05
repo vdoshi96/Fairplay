@@ -8,6 +8,7 @@ import {
   type StructuredAiCard
 } from "./qwen-card-generator";
 import { getOpenAiFallbackConfig } from "./openai-config";
+import { isFiveBySevenPng } from "./card-generation-shared";
 import {
   generateCardCoverWithOpenAi,
   structureTaskAsCardWithOpenAi,
@@ -59,7 +60,14 @@ export async function generateCardCover(
 ): Promise<GeneratedCoverImage> {
   return withOpenAiFallback({
     diagnostics,
-    fallback: (config) => generateCardCoverWithOpenAi(input, { config }),
+    fallback: async (config) => {
+      const cover = await generateCardCoverWithOpenAi(input, { config });
+      if (cover.mimeType !== "image/png" || !isFiveBySevenPng(cover.bytes)) {
+        throw new InvalidOpenAiImageFallbackError(config.imageModel);
+      }
+
+      return cover;
+    },
     primary: () => generateCardCoverWithQwen(input),
     stage: "generating_image"
   });
@@ -80,6 +88,18 @@ class AiProviderFallbackError extends Error {
     this.provider = serialized.provider;
     this.providerRequestId = serialized.providerRequestId;
     this.status = serialized.status;
+  }
+}
+
+class InvalidOpenAiImageFallbackError extends Error {
+  readonly code = "OPENAI_IMAGE_FALLBACK_INVALID";
+  readonly model: string;
+  readonly provider = "openai";
+
+  constructor(model: string) {
+    super("OpenAI image fallback returned a non-5:7 PNG cover.");
+    this.name = "InvalidOpenAiImageFallbackError";
+    this.model = model;
   }
 }
 

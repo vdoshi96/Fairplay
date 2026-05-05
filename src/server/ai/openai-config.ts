@@ -1,5 +1,10 @@
 import "server-only";
 
+import {
+  approvedImageModelSummary,
+  isApprovedOpenAiImageModel,
+  type ApprovedOpenAiImageModel
+} from "./approved-image-models";
 import { unsafeValueLooksPresent } from "./diagnostics";
 
 export type OpenAiDisabledFallbackConfig = {
@@ -30,6 +35,17 @@ export class OpenAiFallbackConfigError extends Error {
   }
 }
 
+export class OpenAiImageModelConfigError extends Error {
+  readonly code = "OPENAI_IMAGE_MODEL_UNAPPROVED";
+
+  constructor() {
+    super(
+      `Unsupported OpenAI image model configured in OPENAI_IMAGE_MODEL. Approved image models: ${approvedImageModelSummary()}.`
+    );
+    this.name = "OpenAiImageModelConfigError";
+  }
+}
+
 const envMapping = {
   baseUrl: "OPENAI_BASE_URL",
   textApiKey: "OPENAI_TEXT_API_KEY",
@@ -39,16 +55,6 @@ const envMapping = {
   imageApiKey: "OPENAI_IMAGE_API_KEY",
   imageModel: "OPENAI_IMAGE_MODEL"
 } as const satisfies Record<keyof Omit<OpenAiEnabledFallbackConfig, "enabled">, string>;
-
-export const APPROVED_OPENAI_IMAGE_MODEL = "gpt-image-1-mini";
-
-export type ApprovedOpenAiImageModel = typeof APPROVED_OPENAI_IMAGE_MODEL;
-
-export function isApprovedOpenAiImageModel(
-  value: string | undefined
-): value is ApprovedOpenAiImageModel {
-  return value === APPROVED_OPENAI_IMAGE_MODEL;
-}
 
 export function getOpenAiFallbackConfig(
   env: Record<string, string | undefined> = process.env
@@ -64,8 +70,9 @@ export function getOpenAiFallbackConfig(
     throw new OpenAiFallbackConfigError(missingNames);
   }
 
-  if (!isApprovedOpenAiImageModel(env.OPENAI_IMAGE_MODEL)) {
-    throw new OpenAiFallbackConfigError(["OPENAI_IMAGE_MODEL"]);
+  const imageModel = env.OPENAI_IMAGE_MODEL as string;
+  if (!isApprovedOpenAiImageModel(imageModel)) {
+    throw new OpenAiImageModelConfigError();
   }
 
   return {
@@ -76,6 +83,6 @@ export function getOpenAiFallbackConfig(
     asrApiKey: env.OPENAI_ASR_API_KEY as string,
     asrModel: env.OPENAI_ASR_MODEL as string,
     imageApiKey: env.OPENAI_IMAGE_API_KEY as string,
-    imageModel: env.OPENAI_IMAGE_MODEL
+    imageModel
   };
 }

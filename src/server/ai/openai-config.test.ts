@@ -4,7 +4,8 @@ vi.mock("server-only", () => ({}));
 
 import {
   getOpenAiFallbackConfig,
-  OpenAiFallbackConfigError
+  OpenAiFallbackConfigError,
+  OpenAiImageModelConfigError
 } from "./openai-config";
 
 describe("OpenAI fallback config", () => {
@@ -75,6 +76,6 @@ describe("OpenAI fallback config", () => {
         OPENAI_IMAGE_API_KEY: "image-secret",
         OPENAI_IMAGE_MODEL: "gpt-image-2"
       })
-    ).toThrow(/OPENAI_IMAGE_MODEL/);
+    ).toThrow(OpenAiImageModelConfigError);
   });
 });

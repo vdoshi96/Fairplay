@@ -192,7 +192,9 @@ describe("AiTaskManager", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<AiTaskManager drafts={[]} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "AI Task Manager" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "greg - the taskmaster" })
+    );
     await userEvent.type(
       screen.getByLabelText("Describe the card"),
       "Make a card for packing lunches."
