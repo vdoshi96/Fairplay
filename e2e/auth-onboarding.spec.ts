@@ -150,6 +150,9 @@ test.describe("auth and onboarding", () => {
     });
 
     await page.goto("/login");
+    await expect(
+      page.getByRole("img", { name: "Animated Fairplay household garden scene" })
+    ).toBeVisible();
     await page.getByLabel("Household username").fill("river-home");
     await page.getByLabel("Household password").fill("correct horse battery staple");
     await page.getByRole("button", { name: "Log in" }).click();
@@ -165,6 +168,9 @@ test.describe("auth and onboarding", () => {
 
     await expect(page).toHaveURL(/\/login/);
     await expect(page.getByRole("heading", { name: "Log in to Fairplay" })).toBeVisible();
+    await expect(
+      page.getByRole("img", { name: "Animated Fairplay household garden scene" })
+    ).toBeVisible();
   });
 
   test("keyboard smoke through login and persona screens", async ({ page }) => {

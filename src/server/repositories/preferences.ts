@@ -5,6 +5,7 @@ import type {
   OnboardingPreferencesMutation
 } from "../../contracts/preferences";
 import type { PersonaId } from "../../domain/ids";
+import { isUniqueConstraintError } from "../db/errors";
 import { prisma } from "../db/prisma";
 
 function isoOrNull(value: string | null | undefined): Date | null | undefined {
@@ -38,11 +39,7 @@ function toOnboardingPreferences(
 export async function getOnboardingPreferences(
   personaId: PersonaId
 ): Promise<OnboardingPreferences> {
-  const preferences = await prisma.personaOnboardingPreferences.upsert({
-    where: { personaId },
-    update: {},
-    create: { personaId }
-  });
+  const preferences = await getOrCreateOnboardingPreferences(personaId);
 
   return toOnboardingPreferences(preferences);
 }
@@ -81,4 +78,28 @@ export async function replayWelcome(
     welcomeDismissedAt: null,
     crashCourseReplayRequestedAt: replayRequestedAt
   });
+}
+
+async function getOrCreateOnboardingPreferences(personaId: PersonaId) {
+  try {
+    return await prisma.personaOnboardingPreferences.upsert({
+      where: { personaId },
+      update: {},
+      create: { personaId }
+    });
+  } catch (error) {
+    if (!isUniqueConstraintError(error)) {
+      throw error;
+    }
+
+    const preferences = await prisma.personaOnboardingPreferences.findUnique({
+      where: { personaId }
+    });
+
+    if (!preferences) {
+      throw error;
+    }
+
+    return preferences;
+  }
 }
