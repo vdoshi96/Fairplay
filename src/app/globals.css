@@ -128,6 +128,26 @@ a {
   }
 }
 
+@keyframes fp-character-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.012);
+  }
+}
+
+@keyframes fp-card-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
 @keyframes fp-panel-enter {
   0% {
     opacity: 0;
@@ -164,6 +184,15 @@ a {
   transform-origin: bottom center;
 }
 
+.fp-motion-character-breathe {
+  animation: fp-character-breathe 5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.fp-motion-card-float {
+  animation: fp-card-float 5.5s ease-in-out infinite;
+}
+
 .fp-motion-panel-enter {
   animation: fp-panel-enter 180ms ease-out both;
 }
@@ -184,6 +213,8 @@ a {
   .fp-motion-checkin-spark,
   .fp-motion-cloud-drift,
   .fp-motion-leaf-sway,
+  .fp-motion-character-breathe,
+  .fp-motion-card-float,
   .fp-motion-panel-enter {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
