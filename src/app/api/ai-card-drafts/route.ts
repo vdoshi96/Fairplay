@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { AiCardDraftCreateSchema } from "@/contracts/ai-card-drafts";
+import { createAiRequestDiagnostics } from "@/server/ai/diagnostics";
 import { getCurrentSession } from "@/server/auth/current-session";
 import { aiCardDraftService } from "@/server/ai-card-drafts/service";
 import {
@@ -35,6 +36,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const diagnostics = createAiRequestDiagnostics({ route: "/api/ai-card-drafts" });
   const session = await getCurrentSession(request);
 
   if (!session) {
@@ -44,7 +46,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const contentType = request.headers.get("content-type") ?? "";
 
   if (contentType.toLowerCase().includes("multipart/form-data")) {
-    return createFromMultipart(request, session);
+    return createFromMultipart(request, session, diagnostics);
   }
 
   const parsed = AiCardDraftCreateSchema.safeParse(await readJson(request));
@@ -59,17 +61,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const created = await aiCardDraftService.createFromText(session, {
       inputText
-    });
+    }, diagnostics);
 
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
-    return serviceErrorResponse(error);
+    return serviceErrorResponse(error, diagnostics);
   }
 }
 
 async function createFromMultipart(
   request: NextRequest,
-  session: NonNullable<Awaited<ReturnType<typeof getCurrentSession>>>
+  session: NonNullable<Awaited<ReturnType<typeof getCurrentSession>>>,
+  diagnostics: ReturnType<typeof createAiRequestDiagnostics>
 ) {
   const contentLength = request.headers.get("content-length");
   if (contentLength) {
@@ -105,11 +108,11 @@ async function createFromMultipart(
       audioBytes: Buffer.from(await audio.arrayBuffer()),
       audioMimeType: audio.type || "application/octet-stream",
       ...(contextText ? { contextText } : {})
-    });
+    }, diagnostics);
 
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
-    return serviceErrorResponse(error);
+    return serviceErrorResponse(error, diagnostics);
   }
 }
 

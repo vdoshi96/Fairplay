@@ -15,8 +15,10 @@ import {
 } from "./card-generation-shared";
 import {
   getOpenAiFallbackConfig,
+  isApprovedOpenAiImageModel,
   type OpenAiEnabledFallbackConfig
 } from "./openai-config";
+import { providerRequestIdFromHeaders } from "./diagnostics";
 
 export type OpenAiGeneratorDeps = {
   fetch?: typeof fetch;
@@ -46,10 +48,24 @@ type TranscriptionResponse = {
 
 export class OpenAiGenerationError extends Error {
   readonly code = "OPENAI_GENERATION_FAILED";
+  readonly provider = "openai";
+  readonly model?: string;
+  readonly providerRequestId?: string;
+  readonly status?: number;
 
-  constructor(message: string) {
+  constructor(
+    message: string,
+    metadata: {
+      model?: string;
+      providerRequestId?: string;
+      status?: number;
+    } = {}
+  ) {
     super(message);
     this.name = "OpenAiGenerationError";
+    this.model = metadata.model;
+    this.providerRequestId = metadata.providerRequestId;
+    this.status = metadata.status;
   }
 }
 
@@ -78,7 +94,8 @@ export async function transcribeAudioWithOpenAi(
   });
   const body = await readProviderJson<TranscriptionResponse>(
     response,
-    "OpenAI ASR request failed"
+    "OpenAI ASR request failed",
+    config.asrModel
   );
 
   if (typeof body.text !== "string" || !body.text.trim()) {
@@ -123,7 +140,8 @@ export async function structureTaskAsCardWithOpenAi(
   });
   const body = await readProviderJson<ResponsesApiResponse>(
     response,
-    "OpenAI card structuring request failed"
+    "OpenAI card structuring request failed",
+    config.textModel
   );
   const content = extractResponsesText(body);
 
@@ -159,7 +177,8 @@ export async function generateCardCoverWithOpenAi(
   });
   const body = await readProviderJson<ImageGenerationResponse>(
     response,
-    "OpenAI image generation request failed"
+    "OpenAI image generation request failed",
+    config.imageModel
   );
   const image = body.data?.[0];
 
@@ -182,7 +201,7 @@ export async function generateCardCoverWithOpenAi(
   }
 
   if (typeof image?.url === "string" && image.url.trim()) {
-    return downloadGeneratedImage(image.url, fetchImpl);
+    return downloadGeneratedImage(image.url, fetchImpl, config.imageModel);
   }
 
   throw new OpenAiGenerationError(
@@ -192,6 +211,7 @@ export async function generateCardCoverWithOpenAi(
 
 function resolveConfig(deps: OpenAiGeneratorDeps): OpenAiEnabledFallbackConfig {
   if (deps.config) {
+    assertApprovedConfig(deps.config);
     return deps.config;
   }
 
@@ -201,6 +221,14 @@ function resolveConfig(deps: OpenAiGeneratorDeps): OpenAiEnabledFallbackConfig {
   }
 
   return config;
+}
+
+function assertApprovedConfig(config: OpenAiEnabledFallbackConfig): void {
+  if (!isApprovedOpenAiImageModel(config.imageModel)) {
+    throw new OpenAiGenerationError("OpenAI image fallback model is not approved.", {
+      model: config.imageModel
+    });
+  }
 }
 
 function resolveFetch(deps: OpenAiGeneratorDeps): typeof fetch {
@@ -252,9 +280,17 @@ function audioFileName(mimeType: string) {
   }
 }
 
-async function readProviderJson<T>(response: Response, errorMessage: string): Promise<T> {
+async function readProviderJson<T>(
+  response: Response,
+  errorMessage: string,
+  model: string
+): Promise<T> {
   if (!response.ok) {
-    throw new OpenAiGenerationError(`${errorMessage} with status ${response.status}.`);
+    throw new OpenAiGenerationError(`${errorMessage} with status ${response.status}.`, {
+      model,
+      providerRequestId: providerRequestIdFromHeaders(response.headers),
+      status: response.status
+    });
   }
 
   try {
@@ -282,7 +318,8 @@ function extractResponsesText(body: ResponsesApiResponse): string {
 
 async function downloadGeneratedImage(
   imageUrl: string,
-  fetchImpl: typeof fetch
+  fetchImpl: typeof fetch,
+  model: string
 ): Promise<GeneratedCoverImage> {
   const safeImageUrl = parseDownloadableImageUrl(
     imageUrl,
@@ -292,7 +329,12 @@ async function downloadGeneratedImage(
   const imageResponse = await fetchImpl(safeImageUrl);
   if (!imageResponse.ok) {
     throw new OpenAiGenerationError(
-      `OpenAI generated image download failed with status ${imageResponse.status}.`
+      `OpenAI generated image download failed with status ${imageResponse.status}.`,
+      {
+        model,
+        providerRequestId: providerRequestIdFromHeaders(imageResponse.headers),
+        status: imageResponse.status
+      }
     );
   }
 

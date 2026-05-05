@@ -1,5 +1,7 @@
 import "server-only";
 
+import { unsafeValueLooksPresent } from "./diagnostics";
+
 export type OpenAiDisabledFallbackConfig = {
   enabled: false;
 };
@@ -12,7 +14,7 @@ export type OpenAiEnabledFallbackConfig = {
   asrApiKey: string;
   asrModel: string;
   imageApiKey: string;
-  imageModel: string;
+  imageModel: ApprovedOpenAiImageModel;
 };
 
 export type OpenAiFallbackConfig =
@@ -38,6 +40,16 @@ const envMapping = {
   imageModel: "OPENAI_IMAGE_MODEL"
 } as const satisfies Record<keyof Omit<OpenAiEnabledFallbackConfig, "enabled">, string>;
 
+export const APPROVED_OPENAI_IMAGE_MODEL = "gpt-image-1-mini";
+
+export type ApprovedOpenAiImageModel = typeof APPROVED_OPENAI_IMAGE_MODEL;
+
+export function isApprovedOpenAiImageModel(
+  value: string | undefined
+): value is ApprovedOpenAiImageModel {
+  return value === APPROVED_OPENAI_IMAGE_MODEL;
+}
+
 export function getOpenAiFallbackConfig(
   env: Record<string, string | undefined> = process.env
 ): OpenAiFallbackConfig {
@@ -45,9 +57,15 @@ export function getOpenAiFallbackConfig(
     return { enabled: false };
   }
 
-  const missingNames = Object.values(envMapping).filter((name) => !env[name]);
+  const missingNames = Object.values(envMapping).filter(
+    (name) => !unsafeValueLooksPresent(env[name])
+  );
   if (missingNames.length > 0) {
     throw new OpenAiFallbackConfigError(missingNames);
+  }
+
+  if (!isApprovedOpenAiImageModel(env.OPENAI_IMAGE_MODEL)) {
+    throw new OpenAiFallbackConfigError(["OPENAI_IMAGE_MODEL"]);
   }
 
   return {
@@ -58,6 +76,6 @@ export function getOpenAiFallbackConfig(
     asrApiKey: env.OPENAI_ASR_API_KEY as string,
     asrModel: env.OPENAI_ASR_MODEL as string,
     imageApiKey: env.OPENAI_IMAGE_API_KEY as string,
-    imageModel: env.OPENAI_IMAGE_MODEL as string
+    imageModel: env.OPENAI_IMAGE_MODEL
   };
 }

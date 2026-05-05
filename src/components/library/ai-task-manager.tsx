@@ -71,7 +71,14 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
     try {
       const response = await fetch(path, { method: "POST" });
       if (!response.ok) {
-        throw new Error("The draft could not be updated.");
+        const apiError = await readSafeApiError(
+          response,
+          "The draft could not be updated."
+        );
+        if (apiError.code === "GENERATION_FAILED") {
+          router.refresh();
+        }
+        throw new Error(apiError.message);
       }
       router.refresh();
     } catch (caught) {
@@ -90,7 +97,11 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
         method: "POST"
       });
       if (!response.ok) {
-        throw new Error("The card could not be put in play.");
+        const apiError = await readSafeApiError(
+          response,
+          "The card could not be put in play."
+        );
+        throw new Error(apiError.message);
       }
 
       const created = (await response.json()) as {
@@ -146,7 +157,14 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
                     }
               );
               if (!response.ok) {
-                throw new Error("The draft could not be created.");
+                const apiError = await readSafeApiError(
+                  response,
+                  "The draft could not be created."
+                );
+                if (apiError.code === "GENERATION_FAILED") {
+                  router.refresh();
+                }
+                throw new Error(apiError.message);
               }
               setCaptureOpen(false);
               router.refresh();
@@ -524,7 +542,11 @@ export function AiCardReviewPanel({
       try {
         const response = await fetch(`/api/ai-card-drafts/${draft.id}`);
         if (!response.ok) {
-          throw new Error("The draft could not be loaded.");
+          const apiError = await readSafeApiError(
+            response,
+            "The draft could not be loaded."
+          );
+          throw new Error(apiError.message);
         }
         const loaded = (await response.json()) as AiCardDraftDetail;
         if (active) {
@@ -565,7 +587,11 @@ export function AiCardReviewPanel({
         body: JSON.stringify(update)
       });
       if (!response.ok) {
-        throw new Error("The draft could not be saved.");
+        const apiError = await readSafeApiError(
+          response,
+          "The draft could not be saved."
+        );
+        throw new Error(apiError.message);
       }
       const saved = (await response.json()) as AiCardDraftDetail;
       setDetail(saved);
@@ -588,7 +614,14 @@ export function AiCardReviewPanel({
         { method: "POST" }
       );
       if (!response.ok) {
-        throw new Error("The image could not be regenerated.");
+        const apiError = await readSafeApiError(
+          response,
+          "The image could not be regenerated."
+        );
+        if (apiError.code === "GENERATION_FAILED") {
+          router.refresh();
+        }
+        throw new Error(apiError.message);
       }
       const regenerated = (await response.json()) as AiCardDraftDetail;
       setDetail(regenerated);
@@ -796,6 +829,25 @@ function commaSeparatedValues(value: string) {
 function nullableText(value: string) {
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
+}
+
+async function readSafeApiError(response: Response, fallback: string) {
+  try {
+    const body = (await response.json()) as {
+      code?: unknown;
+      error?: unknown;
+      requestId?: unknown;
+    };
+    const message = typeof body.error === "string" ? body.error : fallback;
+    const requestId = typeof body.requestId === "string" ? body.requestId : null;
+
+    return {
+      code: typeof body.code === "string" ? body.code : null,
+      message: requestId ? `${message} Reference ${requestId}.` : message
+    };
+  } catch {
+    return { code: null, message: fallback };
+  }
 }
 
 function TextInput({

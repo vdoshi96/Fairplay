@@ -10,6 +10,13 @@ vi.mock("@/server/auth/current-session", () => ({
   getCurrentSession
 }));
 
+vi.mock("@/server/ai/diagnostics", () => ({
+  createAiRequestDiagnostics: () => ({
+    requestId: "fp_ai_test",
+    route: "/api/ai-card-drafts"
+  })
+}));
+
 vi.mock("@/server/ai-card-drafts/service", () => ({
   aiCardDraftService: {
     list,
@@ -137,9 +144,13 @@ describe("/api/ai-card-drafts", () => {
     );
 
     expect(response.status).toBe(201);
-    expect(createFromText).toHaveBeenCalledWith(session, {
-      inputText: "Turn the weekly mail pile into a concrete household card."
-    });
+    expect(createFromText).toHaveBeenCalledWith(
+      session,
+      {
+        inputText: "Turn the weekly mail pile into a concrete household card."
+      },
+      { requestId: "fp_ai_test", route: "/api/ai-card-drafts" }
+    );
   });
 
   it("creates an AI card draft from multipart audio", async () => {
@@ -153,11 +164,15 @@ describe("/api/ai-card-drafts", () => {
     );
 
     expect(response.status).toBe(201);
-    expect(createFromAudio).toHaveBeenCalledWith(session, {
-      audioBytes: expect.any(Buffer),
-      audioMimeType: "audio/webm",
-      contextText: "Use the Saturday reset context."
-    });
+    expect(createFromAudio).toHaveBeenCalledWith(
+      session,
+      {
+        audioBytes: expect.any(Buffer),
+        audioMimeType: "audio/webm",
+        contextText: "Use the Saturday reset context."
+      },
+      { requestId: "fp_ai_test", route: "/api/ai-card-drafts" }
+    );
     expect(createFromAudio.mock.calls[0][1].audioBytes).toEqual(
       Buffer.from("abc")
     );
@@ -223,5 +238,30 @@ describe("/api/ai-card-drafts", () => {
     expect(response.status).toBe(400);
     expect(audio.arrayBuffer).not.toHaveBeenCalled();
     expect(createFromAudio).not.toHaveBeenCalled();
+  });
+
+  it("maps generation failures to safe JSON with request and draft ids", async () => {
+    createFromText.mockRejectedValue(
+      Object.assign(new Error("raw provider body must not leak"), {
+        code: "GENERATION_FAILED",
+        draftId: "550e8400-e29b-41d4-a716-446655440011"
+      })
+    );
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      jsonRequest("POST", {
+        inputText: "Turn the weekly mail pile into a concrete household card."
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(502);
+    expect(body).toEqual({
+      error: "AI card draft generation failed.",
+      code: "GENERATION_FAILED",
+      draftId: "550e8400-e29b-41d4-a716-446655440011",
+      requestId: "fp_ai_test"
+    });
   });
 });
