@@ -125,6 +125,15 @@ enum SourceReviewStatus {
   needs_review
 }
 
+enum ResponsibilityBoardLane {
+  cards_of_concern
+  player_1
+  player_2
+  kid_split
+  not_in_play
+  trimmed
+}
+
 model Household {
   id                 String                 @id @default(uuid())
   name               String
@@ -172,8 +181,22 @@ model Persona {
   facilitatedCheckIns              CheckIn[]                      @relation("FacilitatedCheckIns")
   createdDecisions                 Decision[]                     @relation("CreatedDecisions")
   actedResponsibilityEvents        ResponsibilityEvent[]          @relation("ActedResponsibilityEvents")
+  onboardingPreferences            PersonaOnboardingPreferences?
 
   @@unique([householdId, key])
+}
+
+model PersonaOnboardingPreferences {
+  id                            String    @id @default(uuid())
+  personaId                     String    @unique
+  welcomeDismissedAt            DateTime?
+  crashCourseSkippedAt          DateTime?
+  crashCourseCompletedAt        DateTime?
+  crashCourseCurrentStep        Int       @default(0)
+  crashCourseReplayRequestedAt  DateTime?
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+  persona                       Persona   @relation(fields: [personaId], references: [id], onDelete: Cascade)
 }
 
 model Session {
@@ -207,15 +230,23 @@ model Responsibility {
   relevantDays          String[]
   status                ResponsibilityStatus
   visibility            Visibility
+  boardLane             ResponsibilityBoardLane           @default(cards_of_concern)
+  boardSortOrder        Int                               @default(0)
   householdStandard     String?
   notes                 String?
+  sourceDefinition      String?
+  sourceConception      String?
+  sourcePlanning        String?
+  sourceExecution       String?
+  sourceMinimumStandard String?
+  sourceCoverAssetPath  String?
   lastReviewedAt        DateTime?
   nextReviewAt          DateTime?
   createdAt             DateTime                       @default(now())
   updatedAt             DateTime                       @updatedAt
   archivedAt            DateTime?
   household             Household                      @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  createdByPersona      Persona                        @relation("CreatedResponsibilities", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  createdByPersona      Persona                        @relation("CreatedResponsibilities", fields: [createdByPersonaId], references: [id], onDelete: Cascade)
   template              ResponsibilityTemplate?        @relation(fields: [templateId], references: [id], onDelete: SetNull)
   assignments           ResponsibilityAssignment[]
   lifecycleNotes        ResponsibilityLifecycleNotes?
@@ -225,7 +256,9 @@ model Responsibility {
   events                ResponsibilityEvent[]
 
   @@index([householdId])
+  @@index([householdId, boardLane, boardSortOrder])
   @@index([status])
+  @@index([templateId])
 }
 
 model ResponsibilityAssignment {
@@ -240,8 +273,8 @@ model ResponsibilityAssignment {
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
   responsibility        Responsibility  @relation(fields: [responsibilityId], references: [id], onDelete: Cascade)
-  persona               Persona         @relation("PersonaAssignments", fields: [personaId], references: [id], onDelete: Restrict)
-  createdByPersona      Persona         @relation("CreatedAssignments", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  persona               Persona         @relation("PersonaAssignments", fields: [personaId], references: [id], onDelete: Cascade)
+  createdByPersona      Persona         @relation("CreatedAssignments", fields: [createdByPersonaId], references: [id], onDelete: Cascade)
 
   @@index([responsibilityId, startsAt])
   @@index([personaId])
@@ -272,6 +305,16 @@ model ResponsibilityTemplate {
   hiddenEffortKeys   HiddenEffortKey[]
   sourceReviewStatus SourceReviewStatus
   contentVersion     String
+  sourceCardId       String?                 @unique
+  definition         String?
+  conception         String?
+  planning           String?
+  execution          String?
+  minimumStandard    String?
+  coverAssetPath     String?
+  defaultLane        ResponsibilityBoardLane @default(not_in_play)
+  sourceVersion      String?
+  importedAt         DateTime?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   responsibilities   Responsibility[]
@@ -296,7 +339,7 @@ model RadarItem {
   deferredUntil      DateTime?
   household          Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
   responsibility     Responsibility? @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
-  createdByPersona   Persona         @relation("CreatedRadarItems", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  createdByPersona   Persona         @relation("CreatedRadarItems", fields: [createdByPersonaId], references: [id], onDelete: Cascade)
   targetCheckIn      CheckIn?        @relation("TargetCheckInRadarItems", fields: [targetCheckInId], references: [id], onDelete: SetNull)
   checkInItems       CheckInItem[]
 
@@ -360,7 +403,7 @@ model Decision {
   household          Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
   checkIn            CheckIn?        @relation(fields: [checkInId], references: [id], onDelete: SetNull)
   responsibility     Responsibility? @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
-  createdByPersona   Persona         @relation("CreatedDecisions", fields: [createdByPersonaId], references: [id], onDelete: Restrict)
+  createdByPersona   Persona         @relation("CreatedDecisions", fields: [createdByPersonaId], references: [id], onDelete: Cascade)
   checkInItem        CheckInItem?
 
   @@index([householdId])

@@ -8,7 +8,8 @@ import { listPersonasForHousehold } from "./personas";
 import {
   addResponsibilityAssignments,
   createResponsibility,
-  getResponsibilityDetail
+  getResponsibilityDetail,
+  updateResponsibilityBoardPlacement
 } from "./responsibilities";
 import { createRadarItem, listRadarItemsForPersona, updateRadarState } from "./radar";
 import {
@@ -229,6 +230,63 @@ describe("responsibility repository", () => {
         responsibilityId: responsibility.id
       })
     ).resolves.toBeNull();
+  });
+
+  test("persists board placement changes and records lane movement events", async () => {
+    const { household, personas } = await createTestHousehold("board-placement");
+    const [alex] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Moveable card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      householdStandard: null,
+      notes: null,
+      nextReviewAt: null
+    });
+
+    const moved = await updateResponsibilityBoardPlacement({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      toLane: "player_1",
+      sortOrder: 12,
+      actorPersonaId: alex.id,
+      note: "Alex is taking the whole card."
+    });
+
+    expect(moved).toMatchObject({
+      id: responsibility.id,
+      boardLane: "player_1",
+      boardSortOrder: 12
+    });
+    await expect(
+      prisma.responsibilityEvent.findMany({
+        where: {
+          responsibilityId: responsibility.id,
+          eventType: "board_lane_changed"
+        },
+        select: {
+          actorPersonaId: true,
+          payload: true
+        }
+      })
+    ).resolves.toEqual([
+      {
+        actorPersonaId: alex.id,
+        payload: {
+          fromLane: "cards_of_concern",
+          toLane: "player_1",
+          fromSortOrder: 0,
+          toSortOrder: 12,
+          note: "Alex is taking the whole card."
+        }
+      }
+    ]);
   });
 });
 

@@ -5,8 +5,10 @@ import {
   LoadSnapshotSummarySchema,
   PauseResponsibilityMutationSchema,
   ResponsibilityAssignmentMutationSchema,
+  ResponsibilityBoardPlacementMutationSchema,
   ResponsibilityCreateSchema,
   ResponsibilityDetailSchema,
+  ResponsibilityFromTemplateMutationSchema,
   ResponsibilitySummarySchema,
   ResponsibilityUpdateSchema,
   ResponsibilityVisibilityMutationSchema
@@ -23,6 +25,8 @@ describe("responsibility JSON contracts", () => {
         cadence: "daily",
         status: "active",
         visibility: "shared_household",
+        boardLane: "cards_of_concern",
+        boardSortOrder: 0,
         currentAssignments: [
           { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
         ],
@@ -40,6 +44,8 @@ describe("responsibility JSON contracts", () => {
       cadence: "daily",
       status: "active",
       visibility: "shared_household",
+      boardLane: "cards_of_concern",
+      boardSortOrder: 0,
       currentAssignments: [],
       nextReviewAt: null
     });
@@ -207,5 +213,69 @@ describe("responsibility JSON contracts", () => {
         confirmedVisibilityChange: true
       });
     }
+  });
+});
+
+describe("Responsibility board contracts", () => {
+  it("validates board placement mutations", () => {
+    expect(
+      ResponsibilityBoardPlacementMutationSchema.parse({
+        responsibilityId: "550e8400-e29b-41d4-a716-446655440010",
+        toLane: "player_1",
+        sortOrder: 4,
+        actorPersonaId: "550e8400-e29b-41d4-a716-446655440020"
+      })
+    ).toMatchObject({
+      toLane: "player_1",
+      sortOrder: 4
+    });
+
+    expect(() =>
+      ResponsibilityBoardPlacementMutationSchema.parse({
+        responsibilityId: "550e8400-e29b-41d4-a716-446655440010",
+        toLane: "parking_lot",
+        sortOrder: -1
+      })
+    ).toThrow();
+  });
+
+  it("exposes lane and sort order on summaries", () => {
+    const summary = ResponsibilitySummarySchema.parse({
+      id: "550e8400-e29b-41d4-a716-446655440010",
+      title: "Auto",
+      areaKeys: ["Out"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "as_needed",
+      relevantDays: [],
+      status: "unassigned",
+      visibility: "shared_household",
+      boardLane: "not_in_play",
+      boardSortOrder: 12,
+      linkedRadarItems: [],
+      currentAssignments: [],
+      nextReviewAt: null
+    });
+
+    expect(summary.boardLane).toBe("not_in_play");
+  });
+
+  it("validates from-template creation", () => {
+    expect(
+      ResponsibilityFromTemplateMutationSchema.parse({
+        templateId: "tpl_auto",
+        actorPersonaId: "550e8400-e29b-41d4-a716-446655440020",
+        lane: "cards_of_concern"
+      })
+    ).toMatchObject({ lane: "cards_of_concern" });
+
+    expect(
+      ResponsibilityFromTemplateMutationSchema.parse({
+        templateId: "tpl_auto",
+        actorPersonaId: "550e8400-e29b-41d4-a716-446655440020"
+      })
+    ).toMatchObject({
+      templateId: "tpl_auto",
+      actorPersonaId: "550e8400-e29b-41d4-a716-446655440020"
+    });
   });
 });

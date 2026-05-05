@@ -1,5 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import {
+  CalendarCheck,
+  Home,
+  LayoutDashboard,
+  Library,
+  Radar,
+  Settings,
+  Sparkles
+} from "lucide-react";
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
@@ -12,85 +24,152 @@ type AppShellProps = {
 };
 
 const navItems = [
-  { href: "/app/home", label: "Home" },
-  { href: "/app/load-map", label: "Load Map" },
-  { href: "/app/radar", label: "Radar" },
-  { href: "/app/check-ins", label: "Check-ins" },
-  { href: "/app/settings", label: "Settings" }
+  { href: "/app/home", icon: Home, label: "Home" },
+  { href: "/app/load-map", icon: LayoutDashboard, label: "Load Map" },
+  { href: "/app/library", icon: Library, label: "Library" },
+  { href: "/app/radar", icon: Radar, label: "Radar" },
+  { href: "/app/check-ins", icon: CalendarCheck, label: "Check-ins" },
+  { href: "/app/crash-course", icon: Sparkles, label: "Crash course" },
+  { href: "/app/settings", icon: Settings, label: "Settings" }
 ] as const;
 
+function isActiveRoute(pathname: string, href: string) {
+  if (href === "/app/home") {
+    return pathname === href;
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function AppShell({ children, household, selectedPersona }: AppShellProps) {
+  const pathname = usePathname();
+
   return (
-    <div className="min-h-screen bg-fp-paper text-fp-ink">
-      <header className="sticky top-0 z-10 border-b border-fp-line bg-fp-paper/95 px-4 py-3 backdrop-blur sm:px-6">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
-          <Link
-            className="flex min-w-0 items-center gap-3 rounded-[8px] outline-none focus:ring-2 focus:ring-fp-ink/25"
-            href="/app/home"
-          >
-            <FairplayMark
-              className="h-10 w-10 shrink-0 rounded-[8px] border border-fp-line bg-white"
-              decorative
-            />
-            <span className="min-w-0">
-              <span className="block truncate text-[15px] font-bold leading-5">
-                {household.name}
-              </span>
-              <span className="block text-[12px] font-semibold text-fp-muted-ink">
-                Fairplay
-              </span>
+    <div className="min-h-screen bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-fp-line bg-[var(--fp-surface-strong)] px-4 py-5 shadow-[var(--fp-shadow-soft)] backdrop-blur lg:flex lg:flex-col">
+        <Link
+          className="flex min-w-0 items-center gap-3 rounded outline-none focus:ring-2 focus:ring-fp-ink/25"
+          href="/app/home"
+        >
+          <FairplayMark
+            className="h-11 w-11 shrink-0 rounded border border-fp-line bg-white"
+            decorative
+          />
+          <span className="min-w-0">
+            <span className="block truncate text-[15px] font-bold leading-5">
+              {household.name}
             </span>
-          </Link>
+            <span className="block text-[12px] font-semibold text-fp-muted-ink">
+              Fairplay
+            </span>
+          </span>
+        </Link>
 
-          <Link
-            className="flex min-h-11 shrink-0 items-center gap-2 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-semibold outline-none focus:ring-2 focus:ring-fp-ink/25"
-            href="/app/settings"
-          >
-            <PersonaAvatar
-              className="fp-motion-persona-bob h-7 w-7 shrink-0 rounded-full"
-              decorative
-              persona={selectedPersona.key === "max" ? "max" : "alex"}
-            />
-            {selectedPersona.displayName}
-          </Link>
-        </div>
-      </header>
+        <nav aria-label="Primary" className="mt-8 grid gap-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = isActiveRoute(pathname, item.href);
 
-      <main className="mx-auto w-full max-w-5xl px-4 pb-28 pt-5 sm:px-6 sm:pb-8">
-        {children}
-      </main>
+            return (
+              <Link
+                aria-current={isActive ? "page" : undefined}
+                className={[
+                  "flex min-h-11 items-center gap-3 rounded px-3 text-[14px] font-semibold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
+                  isActive
+                    ? "bg-[var(--fp-ink)] text-white shadow-[var(--fp-shadow-soft)]"
+                    : "text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
+                ].join(" ")}
+                href={item.href}
+                key={item.href}
+              >
+                <Icon aria-hidden className="h-4 w-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
-      <nav
-        aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-10 border-t border-fp-line bg-white px-2 py-2 sm:hidden"
-      >
-        <div className="grid grid-cols-5 gap-1">
-          {navItems.map((item) => (
+        <Link
+          className="mt-auto flex min-h-12 items-center gap-3 rounded border border-fp-line bg-[var(--fp-surface)] px-3 text-[13px] font-semibold outline-none transition hover:bg-[var(--fp-surface-strong)] focus:ring-2 focus:ring-fp-ink/25"
+          href="/app/settings"
+        >
+          <PersonaAvatar
+            className="fp-motion-persona-bob h-8 w-8 shrink-0 rounded-full"
+            decorative
+            persona={selectedPersona.key === "max" ? "max" : "alex"}
+          />
+          <span className="truncate">{selectedPersona.displayName}</span>
+        </Link>
+      </aside>
+
+      <div className="min-w-0 lg:col-start-2">
+        <header className="sticky top-0 z-10 border-b border-fp-line bg-[var(--fp-surface-strong)]/95 px-4 py-3 backdrop-blur sm:px-6 lg:hidden">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
             <Link
-              className="grid min-h-11 place-items-center rounded-[8px] px-1 text-center text-[11px] font-semibold leading-4 text-fp-muted-ink outline-none focus:bg-fp-surface focus:text-fp-ink focus:ring-2 focus:ring-fp-ink/20"
-              href={item.href}
-              key={item.href}
+              className="flex min-w-0 items-center gap-3 rounded outline-none focus:ring-2 focus:ring-fp-ink/25"
+              href="/app/home"
             >
-              {item.label}
+              <FairplayMark
+                className="h-10 w-10 shrink-0 rounded border border-fp-line bg-white"
+                decorative
+              />
+              <span className="min-w-0">
+                <span className="block truncate text-[15px] font-bold leading-5">
+                  {household.name}
+                </span>
+                <span className="block text-[12px] font-semibold text-fp-muted-ink">
+                  Fairplay
+                </span>
+              </span>
             </Link>
-          ))}
-        </div>
-      </nav>
 
-      <nav
-        aria-label="Primary"
-        className="mx-auto hidden max-w-5xl gap-2 px-6 pb-6 sm:flex"
-      >
-        {navItems.map((item) => (
-          <Link
-            className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 py-2 text-[13px] font-semibold text-fp-muted-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
-            href={item.href}
-            key={item.href}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+            <Link
+              className="flex min-h-11 shrink-0 items-center gap-2 rounded border border-fp-line bg-white px-3 text-[13px] font-semibold outline-none focus:ring-2 focus:ring-fp-ink/25"
+              href="/app/settings"
+            >
+              <PersonaAvatar
+                className="fp-motion-persona-bob h-7 w-7 shrink-0 rounded-full"
+                decorative
+                persona={selectedPersona.key === "max" ? "max" : "alex"}
+              />
+              {selectedPersona.displayName}
+            </Link>
+          </div>
+        </header>
+
+        <main className="mx-auto w-full max-w-6xl px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10 lg:pt-8">
+          {children}
+        </main>
+
+        <nav
+          aria-label="Primary"
+          className="fixed inset-x-0 bottom-0 z-10 border-t border-fp-line bg-[var(--fp-surface-strong)] px-2 py-2 shadow-[0_-10px_30px_rgba(32,33,36,0.08)] backdrop-blur lg:hidden"
+        >
+          <div className="flex gap-1 overflow-x-auto">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActiveRoute(pathname, item.href);
+
+              return (
+                <Link
+                  aria-current={isActive ? "page" : undefined}
+                  className={[
+                    "grid min-h-12 min-w-[4.8rem] place-items-center gap-1 rounded px-2 text-center text-[11px] font-semibold leading-4 outline-none transition focus:ring-2 focus:ring-fp-ink/20",
+                    isActive
+                      ? "bg-[var(--fp-ink)] text-white"
+                      : "text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
+                  ].join(" ")}
+                  href={item.href}
+                  key={item.href}
+                >
+                  <Icon aria-hidden className="h-4 w-4" />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
     </div>
   );
 }
