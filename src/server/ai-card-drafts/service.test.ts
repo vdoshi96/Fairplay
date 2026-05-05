@@ -304,6 +304,22 @@ describe("AI card draft service", () => {
     });
   });
 
+  it.each(["ready", "accepted", "canceled"] as const)(
+    "rejects retry for %s drafts",
+    async (status) => {
+      const deps = makeDeps({
+        getDraft: vi.fn().mockResolvedValue(readyDraft({ status }))
+      });
+      const service = createAiCardDraftService(deps);
+
+      await expect(service.retry(session, draftId)).rejects.toMatchObject({
+        code: "INVALID_INPUT"
+      });
+      expect(deps.generateCardCover).not.toHaveBeenCalled();
+      expect(deps.structureTaskAsCard).not.toHaveBeenCalled();
+    }
+  );
+
   it("regenerates images from existing structured fields", async () => {
     const deps = makeDeps({
       getDraft: vi.fn().mockResolvedValue(readyDraft())
@@ -376,6 +392,23 @@ describe("AI card draft service", () => {
     });
     expect(deps.deleteAudio).toHaveBeenCalledWith({ householdId, draftId });
   });
+
+  it.each(["failed", "accepted", "canceled"] as const)(
+    "rejects putting %s drafts in play",
+    async (status) => {
+      const deps = makeDeps({
+        getDraft: vi.fn().mockResolvedValue(readyDraft({ status }))
+      });
+      const service = createAiCardDraftService(deps);
+
+      await expect(service.putInPlay(session, draftId)).rejects.toMatchObject({
+        code: "INVALID_INPUT"
+      });
+      expect(deps.createResponsibility).not.toHaveBeenCalled();
+      expect(deps.markAccepted).not.toHaveBeenCalled();
+      expect(deps.deleteAudio).not.toHaveBeenCalled();
+    }
+  );
 
   it("cancels drafts and deletes audio", async () => {
     const deps = makeDeps();

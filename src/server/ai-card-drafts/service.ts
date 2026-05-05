@@ -232,6 +232,24 @@ function assertCanRegenerateImage(draft: AiCardDraftDetail) {
   }
 }
 
+function assertCanRetry(draft: AiCardDraftDetail) {
+  if (draft.status !== "failed") {
+    throw new AiCardDraftServiceError(
+      "INVALID_INPUT",
+      "Retry is only available for failed drafts."
+    );
+  }
+}
+
+function assertCanPutInPlay(draft: AiCardDraftDetail) {
+  if (draft.status !== "ready") {
+    throw new AiCardDraftServiceError(
+      "INVALID_INPUT",
+      "Only ready AI card drafts can be put in play."
+    );
+  }
+}
+
 function sourceText(draft: AiCardDraftDetail) {
   return draft.audioTranscript ?? draft.inputText ?? null;
 }
@@ -419,6 +437,7 @@ export function createAiCardDraftService(
     ): Promise<AiCardDraftDetail> {
       requireSelectedPersona(session);
       const draft = await getRequiredDraft(deps, session, draftId);
+      assertCanRetry(draft);
 
       try {
         const card = (() => {
@@ -508,6 +527,7 @@ export function createAiCardDraftService(
     ): Promise<ResponsibilityDetail> {
       const createdByPersonaId = requireSelectedPersona(session);
       const draft = await getRequiredDraft(deps, session, draftId);
+      assertCanPutInPlay(draft);
       const card = requireGeneratedFields(draft);
       const sourceCoverAssetPath = draft.coverUrl ?? `/api/ai-card-drafts/${draftId}/cover`;
       const responsibility = await deps.createResponsibility({
