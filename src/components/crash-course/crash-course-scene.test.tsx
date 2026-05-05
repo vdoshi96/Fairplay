@@ -15,9 +15,10 @@ describe("CrashCourseScene", () => {
     expect(image).toBeVisible();
     expect(image).toHaveAttribute("data-scene-scale", "immersive-background");
     expect(image).toHaveAttribute("data-scene-composition", "owner-helper-grocery-handoff");
-    expect(screen.getByTestId("owner-outcome-lead")).toBeVisible();
-    expect(screen.getByTestId("helper-step-carry")).toBeVisible();
-    expect(screen.getByTestId("grocery-outcome-props")).toBeVisible();
+    expect(screen.getByTestId("crash-course-scene-image")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/generated-ui/crash-course/owner-helper.png"
+    );
   });
 
   it("preserves the household load label while showing hidden work at background scale", () => {
@@ -30,16 +31,19 @@ describe("CrashCourseScene", () => {
     expect(image).toBeVisible();
     expect(image).toHaveAttribute("data-scene-scale", "immersive-background");
     expect(image).toHaveAttribute("data-scene-composition", "hidden-load-home");
-    expect(screen.getByTestId("visible-task-basket")).toBeVisible();
-    expect(screen.getByTestId("hidden-planning-notes")).toBeVisible();
+    expect(screen.getByTestId("crash-course-scene-image")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/generated-ui/crash-course/not-chore.png"
+    );
   });
 
-  it("renders CPE as three connected stages", () => {
+  it("renders CPE as a generated background image", () => {
     render(<CrashCourseScene scene="cpe-path" />);
 
-    expect(screen.getByText("Conception")).toBeVisible();
-    expect(screen.getByText("Planning")).toBeVisible();
-    expect(screen.getByText("Execution")).toBeVisible();
+    expect(screen.getByTestId("crash-course-scene-image")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/generated-ui/crash-course/cpe-path.png"
+    );
   });
 
   it.each<[CrashCourseSceneKey, string]>([

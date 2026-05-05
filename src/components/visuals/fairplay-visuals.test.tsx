@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   CheckInVisual,
+  FairplayMark,
   HelperMascot,
   PersonaAvatar,
   RadarVisual
@@ -19,11 +20,11 @@ describe("Fairplay visual components", () => {
 
     expect(screen.getByRole("img", { name: "Alex avatar" })).toHaveAttribute(
       "src",
-      "/assets/fairplay/alex-avatar.svg"
+      "/assets/fairplay/generated-ui/alex-avatar.png"
     );
     expect(screen.getByRole("img", { name: "Max avatar" })).toHaveAttribute(
       "src",
-      "/assets/fairplay/max-avatar.svg"
+      "/assets/fairplay/generated-ui/max-avatar.png"
     );
   });
 
@@ -32,7 +33,11 @@ describe("Fairplay visual components", () => {
 
     const mascot = screen.getByAltText("");
     expect(mascot).toHaveAttribute("aria-hidden", "true");
-    expect(mascot).toHaveAttribute("src", "/assets/fairplay/helper-mascot.svg");
+    expect(mascot).toHaveAttribute(
+      "src",
+      "/assets/fairplay/generated-ui/helper-mascot.png"
+    );
+    expect(mascot).toHaveAttribute("draggable", "false");
   });
 
   it("uses a calm accessible label for the radar illustration", () => {
@@ -40,15 +45,22 @@ describe("Fairplay visual components", () => {
 
     expect(
       screen.getByRole("img", { name: "Shared radar illustration" })
-    ).toHaveAttribute("src", "/assets/fairplay/radar-board-placeholder.svg");
+    ).toHaveAttribute("src", "/assets/fairplay/generated-ui/radar-illustration.png");
   });
 
-  it("renders the check-in visual as non-image spark pieces", () => {
+  it("uses the generated Fairplay mark asset", () => {
+    render(<FairplayMark />);
+
+    expect(
+      screen.getByRole("img", { name: "Fairplay household orbit mark" })
+    ).toHaveAttribute("src", "/assets/fairplay/generated-ui/fairplay-mark.png");
+  });
+
+  it("renders the check-in visual as a generated image", () => {
     render(<CheckInVisual label="Check-in completion spark" />);
 
     expect(
       screen.getByRole("img", { name: "Check-in completion spark" })
-    ).toHaveAttribute("data-fp-visual", "check-in");
-    expect(screen.getAllByTestId("check-in-spark-piece")).toHaveLength(6);
+    ).toHaveAttribute("src", "/assets/fairplay/generated-ui/check-in-spark.png");
   });
 });

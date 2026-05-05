@@ -57,3 +57,31 @@ Recommended tests for:
 - Use `public/assets/fairplay/generated-ui/` instead of `public/assets/fairplay/ui/` to make generated asset provenance explicit.
 - Generate PNGs with Qwen production env.
 - Keep generated art decorative where possible and retain existing accessible labels in DOM.
+
+### Implementation
+
+- Added `src/server/ai/generated-ui-assets.ts` as the central asset spec and prompt builder for 24 non-card UI assets.
+- Added `scripts/generate-ui-assets.mjs` as a Qwen-only generator guarded to `qwen-image-2.0-pro`.
+- Added generator options for `--dry-run`, `--slugs`, `--limit`, `--output-dir`, `--skip-existing`, retry/backoff, and existing-file resume.
+- Generated 24 PNGs under `public/assets/fairplay/generated-ui/` and refreshed `generation-manifest.json` with repo-relative paths.
+- Added asset integrity tests that verify generated PNG existence, file size, and expected dimensions.
+- Replaced non-card SVG/CSS drawings in shared visuals, login splash, crash-course scenes, crash-course completion splash, guide helper thumbnails, and the library AI task manager sidekick.
+- Left `public/assets/fairplay/cards/**` untouched.
+
+### QA Follow-Up
+
+- Reused the QA subagent for a final read-only audit after local wiring.
+- Fixed the subagent's real P2 finding by wiring `crash-course/completion-celebration.png` into the completed crash-course splash.
+- Kept the visible `greg - the taskmaster` and `hi im little alex horne` labels because those were explicit product-copy requirements from the user; the generated image itself remains stylized and original.
+- Retained old public non-card SVG files as inert legacy assets because runtime and E2E references now point at generated PNGs; removing them can be a separate cleanup PR if desired.
+
+### Verification
+
+- `npm run assets:generate-ui -- --skip-existing`: passed; skipped provider setup because every generated asset already existed.
+- `npm run test -- src/server/ai/generated-ui-assets.test.ts src/server/ai/generated-ui-asset-files.test.ts`: passed.
+- `npm run test -- src/components/crash-course/crash-course-flow.test.tsx src/components/crash-course/crash-course-page-client.test.tsx src/components/crash-course/crash-course-scene.test.tsx`: passed.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run test`: passed, 90 files and 433 tests.
+- `npm run build`: passed. Next.js warns about nested worktree lockfile root inference.
+- `npm run test:e2e`: passed, 11 Playwright tests.

@@ -12,11 +12,15 @@ type PersonaAvatarProps = VisualImageProps & {
 const personaAssets = {
   alex: {
     alt: "Alex avatar",
-    src: "/assets/fairplay/alex-avatar.svg"
+    height: 768,
+    src: "/assets/fairplay/generated-ui/alex-avatar.png",
+    width: 768
   },
   max: {
     alt: "Max avatar",
-    src: "/assets/fairplay/max-avatar.svg"
+    height: 768,
+    src: "/assets/fairplay/generated-ui/max-avatar.png",
+    width: 768
   }
 } as const;
 
@@ -29,16 +33,20 @@ function VisualImage({
   className,
   decorative = false,
   defaultAlt,
+  height,
+  width,
   src
-}: VisualImageProps & { defaultAlt: string; src: string }) {
+}: VisualImageProps & { defaultAlt: string; height: number; src: string; width: number }) {
   return (
     <img
       alt={decorative ? "" : alt ?? defaultAlt}
       aria-hidden={decorative ? "true" : undefined}
       className={visualClass(className)}
       draggable={false}
+      height={height}
       loading="lazy"
       src={src}
+      width={width}
     />
   );
 }
@@ -57,7 +65,9 @@ export function PersonaAvatar({
       className={className}
       decorative={decorative}
       defaultAlt={asset.alt}
+      height={asset.height}
       src={asset.src}
+      width={asset.width}
     />
   );
 }
@@ -69,7 +79,9 @@ export function HelperMascot({ alt, className, decorative }: VisualImageProps) {
       className={className}
       decorative={decorative}
       defaultAlt="Household helper mascot"
-      src="/assets/fairplay/helper-mascot.svg"
+      height={768}
+      src="/assets/fairplay/generated-ui/helper-mascot.png"
+      width={768}
     />
   );
 }
@@ -81,7 +93,9 @@ export function RadarVisual({ alt, className, decorative }: VisualImageProps) {
       className={className}
       decorative={decorative}
       defaultAlt="Shared radar illustration"
-      src="/assets/fairplay/radar-board-placeholder.svg"
+      height={1024}
+      src="/assets/fairplay/generated-ui/radar-illustration.png"
+      width={1536}
     />
   );
 }
@@ -93,7 +107,9 @@ export function FairplayMark({ alt, className, decorative }: VisualImageProps) {
       className={className}
       decorative={decorative}
       defaultAlt="Fairplay household orbit mark"
-      src="/assets/fairplay/pwa-icon-concept.svg"
+      height={768}
+      src="/assets/fairplay/generated-ui/fairplay-mark.png"
+      width={768}
     />
   );
 }
@@ -106,32 +122,19 @@ export function CheckInVisual({
   label?: string;
 }) {
   return (
-    <div
-      aria-label={label}
-      className={[
-        "fp-motion-checkin-spark relative h-14 w-24 overflow-hidden rounded-[8px]",
-        className
-      ]
-        .filter(Boolean)
-        .join(" ")}
+    <img
+      alt={label}
+      className={visualClass(
+        ["fp-motion-checkin-spark rounded-[8px] object-contain", className]
+          .filter(Boolean)
+          .join(" ")
+      )}
       data-fp-visual="check-in"
-      role="img"
-    >
-      {[
-        "left-[12%] top-[56%] bg-fp-alex",
-        "left-[34%] top-[28%] bg-fp-helper",
-        "left-[48%] top-[66%] bg-fp-shared",
-        "left-[64%] top-[36%] bg-fp-max",
-        "left-[78%] top-[58%] bg-fp-helper",
-        "left-[54%] top-[18%] bg-fp-radar"
-      ].map((pieceClass) => (
-        <span
-          aria-hidden="true"
-          className={`absolute h-2.5 w-2.5 rounded-full ${pieceClass}`}
-          data-testid="check-in-spark-piece"
-          key={pieceClass}
-        />
-      ))}
-    </div>
+      draggable={false}
+      height={640}
+      loading="lazy"
+      src="/assets/fairplay/generated-ui/check-in-spark.png"
+      width={1024}
+    />
   );
 }

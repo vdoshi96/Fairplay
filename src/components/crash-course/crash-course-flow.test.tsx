@@ -91,6 +91,10 @@ describe("crash course flow", () => {
         "You now know how Fairplay treats ownership, planning, standards, handoffs, radar, and repair."
       )
     ).toBeVisible();
+    expect(screen.getByTestId("crash-course-completion-celebration")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/generated-ui/crash-course/completion-celebration.png"
+    );
     expect(
       screen.getByRole("link", { name: "Open the Load Map" })
     ).toHaveAttribute("href", "/app/load-map");
