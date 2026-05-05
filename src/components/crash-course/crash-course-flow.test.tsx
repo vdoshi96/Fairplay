@@ -24,6 +24,10 @@ describe("crash course flow", () => {
     const onProgress = vi.fn();
     render(<CrashCourseFlow currentStep={1} onProgress={onProgress} />);
 
+    expect(
+      screen.getByRole("img", { name: "Owner and helper learning scene" })
+    ).toBeVisible();
+
     fireEvent.click(screen.getByRole("button", { name: "Next lesson" }));
     expect(onProgress).toHaveBeenLastCalledWith(2);
 

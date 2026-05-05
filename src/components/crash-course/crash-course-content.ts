@@ -3,8 +3,21 @@ export type CrashCourseLesson = {
   title: string;
   concept: string;
   action: string;
+  scene: CrashCourseSceneKey;
   exampleCardTitle?: string;
 };
+
+export type CrashCourseSceneKey =
+  | "not-chore"
+  | "owner-helper"
+  | "cpe-path"
+  | "standards-note"
+  | "board-lanes"
+  | "active-deck"
+  | "handoff"
+  | "radar-check-in"
+  | "dynamic-fair"
+  | "repair";
 
 export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
   {
@@ -14,6 +27,7 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
       "Household work is more than the visible final task. It includes noticing, remembering, coordinating, emotional care, and follow-through. The board exists to make that load discussable without turning either person into the problem.",
     action:
       "Look for the hidden planning or care work behind one responsibility before you move it on the board.",
+    scene: "not-chore",
     exampleCardTitle: "School forms"
   },
   {
@@ -23,6 +37,7 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
       "Helping with a step can still leave someone else carrying the outcome. Ownership means the accountable person notices the need, understands the standard, plans the path, and initiates without being managed.",
     action:
       "When you assign a card, name the owner of the outcome, not only the person who can complete a visible step.",
+    scene: "owner-helper",
     exampleCardTitle: "Groceries"
   },
   {
@@ -32,6 +47,7 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
       "A responsibility has a lifecycle: conception is seeing the need and defining the outcome, planning is sequencing and coordinating, and execution is doing or ensuring the work happens.",
     action:
       "Open a card detail and check whether the same owner can carry all three parts, or whether a handoff needs more context.",
+    scene: "cpe-path",
     exampleCardTitle: "Birthday party"
   },
   {
@@ -41,6 +57,7 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
       "Unspoken standards create resentment and rework. A household standard should be plain, realistic, and shared before anyone judges follow-through; the owner then gets autonomy inside that agreement.",
     action:
       "Rewrite one standard in your own words so it names what matters, what is flexible, and when it should be reviewed.",
+    scene: "standards-note",
     exampleCardTitle: "Packed lunches"
   },
   {
@@ -50,6 +67,7 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
       "The lanes describe the state of a responsibility: reserve cards, concern cards, two owner lanes, intentional child or context splits, and trimmed items that are paused or irrelevant.",
     action:
       "Move cards only when the lane meaning matches the household decision you want to remember.",
+    scene: "board-lanes",
     exampleCardTitle: "Pet care"
   },
   {
@@ -59,6 +77,7 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
       "A useful board starts by removing noise. Keep irrelevant cards out of play, move uncertain cards to concern, and assign only responsibilities that are actually active now.",
     action:
       "Trim what does not matter this season before trying to balance the cards that remain.",
+    scene: "active-deck",
     exampleCardTitle: "Holiday cards"
   },
   {
@@ -68,6 +87,7 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
       "Ownership can change, but context has to move with it. A handoff needs the standard, timing, access, dependencies, likely blockers, and a date to review how it is working.",
     action:
       "Before moving an owned card, add the context the next owner would otherwise have to extract by asking.",
+    scene: "handoff",
     exampleCardTitle: "Medical appointments"
   },
   {
@@ -77,6 +97,7 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
       "Radar holds unclear standards, blockers, and topics that need a calm decision. Check-ins turn those signals into choices, deferrals, acknowledgements, and next review dates.",
     action:
       "Send tension to Radar as a neutral topic instead of waiting until it becomes an argument.",
+    scene: "radar-check-in",
     exampleCardTitle: "Bedtime routine"
   },
   {
@@ -86,6 +107,7 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
       "Fairness is not a permanent 50/50 count. Capacity, work seasons, health, travel, children, and personal recovery all change the load profile over time.",
     action:
       "Review whether the current share feels workable before treating card counts as the whole story.",
+    scene: "dynamic-fair",
     exampleCardTitle: "Dinner"
   },
   {
@@ -95,6 +117,7 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
       "Defensiveness, hidden expectations, and solo drafting are normal parts of changing a household pattern. The app should help users pause, clarify, appreciate effort, and invite discussion without forcing a hot conversation.",
     action:
       "If a topic feels charged, draft privately, simplify the ask, and bring one decision to the next check-in.",
+    scene: "repair",
     exampleCardTitle: "Family calendar"
   }
 ];
