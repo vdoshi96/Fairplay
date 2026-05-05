@@ -34,6 +34,21 @@ Required variables are listed in `.env.example`:
 
 The card key is used for Qwen OpenAI-compatible structuring and ASR. The image key is used for Qwen image generation. No Qwen keys are exposed to client components.
 
+## OpenAI Fallback
+
+Qwen remains the primary provider. When `AI_PROVIDER_FALLBACK_ENABLED=true`, card structuring and card-front image generation fall back to OpenAI only after the matching Qwen step throws. Audio transcription remains Qwen-only in this version.
+
+Required fallback variables:
+
+- `AI_PROVIDER_FALLBACK_ENABLED=true`
+- `OPENAI_BASE_URL=https://api.openai.com/v1`
+- `OPENAI_TEXT_MODEL=gpt-5-nano`
+- `OPENAI_TEXT_API_KEY`
+- `OPENAI_IMAGE_MODEL=gpt-image-1-mini`
+- `OPENAI_IMAGE_API_KEY`
+
+OpenAI card structuring uses the Responses API with strict JSON schema output and the same card validation as Qwen. OpenAI image generation requests a low-cost portrait PNG, validates the returned raster bytes or URL download, and persists only server-owned cover bytes.
+
 ## Audio Retention
 
 Voice recordings are uploaded to the server and stored only on the `AiCardDraft` record while the draft is still reviewable. Raw audio is deleted when the user cancels the draft or puts it in play. Accepted drafts retain the transcript and generated card fields, but not the raw audio bytes or audio MIME type.

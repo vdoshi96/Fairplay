@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import type { StructuredAiCard } from "@/server/ai/qwen-card-generator";
+import type { StructuredAiCard } from "@/server/ai/card-generation-shared";
 import { prisma } from "../db/prisma";
 import { RepositoryError } from "../db/errors";
 import { createHouseholdWithPersonas } from "./households";

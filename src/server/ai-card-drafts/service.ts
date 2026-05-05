@@ -11,7 +11,7 @@ import {
   transcribeAudio,
   type GeneratedCoverImage,
   type StructuredAiCard
-} from "@/server/ai/qwen-card-generator";
+} from "@/server/ai/card-generator";
 import type { CurrentSession } from "@/server/auth/current-session";
 import {
   acceptAiCardDraftAsResponsibility,
