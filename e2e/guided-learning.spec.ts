@@ -6,6 +6,8 @@ function uniqueHouseholdSlug() {
     .slice(2, 7)}`;
 }
 
+const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
+
 test("guided learning surfaces are persistent, skippable, and user-triggered", async ({
   context,
   page
@@ -51,8 +53,9 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   const welcome = page.getByRole("dialog", { name: "Welcome to Fairplay" });
   await expect(welcome).toBeVisible();
   await expect(
-    welcome.getByRole("link", { name: "Open App Guide 101" })
-  ).toHaveAttribute("href", "/app/home#app-guide-101");
+    welcome.getByRole("link", { name: "Learn a feature" })
+  ).toHaveAttribute("href", "/app/home#learn-a-feature");
+  await expect(page.getByText(retiredGuideLabel)).toHaveCount(0);
 
   await page.getByRole("link", { name: "Learn this feature: Library" }).click();
   await expect(page).toHaveURL(/\/app\/library\?guide=library/);

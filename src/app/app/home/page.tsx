@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { HelperMascot } from "@/components/visuals/fairplay-visuals";
+import { FeatureGuideHelper } from "@/components/guide/feature-guide-helper";
+import type { FeatureGuideId } from "@/components/guide/guide-content";
 
 const primaryActions = [
   {
@@ -8,42 +9,52 @@ const primaryActions = [
     label: "Crash course"
   },
   {
-    href: "/app/home#app-guide-101",
-    label: "App Guide 101"
-  },
-  {
     href: "/app/library",
     label: "Card library"
+  },
+  {
+    href: "/app/home#learn-a-feature",
+    label: "Learn a feature"
   }
 ] as const;
 
-const featureCards = [
+const featureCards: Array<{
+  body: string;
+  guideHref: string;
+  guideId: FeatureGuideId;
+  title: string;
+}> = [
   {
     body: "See what is in play, what needs attention, and who owns each responsibility.",
     guideHref: "/app/load-map?guide=loadMap",
+    guideId: "loadMap",
     title: "Load Map"
   },
   {
     body: "Browse source cards before deciding what belongs in your household system.",
     guideHref: "/app/library?guide=library",
+    guideId: "library",
     title: "Library"
   },
   {
     body: "Capture unclear work, blockers, and topics that need calmer discussion.",
     guideHref: "/app/radar?guide=radar",
+    guideId: "radar",
     title: "Radar"
   },
   {
     body: "Turn decisions into a short agenda with clear outcomes and next steps.",
     guideHref: "/app/check-ins/new?guide=checkIns",
+    guideId: "checkIns",
     title: "Check-ins"
   },
   {
     body: "Replay welcome moments, switch personas, and restart learning surfaces.",
     guideHref: "/app/settings?guide=settings",
+    guideId: "settings",
     title: "Settings"
   }
-] as const;
+];
 
 export default function AppHomePage() {
   return (
@@ -74,10 +85,10 @@ export default function AppHomePage() {
         ))}
       </div>
 
-      <section className="grid gap-3" id="app-guide-101">
+      <section className="grid gap-3" id="learn-a-feature">
         <div className="grid gap-1">
           <h2 className="text-[20px] font-bold leading-7 text-fp-ink">
-            App Guide 101
+            Learn a feature
           </h2>
           <p className="text-[14px] leading-5 text-fp-muted-ink">
             Pick a feature, learn the page, and come back here whenever you want
@@ -92,7 +103,10 @@ export default function AppHomePage() {
               key={feature.title}
             >
               <div className="flex items-start gap-3">
-                <HelperMascot className="h-14 w-14 shrink-0" decorative />
+                <FeatureGuideHelper
+                  className="h-16 w-20 shrink-0"
+                  guideId={feature.guideId}
+                />
                 <div className="min-w-0">
                   <h3 className="text-[17px] font-bold leading-6 text-fp-ink">
                     {feature.title}

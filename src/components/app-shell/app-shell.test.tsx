@@ -35,8 +35,11 @@ const selectedPersona: PersonaSummary = {
   avatarKey: "alex"
 };
 
+const retiredGuideAnchor = ["app", "guide", "101"].join("-");
+const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
+
 function renderProtectedUi(children: ReactNode) {
-  render(
+  return render(
     <AppShell household={household} selectedPersona={selectedPersona}>
       {children}
     </AppShell>
@@ -51,7 +54,7 @@ describe("protected app UI", () => {
   });
 
   it("renders the app shell around the real home page", () => {
-    renderProtectedUi(<AppHomePage />);
+    const { container } = renderProtectedUi(<AppHomePage />);
 
     expect(
       screen.getAllByRole("link", { name: /River Home Fairplay/i })[0]
@@ -68,14 +71,20 @@ describe("protected app UI", () => {
         .getAllByRole("link", { name: "Crash course" })
         .some((link) => link.getAttribute("href") === "/app/crash-course")
     ).toBe(true);
-    expect(screen.getByRole("link", { name: "App Guide 101" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Learn a feature" })).toHaveAttribute(
       "href",
-      "/app/home#app-guide-101"
+      "/app/home#learn-a-feature"
     );
     expect(screen.getByRole("link", { name: "Card library" })).toHaveAttribute(
       "href",
       "/app/library"
     );
+    expect(
+      screen.getByRole("heading", { name: "Learn a feature" })
+    ).toBeVisible();
+    expect(container.querySelector("#learn-a-feature")).not.toBeNull();
+    expect(container.querySelector(`#${retiredGuideAnchor}`)).toBeNull();
+    expect(screen.queryByText(retiredGuideLabel)).not.toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Learn this feature: Load Map" })
     ).toHaveAttribute("href", "/app/load-map?guide=loadMap");

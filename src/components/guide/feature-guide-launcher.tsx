@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { PlayCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { HelperMascot } from "@/components/visuals/fairplay-visuals";
+import { FeatureGuideHelper } from "./feature-guide-helper";
 import { GuidedTour } from "./guided-tour";
 import type { FeatureGuide } from "./guide-content";
 
@@ -23,7 +23,7 @@ export function FeatureGuideLauncher({
 
   return (
     <div className="flex max-w-full items-center gap-3">
-      <HelperMascot className="h-12 w-12 shrink-0" decorative />
+      <FeatureGuideHelper guideId={guide.id} />
       <div className="grid min-w-0 gap-2">
         {showDescription ? (
           <p className="text-[14px] leading-5 text-fp-muted-ink">{guide.description}</p>

@@ -15,13 +15,17 @@ describe("FeatureGuideLauncher", () => {
     queryValue.value = "";
   });
 
-  it("starts a user-triggered feature guide with a helper character", () => {
+  it("starts a user-triggered feature guide with a load map helper scene", () => {
     render(<FeatureGuideLauncher guide={FEATURE_GUIDES.loadMap} />);
+
+    expect(screen.getByTestId("feature-guide-helper-loadMap")).toHaveAttribute(
+      "data-helper-scene",
+      "lane-board"
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
 
     expect(screen.getByRole("dialog", { name: "Load Map guide" })).toBeVisible();
-    expect(screen.getByAltText("")).toHaveAttribute("aria-hidden", "true");
   });
 
   it("does not auto-start before the user taps the guide", () => {
