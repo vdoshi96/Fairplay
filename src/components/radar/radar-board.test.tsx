@@ -4,6 +4,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { RadarSummary } from "@/contracts/radar";
 import { RadarBoard } from "./radar-board";
 
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams()
+}));
+
 function item(overrides: Partial<RadarSummary> = {}): RadarSummary {
   return {
     id: "550e8400-e29b-41d4-a716-446655440010",
@@ -193,6 +197,18 @@ describe("RadarBoard", () => {
     );
     render(<RadarBoard items={[]} />);
 
+    expect(
+      screen.getByRole("button", { name: "Learn this feature" })
+    ).toBeVisible();
+    expect(screen.getByLabelText("Topic")).toHaveAttribute(
+      "data-guide-id",
+      "radar-create"
+    );
+    expect(screen.getByLabelText("Visibility")).toHaveAttribute(
+      "data-guide-id",
+      "radar-visibility"
+    );
+
     fireEvent.change(screen.getByLabelText("Topic"), {
       target: { value: "New timing concern" }
     });
@@ -304,6 +320,10 @@ describe("RadarBoard", () => {
         items={[item({ visibility: "shared_household", state: "open" })]}
       />
     );
+
+    expect(
+      document.querySelector('[data-guide-id="radar-actions"]')
+    ).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Revisit date"), {
       target: { value: "2026-05-11" }

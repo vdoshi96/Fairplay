@@ -8,6 +8,8 @@ import type {
   CardTemplateSummary
 } from "@/contracts/card-templates";
 import { CARD_TEMPLATE_LABELS } from "@/contracts/card-templates";
+import { FEATURE_GUIDES } from "@/components/guide/guide-content";
+import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 
@@ -63,18 +65,26 @@ export function CardLibrary({
           <input
             aria-label="Search cards"
             className="min-h-11 rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+            data-guide-id="library-search"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Auto, school, meals..."
             type="search"
             value={query}
           />
         </label>
-        <p className="text-[13px] font-semibold text-fp-muted-ink">
-          {filteredTemplates.length} of {templates.length} cards
-        </p>
+        <div className="grid gap-3 lg:justify-items-end">
+          <FeatureGuideLauncher guide={FEATURE_GUIDES.library} showDescription={false} />
+          <p className="text-[13px] font-semibold text-fp-muted-ink">
+            {filteredTemplates.length} of {templates.length} cards
+          </p>
+        </div>
       </div>
 
-      <div aria-label="Source labels" className="flex gap-2 overflow-x-auto pb-1">
+      <div
+        aria-label="Source labels"
+        className="flex gap-2 overflow-x-auto pb-1"
+        data-guide-id="library-labels"
+      >
         <button
           className={filterButtonClass(selectedLabel === "all")}
           onClick={() => setSelectedLabel("all")}
@@ -132,6 +142,7 @@ export function CardLibrary({
               <div className="border-t border-fp-line p-4">
                 <Button
                   className="w-full"
+                  data-guide-id="library-put-in-play"
                   disabled={!onCreateFromTemplate}
                   onClick={() => onCreateFromTemplate?.(template.id)}
                   variant="primary"

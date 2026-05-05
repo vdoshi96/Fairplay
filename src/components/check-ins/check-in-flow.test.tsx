@@ -4,6 +4,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { GuidedCheckIn } from "@/server/check-ins/service";
 import { CheckInFlow, NewCheckInLauncher } from "./check-in-flow";
 
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams()
+}));
+
 const checkIn: GuidedCheckIn = {
   id: "550e8400-e29b-41d4-a716-446655440080",
   state: "active",
@@ -69,6 +73,10 @@ describe("CheckInFlow", () => {
       })
     );
     render(<NewCheckInLauncher />);
+
+    expect(
+      screen.getByRole("button", { name: "Learn this feature" })
+    ).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: "Preview agenda" }));
     await screen.findByText("Clarify morning handoff");
@@ -178,6 +186,13 @@ describe("CheckInFlow", () => {
     const onUpdateItem = vi.fn();
     render(<CheckInFlow initialCheckIn={checkIn} onUpdateItem={onUpdateItem} />);
 
+    expect(
+      screen.getByRole("button", { name: "Learn this feature" })
+    ).toBeVisible();
+    expect(screen.getByRole("region", { name: "Current item" })).toHaveAttribute(
+      "data-guide-id",
+      "check-in-agenda"
+    );
     expect(screen.getByRole("heading", { name: "Clarify morning handoff" }))
       .toBeVisible();
     expect(screen.getByText("Shared household")).toBeVisible();
@@ -204,6 +219,15 @@ describe("CheckInFlow", () => {
   it("captures a T02 decision and review date through the decision form", async () => {
     const onDecision = vi.fn();
     render(<CheckInFlow initialCheckIn={checkIn} onDecision={onDecision} />);
+
+    expect(screen.getByRole("region", { name: "Decision form" })).toHaveAttribute(
+      "data-guide-id",
+      "check-in-decision"
+    );
+    expect(screen.getByRole("button", { name: "Complete check-in" })).toHaveAttribute(
+      "data-guide-id",
+      "check-in-complete"
+    );
 
     fireEvent.change(screen.getByLabelText("Decision type"), {
       target: { value: "schedule_review" }

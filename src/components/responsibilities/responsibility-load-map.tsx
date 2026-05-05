@@ -25,6 +25,8 @@ import type {
   ResponsibilitySummary
 } from "@/contracts/responsibilities";
 import type { HiddenEffortKey, ResponsibilityBoardLane } from "@/domain/enums";
+import { FEATURE_GUIDES } from "@/components/guide/guide-content";
+import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import { AssignmentShift, MotionPanel } from "@/components/motion/fairplay-motion";
 import { HelperMascot } from "@/components/visuals/fairplay-visuals";
 import { BOARD_LANES, type BoardLaneTone } from "./board-lanes";
@@ -271,14 +273,17 @@ export function ResponsibilityLoadMap({
             Responsibility overview
           </h1>
         </div>
-        {responsibilities.length > 0 ? (
-          <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white outline-none focus:ring-2 focus:ring-fp-ink/25"
-            href="/app/responsibilities/new"
-          >
-            Add responsibility
-          </Link>
-        ) : null}
+        <div className="grid gap-3 sm:justify-items-end">
+          <FeatureGuideLauncher guide={FEATURE_GUIDES.loadMap} showDescription={false} />
+          {responsibilities.length > 0 ? (
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white outline-none focus:ring-2 focus:ring-fp-ink/25"
+              href="/app/responsibilities/new"
+            >
+              Add responsibility
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
@@ -317,7 +322,10 @@ export function ResponsibilityLoadMap({
         />
       </div>
 
-      <div className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div
+        className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-3 sm:grid-cols-2 lg:grid-cols-4"
+        data-guide-id="load-map-filters"
+      >
         <Select label="Owner" onChange={setOwner} options={ownerOptions} value={owner} />
         <Select
           label="Status"
@@ -384,23 +392,25 @@ export function ResponsibilityLoadMap({
           onDragEnd={handleDragEnd}
           sensors={sensors}
         >
-          <div className="-mx-4 overflow-x-auto px-4 pb-3">
-            <div className="flex min-w-max gap-3">
-              {BOARD_LANES.map((lane) => {
-                const laneResponsibilities =
-                  responsibilitiesByLane.get(lane.key) ?? [];
+          <div data-guide-id="load-map-board" data-testid="load-map-board">
+            <div className="-mx-4 overflow-x-auto px-4 pb-3">
+              <div className="flex min-w-max gap-3" data-guide-id="load-map-lanes">
+                {BOARD_LANES.map((lane) => {
+                  const laneResponsibilities =
+                    responsibilitiesByLane.get(lane.key) ?? [];
 
-                return (
-                  <BoardLaneColumn
-                    key={lane.key}
-                    lane={lane}
-                    onMove={handleMove}
-                    openMoveMenuId={openMoveMenuId}
-                    responsibilities={laneResponsibilities}
-                    setOpenMoveMenuId={setOpenMoveMenuId}
-                  />
-                );
-              })}
+                  return (
+                    <BoardLaneColumn
+                      key={lane.key}
+                      lane={lane}
+                      onMove={handleMove}
+                      openMoveMenuId={openMoveMenuId}
+                      responsibilities={laneResponsibilities}
+                      setOpenMoveMenuId={setOpenMoveMenuId}
+                    />
+                  );
+                })}
+              </div>
             </div>
           </div>
           {filteredResponsibilities.length === 0 ? (
@@ -568,6 +578,7 @@ function SortableResponsibilityCard({
             aria-expanded={moveMenuOpen}
             aria-haspopup="menu"
             className="inline-flex min-h-9 w-full items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-3 text-[13px] font-bold text-fp-ink outline-none hover:bg-white focus:ring-2 focus:ring-fp-ink/20"
+            data-guide-id="load-map-move"
             onClick={() =>
               setOpenMoveMenuId(moveMenuOpen ? null : responsibility.id)
             }
