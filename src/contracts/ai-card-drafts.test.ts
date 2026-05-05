@@ -39,6 +39,12 @@ describe("AiCardDraft contracts", () => {
     expect(summary.coverUrl).toBe(
       "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440090/cover"
     );
+    expect(() =>
+      AiCardDraftSummarySchema.parse({
+        ...summary,
+        coverUrl: "/api/ai-card-drafts/not-a-draft-cover"
+      })
+    ).toThrow();
   });
 
   it("accepts generated field updates before put-in-play", () => {
@@ -57,5 +63,10 @@ describe("AiCardDraft contracts", () => {
       imagePrompt: "A tidy pet medication calendar with a small pill organizer.",
       imageNegativePrompt: "No brand names, no cluttered countertop."
     });
+    expect(() =>
+      AiCardDraftUpdateSchema.parse({
+        cadence: null
+      })
+    ).toThrow();
   });
 });
