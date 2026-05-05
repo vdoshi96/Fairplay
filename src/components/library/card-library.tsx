@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 
 import type {
@@ -102,10 +103,13 @@ export function CardLibrary({
               key={template.id}
             >
               <div className="relative overflow-hidden bg-fp-surface">
-                <img
+                <Image
                   alt={`${template.title} cover`}
                   className="h-full w-full object-contain p-3"
+                  height={700}
                   src={template.coverAssetPath}
+                  unoptimized
+                  width={500}
                 />
               </div>
               <div className="grid content-start gap-3 p-4">

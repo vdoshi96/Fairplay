@@ -17,6 +17,9 @@
   - Updated legacy responsibility mapper/test fixtures to include required `boardLane` and `boardSortOrder`.
   - Verified `npm run typecheck` passes.
   - Verified `npm test -- src/components/responsibilities/responsibility-load-map.test.tsx src/server/responsibilities/service.test.ts` passes.
+- Controller image polish:
+  - Swapped new source-card cover renderers from raw `<img>` tags to Next `Image` with local `coverAssetPath` assets.
+  - Verified `npm run lint`, `npm run typecheck`, and card/library component tests pass.
 
 ## Challenges
 

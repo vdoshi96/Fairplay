@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarClock, Flag, MoveRight, Scissors } from "lucide-react";
+import Image from "next/image";
 
 import type { CardTemplateLabel } from "@/contracts/card-templates";
 import type { ResponsibilityBoardLane } from "@/domain/enums";
@@ -70,10 +71,14 @@ export function CardDetailSheet({
         <div className="grid min-h-[420px] grid-rows-[minmax(300px,1fr)_auto] border-b border-fp-line bg-fp-surface lg:border-b-0 lg:border-r">
           <div className="grid place-items-center p-5">
             {card.coverAssetPath ? (
-              <img
+              <Image
                 alt={`${card.title} cover`}
                 className="h-full max-h-[420px] w-full rounded object-contain shadow-[var(--fp-shadow-soft)]"
+                height={700}
+                priority={false}
                 src={card.coverAssetPath}
+                unoptimized
+                width={500}
               />
             ) : (
               <div className="grid aspect-[5/7] w-full max-w-[280px] place-items-center rounded border border-fp-line bg-white p-5 text-center shadow-[var(--fp-shadow-soft)]">
