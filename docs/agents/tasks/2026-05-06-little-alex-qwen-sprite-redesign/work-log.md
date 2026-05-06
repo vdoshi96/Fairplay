@@ -7,3 +7,8 @@
 - Documented sprite-part approach and branch split before implementation.
 - Pivoted asset generation from 18 independent body-part prompts to three cohesive Qwen source sheets after user raised matching concerns.
 - Generated final Qwen source sheets and cropped 18 transparent renderer sprites.
+- QA branch stayed on `codex/little-alex-sprite-qa` and changed only the owned Playwright file plus this task documentation.
+- Added exact sprite-path assertions using camelCase arm/leg slugs: `neutral-leftArm.png`, `neutral-rightArm.png`, `neutral-leftLeg.png`, `neutral-rightLeg.png`, and equivalent masculine/feminine paths.
+- Added visual QA screenshot flow for the three presentations under `test-results/little-alex-qwen-sprites/`.
+- Ran `npm run test:e2e -- little-alex-physics.spec.ts`.
+  Result: 8 existing behavior tests passed; the new visual QA test failed because the isolated branch still renders CSS parts and no sprite images at `/assets/fairplay/little-alex-sprites/neutral-*.png`.

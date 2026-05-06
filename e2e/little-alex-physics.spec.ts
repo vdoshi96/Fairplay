@@ -1,4 +1,32 @@
+import { mkdir, rm } from "node:fs/promises";
+
 import { expect, test, type Page } from "@playwright/test";
+
+const littleAlexSpriteScreenshotDir = "test-results/little-alex-qwen-sprites";
+const littleAlexSpriteBasePath = "/assets/fairplay/little-alex-sprites";
+const littleAlexSpriteParts = [
+  "head",
+  "torso",
+  "leftArm",
+  "rightArm",
+  "leftLeg",
+  "rightLeg"
+] as const;
+const littleAlexSpritePresentations = [
+  "neutral",
+  "masculine",
+  "feminine"
+] as const;
+
+type LittleAlexSpritePart = (typeof littleAlexSpriteParts)[number];
+type LittleAlexSpritePresentation = (typeof littleAlexSpritePresentations)[number];
+
+function expectedLittleAlexSpritePath(
+  presentation: LittleAlexSpritePresentation,
+  part: LittleAlexSpritePart
+) {
+  return `${littleAlexSpriteBasePath}/${presentation}-${part}.png`;
+}
 
 function uniqueHouseholdSlug() {
   return `alex-physics-${Date.now().toString(36)}-${Math.random()
@@ -86,6 +114,22 @@ async function createHouseholdAndChooseAlex(page: Page) {
     .not.toBeNull();
 }
 
+async function saveLittleAlexPresentation(
+  page: Page,
+  presentation: LittleAlexSpritePresentation
+) {
+  const label = presentation.slice(0, 1).toUpperCase() + presentation.slice(1);
+
+  await page.goto("/app/settings");
+  await page.getByRole("button", { name: label }).click();
+  await expectApiPatch(page, "/api/preferences/little-alex", () =>
+    page.getByRole("button", { name: "Save Little Alex" }).click()
+  );
+  await expect(page.getByRole("status")).toContainText(
+    "Little Alex updated for Alex."
+  );
+}
+
 async function expectLittleAlexInViewport(
   page: Page,
   options: { minLeft?: number } = {}
@@ -149,6 +193,90 @@ async function expectLittleAlexInViewport(
     .toEqual([]);
 }
 
+async function expectLittleAlexSpritesLoaded(
+  page: Page,
+  presentation: LittleAlexSpritePresentation
+) {
+  const expectedSpritePaths = Object.fromEntries(
+    littleAlexSpriteParts.map((part) => [
+      part,
+      expectedLittleAlexSpritePath(presentation, part)
+    ])
+  ) as Record<LittleAlexSpritePart, string>;
+
+  await expect(page.getByTestId("little-alex-body-part")).toHaveCount(
+    littleAlexSpriteParts.length
+  );
+
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          ({ expectedSpritePaths, parts }) => {
+            const failures: string[] = [];
+            const viewport = {
+              height: window.innerHeight,
+              width: window.innerWidth
+            };
+
+            for (const part of parts) {
+              const expectedPath = expectedSpritePaths[part];
+              const expectedUrl = new URL(expectedPath, window.location.origin).href;
+              const bodyPart = document.querySelector<HTMLElement>(
+                `[data-testid="little-alex-body-part"][data-part="${part}"]`
+              );
+
+              if (!bodyPart) {
+                failures.push(`${part} body part is missing`);
+                continue;
+              }
+
+              const sprite = Array.from(bodyPart.querySelectorAll("img")).find(
+                (image) =>
+                  image.currentSrc === expectedUrl ||
+                  image.src === expectedUrl ||
+                  image.getAttribute("src") === expectedPath ||
+                  image.dataset.spriteSrc === expectedPath
+              );
+
+              if (!sprite) {
+                failures.push(`${part} sprite image missing ${expectedPath}`);
+                continue;
+              }
+
+              if (
+                !sprite.complete ||
+                sprite.naturalHeight <= 0 ||
+                sprite.naturalWidth <= 0
+              ) {
+                failures.push(`${part} sprite image did not load`);
+              }
+
+              const rect = sprite.getBoundingClientRect();
+              if (
+                rect.width <= 0 ||
+                rect.height <= 0 ||
+                rect.left < -1 ||
+                rect.top < -1 ||
+                rect.right > viewport.width + 1 ||
+                rect.bottom > viewport.height + 1
+              ) {
+                failures.push(`${part} sprite is outside safe viewport bounds`);
+              }
+            }
+
+            return failures;
+          },
+          {
+            expectedSpritePaths,
+            parts: littleAlexSpriteParts
+          }
+        ),
+      { timeout: 5_000 }
+    )
+    .toEqual([]);
+}
+
 async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
   const grabTarget = page.getByTestId("little-alex-grab-target");
   const box = await grabTarget.boundingBox();
@@ -195,6 +323,11 @@ async function dragLittleAlexTo(page: Page, targetX: number, targetY: number) {
 
 test.describe("Little Alex physics", () => {
   test.describe.configure({ mode: "serial" });
+
+  test.beforeAll(async () => {
+    await rm(littleAlexSpriteScreenshotDir, { force: true, recursive: true });
+    await mkdir(littleAlexSpriteScreenshotDir, { recursive: true });
+  });
 
   test("appears globally on standard and immersive protected app routes", async ({
     page
@@ -327,30 +460,9 @@ test.describe("Little Alex physics", () => {
       "feminine"
     );
     await expect(littleAlex).toHaveAttribute(
-      "data-appearance-head",
-      "soft-heart-head"
-    );
-    await expect(littleAlex).toHaveAttribute(
-      "data-appearance-silhouette",
-      "tapered-suit"
-    );
-    await expect(littleAlex).toHaveAttribute(
       "data-chat-phrase",
       "well done everyone"
     );
-    await expect(page.getByTestId("little-alex-hair")).toHaveAttribute(
-      "data-appearance-detail",
-      "rounded-bob"
-    );
-    await expect(page.getByTestId("little-alex-face-detail")).toHaveAttribute(
-      "data-appearance-detail",
-      "cheek-highlight"
-    );
-    await expect(
-      page.getByTestId("little-alex-silhouette-detail")
-    ).toHaveAttribute("data-appearance-detail", "tapered-suit");
-    await expect(page.getByTestId("little-alex-shirt")).toBeVisible();
-    await expect(page.getByTestId("little-alex-clipboard")).toBeVisible();
     await dragLittleAlex(page, -180, 120);
     await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
       "well done everyone"
@@ -445,5 +557,36 @@ test.describe("Little Alex physics", () => {
     }
 
     await expectLittleAlexInViewport(page);
+  });
+
+  test("captures visual QA screenshots for all sprite presentations", async ({
+    page
+  }) => {
+    await page.setViewportSize({ height: 720, width: 1280 });
+    await createHouseholdAndChooseAlex(page);
+
+    for (const presentation of littleAlexSpritePresentations) {
+      await saveLittleAlexPresentation(page, presentation);
+      await page.goto("/app/home");
+
+      const littleAlex = page.getByTestId("little-alex-horne");
+      await expect(littleAlex).toHaveAttribute(
+        "data-gender-presentation",
+        presentation
+      );
+      await expectLittleAlexSpritesLoaded(page, presentation);
+      await expectLittleAlexInViewport(page, { minLeft: 256 });
+
+      await page.screenshot({
+        fullPage: false,
+        path: `${littleAlexSpriteScreenshotDir}/${presentation}.png`
+      });
+
+      await dragLittleAlex(page, -220, 120);
+      await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
+        "i'm little alex horne"
+      );
+      await expectLittleAlexInViewport(page, { minLeft: 256 });
+    }
   });
 });
