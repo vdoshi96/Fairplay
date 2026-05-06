@@ -18,6 +18,7 @@ export type GuidePractice = {
   completionMessage: string;
   eventId: string;
   prompt: string;
+  requiredEventIds?: string[];
 };
 
 export type FeatureGuide = {
@@ -51,10 +52,17 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
         body: "Drag cards or use the move menu. Moving a card should mean the lane now reflects the real agreement.",
         targetId: "load-map-move-target",
         practice: {
-          actionLabel: "Move dummy card to Player 1",
-          completionMessage: "Dummy card moved to Player 1.",
-          eventId: "load-map-move",
-          prompt: "Practice moving a dummy card without changing your real board."
+          actionLabel: "Start dummy Load Map workflow",
+          completionMessage: "Dummy card moved, edited, trimmed, and deleted.",
+          eventId: "load-map-practice-start",
+          prompt:
+            "Practice moving, editing, trimming, and deleting dummy cards without changing your real board.",
+          requiredEventIds: [
+            "load-map-move",
+            "load-map-edit",
+            "load-map-trim",
+            "load-map-delete"
+          ]
         }
       },
       {
@@ -76,10 +84,18 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
         body: "Greg turns a quick text or voice note into a draft card you can review before it joins the household system.",
         targetId: "library-ai-task-manager",
         practice: {
-          actionLabel: "Open greg in dummy mode",
-          completionMessage: "Dummy greg tray opened.",
-          eventId: "library-ai-task-manager",
-          prompt: "Open a pretend capture tray so you can see where an AI-created card starts."
+          actionLabel: "Start dummy Library workflow",
+          completionMessage: "Dummy Library workflow complete.",
+          eventId: "library-practice-start",
+          prompt:
+            "Use a dummy greg capture, review the generated draft, edit it, preview imagery, and put it in play without creating a real card.",
+          requiredEventIds: [
+            "library-capture-filled",
+            "library-draft-reviewed",
+            "library-draft-edited",
+            "library-image-previewed",
+            "library-put-in-play"
+          ]
         }
       },
       {
@@ -125,10 +141,20 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
         body: "Radar topics should move toward a calm next step: decide now, defer with context, schedule, or resolve.",
         targetId: "radar-actions",
         practice: {
-          actionLabel: "Resolve dummy radar item",
-          completionMessage: "Dummy radar item resolved.",
-          eventId: "radar-actions",
-          prompt: "Practice choosing a next step on a dummy radar topic."
+          actionLabel: "Start dummy Radar workflow",
+          completionMessage: "Dummy Radar workflow complete.",
+          eventId: "radar-practice-start",
+          prompt:
+            "Create, edit, choose visibility, defer, schedule, resolve, and dismiss a dummy radar item.",
+          requiredEventIds: [
+            "radar-practice-create",
+            "radar-practice-edit",
+            "radar-practice-visibility",
+            "radar-practice-defer",
+            "radar-practice-schedule",
+            "radar-practice-resolve",
+            "radar-practice-dismiss"
+          ]
         }
       }
     ]
@@ -156,10 +182,18 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
         body: "Completion summarizes decisions and keeps the board from becoming a memory test.",
         targetId: "check-in-complete-action",
         practice: {
-          actionLabel: "Complete dummy check-in",
-          completionMessage: "Dummy check-in completed.",
-          eventId: "check-in-complete",
-          prompt: "Practice completing a check-in without saving a real summary."
+          actionLabel: "Start dummy Check-in workflow",
+          completionMessage: "Dummy Check-in workflow complete.",
+          eventId: "check-in-practice-start",
+          prompt:
+            "Preview a dummy agenda, assign a topic, record a decision, defer an item, and complete a dummy check-in.",
+          requiredEventIds: [
+            "check-in-agenda-previewed",
+            "check-in-topic-assigned",
+            "check-in-decision-recorded",
+            "check-in-item-deferred",
+            "check-in-complete"
+          ]
         }
       }
     ]
@@ -181,10 +215,17 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
         body: "Restart the crash course, show the welcome again, or open the learning hub from here.",
         targetId: "settings-guided-start",
         practice: {
-          actionLabel: "Open dummy learning hub",
-          completionMessage: "Dummy learning hub opened.",
-          eventId: "settings-learning-hub",
-          prompt: "Practice finding the learning hub without leaving this page."
+          actionLabel: "Start dummy Settings workflow",
+          completionMessage: "Dummy Settings workflow complete.",
+          eventId: "settings-practice-start",
+          prompt:
+            "Practice appearance, welcome replay, persona confirmation, and learning hub actions without changing account data.",
+          requiredEventIds: [
+            "settings-appearance-mode",
+            "settings-welcome-replay",
+            "settings-persona-confirm",
+            "settings-learning-hub"
+          ]
         }
       },
       {

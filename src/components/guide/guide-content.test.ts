@@ -12,13 +12,63 @@ describe("feature guide content", () => {
     }
   });
 
+  it("requires page-level multi-action practice for every feature guide", () => {
+    const expectedRequiredEvents = {
+      loadMap: [
+        "load-map-move",
+        "load-map-edit",
+        "load-map-trim",
+        "load-map-delete"
+      ],
+      library: [
+        "library-capture-filled",
+        "library-draft-reviewed",
+        "library-draft-edited",
+        "library-image-previewed",
+        "library-put-in-play"
+      ],
+      radar: [
+        "radar-practice-create",
+        "radar-practice-edit",
+        "radar-practice-visibility",
+        "radar-practice-defer",
+        "radar-practice-schedule",
+        "radar-practice-resolve",
+        "radar-practice-dismiss"
+      ],
+      checkIns: [
+        "check-in-agenda-previewed",
+        "check-in-topic-assigned",
+        "check-in-decision-recorded",
+        "check-in-item-deferred",
+        "check-in-complete"
+      ],
+      settings: [
+        "settings-appearance-mode",
+        "settings-welcome-replay",
+        "settings-persona-confirm",
+        "settings-learning-hub"
+      ]
+    };
+
+    for (const [guideId, requiredEvents] of Object.entries(expectedRequiredEvents)) {
+      const guide = FEATURE_GUIDES[guideId as keyof typeof FEATURE_GUIDES];
+      const practiceStep = guide.steps.find((step) => Boolean(step.practice));
+      const practice = practiceStep?.practice as
+        | { requiredEventIds?: string[] }
+        | undefined;
+
+      expect(practice?.requiredEventIds, guideId).toEqual(requiredEvents);
+    }
+  });
+
   it("teaches greg before source-card browsing in the Library guide", () => {
     expect(FEATURE_GUIDES.library.steps).toHaveLength(4);
     expect(FEATURE_GUIDES.library.steps[0]).toMatchObject({
       targetId: "library-ai-task-manager",
       title: "Use greg - the taskmaster",
       practice: {
-        actionLabel: "Open greg in dummy mode"
+        actionLabel: "Start dummy Library workflow"
       }
     });
   });
