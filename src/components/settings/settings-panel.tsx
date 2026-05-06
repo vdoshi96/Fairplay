@@ -24,6 +24,7 @@ import {
   useGuidePracticeRequest
 } from "@/components/guide/guide-practice";
 import { useTheme, type ResolvedTheme } from "@/components/theme/theme-provider";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 
 type SettingsPanelProps = {
   household: HouseholdSummary;
