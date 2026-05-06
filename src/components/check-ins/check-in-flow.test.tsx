@@ -74,6 +74,10 @@ describe("CheckInFlow", () => {
     );
     render(<NewCheckInLauncher />);
 
+    expect(screen.getByTestId("check-in-new-visual")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
+    });
     expect(
       screen.getByRole("button", { name: "Learn this feature" })
     ).toBeVisible();
@@ -190,6 +194,10 @@ describe("CheckInFlow", () => {
     const onUpdateItem = vi.fn();
     render(<CheckInFlow initialCheckIn={checkIn} onUpdateItem={onUpdateItem} />);
 
+    expect(screen.getByTestId("check-in-active-visual")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
+    });
     expect(
       screen.getByRole("button", { name: "Learn this feature" })
     ).toBeVisible();
@@ -269,6 +277,10 @@ describe("CheckInFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Complete check-in" }));
 
     const region = await screen.findByRole("region", { name: "Check-in summary" });
+    expect(screen.getByTestId("check-in-complete-visual")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
+    });
     expect(region).toHaveAttribute("data-guide-id", "check-in-complete-summary");
     expect(within(region).getByText(/Review the meal plan in June/)).toBeVisible();
   });

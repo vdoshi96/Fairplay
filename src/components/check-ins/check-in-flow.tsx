@@ -50,6 +50,9 @@ const decisionTypes: DecisionType[] = [
   "custom_note"
 ];
 
+const checkInTableBackground =
+  "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')";
+
 function label(value: string) {
   return value
     .split("_")
@@ -259,17 +262,23 @@ export function CheckInFlow({
         className="mx-auto grid w-full max-w-2xl gap-4 px-4 py-6"
         data-guide-id="check-in-complete-summary"
       >
-        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div className="flex items-center gap-3">
-            <MotionSpark decorative />
-            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-              Check-in complete
-            </h1>
+        <div
+          className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+          data-testid="check-in-complete-visual"
+          style={{ backgroundImage: checkInTableBackground }}
+        >
+          <div className="grid gap-3 bg-gradient-to-r from-white/95 via-white/86 to-white/56 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div className="flex items-center gap-3">
+              <MotionSpark decorative />
+              <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+                Check-in complete
+              </h1>
+            </div>
+            <CheckInVisual
+              className="justify-self-start sm:justify-self-end"
+              label="Check-in completion spark"
+            />
           </div>
-          <CheckInVisual
-            className="justify-self-start sm:justify-self-end"
-            label="Check-in completion spark"
-          />
         </div>
         <p className="whitespace-pre-line rounded-[8px] border border-fp-line bg-white p-4 text-[14px] leading-6 text-fp-muted-ink">
           {checkIn.summary}
@@ -280,13 +289,19 @@ export function CheckInFlow({
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 py-6">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-stone-950">Guided check-in</h1>
-        <div className="grid gap-2 justify-items-end">
-          <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />
-          <span className="text-sm text-stone-600">
-            {Math.min(currentIndex + 1, checkIn.items.length)} of {checkIn.items.length}
-          </span>
+      <div
+        className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+        data-testid="check-in-active-visual"
+        style={{ backgroundImage: checkInTableBackground }}
+      >
+        <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-white/95 via-white/86 to-white/56 p-4">
+          <h1 className="text-2xl font-semibold text-stone-950">Guided check-in</h1>
+          <div className="grid gap-2 justify-items-end">
+            <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />
+            <span className="text-sm text-stone-600">
+              {Math.min(currentIndex + 1, checkIn.items.length)} of {checkIn.items.length}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -506,11 +521,17 @@ export function NewCheckInLauncher({
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 py-6">
-      <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-        <h1 className="text-2xl font-semibold text-stone-950">New check-in</h1>
-        <div className="grid gap-3 justify-self-start sm:justify-self-end sm:justify-items-end">
-          <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />
-          <CheckInVisual className="justify-self-start sm:justify-self-end" />
+      <div
+        className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+        data-testid="check-in-new-visual"
+        style={{ backgroundImage: checkInTableBackground }}
+      >
+        <div className="grid gap-3 bg-gradient-to-r from-white/95 via-white/86 to-white/56 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+          <h1 className="text-2xl font-semibold text-stone-950">New check-in</h1>
+          <div className="grid gap-3 justify-self-start sm:justify-self-end sm:justify-items-end">
+            <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />
+            <CheckInVisual className="justify-self-start sm:justify-self-end" />
+          </div>
         </div>
       </div>
       {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}

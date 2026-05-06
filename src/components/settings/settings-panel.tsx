@@ -58,6 +58,9 @@ const littleAlexSkinOptions: Array<{
   { label: "Tone 5", swatch: "#8f5f45", value: "tone_5" }
 ];
 
+const settingsPreferencesBackground =
+  "url('/assets/fairplay/generated-ui/backgrounds/settings-preferences.png')";
+
 export function SettingsPanel({
   household,
   littleAlexPreferences,
@@ -266,13 +269,19 @@ export function SettingsPanel({
   return (
     <>
       <section className="grid gap-5" ref={contentRef}>
-        <div className="grid gap-2">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
-            Settings
-          </p>
-          <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-            Household settings
-          </h1>
+        <div
+          className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+          data-testid="settings-preferences-visual"
+          style={{ backgroundImage: settingsPreferencesBackground }}
+        >
+          <div className="grid gap-2 bg-gradient-to-r from-white/95 via-white/86 to-white/56 p-4">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
+              Settings
+            </p>
+            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+              Household settings
+            </h1>
+          </div>
         </div>
 
         {error ? (

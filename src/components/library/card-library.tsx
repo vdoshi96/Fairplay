@@ -33,6 +33,9 @@ const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> =
   "Kid Split": "kid-split"
 };
 
+const libraryShelfBackground =
+  "url('/assets/fairplay/generated-ui/backgrounds/library-shelf.png')";
+
 export function CardLibrary({
   aiDrafts = [],
   templates,
@@ -63,7 +66,15 @@ export function CardLibrary({
 
   return (
     <section className="grid gap-5">
-      <AiTaskManager drafts={aiDrafts} />
+      <div
+        className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+        data-testid="library-shelf-visual"
+        style={{ backgroundImage: libraryShelfBackground }}
+      >
+        <div className="bg-gradient-to-r from-white/95 via-white/88 to-white/58 p-4">
+          <AiTaskManager drafts={aiDrafts} />
+        </div>
+      </div>
 
       <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_auto] lg:items-end">
         <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">

@@ -91,6 +91,9 @@ const stateLabels: Record<RadarState, string> = {
   deferred: "Deferred"
 };
 
+const radarSignalRoomBackground =
+  "url('/assets/fairplay/generated-ui/backgrounds/radar-signal-room.png')";
+
 function label(value: string) {
   return value
     .split("_")
@@ -494,27 +497,36 @@ export function RadarBoard({
 
   return (
     <>
-    <section className="grid gap-5" ref={contentRef}>
-      <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
-        <div className="grid gap-1">
-          <p className="text-[13px] font-semibold text-fp-muted-ink">Radar</p>
-          <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-            Concern board
-          </h1>
-        </div>
-        <div className="grid gap-3 justify-self-start sm:justify-self-end sm:justify-items-end">
-          <FeatureGuideLauncher guide={FEATURE_GUIDES.radar} showDescription={false} />
-          <div className="relative w-36 sm:w-44">
-            <span
-              aria-hidden="true"
-              className="fp-motion-radar-pulse absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full"
-            />
-            <RadarVisual className="relative rounded-[8px]" />
+      <section className="grid gap-5" ref={contentRef}>
+        <div
+          className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+          data-testid="radar-signal-room-visual"
+          style={{ backgroundImage: radarSignalRoomBackground }}
+        >
+          <div className="grid gap-4 bg-gradient-to-r from-white/95 via-white/86 to-white/50 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div className="grid gap-1">
+              <p className="text-[13px] font-semibold text-fp-muted-ink">Radar</p>
+              <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+                Concern board
+              </h1>
+            </div>
+            <div className="grid gap-3 justify-self-start sm:justify-self-end sm:justify-items-end">
+              <FeatureGuideLauncher
+                guide={FEATURE_GUIDES.radar}
+                showDescription={false}
+              />
+              <div className="relative w-36 sm:w-44">
+                <span
+                  aria-hidden="true"
+                  className="fp-motion-radar-pulse absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                />
+                <RadarVisual className="relative rounded-[8px]" />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {mutationError ? (
+        {mutationError ? (
         <p
           className="rounded-[8px] border border-fp-danger/40 bg-white px-3 py-2 text-[14px] leading-5 text-fp-danger"
           role="alert"

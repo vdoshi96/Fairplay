@@ -66,6 +66,10 @@ describe("RadarBoard", () => {
       />
     );
 
+    expect(screen.getByTestId("radar-signal-room-visual")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/radar-signal-room.png')"
+    });
     expect(
       within(screen.getByRole("region", { name: "Private drafts" })).getByText(
         "Private draft"
