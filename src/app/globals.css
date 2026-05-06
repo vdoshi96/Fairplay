@@ -197,6 +197,143 @@ a {
   animation: fp-panel-enter 180ms ease-out both;
 }
 
+.fp-little-alex-shell {
+  contain: layout paint;
+  inset: 0;
+  position: fixed;
+  user-select: none;
+  z-index: 35;
+}
+
+.fp-little-alex-part,
+.fp-little-alex-grab-target {
+  left: 0;
+  position: absolute;
+  top: 0;
+  touch-action: none;
+  transform-origin: center;
+  user-select: none;
+  will-change: transform;
+}
+
+.fp-little-alex-part {
+  display: grid;
+  filter: drop-shadow(0 8px 12px rgba(32, 33, 36, 0.18));
+  place-items: center;
+}
+
+.fp-little-alex-grab-target {
+  border-radius: 999px;
+  cursor: grab;
+}
+
+.fp-little-alex-grab-target:active {
+  cursor: grabbing;
+}
+
+.fp-little-alex-head {
+  background: #f2c09b;
+  border: 2px solid rgba(32, 33, 36, 0.64);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.fp-little-alex-hair {
+  background: #553d33;
+  border-radius: 0 0 999px 999px;
+  height: 15px;
+  left: -4px;
+  position: absolute;
+  right: -4px;
+  top: -2px;
+}
+
+.fp-little-alex-eye {
+  background: #202124;
+  border-radius: 999px;
+  height: 4px;
+  position: absolute;
+  top: 22px;
+  width: 4px;
+}
+
+.fp-little-alex-eye-left {
+  left: 14px;
+}
+
+.fp-little-alex-eye-right {
+  right: 14px;
+}
+
+.fp-little-alex-mouth {
+  border-bottom: 2px solid rgba(32, 33, 36, 0.72);
+  border-radius: 0 0 999px 999px;
+  bottom: 10px;
+  height: 6px;
+  position: absolute;
+  width: 14px;
+}
+
+.fp-little-alex-torso {
+  background:
+    linear-gradient(90deg, transparent 47%, rgba(255, 255, 255, 0.5) 47% 53%, transparent 53%),
+    var(--fp-alex);
+  border: 2px solid rgba(32, 33, 36, 0.66);
+  border-radius: 14px 14px 10px 10px;
+}
+
+.fp-little-alex-bowtie {
+  background: #c26f59;
+  height: 10px;
+  position: relative;
+  top: -18px;
+  width: 10px;
+}
+
+.fp-little-alex-bowtie::before,
+.fp-little-alex-bowtie::after {
+  background: #c26f59;
+  border: 1px solid rgba(32, 33, 36, 0.5);
+  content: "";
+  height: 14px;
+  position: absolute;
+  top: -2px;
+  width: 16px;
+}
+
+.fp-little-alex-bowtie::before {
+  border-radius: 999px 4px 4px 999px;
+  right: 8px;
+}
+
+.fp-little-alex-bowtie::after {
+  border-radius: 4px 999px 999px 4px;
+  left: 8px;
+}
+
+.fp-little-alex-arm,
+.fp-little-alex-leg {
+  border: 2px solid rgba(32, 33, 36, 0.62);
+  border-radius: 999px;
+}
+
+.fp-little-alex-arm {
+  background: #f2c09b;
+}
+
+.fp-little-alex-leg {
+  background: #3b3d42;
+}
+
+.fp-little-alex-shoe {
+  background: #202124;
+  border-radius: 999px;
+  bottom: -5px;
+  height: 10px;
+  position: absolute;
+  width: 26px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

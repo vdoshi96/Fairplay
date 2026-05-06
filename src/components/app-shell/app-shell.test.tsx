@@ -37,6 +37,7 @@ const selectedPersona: PersonaSummary = {
 
 const retiredGuideAnchor = ["app", "guide", "101"].join("-");
 const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
+const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
 
 function renderProtectedUi(children: ReactNode) {
   return render(
@@ -46,11 +47,28 @@ function renderProtectedUi(children: ReactNode) {
   );
 }
 
+function stubReducedMotion(matches: boolean) {
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn((query: string) => ({
+      addEventListener: vi.fn(),
+      addListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+      matches: query === reducedMotionQuery ? matches : false,
+      media: query,
+      onchange: null,
+      removeEventListener: vi.fn(),
+      removeListener: vi.fn()
+    }))
+  );
+}
+
 describe("protected app UI", () => {
   afterEach(() => {
     pathname.mockReturnValue("/app/load-map");
     routerPush.mockReset();
     routerReplace.mockReset();
+    vi.unstubAllGlobals();
   });
 
   it("renders the app shell around the real home page", () => {
@@ -124,6 +142,21 @@ describe("protected app UI", () => {
     );
   });
 
+  it("renders Little Alex as a decorative physics object on standard protected pages", () => {
+    renderProtectedUi(<AppHomePage />);
+
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    expect(littleAlex).toHaveAttribute("aria-hidden", "true");
+    expect(littleAlex).toHaveAttribute("data-physics-engine", "matter-js");
+    expect(littleAlex).toHaveAttribute("data-motion-mode", "physics");
+    expect(littleAlex).toHaveStyle({ pointerEvents: "none" });
+    expect(screen.queryByRole("button", { name: /little alex/i })).not.toBeInTheDocument();
+    expect(screen.getAllByTestId("little-alex-body-part")).toHaveLength(6);
+    expect(screen.getByTestId("little-alex-grab-target")).toHaveStyle({
+      pointerEvents: "auto"
+    });
+  });
+
   it("lets the crash course route use the full app canvas", () => {
     pathname.mockReturnValue("/app/crash-course");
 
@@ -137,6 +170,20 @@ describe("protected app UI", () => {
       "aria-current",
       "page"
     );
+    expect(screen.getByTestId("little-alex-horne")).toBeInTheDocument();
+  });
+
+  it("settles Little Alex into a draggable-safe static mode for reduced motion", () => {
+    stubReducedMotion(true);
+
+    renderProtectedUi(<AppHomePage />);
+
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    expect(littleAlex).toHaveAttribute("data-motion-mode", "reduced");
+    expect(littleAlex).toHaveAttribute("data-physics-engine", "matter-js");
+    expect(screen.getByTestId("little-alex-grab-target")).toHaveStyle({
+      pointerEvents: "auto"
+    });
   });
 
   it("renders onboarding inside the app shell and routes skip to home", () => {
