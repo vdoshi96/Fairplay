@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
@@ -67,20 +68,17 @@ export function CrashCourseFlow({
           {completed ? (
             <>
               <div className="grid gap-4">
-                <div
+                <img
+                  alt=""
                   aria-hidden="true"
-                  className="relative h-24 w-24 overflow-hidden rounded-full border border-fp-line bg-[#fff8df] shadow-[var(--fp-shadow-soft)]"
-                >
-                  <div className="absolute left-1/2 top-5 h-12 w-12 -translate-x-1/2 rounded-full bg-[#f7c75f]" />
-                  <div className="absolute left-[31px] top-[29px] h-3 w-3 rounded-full bg-fp-ink" />
-                  <div className="absolute right-[31px] top-[29px] h-3 w-3 rounded-full bg-fp-ink" />
-                  <div className="absolute left-[35px] top-[45px] h-3 w-7 rounded-b-full border-b-[5px] border-fp-ink" />
-                  <div className="absolute bottom-0 left-3 h-10 w-6 -rotate-12 rounded-t-[8px] bg-[#c26f59]" />
-                  <div className="absolute bottom-0 right-3 h-10 w-6 rotate-12 rounded-t-[8px] bg-[#506fa8]" />
-                  <div className="absolute left-3 top-3 h-3 w-3 rounded-full bg-[#2f7d6e]" />
-                  <div className="absolute right-4 top-4 h-2 w-7 rotate-12 rounded-full bg-[#c26f59]" />
-                  <div className="absolute bottom-4 left-5 h-2 w-7 -rotate-12 rounded-full bg-[#506fa8]" />
-                </div>
+                  className="h-28 w-28 rounded-[8px] object-contain shadow-[var(--fp-shadow-soft)]"
+                  data-testid="crash-course-completion-celebration"
+                  draggable={false}
+                  height={768}
+                  loading="eager"
+                  src="/assets/fairplay/generated-ui/crash-course/completion-celebration.png"
+                  width={768}
+                />
                 <div className="grid gap-2">
                   <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
                     Course complete

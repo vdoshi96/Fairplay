@@ -8,31 +8,37 @@ const helperExpectations: Array<{
   guideId: FeatureGuideId;
   label: string;
   scene: string;
+  src: string;
 }> = [
   {
     guideId: "loadMap",
     label: "Load Map helper scene",
-    scene: "lane-board"
+    scene: "lane-board",
+    src: "/assets/fairplay/generated-ui/feature-guide/load-map.png"
   },
   {
     guideId: "library",
     label: "Library helper scene",
-    scene: "card-shelf"
+    scene: "card-shelf",
+    src: "/assets/fairplay/generated-ui/feature-guide/library.png"
   },
   {
     guideId: "radar",
     label: "Radar helper scene",
-    scene: "signal-radar"
+    scene: "signal-radar",
+    src: "/assets/fairplay/generated-ui/feature-guide/radar.png"
   },
   {
     guideId: "checkIns",
     label: "Check-ins helper scene",
-    scene: "decision-table"
+    scene: "decision-table",
+    src: "/assets/fairplay/generated-ui/feature-guide/check-ins.png"
   },
   {
     guideId: "settings",
     label: "Settings helper scene",
-    scene: "control-panel"
+    scene: "control-panel",
+    src: "/assets/fairplay/generated-ui/feature-guide/settings.png"
   }
 ];
 
@@ -46,11 +52,14 @@ describe("FeatureGuideHelper", () => {
       </>
     );
 
-    const renderedScenes = helperExpectations.map(({ guideId, label, scene }) => {
+    const renderedScenes = helperExpectations.map(({ guideId, label, scene, src }) => {
       const helper = screen.getByRole("img", { name: label });
 
       expect(helper).toHaveAttribute("data-testid", `feature-guide-helper-${guideId}`);
       expect(helper).toHaveAttribute("data-helper-scene", scene);
+      expect(
+        screen.getByTestId(`feature-guide-helper-image-${guideId}`)
+      ).toHaveAttribute("src", src);
 
       return helper.getAttribute("data-helper-scene");
     });
