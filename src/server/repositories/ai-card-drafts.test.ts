@@ -423,7 +423,8 @@ describe("AI card draft repository", () => {
       status: "active",
       visibility: "shared_household",
       boardLane: "not_in_play",
-      householdStandard: generatedCard.minimumStandard
+      householdStandard: generatedCard.minimumStandard,
+      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
     });
     await expect(
       prisma.responsibility.findUniqueOrThrow({

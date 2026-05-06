@@ -57,4 +57,27 @@ describe("CardDetailSheet", () => {
     expect(onMove).toHaveBeenCalledWith("player_1");
     expect(onFlagForRadar).toHaveBeenCalledTimes(1);
   });
+
+  it("renders accepted AI-generated cover art as a larger integrated panel", () => {
+    const generatedCard = {
+      ...card,
+      title: "Dog Medicine",
+      coverAssetPath: null,
+      sourceCoverAssetPath:
+        "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440099/cover"
+    };
+
+    render(<CardDetailSheet card={generatedCard} />);
+
+    const artPanel = screen.getByTestId("generated-cover-art-panel");
+    expect(artPanel).toHaveClass("min-h-[520px]");
+    expect(artPanel).toHaveClass("lg:min-h-[680px]");
+    expect(screen.getByRole("img", { name: /dog medicine cover/i })).toHaveAttribute(
+      "src",
+      "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440099/cover"
+    );
+    expect(screen.getByRole("img", { name: /dog medicine cover/i })).toHaveClass(
+      "object-cover"
+    );
+  });
 });

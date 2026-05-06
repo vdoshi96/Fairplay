@@ -24,6 +24,7 @@ export type CardDetailCard = {
   householdStandard?: string | null;
   notes?: string | null;
   coverAssetPath?: string | null;
+  sourceCoverAssetPath?: string | null;
 };
 
 type CardDetailSheetProps = {
@@ -64,21 +65,48 @@ export function CardDetailSheet({
 }: CardDetailSheetProps) {
   const laneLabel = card.boardLane ? laneLabels[card.boardLane] : "Not placed";
   const ownerLabel = card.ownerLabel ?? laneLabel;
+  const isGeneratedCover = Boolean(card.sourceCoverAssetPath);
+  const coverAssetPath = card.sourceCoverAssetPath ?? card.coverAssetPath ?? null;
 
   return (
     <Sheet className="grid gap-5 p-0 sm:p-0">
-      <div className="grid overflow-hidden rounded bg-white lg:grid-cols-[minmax(260px,360px)_1fr]">
-        <div className="grid min-h-[420px] grid-rows-[minmax(300px,1fr)_auto] border-b border-fp-line bg-fp-surface lg:border-b-0 lg:border-r">
-          <div className="grid place-items-center p-5">
-            {card.coverAssetPath ? (
+      <div
+        className={
+          isGeneratedCover
+            ? "grid overflow-hidden rounded bg-white lg:grid-cols-[minmax(380px,48vw)_1fr]"
+            : "grid overflow-hidden rounded bg-white lg:grid-cols-[minmax(260px,360px)_1fr]"
+        }
+      >
+        <div
+          className={
+            isGeneratedCover
+              ? "grid min-h-[600px] grid-rows-[minmax(520px,1fr)_auto] border-b border-fp-line bg-fp-surface lg:min-h-[760px] lg:border-b-0 lg:border-r"
+              : "grid min-h-[420px] grid-rows-[minmax(300px,1fr)_auto] border-b border-fp-line bg-fp-surface lg:border-b-0 lg:border-r"
+          }
+        >
+          <div
+            className={
+              isGeneratedCover
+                ? "relative grid min-h-[520px] place-items-center overflow-hidden bg-fp-surface lg:min-h-[680px]"
+                : "grid place-items-center p-5"
+            }
+            data-testid={
+              isGeneratedCover ? "generated-cover-art-panel" : "source-cover-art-panel"
+            }
+          >
+            {coverAssetPath ? (
               <Image
                 alt={`${card.title} cover`}
-                className="h-full max-h-[420px] w-full rounded object-contain shadow-[var(--fp-shadow-soft)]"
-                height={700}
+                className={
+                  isGeneratedCover
+                    ? "h-full min-h-[520px] w-full object-cover lg:min-h-[680px]"
+                    : "h-full max-h-[420px] w-full rounded object-contain shadow-[var(--fp-shadow-soft)]"
+                }
+                height={isGeneratedCover ? 2044 : 700}
                 priority={false}
-                src={card.coverAssetPath}
+                src={coverAssetPath}
                 unoptimized
-                width={500}
+                width={isGeneratedCover ? 1460 : 500}
               />
             ) : (
               <div className="grid aspect-[5/7] w-full max-w-[280px] place-items-center rounded border border-fp-line bg-white p-5 text-center shadow-[var(--fp-shadow-soft)]">

@@ -105,6 +105,7 @@ function responsibility(
     notes: null,
     lifecycleNotes: null,
     lastReviewedAt: null,
+    sourceCoverAssetPath: null,
     createdAt: "2026-05-04T12:00:00.000Z",
     updatedAt: "2026-05-04T12:00:00.000Z",
     archivedAt: null,

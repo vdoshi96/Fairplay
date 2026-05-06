@@ -67,11 +67,17 @@ describe("responsibility JSON contracts", () => {
           updatedAt: "2026-05-04T00:00:00.000Z"
         },
         lastReviewedAt: null,
+        sourceCoverAssetPath:
+          "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440099/cover",
         createdAt: "2026-05-04T00:00:00.000Z",
         updatedAt: "2026-05-04T00:00:00.000Z",
         archivedAt: null
       })
-    ).toMatchObject({ id: summary.id });
+    ).toMatchObject({
+      id: summary.id,
+      sourceCoverAssetPath:
+        "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440099/cover"
+    });
 
     expect(
       ResponsibilityCreateSchema.parse({

@@ -232,8 +232,13 @@ describe("OpenAI fallback card generator", () => {
         n: 1
       })
     );
-    expect(body.prompt).toContain("Dog Meds");
-    expect(body.prompt).toMatch(/warm pale background/i);
+    expect(body.prompt).toContain("textless app illustration");
+    expect(body.prompt).toContain("large central silhouette");
+    expect(body.prompt).toContain("blended into the app composition");
+    expect(body.prompt).toContain("no fake card frame");
+    expect(body.prompt).toContain("Responsibility theme: Dog Meds");
+    expect(body.prompt).not.toContain("Title:");
+    expect(body.prompt).not.toContain("title text near the top");
     expect(body.prompt).toMatch(/Do not copy public source decks/i);
   });
 

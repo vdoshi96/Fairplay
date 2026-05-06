@@ -21,6 +21,14 @@ import { assertVisibilityTransition } from "../domain/visibility";
 
 export const AreaKeySchema = z.string().trim().min(1).max(80);
 
+const SourceCoverAssetPathSchema = z
+  .string()
+  .trim()
+  .regex(
+    /^\/(?:assets\/fairplay\/cards\/[a-z0-9-]+\.png|api\/ai-card-drafts\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/cover)$/
+  )
+  .nullable();
+
 const ResponsibilityCreateVisibilitySchema = z
   .enum(["shared_household", "partner_visible", "check_in_only"])
   .default("shared_household");
@@ -77,6 +85,7 @@ export const ResponsibilityDetailSchema = ResponsibilitySummarySchema.extend({
   notes: z.string().trim().max(4000).nullable(),
   lifecycleNotes: ResponsibilityLifecycleNotesSchema.nullable(),
   lastReviewedAt: NullableIsoDateTimeSchema,
+  sourceCoverAssetPath: SourceCoverAssetPathSchema,
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
   archivedAt: NullableIsoDateTimeSchema

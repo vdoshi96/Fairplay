@@ -41,6 +41,8 @@ type ImageGenerationResponse = {
   };
 };
 
+const QWEN_CARD_COVER_SIZE = "1460*2044";
+
 export class QwenGenerationError extends Error {
   readonly code = "QWEN_GENERATION_FAILED";
   readonly provider = "qwen";
@@ -182,7 +184,7 @@ export async function generateCardCover(
           negative_prompt: negativePrompt,
           prompt_extend: false,
           watermark: false,
-          size: "500*700",
+          size: QWEN_CARD_COVER_SIZE,
           n: 1
         }
       })

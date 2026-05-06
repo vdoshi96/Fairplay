@@ -121,6 +121,7 @@ function toResponsibilityDetail(
     notes: responsibility.notes,
     lifecycleNotes: toLifecycleNotes(responsibility.lifecycleNotes),
     lastReviewedAt: nullableIso(responsibility.lastReviewedAt),
+    sourceCoverAssetPath: responsibility.sourceCoverAssetPath,
     createdAt: responsibility.createdAt.toISOString(),
     updatedAt: responsibility.updatedAt.toISOString(),
     archivedAt: nullableIso(responsibility.archivedAt)

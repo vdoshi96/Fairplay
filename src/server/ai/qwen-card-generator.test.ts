@@ -14,6 +14,7 @@ import {
   structureTaskAsCard,
   transcribeAudio
 } from "./qwen-card-generator";
+import { buildImagePrompt, cardSystemPrompt } from "./card-generation-shared";
 
 const config: QwenConfig = {
   cardApiKey: "card-secret",
@@ -34,6 +35,26 @@ function jsonResponse(body: unknown, init: ResponseInit = {}) {
 }
 
 describe("Qwen card generator", () => {
+  it("builds textless integrated app illustration prompts without fake card framing", () => {
+    const prompt = buildImagePrompt(
+      "Dog Meds",
+      "medicine calendar beside a leash"
+    );
+
+    expect(prompt).toContain("textless app illustration");
+    expect(prompt).toContain("large central silhouette");
+    expect(prompt).toContain("blended into the app composition");
+    expect(prompt).toContain("no fake card frame");
+    expect(prompt).not.toContain("Title:");
+    expect(prompt).not.toContain("title text near the top");
+  });
+
+  it("asks structured card generation for textless app-native illustration prompts", () => {
+    expect(cardSystemPrompt).toMatch(/textless app illustration/i);
+    expect(cardSystemPrompt).toMatch(/large central silhouette/i);
+    expect(cardSystemPrompt).not.toMatch(/card cover/i);
+  });
+
   it("throws a safe config error when required env vars are missing", async () => {
     expect(() => getQwenConfig({ QWEN_CARD_API_KEY: "present" })).toThrow(
       QwenConfigError
@@ -225,7 +246,7 @@ describe("Qwen card generator", () => {
     const prompt = body.input.messages[0].content[0].text;
     const negativePrompt = body.parameters.negative_prompt;
     expect(prompt).toHaveLength(800);
-    expect(prompt.startsWith("Create an original 5:7 portrait Fairplay")).toBe(true);
+    expect(prompt.startsWith("Create an original textless app illustration")).toBe(true);
     expect(prompt).toContain("Do not copy public source decks");
     expect(negativePrompt).toHaveLength(500);
     expect(negativePrompt.startsWith("copied public source deck style")).toBe(true);
@@ -279,13 +300,16 @@ describe("Qwen card generator", () => {
     );
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.model).toBe("qwen-image-2.0-pro");
-    expect(body.input.messages[0].content[0].text).toContain("Dog Meds");
+    expect(body.input.messages[0].content[0].text).toContain(
+      "Responsibility theme: Dog Meds"
+    );
+    expect(body.input.messages[0].content[0].text).not.toContain("Title:");
     expect(body.parameters).toEqual(
       expect.objectContaining({
         negative_prompt: expect.stringContaining("people, logos"),
         prompt_extend: false,
         watermark: false,
-        size: "500*700",
+        size: "1460*2044",
         n: 1
       })
     );
