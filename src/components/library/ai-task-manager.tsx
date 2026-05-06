@@ -145,7 +145,10 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
             Draft tracker
           </h2>
         </div>
-        <div className="flex flex-wrap items-end justify-end gap-2 sm:gap-3">
+        <div
+          className="grid justify-items-center gap-0"
+          data-testid="greg-taskmaster-control"
+        >
           <GregTaskmasterAvatar />
           <Button onClick={() => setCaptureOpen((open) => !open)} variant="primary">
             <Sparkles aria-hidden="true" size={16} />
@@ -381,7 +384,7 @@ function GregTaskmasterAvatar() {
     <img
       alt=""
       aria-hidden="true"
-      className="pointer-events-none -mb-1 h-20 w-20 shrink-0 object-contain sm:-mb-2 sm:h-24 sm:w-24"
+      className="pointer-events-none -mb-2 h-20 w-20 shrink-0 object-contain sm:-mb-3 sm:h-24 sm:w-24"
       data-testid="greg-taskmaster-avatar"
       draggable={false}
       height={1254}

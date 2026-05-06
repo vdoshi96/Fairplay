@@ -66,6 +66,10 @@ describe("CardLibrary", () => {
     expect(
       screen.getByRole("button", { name: "Greg - The Taskmaster" })
     ).toBeVisible();
+    expect(screen.getByTestId("greg-taskmaster-control")).toHaveClass(
+      "grid",
+      "justify-items-center"
+    );
     expect(screen.getByTestId("greg-taskmaster-avatar")).toHaveAttribute(
       "src",
       "/assets/fairplay/generated-ui/greg-taskmaster-avatar.png"
