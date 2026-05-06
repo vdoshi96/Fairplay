@@ -86,17 +86,24 @@ describe("AiTaskManager", () => {
     vi.restoreAllMocks();
   });
 
-  it("opens capture controls for text and voice from the greg button", async () => {
+  it("opens capture controls for text and voice from the Greg button", async () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "greg - the taskmaster" })
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
     );
 
-    expect(screen.getByTestId("little-alex-horne-sidekick-image")).toHaveAttribute(
-      "src",
-      "/assets/fairplay/generated-ui/ai-task-helper.png"
+    expect(screen.getByTestId("greg-taskmaster-control")).toHaveClass(
+      "grid",
+      "justify-items-center"
     );
+    expect(screen.getByTestId("greg-taskmaster-avatar")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/generated-ui/greg-taskmaster-avatar.png"
+    );
+    expect(screen.queryByTestId("little-alex-horne-sidekick-image"))
+      .not.toBeInTheDocument();
+    expect(screen.queryByText("hi im little alex horne")).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Capture AI card draft" })).toBeVisible();
     expect(screen.getByLabelText("Describe the card")).toBeVisible();
     expect(screen.getByRole("button", { name: "Start recording" })).toBeVisible();
@@ -161,7 +168,7 @@ describe("AiTaskManager", () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "greg - the taskmaster" })
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
     );
     await userEvent.type(
       screen.getByLabelText("Describe the card"),
@@ -197,7 +204,7 @@ describe("AiTaskManager", () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "greg - the taskmaster" })
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
     );
     await userEvent.type(
       screen.getByLabelText("Describe the card"),
@@ -252,7 +259,7 @@ describe("AiTaskManager", () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "greg - the taskmaster" })
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
     );
     await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
     expect(screen.getByRole("button", { name: "Stop recording" })).toBeVisible();
@@ -303,7 +310,7 @@ describe("AiTaskManager", () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "greg - the taskmaster" })
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
     );
     await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
     fireEvent.click(screen.getByRole("button", { name: "Close capture" }));
@@ -344,7 +351,7 @@ describe("AiTaskManager", () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "greg - the taskmaster" })
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
     );
     await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
     fireEvent.click(screen.getByRole("button", { name: "Close capture" }));

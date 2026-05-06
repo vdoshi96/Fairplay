@@ -62,11 +62,11 @@ describe("feature guide content", () => {
     }
   });
 
-  it("teaches greg before source-card browsing in the Library guide", () => {
+  it("teaches Greg before source-card browsing in the Library guide", () => {
     expect(FEATURE_GUIDES.library.steps).toHaveLength(4);
     expect(FEATURE_GUIDES.library.steps[0]).toMatchObject({
       targetId: "library-ai-task-manager",
-      title: "Use greg - the taskmaster",
+      title: "Use Greg - The Taskmaster",
       practice: {
         actionLabel: "Start dummy Library workflow"
       }

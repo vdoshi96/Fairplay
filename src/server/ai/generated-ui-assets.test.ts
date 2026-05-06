@@ -37,6 +37,7 @@ describe("generated UI asset specs", () => {
         "radar-illustration",
         "check-in-spark",
         "ai-task-helper",
+        "greg-taskmaster-avatar",
         "crash-course-not-chore",
         "crash-course-owner-helper",
         "crash-course-completion-celebration",

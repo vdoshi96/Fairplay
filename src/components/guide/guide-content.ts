@@ -80,7 +80,7 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
     steps: [
       {
         id: "ai-task-manager",
-        title: "Use greg - the taskmaster",
+        title: "Use Greg - The Taskmaster",
         body: "Greg turns a quick text or voice note into a draft card you can review before it joins the household system.",
         targetId: "library-ai-task-manager",
         practice: {
@@ -88,7 +88,7 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
           completionMessage: "Dummy Library workflow complete.",
           eventId: "library-practice-start",
           prompt:
-            "Use a dummy greg capture, review the generated draft, edit it, preview imagery, and put it in play without creating a real card.",
+            "Use a dummy Greg capture, review the generated draft, edit it, preview imagery, and put it in play without creating a real card.",
           requiredEventIds: [
             "library-capture-filled",
             "library-draft-reviewed",

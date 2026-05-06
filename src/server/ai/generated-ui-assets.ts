@@ -231,6 +231,17 @@ export const GENERATED_UI_ASSETS: GeneratedUiAssetSpec[] = [
     slug: "ai-task-helper"
   },
   {
+    alt: "Greg Taskmaster avatar",
+    composition:
+      "stern original task judge avatar seated on a grand dark throne, wearing rectangular glasses, a black suit, darker black shirt, and holding a task card",
+    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/greg-taskmaster-avatar.png`,
+    promptSubject:
+      "original comedic task judge avatar for the Library AI capture control",
+    ratio: "1:1",
+    size: "1254*1254",
+    slug: "greg-taskmaster-avatar"
+  },
+  {
     alt: "Crash course completion celebration",
     composition:
       "two abstract sidekick avatars, a helper spark, soft ribbon arcs, blank milestone tiles, and restrained celebration shapes",
