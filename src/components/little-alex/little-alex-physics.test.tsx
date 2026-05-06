@@ -114,6 +114,8 @@ function expectShouldersToOverlapArmBounds(
 
   expect(leftArmBounds.maxX).toBeGreaterThan(torsoBounds.minX);
   expect(rightArmBounds.minX).toBeLessThan(torsoBounds.maxX);
+  expect(leftArmBounds.maxX - torsoBounds.minX).toBeGreaterThanOrEqual(8);
+  expect(torsoBounds.maxX - rightArmBounds.minX).toBeGreaterThanOrEqual(8);
   expect(leftArmYBounds.maxY).toBeGreaterThan(torsoYBounds.minY);
   expect(rightArmYBounds.maxY).toBeGreaterThan(torsoYBounds.minY);
 }
