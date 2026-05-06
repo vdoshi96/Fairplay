@@ -11,15 +11,32 @@ async function expectApiPost(
   path: string,
   action: () => Promise<void>
 ) {
+  return expectApiRequest(page, path, "POST", action);
+}
+
+async function expectApiPatch(
+  page: Page,
+  path: string,
+  action: () => Promise<void>
+) {
+  return expectApiRequest(page, path, "PATCH", action);
+}
+
+async function expectApiRequest(
+  page: Page,
+  path: string,
+  method: "PATCH" | "POST",
+  action: () => Promise<void>
+) {
   const apiResponse = page
     .waitForResponse((response) =>
-      response.url().includes(path) && response.request().method() === "POST"
+      response.url().includes(path) && response.request().method() === method
     )
     .then((response) => ({ response }));
   const apiFailure = page
     .waitForEvent("requestfailed", {
       predicate: (request) =>
-        request.url().includes(path) && request.method() === "POST",
+        request.url().includes(path) && request.method() === method,
       timeout: 20_000
     })
     .then((request) => ({ request }));
@@ -192,6 +209,9 @@ test.describe("Little Alex physics", () => {
     const before = await torso.boundingBox();
 
     await dragLittleAlex(page, -240, 180);
+    await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
+      "i'm little alex horne"
+    );
     await page.waitForTimeout(500);
 
     const after = await torso.boundingBox();
@@ -204,6 +224,54 @@ test.describe("Little Alex physics", () => {
       );
     }
 
+    await expectLittleAlexInViewport(page);
+  });
+
+  test("uses saved Little Alex preferences for appearance and fling bubble", async ({
+    page
+  }) => {
+    await createHouseholdAndChooseAlex(page);
+    await page.goto("/app/settings");
+
+    await page.getByRole("button", { name: "Feminine" }).click();
+    await page
+      .getByLabel("Little Alex chat bubble phrase")
+      .fill("well done everyone");
+    await page.getByRole("button", { name: "Tone 4" }).click();
+    await expectApiPatch(page, "/api/preferences/little-alex", () =>
+      page.getByRole("button", { name: "Save Little Alex" }).click()
+    );
+    await expect(page.getByRole("status")).toContainText(
+      "Little Alex updated for Alex."
+    );
+
+    await page.goto("/app/home");
+    const littleAlex = page.getByTestId("little-alex-horne");
+
+    await expect(littleAlex).toHaveAttribute(
+      "data-gender-presentation",
+      "feminine"
+    );
+    await expect(littleAlex).toHaveAttribute(
+      "data-chat-phrase",
+      "well done everyone"
+    );
+    await dragLittleAlex(page, -180, 120);
+    await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
+      "well done everyone"
+    );
+  });
+
+  test("starts idle walking after five seconds untouched", async ({ page }) => {
+    await createHouseholdAndChooseAlex(page);
+    await page.goto("/app/home");
+
+    const littleAlex = page.getByTestId("little-alex-horne");
+
+    await expect(littleAlex).toHaveAttribute("data-idle-state", "active");
+    await expect(littleAlex).toHaveAttribute("data-idle-state", /walking|paused/, {
+      timeout: 6_500
+    });
     await expectLittleAlexInViewport(page);
   });
 
@@ -230,6 +298,7 @@ test.describe("Little Alex physics", () => {
 
     const littleAlex = page.getByTestId("little-alex-horne");
     await expect(littleAlex).toHaveAttribute("data-motion-mode", "reduced");
+    await expect(littleAlex).toHaveAttribute("data-idle-state", "static");
 
     const torso = page.locator('[data-part="torso"]');
     const before = await torso.boundingBox();

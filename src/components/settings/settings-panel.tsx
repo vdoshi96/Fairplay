@@ -12,6 +12,11 @@ import { useRouter } from "next/navigation";
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
+import type {
+  LittleAlexGenderPresentation,
+  LittleAlexPreferences,
+  LittleAlexSkinTone
+} from "@/contracts/preferences";
 import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import { FEATURE_GUIDES } from "@/components/guide/guide-content";
 import {
@@ -23,6 +28,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 
 type SettingsPanelProps = {
   household: HouseholdSummary;
+  littleAlexPreferences: LittleAlexPreferences;
   selectedPersona: PersonaSummary;
 };
 
@@ -32,11 +38,42 @@ const themeModeOptions: Array<{ label: string; value: ThemeMode }> = [
   { label: "Dark", value: "dark" }
 ];
 
-export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps) {
+const littleAlexGenderOptions: Array<{
+  label: string;
+  value: LittleAlexGenderPresentation;
+}> = [
+  { label: "Neutral", value: "neutral" },
+  { label: "Masculine", value: "masculine" },
+  { label: "Feminine", value: "feminine" }
+];
+
+const littleAlexSkinOptions: Array<{
+  label: string;
+  swatch: string;
+  value: LittleAlexSkinTone;
+}> = [
+  { label: "Tone 1", swatch: "#f3c7a6", value: "tone_1" },
+  { label: "Tone 2", swatch: "#d8a078", value: "tone_2" },
+  { label: "Tone 3", swatch: "#c18463", value: "tone_3" },
+  { label: "Tone 4", swatch: "#b7795f", value: "tone_4" },
+  { label: "Tone 5", swatch: "#8f5f45", value: "tone_5" }
+];
+
+export function SettingsPanel({
+  household,
+  littleAlexPreferences,
+  selectedPersona
+}: SettingsPanelProps) {
   const router = useRouter();
   const { mode: themeMode, resolvedTheme, setMode: setThemeMode } = useTheme();
+  const [littleAlexDraft, setLittleAlexDraft] = useState({
+    genderPresentation: littleAlexPreferences.genderPresentation,
+    chatPhrase: littleAlexPreferences.chatPhrase,
+    skinTone: littleAlexPreferences.skinTone
+  });
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [savingLittleAlex, setSavingLittleAlex] = useState(false);
   const [preferenceAction, setPreferenceAction] = useState<
     "restart-course" | "show-welcome" | null
   >(null);
@@ -158,6 +195,37 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
   function handleThemeModeChange(nextMode: ThemeMode) {
     setThemeMode(nextMode);
     completeGuidePractice("settings-appearance");
+  }
+
+  async function saveLittleAlexPreferences() {
+    setSavingLittleAlex(true);
+    setActionStatus(null);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/preferences/little-alex", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(littleAlexDraft)
+      });
+
+      if (!response.ok) {
+        throw new Error("little-alex");
+      }
+
+      const saved = (await response.json()) as LittleAlexPreferences;
+      setLittleAlexDraft({
+        genderPresentation: saved.genderPresentation,
+        chatPhrase: saved.chatPhrase,
+        skinTone: saved.skinTone
+      });
+      setActionStatus(`Little Alex updated for ${selectedPersona.displayName}.`);
+      router.refresh();
+    } catch {
+      setError("Unable to update Little Alex right now. Please try again.");
+    } finally {
+      setSavingLittleAlex(false);
+    }
   }
 
   function handleDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -283,6 +351,113 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
           >
             Switch persona
           </button>
+        </section>
+
+        <section className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4">
+          <div className="grid gap-4">
+            <div className="grid gap-1">
+              <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
+                Little Alex
+              </h2>
+              <p className="text-[14px] leading-5 text-fp-muted-ink">
+                Customizes the small assistant for {selectedPersona.displayName}.
+              </p>
+            </div>
+
+            <div className="grid gap-2">
+              <span className="text-[13px] font-semibold text-fp-muted-ink">
+                Gender presentation
+              </span>
+              <SegmentedControl
+                ariaLabel="Little Alex gender presentation"
+                className="justify-self-start"
+                onChange={(genderPresentation) =>
+                  setLittleAlexDraft((current) => ({
+                    ...current,
+                    genderPresentation
+                  }))
+                }
+                options={littleAlexGenderOptions}
+                value={littleAlexDraft.genderPresentation}
+              />
+            </div>
+
+            <label
+              className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink"
+              htmlFor="little-alex-chat-phrase"
+            >
+              Little Alex chat bubble phrase
+              <input
+                aria-label="Little Alex chat bubble phrase"
+                className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
+                id="little-alex-chat-phrase"
+                maxLength={30}
+                onChange={(event) =>
+                  setLittleAlexDraft((current) => ({
+                    ...current,
+                    chatPhrase: event.target.value
+                  }))
+                }
+                value={littleAlexDraft.chatPhrase}
+              />
+              <span className="text-[12px] font-semibold text-fp-muted-ink">
+                {littleAlexDraft.chatPhrase.length}/30
+              </span>
+            </label>
+
+            <div className="grid gap-2">
+              <span className="text-[13px] font-semibold text-fp-muted-ink">
+                Skin tone
+              </span>
+              <div
+                aria-label="Little Alex skin tone"
+                className="flex flex-wrap gap-2"
+                role="group"
+              >
+                {littleAlexSkinOptions.map((option) => {
+                  const selected = option.value === littleAlexDraft.skinTone;
+
+                  return (
+                    <button
+                      aria-pressed={selected}
+                      className={[
+                        "inline-flex min-h-10 items-center gap-2 rounded-[8px] border px-3 text-[13px] font-bold outline-none focus:ring-2 focus:ring-fp-ink/25",
+                        selected
+                          ? "border-fp-ink bg-fp-primary text-fp-on-primary"
+                          : "border-fp-line bg-[var(--fp-surface)] text-fp-ink"
+                      ].join(" ")}
+                      key={option.value}
+                      onClick={() =>
+                        setLittleAlexDraft((current) => ({
+                          ...current,
+                          skinTone: option.value
+                        }))
+                      }
+                      type="button"
+                    >
+                      <span
+                        aria-hidden
+                        className="h-4 w-4 rounded-full border border-fp-ink/30"
+                        style={{ background: option.swatch }}
+                      />
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button
+              className="min-h-11 justify-self-start rounded-[8px] bg-fp-primary px-4 text-[14px] font-semibold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/30 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={
+                savingLittleAlex || littleAlexDraft.chatPhrase.trim().length === 0
+              }
+              onClick={() => void saveLittleAlexPreferences()}
+              type="button"
+            >
+              {savingLittleAlex ? "Saving Little Alex..." : "Save Little Alex"}
+            </button>
+          </div>
         </section>
 
         <section

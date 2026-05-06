@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import Matter from "matter-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -46,6 +46,7 @@ function stubViewport(width: number, height: number) {
 
 describe("LittleAlexPhysics", () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
@@ -98,6 +99,114 @@ describe("LittleAlexPhysics", () => {
       [-48, 130, 96, 452, { isStatic: true }],
       [348, 130, 96, 452, { isStatic: true }]
     ]);
+  });
+
+  it("uses a roughly ten percent faster fall rate", () => {
+    stubReducedMotion(false);
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+    const createSpy = vi.spyOn(Matter.Engine, "create");
+
+    render(<LittleAlexPhysics />);
+
+    const engine = createSpy.mock.results[0]?.value;
+    expect(engine.gravity.y).toBeCloseTo(0.902, 3);
+  });
+
+  it("shows the configured chat bubble after every fling", () => {
+    stubReducedMotion(false);
+    stubPointerCapture();
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics chatPhrase="well done everyone" />);
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    fireEvent.pointerDown(grabTarget, {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+    fireEvent.pointerMove(grabTarget, {
+      clientX: 820,
+      clientY: 260,
+      pointerId: 1,
+      timeStamp: 80
+    });
+    fireEvent.pointerUp(grabTarget, {
+      clientX: 820,
+      clientY: 260,
+      pointerId: 1,
+      timeStamp: 96
+    });
+
+    const bubble = screen.getByTestId("little-alex-chat-bubble");
+
+    expect(bubble).toHaveTextContent("well done everyone");
+    expect(bubble.style.transform).toContain("translate3d");
+  });
+
+  it("stands upright and starts slow idle walking after five seconds untouched", () => {
+    vi.useFakeTimers();
+    stubReducedMotion(false);
+    const addEventListenerSpy = vi.spyOn(window, "addEventListener");
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+
+    expect(littleAlex).toHaveAttribute("data-idle-state", "active");
+
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-idle-state", "walking");
+    expect(screen.getByTestId("little-alex-grab-target")).toHaveStyle({
+      pointerEvents: "auto"
+    });
+    expect(addEventListenerSpy).toHaveBeenCalledWith(
+      "pointerdown",
+      expect.any(Function)
+    );
+    expect(addEventListenerSpy).toHaveBeenCalledWith(
+      "touchstart",
+      expect.any(Function),
+      { passive: true }
+    );
+  });
+
+  it("does not run idle walking in reduced motion", () => {
+    vi.useFakeTimers();
+    stubReducedMotion(true);
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+
+    act(() => {
+      vi.advanceTimersByTime(6_000);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-motion-mode", "reduced");
+    expect(littleAlex).toHaveAttribute("data-idle-state", "static");
+  });
+
+  it("maps appearance options to gender and skin CSS without changing suit assets", () => {
+    stubReducedMotion(true);
+
+    render(
+      <LittleAlexPhysics
+        genderPresentation="feminine"
+        skinTone="tone_4"
+      />
+    );
+
+    const littleAlex = screen.getByTestId("little-alex-horne");
+
+    expect(littleAlex).toHaveAttribute("data-gender-presentation", "feminine");
+    expect(littleAlex).toHaveStyle({ "--little-alex-skin": "#b7795f" });
+    expect(screen.getByTestId("little-alex-clipboard")).toBeInTheDocument();
+    expect(screen.getByTestId("little-alex-shirt")).toBeInTheDocument();
   });
 
   it("keeps the reduced-motion object safely draggable without enabling the shell", () => {

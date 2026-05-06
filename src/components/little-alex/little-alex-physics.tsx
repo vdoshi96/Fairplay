@@ -4,7 +4,18 @@ import Matter from "matter-js";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import type {
+  LittleAlexGenderPresentation,
+  LittleAlexSkinTone
+} from "@/contracts/preferences";
+
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const DEFAULT_CHAT_PHRASE = "i'm little alex horne";
+const DEFAULT_GENDER_PRESENTATION: LittleAlexGenderPresentation = "neutral";
+const DEFAULT_SKIN_TONE: LittleAlexSkinTone = "tone_2";
+const PHYSICS_SPEED_MULTIPLIER = 1.1;
+const IDLE_DELAY_MS = 5_000;
+const IDLE_PAUSE_MS = 900;
 const WALL_THICKNESS = 96;
 const VIEWPORT_PADDING = 2;
 const SERVER_SAFE_ANCHOR = { x: 906, y: 218 };
@@ -32,11 +43,36 @@ type DragState = {
   velocity: Point;
 };
 
+type IdleState = "active" | "walking" | "paused";
+
+type PointerInput = {
+  clientX: number;
+  clientY: number;
+  pointerId: number;
+  preventDefault: () => void;
+  stopPropagation: () => void;
+  timeStamp: number;
+};
+
 type PhysicsWorld = {
   bodies: Record<PartKey, Matter.Body>;
   engine: Matter.Engine;
   runner: Matter.Runner;
   walls: Matter.Body[];
+};
+
+type LittleAlexPhysicsProps = {
+  chatPhrase?: string;
+  genderPresentation?: LittleAlexGenderPresentation;
+  skinTone?: LittleAlexSkinTone;
+};
+
+const skinToneCssValues: Record<LittleAlexSkinTone, string> = {
+  tone_1: "#f3c7a6",
+  tone_2: "#d8a078",
+  tone_3: "#c18463",
+  tone_4: "#b7795f",
+  tone_5: "#8f5f45"
 };
 
 const partConfigs: PartConfig[] = [
@@ -164,6 +200,15 @@ function grabTargetStyle(anchor: Point): CSSProperties {
   };
 }
 
+function bubbleStyle(anchor: Point, viewport = viewportSize()): CSSProperties {
+  const x = clampToViewportRange(anchor.x - 88, 12, viewport.width - 192);
+  const y = clampToViewportRange(anchor.y - 138, 12, viewport.height - 80);
+
+  return {
+    transform: `translate3d(${x}px, ${y}px, 0)`
+  };
+}
+
 function createWalls(width: number, height: number) {
   return [
     Matter.Bodies.rectangle(
@@ -261,7 +306,7 @@ function joint(
 
 function createRagdoll(anchor: Point, width: number, height: number): PhysicsWorld {
   const engine = Matter.Engine.create({ enableSleeping: false });
-  engine.gravity.y = 0.82;
+  engine.gravity.y = 0.82 * PHYSICS_SPEED_MULTIPLIER;
 
   const bodies = createBodies(anchor);
   const constraints = [
@@ -305,6 +350,14 @@ function syncGrabTarget(element: HTMLElement | null, anchor: Point) {
     anchor.y - 72
   }px, 0)`;
   element.style.width = "96px";
+}
+
+function syncChatBubble(element: HTMLElement | null, anchor: Point) {
+  if (!element) {
+    return;
+  }
+
+  element.style.transform = bubbleStyle(anchor).transform as string;
 }
 
 function visualHalfExtents(part: PartConfig, angle: number) {
@@ -360,7 +413,7 @@ function containBodiesInViewport(
 }
 
 function clampVelocity(value: number) {
-  return clamp(value, -26, 26);
+  return clamp(value, -26 * PHYSICS_SPEED_MULTIPLIER, 26 * PHYSICS_SPEED_MULTIPLIER);
 }
 
 function partContent(part: PartKey) {
@@ -376,7 +429,16 @@ function partContent(part: PartKey) {
   }
 
   if (part === "torso") {
-    return <span className="fp-little-alex-bowtie" />;
+    return (
+      <>
+        <span className="fp-little-alex-shirt" data-testid="little-alex-shirt" />
+        <span className="fp-little-alex-bowtie" />
+        <span
+          className="fp-little-alex-clipboard"
+          data-testid="little-alex-clipboard"
+        />
+      </>
+    );
   }
 
   if (part === "leftLeg" || part === "rightLeg") {
@@ -386,14 +448,75 @@ function partContent(part: PartKey) {
   return null;
 }
 
-export function LittleAlexPhysics() {
+function setBodyPose(body: Matter.Body, position: Point, angle: number) {
+  Matter.Body.setPosition(body, position);
+  Matter.Body.setAngle(body, angle);
+  Matter.Body.setVelocity(body, { x: 0, y: 0 });
+  Matter.Body.setAngularVelocity(body, 0);
+}
+
+function setIdlePose(
+  physics: PhysicsWorld,
+  state: IdleState,
+  direction: number,
+  viewport = viewportSize()
+) {
+  const torso = physics.bodies.torso;
+  const step = state === "walking" ? direction * 0.22 : 0;
+  const anchor = clampAnchor({
+    x: torso.position.x + step,
+    y: viewport.height - characterBounds.maxY - VIEWPORT_PADDING
+  });
+  const sway = state === "walking" ? Math.sin(Date.now() / 420) * 0.18 : 0;
+
+  setBodyPose(physics.bodies.torso, anchor, 0);
+  setBodyPose(physics.bodies.head, { x: anchor.x, y: anchor.y - 62 }, 0);
+  setBodyPose(
+    physics.bodies.leftArm,
+    { x: anchor.x - 42, y: anchor.y - 4 },
+    -0.18
+  );
+  setBodyPose(
+    physics.bodies.rightArm,
+    { x: anchor.x + 42, y: anchor.y - 4 },
+    0.18
+  );
+  setBodyPose(
+    physics.bodies.leftLeg,
+    { x: anchor.x - 18, y: anchor.y + 62 },
+    state === "walking" ? 0.08 + sway : 0.04
+  );
+  setBodyPose(
+    physics.bodies.rightLeg,
+    { x: anchor.x + 18, y: anchor.y + 62 },
+    state === "walking" ? -0.08 - sway : -0.04
+  );
+}
+
+export function LittleAlexPhysics({
+  chatPhrase = DEFAULT_CHAT_PHRASE,
+  genderPresentation = DEFAULT_GENDER_PRESENTATION,
+  skinTone = DEFAULT_SKIN_TONE
+}: LittleAlexPhysicsProps) {
   const [motionPreferenceReady, setMotionPreferenceReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [reducedAnchor, setReducedAnchor] = useState(SERVER_SAFE_ANCHOR);
+  const [idleState, setIdleState] = useState<IdleState>("active");
+  const [activityVersion, setActivityVersion] = useState(0);
+  const [bubbleVisible, setBubbleVisible] = useState(false);
   const bodyRefs = useRef<Partial<Record<PartKey, HTMLDivElement>>>({});
+  const bubbleRef = useRef<HTMLDivElement | null>(null);
+  const bubbleTimeoutRef = useRef<number | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const grabTargetRef = useRef<HTMLDivElement | null>(null);
+  const idleDirectionRef = useRef(1);
+  const idlePauseTimeoutRef = useRef<number | null>(null);
+  const idleStateRef = useRef<IdleState>("active");
   const physicsRef = useRef<PhysicsWorld | null>(null);
+
+  useEffect(() => {
+    idleStateRef.current = idleState;
+  }, [idleState]);
 
   const syncPhysicsDom = useCallback(() => {
     const physics = physicsRef.current;
@@ -402,6 +525,9 @@ export function LittleAlexPhysics() {
       return;
     }
 
+    if (idleStateRef.current !== "active") {
+      setIdlePose(physics, idleStateRef.current, idleDirectionRef.current);
+    }
     containBodiesInViewport(physics.bodies);
     partConfigs.forEach((part) => {
       const element = bodyRefs.current[part.key];
@@ -411,6 +537,7 @@ export function LittleAlexPhysics() {
       }
     });
     syncGrabTarget(grabTargetRef.current, physics.bodies.torso.position);
+    syncChatBubble(bubbleRef.current, physics.bodies.head.position);
   }, []);
 
   useEffect(() => {
@@ -464,6 +591,80 @@ export function LittleAlexPhysics() {
 
   useEffect(() => {
     if (!motionPreferenceReady || reducedMotion) {
+      setIdleState("active");
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setIdleState("walking");
+    }, IDLE_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [activityVersion, motionPreferenceReady, reducedMotion]);
+
+  useEffect(() => {
+    if (!motionPreferenceReady || reducedMotion || idleState !== "walking") {
+      return undefined;
+    }
+
+    const interval = window.setInterval(() => {
+      setIdleState("paused");
+      idlePauseTimeoutRef.current = window.setTimeout(() => {
+        setIdleState("walking");
+      }, IDLE_PAUSE_MS);
+    }, IDLE_DELAY_MS);
+
+    return () => {
+      window.clearInterval(interval);
+      if (idlePauseTimeoutRef.current) {
+        window.clearTimeout(idlePauseTimeoutRef.current);
+      }
+    };
+  }, [idleState, motionPreferenceReady, reducedMotion]);
+
+  useEffect(() => {
+    if (!motionPreferenceReady || reducedMotion) {
+      return undefined;
+    }
+
+    const trackPointer = (event: PointerEvent) => {
+      const torso = physicsRef.current?.bodies.torso.position ?? reducedAnchor;
+      idleDirectionRef.current = event.clientX >= torso.x ? 1 : -1;
+    };
+    const trackTouch = (event: TouchEvent) => {
+      const touch = event.touches[0] ?? event.changedTouches[0];
+
+      if (!touch) {
+        return;
+      }
+
+      const torso = physicsRef.current?.bodies.torso.position ?? reducedAnchor;
+      idleDirectionRef.current = touch.clientX >= torso.x ? 1 : -1;
+    };
+
+    window.addEventListener("pointerdown", trackPointer);
+    window.addEventListener("pointermove", trackPointer);
+    window.addEventListener("touchstart", trackTouch, { passive: true });
+    window.addEventListener("touchmove", trackTouch, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", trackPointer);
+      window.removeEventListener("pointermove", trackPointer);
+      window.removeEventListener("touchstart", trackTouch);
+      window.removeEventListener("touchmove", trackTouch);
+    };
+  }, [motionPreferenceReady, reducedAnchor, reducedMotion]);
+
+  useEffect(() => {
+    if (bubbleVisible) {
+      syncPhysicsDom();
+    }
+  }, [bubbleVisible, syncPhysicsDom]);
+
+  useEffect(() => {
+    if (!motionPreferenceReady || reducedMotion) {
       return undefined;
     }
 
@@ -506,6 +707,8 @@ export function LittleAlexPhysics() {
       event.preventDefault();
       event.stopPropagation();
       event.currentTarget.setPointerCapture(event.pointerId);
+      setIdleState("active");
+      setActivityVersion((current) => current + 1);
 
       const center = reducedMotion
         ? reducedAnchor
@@ -525,8 +728,8 @@ export function LittleAlexPhysics() {
     [reducedAnchor, reducedMotion]
   );
 
-  const handlePointerMove = useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>) => {
+  const moveDrag = useCallback(
+    (event: PointerInput) => {
       const drag = dragRef.current;
 
       if (!drag || drag.pointerId !== event.pointerId) {
@@ -541,6 +744,7 @@ export function LittleAlexPhysics() {
         y: event.clientY - drag.offset.y
       });
       const elapsed = Math.max(event.timeStamp - drag.lastTime, 16);
+      idleDirectionRef.current = event.clientX >= drag.lastPoint.x ? 1 : -1;
       drag.velocity = {
         x: clampVelocity(((event.clientX - drag.lastPoint.x) / elapsed) * 16),
         y: clampVelocity(((event.clientY - drag.lastPoint.y) / elapsed) * 16)
@@ -576,7 +780,7 @@ export function LittleAlexPhysics() {
   );
 
   const releaseDrag = useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>) => {
+    (event: PointerInput, captureTarget?: HTMLElement | null) => {
       const drag = dragRef.current;
 
       if (!drag || drag.pointerId !== event.pointerId) {
@@ -586,9 +790,10 @@ export function LittleAlexPhysics() {
       event.preventDefault();
       event.stopPropagation();
       dragRef.current = null;
+      setActivityVersion((current) => current + 1);
 
-      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-        event.currentTarget.releasePointerCapture(event.pointerId);
+      if (captureTarget?.hasPointerCapture(event.pointerId)) {
+        captureTarget.releasePointerCapture(event.pointerId);
       }
 
       if (reducedMotion) {
@@ -605,29 +810,88 @@ export function LittleAlexPhysics() {
         const weight = key === "torso" ? 1 : 0.82;
 
         Matter.Body.setVelocity(body, {
-          x: drag.velocity.x * weight,
-          y: drag.velocity.y * weight
+          x: clampVelocity(drag.velocity.x * weight * PHYSICS_SPEED_MULTIPLIER),
+          y: clampVelocity(drag.velocity.y * weight * PHYSICS_SPEED_MULTIPLIER)
         });
         Matter.Body.setAngularVelocity(
           body,
-          clampVelocity(drag.velocity.x) * (key === "head" ? 0.006 : 0.004)
+          clampVelocity(drag.velocity.x * PHYSICS_SPEED_MULTIPLIER) *
+            (key === "head" ? 0.006 : 0.004)
         );
       });
+      setBubbleVisible(true);
+      if (bubbleTimeoutRef.current) {
+        window.clearTimeout(bubbleTimeoutRef.current);
+      }
+      bubbleTimeoutRef.current = window.setTimeout(() => {
+        setBubbleVisible(false);
+      }, 2_800);
     },
     [reducedMotion]
+  );
+
+  useEffect(() => {
+    const handleWindowPointerMove = (event: PointerEvent) => {
+      moveDrag(event);
+    };
+    const handleWindowPointerRelease = (event: PointerEvent) => {
+      releaseDrag(event, grabTargetRef.current);
+    };
+
+    window.addEventListener("pointermove", handleWindowPointerMove);
+    window.addEventListener("pointerup", handleWindowPointerRelease);
+    window.addEventListener("pointercancel", handleWindowPointerRelease);
+
+    return () => {
+      window.removeEventListener("pointermove", handleWindowPointerMove);
+      window.removeEventListener("pointerup", handleWindowPointerRelease);
+      window.removeEventListener("pointercancel", handleWindowPointerRelease);
+    };
+  }, [moveDrag, releaseDrag]);
+
+  useEffect(
+    () => () => {
+      if (bubbleTimeoutRef.current) {
+        window.clearTimeout(bubbleTimeoutRef.current);
+      }
+    },
+    []
   );
 
   return (
     <div
       aria-hidden="true"
-      className="fp-little-alex-shell"
+      className={[
+        "fp-little-alex-shell",
+        `fp-little-alex-presentation-${genderPresentation}`
+      ].join(" ")}
+      data-chat-phrase={chatPhrase}
+      data-gender-presentation={genderPresentation}
+      data-idle-state={
+        motionPreferenceReady && reducedMotion ? "static" : idleState
+      }
       data-motion-mode={
         motionPreferenceReady && reducedMotion ? "reduced" : "physics"
       }
       data-physics-engine="matter-js"
       data-testid="little-alex-horne"
-      style={{ pointerEvents: "none" }}
+      style={
+        {
+          "--little-alex-skin": skinToneCssValues[skinTone],
+          pointerEvents: "none"
+        } as CSSProperties
+      }
     >
+      {bubbleVisible ? (
+        <div
+          className="fp-little-alex-chat-bubble"
+          data-testid="little-alex-chat-bubble"
+          ref={bubbleRef}
+          style={bubbleStyle(reducedAnchor)}
+        >
+          {chatPhrase}
+        </div>
+      ) : null}
       {partConfigs.map((part) => (
         <div
           className={`fp-little-alex-part ${part.className}`}
@@ -649,10 +913,7 @@ export function LittleAlexPhysics() {
       <div
         className="fp-little-alex-grab-target"
         data-testid="little-alex-grab-target"
-        onPointerCancel={releaseDrag}
         onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={releaseDrag}
         ref={grabTargetRef}
         style={{
           ...grabTargetStyle(reducedAnchor),

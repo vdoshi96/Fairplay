@@ -5,7 +5,9 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "../db/prisma";
 import { createHouseholdWithPersonas } from "./households";
 import {
+  getLittleAlexPreferences,
   getOnboardingPreferences,
+  updateLittleAlexPreferences,
   replayWelcome,
   updateOnboardingPreferences
 } from "./preferences";
@@ -100,6 +102,56 @@ describe("onboarding preference repository", () => {
       crashCourseCurrentStep: 4,
       crashCourseSkippedAt: "2026-05-04T12:30:00.000Z",
       crashCourseReplayRequestedAt: replayRequestedAt
+    });
+  });
+});
+
+describe("Little Alex preference repository", () => {
+  it("creates default persona-scoped Little Alex preferences", async () => {
+    const persona = await createTestPersona();
+
+    const preferences = await getLittleAlexPreferences(persona.id);
+
+    expect(preferences).toMatchObject({
+      personaId: persona.id,
+      genderPresentation: "neutral",
+      chatPhrase: "i'm little alex horne",
+      skinTone: "tone_2"
+    });
+    expect(new Date(preferences.updatedAt).toString()).not.toBe("Invalid Date");
+  });
+
+  it("returns one Little Alex preference record when default initialization races", async () => {
+    const persona = await createTestPersona();
+
+    const initialized = await Promise.all(
+      Array.from({ length: 8 }, () => getLittleAlexPreferences(persona.id))
+    );
+
+    expect(initialized).toHaveLength(8);
+    expect(initialized.every((preference) => preference.personaId === persona.id))
+      .toBe(true);
+    await expect(
+      prisma.personaLittleAlexPreferences.count({
+        where: { personaId: persona.id }
+      })
+    ).resolves.toBe(1);
+  });
+
+  it("updates Little Alex preferences for one selected persona", async () => {
+    const persona = await createTestPersona();
+
+    const updated = await updateLittleAlexPreferences(persona.id, {
+      genderPresentation: "masculine",
+      chatPhrase: "hello from alex",
+      skinTone: "tone_5"
+    });
+
+    expect(updated).toMatchObject({
+      personaId: persona.id,
+      genderPresentation: "masculine",
+      chatPhrase: "hello from alex",
+      skinTone: "tone_5"
     });
   });
 });

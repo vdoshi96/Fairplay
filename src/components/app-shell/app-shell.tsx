@@ -15,12 +15,14 @@ import {
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
+import type { LittleAlexPreferences } from "@/contracts/preferences";
 import { LittleAlexPhysics } from "@/components/little-alex/little-alex-physics";
 import { FairplayMark, PersonaAvatar } from "@/components/visuals/fairplay-visuals";
 
 type AppShellProps = {
   children: ReactNode;
   household: HouseholdSummary;
+  littleAlexPreferences: LittleAlexPreferences;
   selectedPersona: PersonaSummary;
 };
 
@@ -42,7 +44,12 @@ function isActiveRoute(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppShell({ children, household, selectedPersona }: AppShellProps) {
+export function AppShell({
+  children,
+  household,
+  littleAlexPreferences,
+  selectedPersona
+}: AppShellProps) {
   const pathname = usePathname();
   const isImmersiveRoute = pathname === "/app/crash-course";
   const mainClassName = isImmersiveRoute
@@ -51,7 +58,11 @@ export function AppShell({ children, household, selectedPersona }: AppShellProps
 
   return (
     <div className="min-h-screen bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
-      <LittleAlexPhysics />
+      <LittleAlexPhysics
+        chatPhrase={littleAlexPreferences.chatPhrase}
+        genderPresentation={littleAlexPreferences.genderPresentation}
+        skinTone={littleAlexPreferences.skinTone}
+      />
 
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-fp-line bg-[var(--fp-surface-strong)] px-4 py-5 shadow-[var(--fp-shadow-soft)] backdrop-blur lg:flex lg:flex-col">
         <Link
