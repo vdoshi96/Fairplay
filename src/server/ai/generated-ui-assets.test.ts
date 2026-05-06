@@ -45,7 +45,16 @@ describe("generated UI asset specs", () => {
         "feature-guide-library",
         "feature-guide-radar",
         "feature-guide-check-ins",
-        "feature-guide-settings"
+        "feature-guide-settings",
+        "auth-warm-threshold-background",
+        "app-shell-household-canvas",
+        "home-learning-studio-background",
+        "onboarding-rhythm-path-background",
+        "load-map-workbench-background",
+        "library-shelf-background",
+        "radar-signal-room-background",
+        "check-in-table-background",
+        "settings-preferences-background"
       ])
     );
   });
