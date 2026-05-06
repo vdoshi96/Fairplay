@@ -1012,6 +1012,16 @@ export function LittleAlexPhysics({
     }
   }, [bubbleVisible, syncPhysicsDom]);
 
+  const showChatBubble = useCallback(() => {
+    setBubbleVisible(true);
+    if (bubbleTimeoutRef.current) {
+      window.clearTimeout(bubbleTimeoutRef.current);
+    }
+    bubbleTimeoutRef.current = window.setTimeout(() => {
+      setBubbleVisible(false);
+    }, 2_800);
+  }, []);
+
   useEffect(() => {
     if (!motionPreferenceReady || reducedMotion) {
       return undefined;
@@ -1185,13 +1195,23 @@ export function LittleAlexPhysics({
         captureTarget.releasePointerCapture(event.pointerId);
       }
 
+      const shouldShowBubble = releaseShouldShowBubble(drag, point);
+
       if (reducedMotion) {
-        idleWalkTurnRef.current = initialIdleWalkTurn(reducedAnchor.x);
+        const releaseAnchor = clampAnchor({
+          x: point.x - drag.offset.x,
+          y: point.y - drag.offset.y
+        });
+
+        setReducedAnchor(releaseAnchor);
+        idleWalkTurnRef.current = initialIdleWalkTurn(releaseAnchor.x);
+        if (shouldShowBubble) {
+          showChatBubble();
+        }
         return;
       }
 
       const physics = physicsRef.current;
-      const shouldShowBubble = releaseShouldShowBubble(drag, point);
 
       if (!physics) {
         return;
@@ -1212,16 +1232,10 @@ export function LittleAlexPhysics({
       });
       idleWalkTurnRef.current = initialIdleWalkTurn(physics.bodies.torso.position.x);
       if (shouldShowBubble) {
-        setBubbleVisible(true);
-        if (bubbleTimeoutRef.current) {
-          window.clearTimeout(bubbleTimeoutRef.current);
-        }
-        bubbleTimeoutRef.current = window.setTimeout(() => {
-          setBubbleVisible(false);
-        }, 2_800);
+        showChatBubble();
       }
     },
-    [reducedAnchor.x, reducedMotion, updateGaze]
+    [reducedMotion, showChatBubble, updateGaze]
   );
 
   useEffect(() => {

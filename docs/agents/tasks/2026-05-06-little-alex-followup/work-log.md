@@ -11,3 +11,4 @@
 - Fixed branch review findings for idle target clamping after resize and mobile gaze using the latest changed touch.
 - Merged branches to `main` in order and resolved the final component/test conflicts by combining appearance markup, safe play-area idle logic, and gaze/fling-bubble behavior.
 - Ran full integrated QA: Prisma generate/validate, typecheck, lint, full Vitest, full Playwright, production build, and visual screenshot inspection.
+- Addressed a final integrated review finding so reduced-motion drags also show the configured phrase after meaningful drag/fling releases.

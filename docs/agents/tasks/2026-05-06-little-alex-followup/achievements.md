@@ -12,4 +12,5 @@
 - Added resize-safe idle target clamping so Alex cannot keep walking toward an unreachable pre-resize target.
 - Added observable desktop pointer and mobile last-touch gaze through `data-gaze-direction` and CSS variables.
 - Changed chat bubble behavior so clicks do not trigger the phrase, while real drag/fling releases do.
+- Extended drag/fling bubble behavior to reduced-motion dragging without enabling physics motion.
 - Merged feature branches to `main` in order: appearance, bounds/idle, then gaze/bubble.

@@ -15,6 +15,7 @@
 - Little Alex appears globally on standard and immersive routes.
 - Drag/fling still moves Alex and triggers the configured phrase bubble.
 - Simple click releases do not trigger the phrase bubble.
+- Reduced-motion drag releases also trigger the phrase bubble after meaningful movement.
 - Leftward flings stay to the right of the desktop sidebar.
 - Saved appearance preferences expose the expected visual markers and retain the shirt and clipboard.
 - Untouched idle goes through standing before walking.
