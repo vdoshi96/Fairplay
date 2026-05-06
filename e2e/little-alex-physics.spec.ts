@@ -2,6 +2,8 @@ import { mkdir, rm } from "node:fs/promises";
 
 import { expect, test, type Page } from "@playwright/test";
 
+import { littleAlexPixelQaFailures } from "./helpers/little-alex-pixel-qa";
+
 const littleAlexSpriteScreenshotDir = "test-results/little-alex-qwen-sprites";
 const littleAlexSpriteBasePath = "/assets/fairplay/little-alex-sprites";
 const littleAlexSpriteParts = [
@@ -420,6 +422,34 @@ async function littleAlexRigProportionFailures(page: Page) {
   }, littleAlexSpriteParts);
 }
 
+async function littleAlexScreenshotPixelFailures(
+  page: Page,
+  presentation: LittleAlexSpritePresentation,
+  screenshotPath: string
+) {
+  const visiblePng = await page.screenshot({
+    fullPage: false,
+    path: screenshotPath
+  });
+  const hideStyle = await page.addStyleTag({
+    content: `[data-testid="little-alex-horne"] { opacity: 0 !important; transition: none !important; visibility: hidden !important; }`
+  });
+
+  try {
+    const hiddenPng = await page.screenshot({ fullPage: false });
+
+    return littleAlexPixelQaFailures({
+      hiddenPng,
+      label: presentation,
+      visiblePng
+    });
+  } finally {
+    await hideStyle.evaluate((style) => {
+      style.parentNode?.removeChild(style);
+    });
+  }
+}
+
 async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
   const grabTarget = page.getByTestId("little-alex-grab-target");
   const box = await grabTarget.boundingBox();
@@ -731,10 +761,14 @@ test.describe("Little Alex physics", () => {
       await expectLittleAlexSpritesLoaded(page, presentation);
       await expectLittleAlexInViewport(page, { minLeft: 256 });
 
-      await page.screenshot({
-        fullPage: false,
-        path: `${littleAlexSpriteScreenshotDir}/${presentation}.png`
-      });
+      const screenshotPath = `${littleAlexSpriteScreenshotDir}/${presentation}.png`;
+      rigProportionFailures.push(
+        ...(await littleAlexScreenshotPixelFailures(
+          page,
+          presentation,
+          screenshotPath
+        ))
+      );
       rigProportionFailures.push(
         ...(await littleAlexRigProportionFailures(page)).map(
           (failure) => `${presentation}: ${failure}`
