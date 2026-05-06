@@ -15,6 +15,7 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "assets:generate": "node --experimental-strip-types scripts/generate-visible-assets.mjs",
+    "assets:generate-little-alex": "node --experimental-strip-types scripts/generate-little-alex-sprites.mjs",
     "assets:generate-ui": "node --experimental-strip-types scripts/generate-ui-assets.mjs",
     "test:e2e": "playwright test",
     "prisma:generate": "DATABASE_URL=${DATABASE_URL:-postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public} prisma generate",
@@ -57,6 +58,7 @@
     "jsdom": "^25.0.1",
     "postcss": "^8.5.3",
     "prisma": "^6.7.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
     "vitest": "^3.1.2"
