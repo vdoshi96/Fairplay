@@ -22,6 +22,7 @@ const [
   {
     LITTLE_ALEX_SPRITE_ASSETS,
     LITTLE_ALEX_SPRITE_OUTPUT_DIR,
+    LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE,
     LITTLE_ALEX_SPRITE_QWEN_MODEL,
     LITTLE_ALEX_SPRITE_SHEETS,
     LITTLE_ALEX_SPRITE_SHEET_OUTPUT_DIR,
@@ -56,6 +57,7 @@ const manifest = {
   mode: options.dryRun ? "dry-run" : "generate",
   approvedModel: LITTLE_ALEX_SPRITE_QWEN_MODEL,
   outputDir: repoRelative(outputRoot),
+  proportionTemplate: LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE,
   sourceSheetDir: repoRelative(sourceSheetRoot),
   sheetSize: LITTLE_ALEX_SPRITE_SHEET_SIZE,
   sheets: []
@@ -86,6 +88,7 @@ for (const sheet of selectedSheets) {
     outputPath: repoRelative(sourceSheetPath),
     presentation: sheet.presentation,
     prompt,
+    proportionTemplate: sheet.proportionTemplate,
     size: sheet.size,
     skippedGeneration: false,
     slug: sheet.slug,
