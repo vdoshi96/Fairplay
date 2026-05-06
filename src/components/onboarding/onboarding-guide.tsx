@@ -43,7 +43,7 @@ export function OnboardingGuide({ onSkip }: OnboardingGuideProps) {
       >
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.95),rgba(255,255,255,0.86)_58%,rgba(255,255,255,0.5))]"
+          className="fp-generated-surface-wash absolute inset-0"
         />
         <div className="relative grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
           <div className="grid gap-3">

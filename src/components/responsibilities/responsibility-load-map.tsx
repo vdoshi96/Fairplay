@@ -285,7 +285,7 @@ export function ResponsibilityLoadMap({
         data-testid="load-map-hero-visual"
         style={{ backgroundImage: loadMapWorkbenchBackground }}
       >
-        <div className="flex flex-col gap-3 bg-gradient-to-r from-white/95 via-white/86 to-white/56 p-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="fp-generated-surface-wash flex flex-col gap-3 p-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="grid gap-1">
             <p className="text-[13px] font-semibold text-fp-muted-ink">Load map</p>
             <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
@@ -399,7 +399,7 @@ export function ResponsibilityLoadMap({
           data-testid="load-map-empty-visual"
           style={{ backgroundImage: loadMapWorkbenchBackground }}
         >
-          <div className="grid gap-4 bg-white/88 p-5 backdrop-blur-[1px] sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="fp-generated-surface-wash grid gap-4 p-5 backdrop-blur-[1px] sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="grid gap-3">
               <h2 className="text-[18px] font-bold">No responsibilities mapped yet.</h2>
               <p className="text-[14px] leading-6 text-fp-muted-ink">

@@ -31,7 +31,7 @@ export function AuthPageShell({
     >
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,251,245,0.94),rgba(255,251,245,0.84)_48%,rgba(255,251,245,0.62))]"
+        className="fp-generated-surface-wash absolute inset-0"
       />
       <section
         className={

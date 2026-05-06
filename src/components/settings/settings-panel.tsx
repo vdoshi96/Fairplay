@@ -274,7 +274,7 @@ export function SettingsPanel({
           data-testid="settings-preferences-visual"
           style={{ backgroundImage: settingsPreferencesBackground }}
         >
-          <div className="grid gap-2 bg-gradient-to-r from-white/95 via-white/86 to-white/56 p-4">
+          <div className="fp-generated-surface-wash grid gap-2 p-4">
             <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
               Settings
             </p>

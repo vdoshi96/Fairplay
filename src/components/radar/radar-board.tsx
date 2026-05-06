@@ -503,7 +503,7 @@ export function RadarBoard({
           data-testid="radar-signal-room-visual"
           style={{ backgroundImage: radarSignalRoomBackground }}
         >
-          <div className="grid gap-4 bg-gradient-to-r from-white/95 via-white/86 to-white/50 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="fp-generated-surface-wash grid gap-4 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="grid gap-1">
               <p className="text-[13px] font-semibold text-fp-muted-ink">Radar</p>
               <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">

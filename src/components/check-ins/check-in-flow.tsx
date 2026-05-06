@@ -267,7 +267,7 @@ export function CheckInFlow({
           data-testid="check-in-complete-visual"
           style={{ backgroundImage: checkInTableBackground }}
         >
-          <div className="grid gap-3 bg-gradient-to-r from-white/95 via-white/86 to-white/56 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="fp-generated-surface-wash grid gap-3 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="flex items-center gap-3">
               <MotionSpark decorative />
               <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
@@ -294,7 +294,7 @@ export function CheckInFlow({
         data-testid="check-in-active-visual"
         style={{ backgroundImage: checkInTableBackground }}
       >
-        <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-white/95 via-white/86 to-white/56 p-4">
+        <div className="fp-generated-surface-wash flex items-center justify-between gap-3 p-4">
           <h1 className="text-2xl font-semibold text-stone-950">Guided check-in</h1>
           <div className="grid gap-2 justify-items-end">
             <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />
@@ -526,7 +526,7 @@ export function NewCheckInLauncher({
         data-testid="check-in-new-visual"
         style={{ backgroundImage: checkInTableBackground }}
       >
-        <div className="grid gap-3 bg-gradient-to-r from-white/95 via-white/86 to-white/56 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="fp-generated-surface-wash grid gap-3 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
           <h1 className="text-2xl font-semibold text-stone-950">New check-in</h1>
           <div className="grid gap-3 justify-self-start sm:justify-self-end sm:justify-items-end">
             <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />

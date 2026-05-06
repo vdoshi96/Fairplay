@@ -83,6 +83,26 @@ html[data-theme="dark"] {
 }
 
 @layer utilities {
+  .fp-generated-surface-wash {
+    background-color: rgba(255, 255, 255, 0.92);
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.96),
+      rgba(255, 255, 255, 0.88) 58%,
+      rgba(255, 255, 255, 0.62)
+    );
+  }
+
+  html[data-theme="dark"] .fp-generated-surface-wash {
+    background-color: rgba(45, 41, 35, 0.94);
+    background-image: linear-gradient(
+      90deg,
+      rgba(45, 41, 35, 0.98),
+      rgba(45, 41, 35, 0.92) 58%,
+      rgba(45, 41, 35, 0.72)
+    );
+  }
+
   html[data-theme="dark"] :is(.bg-white, .hover\:bg-white:hover) {
     background-color: var(--fp-surface-strong) !important;
   }

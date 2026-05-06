@@ -69,7 +69,7 @@ export default function AppHomePage() {
       >
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.94),rgba(255,255,255,0.86)_56%,rgba(255,255,255,0.52))]"
+          className="fp-generated-surface-wash absolute inset-0"
         />
         <div className="relative grid gap-5">
           <div className="grid max-w-2xl gap-2">

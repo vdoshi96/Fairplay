@@ -71,7 +71,7 @@ export function CardLibrary({
         data-testid="library-shelf-visual"
         style={{ backgroundImage: libraryShelfBackground }}
       >
-        <div className="bg-gradient-to-r from-white/95 via-white/88 to-white/58 p-4">
+        <div className="fp-generated-surface-wash p-4">
           <AiTaskManager drafts={aiDrafts} />
         </div>
       </div>
