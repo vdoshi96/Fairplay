@@ -1,3 +1,5 @@
 # Blockers
 
-- QA branch expected blocker: `npm run test:e2e -- little-alex-physics.spec.ts` fails on the new wrapper-geometry proportion assertion until the rig proportions branch is merged. Current isolated-branch failure is the reduced-motion head/torso gap: all three presentations report `8.0px`, outside the target `-2..4px` range.
+- Resolved: the isolated QA branch initially failed because the old rig left an `8.0px` head/torso gap before the proportions branch was merged.
+- Resolved: integrated QA then caught only `6.0px` of arm/torso shoulder overlap. The asset-fit branch moved arm anchors inward and trimmed transparent Qwen padding so the connected figure passes the visual geometry checks.
+- Resolved: user visual review correctly found that wrapper geometry QA was still insufficient because the actual rendered pieces had limb gaps and duplicate clipboard art. The coherent full-body branch switched the visible character to one full-body generated sprite per variant and added pixel-recognition QA against the actual image pixels.
