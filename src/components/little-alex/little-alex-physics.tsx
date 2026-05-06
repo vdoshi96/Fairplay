@@ -510,7 +510,6 @@ export function LittleAlexPhysics({
   const dragRef = useRef<DragState | null>(null);
   const grabTargetRef = useRef<HTMLDivElement | null>(null);
   const idleDirectionRef = useRef(1);
-  const idlePauseTimeoutRef = useRef<number | null>(null);
   const idleStateRef = useRef<IdleState>("active");
   const physicsRef = useRef<PhysicsWorld | null>(null);
 
@@ -605,23 +604,31 @@ export function LittleAlexPhysics({
   }, [activityVersion, motionPreferenceReady, reducedMotion]);
 
   useEffect(() => {
-    if (!motionPreferenceReady || reducedMotion || idleState !== "walking") {
+    if (!motionPreferenceReady || reducedMotion) {
       return undefined;
     }
 
-    const interval = window.setInterval(() => {
-      setIdleState("paused");
-      idlePauseTimeoutRef.current = window.setTimeout(() => {
+    if (idleState === "walking") {
+      const pauseTimeout = window.setTimeout(() => {
+        setIdleState("paused");
+      }, IDLE_DELAY_MS);
+
+      return () => {
+        window.clearTimeout(pauseTimeout);
+      };
+    }
+
+    if (idleState === "paused") {
+      const resumeTimeout = window.setTimeout(() => {
         setIdleState("walking");
       }, IDLE_PAUSE_MS);
-    }, IDLE_DELAY_MS);
 
-    return () => {
-      window.clearInterval(interval);
-      if (idlePauseTimeoutRef.current) {
-        window.clearTimeout(idlePauseTimeoutRef.current);
-      }
-    };
+      return () => {
+        window.clearTimeout(resumeTimeout);
+      };
+    }
+
+    return undefined;
   }, [idleState, motionPreferenceReady, reducedMotion]);
 
   useEffect(() => {

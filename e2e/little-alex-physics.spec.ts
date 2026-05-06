@@ -166,6 +166,28 @@ async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
   await page.mouse.up();
 }
 
+async function dragLittleAlexTo(page: Page, targetX: number, targetY: number) {
+  const grabTarget = page.getByTestId("little-alex-grab-target");
+  const box = await grabTarget.boundingBox();
+
+  expect(box).not.toBeNull();
+
+  if (!box) {
+    return;
+  }
+
+  const startX = box.x + box.width / 2;
+  const startY = box.y + box.height / 2;
+
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move((startX + targetX) / 2, (startY + targetY) / 2, {
+    steps: 4
+  });
+  await page.mouse.move(targetX, targetY, { steps: 4 });
+  await page.mouse.up();
+}
+
 test.describe("Little Alex physics", () => {
   test.describe.configure({ mode: "serial" });
 
@@ -289,6 +311,36 @@ test.describe("Little Alex physics", () => {
     await page.waitForTimeout(500);
 
     await expectLittleAlexInViewport(page);
+  });
+
+  test("does not cover mobile navigation taps when resting near the bottom nav", async ({
+    page
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize({ height: 720, width: 390 });
+    await createHouseholdAndChooseAlex(page);
+    await page.goto("/app/home");
+
+    await expect(page.getByTestId("little-alex-horne")).toHaveCSS("z-index", "9");
+
+    const mobileNav = page.getByRole("navigation", { name: "Primary" });
+    const libraryLink = mobileNav.getByRole("link", { name: "Library" });
+    const libraryBox = await libraryLink.boundingBox();
+
+    expect(libraryBox).not.toBeNull();
+
+    if (!libraryBox) {
+      return;
+    }
+
+    await dragLittleAlexTo(
+      page,
+      libraryBox.x + libraryBox.width / 2,
+      libraryBox.y + libraryBox.height / 2
+    );
+
+    await libraryLink.click();
+    await expect(page).toHaveURL(/\/app\/library/);
   });
 
   test("uses a static draggable-safe mode with reduced motion", async ({ page }) => {

@@ -173,6 +173,18 @@ describe("LittleAlexPhysics", () => {
       expect.any(Function),
       { passive: true }
     );
+
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-idle-state", "paused");
+
+    act(() => {
+      vi.advanceTimersByTime(900);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-idle-state", "walking");
   });
 
   it("does not run idle walking in reduced motion", () => {
