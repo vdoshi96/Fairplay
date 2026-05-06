@@ -277,6 +277,149 @@ async function expectLittleAlexSpritesLoaded(
     .toEqual([]);
 }
 
+async function littleAlexRigProportionFailures(page: Page) {
+  await expect(page.getByTestId("little-alex-body-part")).toHaveCount(
+    littleAlexSpriteParts.length
+  );
+
+  return page.evaluate((parts) => {
+    type RectSnapshot = {
+      bottom: number;
+      height: number;
+      left: number;
+      right: number;
+      top: number;
+      width: number;
+    };
+
+    type PartSnapshot = {
+      part: string;
+      rect: RectSnapshot;
+    };
+
+    const horizontalOverlap = (a: RectSnapshot, b: RectSnapshot) =>
+      Math.min(a.right, b.right) - Math.max(a.left, b.left);
+    const verticalOverlap = (a: RectSnapshot, b: RectSnapshot) =>
+      Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+    const verticalGap = (upper: RectSnapshot, lower: RectSnapshot) =>
+      lower.top - upper.bottom;
+
+    const snapshots = Object.fromEntries(
+      parts.map((part) => {
+        const bodyPart = document.querySelector<HTMLElement>(
+          `[data-testid="little-alex-body-part"][data-part="${part}"]`
+        );
+        const rect = bodyPart?.getBoundingClientRect();
+
+        if (!bodyPart || !rect) {
+          return [part, null];
+        }
+
+        return [
+          part,
+          {
+            part,
+            rect: {
+              bottom: rect.bottom,
+              height: rect.height,
+              left: rect.left,
+              right: rect.right,
+              top: rect.top,
+              width: rect.width
+            }
+          } satisfies PartSnapshot
+        ];
+      })
+    ) as Record<string, PartSnapshot | null>;
+
+    const failures: string[] = [];
+
+    for (const part of parts) {
+      if (!snapshots[part]) {
+        failures.push(`${part} body part is missing`);
+      }
+    }
+
+    const head = snapshots.head?.rect;
+    const torso = snapshots.torso?.rect;
+    const leftArm = snapshots.leftArm?.rect;
+    const rightArm = snapshots.rightArm?.rect;
+    const leftLeg = snapshots.leftLeg?.rect;
+    const rightLeg = snapshots.rightLeg?.rect;
+
+    if (head && torso) {
+      const neckGap = verticalGap(head, torso);
+      const neckOverlap = horizontalOverlap(head, torso);
+
+      if (neckGap < -2 || neckGap > 4) {
+        failures.push(
+          `head/torso vertical gap ${neckGap.toFixed(1)} is outside -2..4`
+        );
+      }
+
+      if (neckOverlap < Math.min(head.width, torso.width) * 0.42) {
+        failures.push(
+          `head/torso horizontal overlap ${neckOverlap.toFixed(1)} is too small`
+        );
+      }
+    }
+
+    for (const [name, leg] of [
+      ["leftLeg", leftLeg],
+      ["rightLeg", rightLeg]
+    ] as const) {
+      if (!torso || !leg) {
+        continue;
+      }
+
+      const hipGap = verticalGap(torso, leg);
+      const hipOverlap = horizontalOverlap(torso, leg);
+
+      if (hipGap > 2) {
+        failures.push(`torso/${name} vertical gap ${hipGap.toFixed(1)} > 2`);
+      }
+
+      if (hipOverlap < leg.width * 0.55) {
+        failures.push(
+          `torso/${name} horizontal overlap ${hipOverlap.toFixed(1)} is too small`
+        );
+      }
+    }
+
+    for (const [name, arm] of [
+      ["leftArm", leftArm],
+      ["rightArm", rightArm]
+    ] as const) {
+      if (!torso || !arm) {
+        continue;
+      }
+
+      const shoulderOverlap = horizontalOverlap(torso, arm);
+      const shoulderBand = {
+        ...torso,
+        bottom: torso.top + torso.height * 0.42
+      };
+      const shoulderVerticalOverlap = verticalOverlap(shoulderBand, arm);
+
+      if (shoulderOverlap < arm.width * 0.35) {
+        failures.push(
+          `torso/${name} shoulder overlap ${shoulderOverlap.toFixed(1)} is too small`
+        );
+      }
+
+      if (shoulderVerticalOverlap < arm.height * 0.2) {
+        failures.push(
+          `torso/${name} shoulder vertical overlap ${shoulderVerticalOverlap.toFixed(
+            1
+          )} is too small`
+        );
+      }
+    }
+
+    return failures;
+  }, littleAlexSpriteParts);
+}
+
 async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
   const grabTarget = page.getByTestId("little-alex-grab-target");
   const box = await grabTarget.boundingBox();
@@ -571,8 +714,10 @@ test.describe("Little Alex physics", () => {
   test("captures visual QA screenshots for all sprite presentations", async ({
     page
   }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ height: 720, width: 1280 });
     await createHouseholdAndChooseAlex(page);
+    const rigProportionFailures: string[] = [];
 
     for (const presentation of littleAlexSpritePresentations) {
       await saveLittleAlexPresentation(page, presentation);
@@ -590,6 +735,11 @@ test.describe("Little Alex physics", () => {
         fullPage: false,
         path: `${littleAlexSpriteScreenshotDir}/${presentation}.png`
       });
+      rigProportionFailures.push(
+        ...(await littleAlexRigProportionFailures(page)).map(
+          (failure) => `${presentation}: ${failure}`
+        )
+      );
 
       await dragLittleAlex(page, -220, 120);
       await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
@@ -597,5 +747,7 @@ test.describe("Little Alex physics", () => {
       );
       await expectLittleAlexInViewport(page, { minLeft: 256 });
     }
+
+    expect(rigProportionFailures).toEqual([]);
   });
 });
