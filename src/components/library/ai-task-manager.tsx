@@ -145,11 +145,11 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
             Draft tracker
           </h2>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-3">
-          <LittleAlexHorneSidekick />
+        <div className="flex flex-wrap items-end justify-end gap-2 sm:gap-3">
+          <GregTaskmasterAvatar />
           <Button onClick={() => setCaptureOpen((open) => !open)} variant="primary">
             <Sparkles aria-hidden="true" size={16} />
-            greg - the taskmaster
+            Greg - The Taskmaster
           </Button>
         </div>
       </div>
@@ -254,7 +254,7 @@ function LibraryPracticeWorkflow() {
           Dummy Library practice
         </h3>
         <p className="text-[13px] leading-5 text-fp-muted-ink">
-          Practice greg and draft review locally. These controls never call the
+          Practice Greg and draft review locally. These controls never call the
           draft API or create a household card.
         </p>
       </div>
@@ -273,7 +273,7 @@ function LibraryPracticeWorkflow() {
           disabled={request.trim().length === 0}
           onClick={() => {
             setDraftCreated(true);
-            mark("library-capture-filled", "Dummy draft created from greg capture.");
+            mark("library-capture-filled", "Dummy draft created from Greg capture.");
           }}
           type="button"
         >
@@ -376,23 +376,18 @@ function LibraryPracticeWorkflow() {
   );
 }
 
-function LittleAlexHorneSidekick() {
+function GregTaskmasterAvatar() {
   return (
-    <div className="flex items-center gap-2" data-testid="little-alex-horne-sidekick">
-      <img
-        alt=""
-        aria-hidden="true"
-        className="fp-motion-character-breathe h-14 w-14 shrink-0 object-contain"
-        data-testid="little-alex-horne-sidekick-image"
-        draggable={false}
-        height={768}
-        src="/assets/fairplay/generated-ui/ai-task-helper.png"
-        width={768}
-      />
-      <p className="relative max-w-[9rem] rounded-[8px] border border-fp-line bg-white px-3 py-2 text-[12px] font-bold lowercase leading-4 text-fp-ink shadow-[var(--fp-shadow-soft)] before:absolute before:-left-1.5 before:top-5 before:h-3 before:w-3 before:rotate-45 before:border-b before:border-l before:border-fp-line before:bg-white">
-        hi im little alex horne
-      </p>
-    </div>
+    <img
+      alt=""
+      aria-hidden="true"
+      className="pointer-events-none -mb-1 h-20 w-20 shrink-0 object-contain sm:-mb-2 sm:h-24 sm:w-24"
+      data-testid="greg-taskmaster-avatar"
+      draggable={false}
+      height={1254}
+      src="/assets/fairplay/generated-ui/greg-taskmaster-avatar.png"
+      width={1254}
+    />
   );
 }
 

@@ -60,13 +60,19 @@ describe("CardLibrary", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders greg and little alex horne above source card filters", () => {
+  it("renders Greg avatar above source card filters without local Little Alex copy", () => {
     const { container } = render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
 
     expect(
-      screen.getByRole("button", { name: "greg - the taskmaster" })
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
     ).toBeVisible();
-    expect(screen.getByText("hi im little alex horne")).toBeVisible();
+    expect(screen.getByTestId("greg-taskmaster-avatar")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/generated-ui/greg-taskmaster-avatar.png"
+    );
+    expect(screen.queryByText("hi im little alex horne")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("little-alex-horne-sidekick-image"))
+      .not.toBeInTheDocument();
     expect(container.querySelector('[data-guide-id="library-ai-task-manager"]'))
       .not.toBeNull();
     expect(screen.getByRole("region", { name: "AI-created cards" })).toBeVisible();
@@ -169,7 +175,7 @@ describe("CardLibrary", () => {
       "Make a card for lunch packing handoffs."
     );
     await userEvent.click(screen.getByRole("button", { name: "Create dummy draft" }));
-    expect(screen.getByText("Dummy draft created from greg capture.")).toBeVisible();
+    expect(screen.getByText("Dummy draft created from Greg capture.")).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: "Review dummy draft" }));
     expect(screen.getByLabelText("Dummy draft title")).toHaveValue(

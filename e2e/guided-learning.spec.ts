@@ -64,7 +64,7 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   const linkedGuide = page.getByRole("dialog", { name: "Library guide" });
   await expect(linkedGuide).toBeVisible();
   await expect(page.getByText("Step 1 of 4")).toBeVisible();
-  await expect(page.getByText("Use greg - the taskmaster")).toBeVisible();
+  await expect(page.getByText("Use Greg - The Taskmaster")).toBeVisible();
   await expect(page.getByTestId("guide-highlight")).toBeVisible();
   await expect(linkedGuide.getByRole("button", { name: "Next", exact: true }))
     .toBeDisabled();
@@ -72,7 +72,7 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   await linkedGuide.getByRole("button", { name: "Start dummy Library workflow" }).click();
   await page.getByLabel("Dummy card request").fill("Make a lunch packing handoff card.");
   await page.getByRole("button", { name: "Create dummy draft" }).click();
-  await expect(page.getByText("Dummy draft created from greg capture.")).toBeVisible();
+  await expect(page.getByText("Dummy draft created from Greg capture.")).toBeVisible();
   await page.getByRole("button", { name: "Review dummy draft" }).click();
   await page.getByLabel("Dummy draft title").fill("Lunch kit reset");
   await page.getByRole("button", { name: "Save dummy edits" }).click();
@@ -84,7 +84,7 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   await page.getByLabel("Guided tour backdrop").click();
   await expect(linkedGuide).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Back", exact: true }).click();
-  await expect(page.getByText("Use greg - the taskmaster")).toBeVisible();
+  await expect(page.getByText("Use Greg - The Taskmaster")).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Skip", exact: true }).click();
   await expect(linkedGuide).not.toBeVisible();
 
