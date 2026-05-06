@@ -6,7 +6,5 @@
 
 ## Watch Items
 
-- Appearance variants should not change the Matter.js body count or break drag targets.
-- Bounds must apply to both physical bodies and reduced-motion drag positions.
-- Idle randomness must be deterministic enough to test without making runtime movement feel patterned.
-- Bubble behavior must distinguish clicks from actual flings.
+- Docker is not installed in this local environment, so `npm run db:up` cannot start Postgres. A local Postgres instance was already reachable via `npm run db:wait`, allowing Playwright to run successfully.
+- Visual QA screenshots are saved under `test-results/little-alex-followup/`; this directory is ignored and intentionally not committed.
