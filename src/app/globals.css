@@ -315,7 +315,24 @@ a {
   inset: 0;
   position: fixed;
   user-select: none;
+  --little-alex-head-radius: 999px;
+  --little-alex-torso-clip: polygon(8% 0, 92% 0, 86% 100%, 14% 100%);
   z-index: 9;
+}
+
+.fp-little-alex-presentation-neutral {
+  --little-alex-head-radius: 48% 52% 51% 49%;
+  --little-alex-torso-clip: polygon(8% 0, 92% 0, 86% 100%, 14% 100%);
+}
+
+.fp-little-alex-presentation-masculine {
+  --little-alex-head-radius: 38% 38% 44% 44%;
+  --little-alex-torso-clip: polygon(0 0, 100% 0, 88% 100%, 12% 100%);
+}
+
+.fp-little-alex-presentation-feminine {
+  --little-alex-head-radius: 44% 44% 58% 58%;
+  --little-alex-torso-clip: polygon(12% 0, 88% 0, 76% 66%, 86% 100%, 14% 100%, 24% 66%);
 }
 
 .fp-little-alex-part,
@@ -377,28 +394,146 @@ a {
 .fp-little-alex-head {
   background: var(--little-alex-skin, #d8a078);
   border: 2px solid rgba(32, 33, 36, 0.64);
-  border-radius: 999px;
+  border-radius: var(--little-alex-head-radius);
+  box-shadow: inset 0 -5px 0 rgba(32, 33, 36, 0.07);
   overflow: hidden;
 }
 
 .fp-little-alex-hair {
   background: #553d33;
-  border-radius: 0 0 999px 999px;
-  height: 15px;
-  left: -4px;
+  border-radius: 14px 14px 999px 999px;
+  height: 16px;
+  left: -1px;
   position: absolute;
-  right: -4px;
+  right: -1px;
+  top: -2px;
+  z-index: 3;
+}
+
+.fp-little-alex-hair::before,
+.fp-little-alex-hair::after {
+  content: "";
+  position: absolute;
+}
+
+.fp-little-alex-hair-side-swept {
+  clip-path: polygon(0 0, 100% 0, 100% 72%, 72% 78%, 45% 48%, 24% 72%, 0 78%);
+}
+
+.fp-little-alex-hair-side-swept::after {
+  background: rgba(255, 255, 255, 0.28);
+  height: 17px;
+  left: 19px;
+  top: -1px;
+  transform: rotate(22deg);
+  width: 2px;
+}
+
+.fp-little-alex-hair-cropped-sideburns {
+  border-radius: 10px 10px 4px 4px;
+  height: 13px;
+  left: 2px;
+  right: 2px;
+  top: 0;
+}
+
+.fp-little-alex-hair-cropped-sideburns::before,
+.fp-little-alex-hair-cropped-sideburns::after {
+  background: #553d33;
+  border-radius: 0 0 5px 5px;
+  height: 14px;
+  top: 9px;
+  width: 5px;
+}
+
+.fp-little-alex-hair-cropped-sideburns::before {
+  left: -1px;
+}
+
+.fp-little-alex-hair-cropped-sideburns::after {
+  right: -1px;
+}
+
+.fp-little-alex-hair-rounded-bob {
+  background: #4b352f;
+  border-radius: 16px 16px 12px 12px;
+  clip-path: polygon(0 0, 100% 0, 100% 72%, 82% 75%, 72% 48%, 56% 40%, 49% 25%, 41% 42%, 26% 50%, 17% 75%, 0 72%);
+  height: 30px;
+  left: 1px;
+  right: 1px;
   top: -2px;
 }
 
-.fp-little-alex-presentation-feminine .fp-little-alex-hair {
-  border-radius: 0 0 70% 70%;
+.fp-little-alex-hair-rounded-bob::before,
+.fp-little-alex-hair-rounded-bob::after {
+  background: #4b352f;
+  border-radius: 0 0 10px 10px;
   height: 20px;
+  top: 15px;
+  width: 8px;
 }
 
-.fp-little-alex-presentation-masculine .fp-little-alex-hair {
-  height: 12px;
-  transform: skewX(-8deg);
+.fp-little-alex-hair-rounded-bob::before {
+  left: 1px;
+}
+
+.fp-little-alex-hair-rounded-bob::after {
+  right: 1px;
+}
+
+.fp-little-alex-brow {
+  background: #202124;
+  border-radius: 999px;
+  height: 2px;
+  position: absolute;
+  top: 17px;
+  width: 9px;
+  z-index: 6;
+}
+
+.fp-little-alex-brow-left {
+  left: 11px;
+}
+
+.fp-little-alex-brow-right {
+  right: 11px;
+}
+
+.fp-little-alex-brow-relaxed-brow.fp-little-alex-brow-left {
+  transform: rotate(4deg);
+}
+
+.fp-little-alex-brow-relaxed-brow.fp-little-alex-brow-right {
+  transform: rotate(-4deg);
+}
+
+.fp-little-alex-brow-strong-brow {
+  height: 3px;
+  top: 16px;
+  width: 11px;
+}
+
+.fp-little-alex-brow-strong-brow.fp-little-alex-brow-left {
+  left: 9px;
+  transform: rotate(-8deg);
+}
+
+.fp-little-alex-brow-strong-brow.fp-little-alex-brow-right {
+  right: 9px;
+  transform: rotate(8deg);
+}
+
+.fp-little-alex-brow-arched-brow {
+  top: 15px;
+  width: 10px;
+}
+
+.fp-little-alex-brow-arched-brow.fp-little-alex-brow-left {
+  transform: rotate(-14deg);
+}
+
+.fp-little-alex-brow-arched-brow.fp-little-alex-brow-right {
+  transform: rotate(14deg);
 }
 
 .fp-little-alex-eye {
@@ -408,6 +543,7 @@ a {
   position: absolute;
   top: 22px;
   width: 4px;
+  z-index: 5;
 }
 
 .fp-little-alex-eye-left {
@@ -425,22 +561,101 @@ a {
   height: 6px;
   position: absolute;
   width: 14px;
+  z-index: 6;
+}
+
+.fp-little-alex-mouth-confident-smirk {
+  right: 14px;
+  transform: rotate(-6deg);
+  width: 12px;
+}
+
+.fp-little-alex-mouth-soft-smile {
+  bottom: 9px;
+  width: 13px;
+}
+
+.fp-little-alex-face-detail {
+  position: absolute;
+  z-index: 5;
+}
+
+.fp-little-alex-face-detail-freckle-pair {
+  background: rgba(96, 61, 44, 0.45);
+  border-radius: 999px;
+  height: 3px;
+  left: 11px;
+  top: 28px;
+  width: 3px;
+  box-shadow:
+    5px 1px 0 rgba(96, 61, 44, 0.38),
+    20px 0 0 rgba(96, 61, 44, 0.42),
+    25px 1px 0 rgba(96, 61, 44, 0.34);
+}
+
+.fp-little-alex-face-detail-square-jaw {
+  border-bottom: 2px solid rgba(32, 33, 36, 0.32);
+  border-left: 2px solid rgba(32, 33, 36, 0.22);
+  border-radius: 0 0 7px 7px;
+  border-right: 2px solid rgba(32, 33, 36, 0.22);
+  bottom: 4px;
+  height: 10px;
+  left: 11px;
+  width: 22px;
+}
+
+.fp-little-alex-face-detail-cheek-highlight {
+  background: rgba(194, 111, 89, 0.36);
+  border-radius: 999px;
+  height: 4px;
+  left: 9px;
+  top: 28px;
+  width: 6px;
+  box-shadow: 20px 0 0 rgba(194, 111, 89, 0.28);
 }
 
 .fp-little-alex-torso {
-  background:
-    linear-gradient(90deg, #202124 0 28%, #ffffff 28% 72%, #202124 72%),
-    #202124;
-  border: 2px solid rgba(32, 33, 36, 0.66);
+  background: transparent;
   border-radius: 14px 14px 10px 10px;
+  isolation: isolate;
+}
+
+.fp-little-alex-torso::before {
+  background: #202124;
+  border: 2px solid rgba(32, 33, 36, 0.66);
+  border-radius: inherit;
+  clip-path: var(--little-alex-torso-clip);
+  content: "";
+  inset: 0;
+  position: absolute;
+  z-index: 0;
 }
 
 .fp-little-alex-presentation-feminine .fp-little-alex-torso {
-  border-radius: 16px 16px 12px 12px;
+  border-radius: 16px 16px 13px 13px;
 }
 
 .fp-little-alex-presentation-masculine .fp-little-alex-torso {
-  border-radius: 12px 12px 10px 10px;
+  border-radius: 10px 10px 8px 8px;
+}
+
+.fp-little-alex-jacket-lapel {
+  background: #2d2f33;
+  height: 31px;
+  position: absolute;
+  top: 7px;
+  width: 15px;
+  z-index: 2;
+}
+
+.fp-little-alex-jacket-lapel-left {
+  clip-path: polygon(0 0, 100% 0, 62% 100%);
+  left: 8px;
+}
+
+.fp-little-alex-jacket-lapel-right {
+  clip-path: polygon(0 0, 100% 0, 38% 100%);
+  right: 8px;
 }
 
 .fp-little-alex-shirt {
@@ -450,6 +665,40 @@ a {
   position: absolute;
   top: 8px;
   width: 20px;
+  z-index: 1;
+}
+
+.fp-little-alex-silhouette-detail {
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+}
+
+.fp-little-alex-silhouette-detail-classic-suit {
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+  border-right: 1px solid rgba(255, 255, 255, 0.16);
+  bottom: 7px;
+  left: 11px;
+  top: 34px;
+  width: 28px;
+}
+
+.fp-little-alex-silhouette-detail-broad-shoulder-suit {
+  border-top: 3px solid rgba(255, 255, 255, 0.14);
+  height: 12px;
+  left: 4px;
+  top: 5px;
+  width: 42px;
+}
+
+.fp-little-alex-silhouette-detail-tapered-suit {
+  border-left: 2px solid rgba(255, 255, 255, 0.18);
+  border-right: 2px solid rgba(255, 255, 255, 0.18);
+  bottom: 9px;
+  height: 18px;
+  left: 15px;
+  transform: skewX(-8deg);
+  width: 20px;
 }
 
 .fp-little-alex-bowtie {
@@ -458,6 +707,7 @@ a {
   position: relative;
   top: -18px;
   width: 10px;
+  z-index: 4;
 }
 
 .fp-little-alex-clipboard {
@@ -470,6 +720,7 @@ a {
   top: 18px;
   transform: rotate(8deg);
   width: 24px;
+  z-index: 5;
 }
 
 .fp-little-alex-clipboard::before {
@@ -514,8 +765,26 @@ a {
   background: #202124;
 }
 
+.fp-little-alex-presentation-masculine .fp-little-alex-arm {
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+}
+
+.fp-little-alex-presentation-feminine .fp-little-alex-arm {
+  border-radius: 999px 999px 12px 12px;
+}
+
 .fp-little-alex-leg {
   background: #3b3d42;
+}
+
+.fp-little-alex-presentation-masculine .fp-little-alex-leg {
+  background: #303237;
+  border-radius: 8px;
+}
+
+.fp-little-alex-presentation-feminine .fp-little-alex-leg {
+  border-radius: 999px 999px 10px 10px;
 }
 
 .fp-little-alex-shoe {

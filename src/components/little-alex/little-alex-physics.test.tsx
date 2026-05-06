@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { LittleAlexPhysics } from "./little-alex-physics";
 
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
+const genderPresentations = ["neutral", "masculine", "feminine"] as const;
 
 function stubReducedMotion(matches: boolean) {
   vi.stubGlobal(
@@ -203,22 +204,69 @@ describe("LittleAlexPhysics", () => {
     expect(littleAlex).toHaveAttribute("data-idle-state", "static");
   });
 
-  it("maps appearance options to gender and skin CSS without changing suit assets", () => {
+  it("exposes distinct visible presentation details for every appearance option", () => {
     stubReducedMotion(true);
 
-    render(
-      <LittleAlexPhysics
-        genderPresentation="feminine"
-        skinTone="tone_4"
-      />
-    );
+    const detailSets = genderPresentations.map((genderPresentation) => {
+      const { unmount } = render(
+        <LittleAlexPhysics genderPresentation={genderPresentation} />
+      );
 
-    const littleAlex = screen.getByTestId("little-alex-horne");
+      const littleAlex = screen.getByTestId("little-alex-horne");
+      const details = {
+        face: screen
+          .getByTestId("little-alex-face-detail")
+          .getAttribute("data-appearance-detail"),
+        hair: screen
+          .getByTestId("little-alex-hair")
+          .getAttribute("data-appearance-detail"),
+        head: littleAlex.getAttribute("data-appearance-head"),
+        silhouette: littleAlex.getAttribute("data-appearance-silhouette")
+      };
 
-    expect(littleAlex).toHaveAttribute("data-gender-presentation", "feminine");
-    expect(littleAlex).toHaveStyle({ "--little-alex-skin": "#b7795f" });
-    expect(screen.getByTestId("little-alex-clipboard")).toBeInTheDocument();
-    expect(screen.getByTestId("little-alex-shirt")).toBeInTheDocument();
+      expect(littleAlex).toHaveAttribute(
+        "data-gender-presentation",
+        genderPresentation
+      );
+      expect(littleAlex).toHaveClass(
+        `fp-little-alex-presentation-${genderPresentation}`
+      );
+      expect(details.face).toBeTruthy();
+      expect(details.hair).toBeTruthy();
+      expect(details.head).toBeTruthy();
+      expect(details.silhouette).toBeTruthy();
+      unmount();
+
+      return `${details.hair}/${details.head}/${details.face}/${details.silhouette}`;
+    });
+
+    expect(new Set(detailSets).size).toBe(genderPresentations.length);
+  });
+
+  it("keeps the body-part contract and suit assets across appearance options", () => {
+    stubReducedMotion(true);
+
+    genderPresentations.forEach((genderPresentation) => {
+      const { unmount } = render(
+        <LittleAlexPhysics
+          genderPresentation={genderPresentation}
+          skinTone="tone_4"
+        />
+      );
+
+      expect(
+        screen
+          .getAllByTestId("little-alex-body-part")
+          .map((part) => part.getAttribute("data-part"))
+      ).toEqual(["head", "torso", "leftArm", "rightArm", "leftLeg", "rightLeg"]);
+      expect(screen.getByTestId("little-alex-horne")).toHaveStyle({
+        "--little-alex-skin": "#b7795f"
+      });
+      expect(screen.getByTestId("little-alex-clipboard")).toBeInTheDocument();
+      expect(screen.getByTestId("little-alex-shirt")).toBeInTheDocument();
+
+      unmount();
+    });
   });
 
   it("keeps the reduced-motion object safely draggable without enabling the shell", () => {
