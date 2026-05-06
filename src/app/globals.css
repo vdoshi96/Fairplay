@@ -407,6 +407,11 @@ a {
   height: 4px;
   position: absolute;
   top: 22px;
+  transform: translate3d(
+    calc(var(--little-alex-gaze-x, 0) * 3px),
+    calc(var(--little-alex-gaze-y, 0) * 2px),
+    0
+  );
   width: 4px;
 }
 
@@ -424,6 +429,11 @@ a {
   bottom: 10px;
   height: 6px;
   position: absolute;
+  transform: translate3d(
+    calc(var(--little-alex-gaze-x, 0) * 1.4px),
+    calc(var(--little-alex-gaze-y, 0) * 0.8px),
+    0
+  );
   width: 14px;
 }
 

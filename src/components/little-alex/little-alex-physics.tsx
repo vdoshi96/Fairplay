@@ -16,6 +16,8 @@ const DEFAULT_SKIN_TONE: LittleAlexSkinTone = "tone_2";
 const PHYSICS_SPEED_MULTIPLIER = 1.1;
 const IDLE_DELAY_MS = 5_000;
 const IDLE_PAUSE_MS = 900;
+const BUBBLE_DRAG_DISTANCE_THRESHOLD = 14;
+const BUBBLE_RELEASE_SPEED_THRESHOLD = 6;
 const WALL_THICKNESS = 96;
 const VIEWPORT_PADDING = 2;
 const SERVER_SAFE_ANCHOR = { x: 906, y: 218 };
@@ -38,9 +40,19 @@ type PartConfig = {
 type DragState = {
   lastPoint: Point;
   lastTime: number;
+  maxDistance: number;
   offset: Point;
   pointerId: number;
+  startPoint: Point;
   velocity: Point;
+};
+
+type GazeDirection = "center" | "left" | "right";
+
+type GazeState = {
+  direction: GazeDirection;
+  x: number;
+  y: number;
 };
 
 type IdleState = "active" | "walking" | "paused";
@@ -119,6 +131,12 @@ const partConfigs: PartConfig[] = [
     width: 20
   }
 ];
+
+const DEFAULT_GAZE_STATE: GazeState = {
+  direction: "center",
+  x: 0,
+  y: 0
+};
 
 const characterBounds = partConfigs.reduce(
   (bounds, part) => ({
@@ -416,6 +434,59 @@ function clampVelocity(value: number) {
   return clamp(value, -26 * PHYSICS_SPEED_MULTIPLIER, 26 * PHYSICS_SPEED_MULTIPLIER);
 }
 
+function distanceBetween(a: Point, b: Point) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function pointFromClient(
+  input: { clientX?: number; clientY?: number },
+  fallback?: Point
+) {
+  const x = Number(input.clientX);
+  const y = Number(input.clientY);
+
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    return fallback ?? null;
+  }
+
+  return { x, y };
+}
+
+function roundedGaze(value: number) {
+  return Math.round(value * 100) / 100;
+}
+
+function gazeStateForTarget(target: Point, focus: Point): GazeState {
+  const deltaX = target.x - focus.x;
+  const deltaY = target.y - focus.y;
+  const distance = Math.max(Math.hypot(deltaX, deltaY), 1);
+  const x = roundedGaze(clamp(deltaX / distance, -1, 1));
+  const y = roundedGaze(clamp(deltaY / distance, -0.8, 0.8));
+
+  return {
+    direction: x < -0.15 ? "left" : x > 0.15 ? "right" : "center",
+    x,
+    y
+  };
+}
+
+function sameGazeState(a: GazeState, b: GazeState) {
+  return a.direction === b.direction && a.x === b.x && a.y === b.y;
+}
+
+function releaseShouldShowBubble(drag: DragState, releasePoint: Point) {
+  const releaseDistance = Math.max(
+    drag.maxDistance,
+    distanceBetween(drag.startPoint, releasePoint)
+  );
+  const releaseSpeed = Math.hypot(drag.velocity.x, drag.velocity.y);
+
+  return (
+    releaseDistance >= BUBBLE_DRAG_DISTANCE_THRESHOLD ||
+    releaseSpeed >= BUBBLE_RELEASE_SPEED_THRESHOLD
+  );
+}
+
 function partContent(part: PartKey) {
   if (part === "head") {
     return (
@@ -504,6 +575,7 @@ export function LittleAlexPhysics({
   const [idleState, setIdleState] = useState<IdleState>("active");
   const [activityVersion, setActivityVersion] = useState(0);
   const [bubbleVisible, setBubbleVisible] = useState(false);
+  const [gaze, setGaze] = useState<GazeState>(DEFAULT_GAZE_STATE);
   const bodyRefs = useRef<Partial<Record<PartKey, HTMLDivElement>>>({});
   const bubbleRef = useRef<HTMLDivElement | null>(null);
   const bubbleTimeoutRef = useRef<number | null>(null);
@@ -516,6 +588,23 @@ export function LittleAlexPhysics({
   useEffect(() => {
     idleStateRef.current = idleState;
   }, [idleState]);
+
+  const updateGaze = useCallback(
+    (target: Point) => {
+      if (!Number.isFinite(target.x) || !Number.isFinite(target.y)) {
+        return;
+      }
+
+      const focus = physicsRef.current?.bodies.head.position ?? {
+        x: reducedAnchor.x,
+        y: reducedAnchor.y - 62
+      };
+      const nextGaze = gazeStateForTarget(target, focus);
+
+      setGaze((current) => (sameGazeState(current, nextGaze) ? current : nextGaze));
+    },
+    [reducedAnchor]
+  );
 
   const syncPhysicsDom = useCallback(() => {
     const physics = physicsRef.current;
@@ -632,13 +721,21 @@ export function LittleAlexPhysics({
   }, [idleState, motionPreferenceReady, reducedMotion]);
 
   useEffect(() => {
-    if (!motionPreferenceReady || reducedMotion) {
+    if (!motionPreferenceReady) {
       return undefined;
     }
 
-    const trackPointer = (event: PointerEvent) => {
+    const trackPoint = (point: Point) => {
       const torso = physicsRef.current?.bodies.torso.position ?? reducedAnchor;
-      idleDirectionRef.current = event.clientX >= torso.x ? 1 : -1;
+      idleDirectionRef.current = point.x >= torso.x ? 1 : -1;
+      updateGaze(point);
+    };
+    const trackPointer = (event: MouseEvent | PointerEvent) => {
+      const point = pointFromClient(event);
+
+      if (point) {
+        trackPoint(point);
+      }
     };
     const trackTouch = (event: TouchEvent) => {
       const touch = event.touches[0] ?? event.changedTouches[0];
@@ -647,22 +744,29 @@ export function LittleAlexPhysics({
         return;
       }
 
-      const torso = physicsRef.current?.bodies.torso.position ?? reducedAnchor;
-      idleDirectionRef.current = touch.clientX >= torso.x ? 1 : -1;
+      const point = pointFromClient(touch);
+
+      if (!point) {
+        return;
+      }
+
+      trackPoint(point);
     };
 
+    window.addEventListener("mousemove", trackPointer);
     window.addEventListener("pointerdown", trackPointer);
     window.addEventListener("pointermove", trackPointer);
     window.addEventListener("touchstart", trackTouch, { passive: true });
     window.addEventListener("touchmove", trackTouch, { passive: true });
 
     return () => {
+      window.removeEventListener("mousemove", trackPointer);
       window.removeEventListener("pointerdown", trackPointer);
       window.removeEventListener("pointermove", trackPointer);
       window.removeEventListener("touchstart", trackTouch);
       window.removeEventListener("touchmove", trackTouch);
     };
-  }, [motionPreferenceReady, reducedAnchor, reducedMotion]);
+  }, [motionPreferenceReady, reducedAnchor, updateGaze]);
 
   useEffect(() => {
     if (bubbleVisible) {
@@ -713,26 +817,35 @@ export function LittleAlexPhysics({
     (event: ReactPointerEvent<HTMLDivElement>) => {
       event.preventDefault();
       event.stopPropagation();
+      const point = pointFromClient(event);
+
+      if (!point) {
+        return;
+      }
+
       event.currentTarget.setPointerCapture(event.pointerId);
       setIdleState("active");
       setActivityVersion((current) => current + 1);
+      updateGaze(point);
 
       const center = reducedMotion
         ? reducedAnchor
         : physicsRef.current?.bodies.torso.position ?? reducedAnchor;
 
       dragRef.current = {
-        lastPoint: { x: event.clientX, y: event.clientY },
+        lastPoint: point,
         lastTime: event.timeStamp,
+        maxDistance: 0,
         offset: {
-          x: event.clientX - center.x,
-          y: event.clientY - center.y
+          x: point.x - center.x,
+          y: point.y - center.y
         },
         pointerId: event.pointerId,
+        startPoint: point,
         velocity: { x: 0, y: 0 }
       };
     },
-    [reducedAnchor, reducedMotion]
+    [reducedAnchor, reducedMotion, updateGaze]
   );
 
   const moveDrag = useCallback(
@@ -745,18 +858,29 @@ export function LittleAlexPhysics({
 
       event.preventDefault();
       event.stopPropagation();
+      const point = pointFromClient(event, drag.lastPoint);
+
+      if (!point) {
+        return;
+      }
+
+      updateGaze(point);
 
       const nextAnchor = clampAnchor({
-        x: event.clientX - drag.offset.x,
-        y: event.clientY - drag.offset.y
+        x: point.x - drag.offset.x,
+        y: point.y - drag.offset.y
       });
       const elapsed = Math.max(event.timeStamp - drag.lastTime, 16);
-      idleDirectionRef.current = event.clientX >= drag.lastPoint.x ? 1 : -1;
+      idleDirectionRef.current = point.x >= drag.lastPoint.x ? 1 : -1;
+      drag.maxDistance = Math.max(
+        drag.maxDistance,
+        distanceBetween(drag.startPoint, point)
+      );
       drag.velocity = {
-        x: clampVelocity(((event.clientX - drag.lastPoint.x) / elapsed) * 16),
-        y: clampVelocity(((event.clientY - drag.lastPoint.y) / elapsed) * 16)
+        x: clampVelocity(((point.x - drag.lastPoint.x) / elapsed) * 16),
+        y: clampVelocity(((point.y - drag.lastPoint.y) / elapsed) * 16)
       };
-      drag.lastPoint = { x: event.clientX, y: event.clientY };
+      drag.lastPoint = point;
       drag.lastTime = event.timeStamp;
 
       if (reducedMotion) {
@@ -783,7 +907,7 @@ export function LittleAlexPhysics({
       containBodiesInViewport(physics.bodies);
       syncPhysicsDom();
     },
-    [reducedMotion, syncPhysicsDom]
+    [reducedMotion, syncPhysicsDom, updateGaze]
   );
 
   const releaseDrag = useCallback(
@@ -796,6 +920,13 @@ export function LittleAlexPhysics({
 
       event.preventDefault();
       event.stopPropagation();
+      const point = pointFromClient(event, drag.lastPoint);
+
+      if (!point) {
+        return;
+      }
+
+      updateGaze(point);
       dragRef.current = null;
       setActivityVersion((current) => current + 1);
 
@@ -808,6 +939,7 @@ export function LittleAlexPhysics({
       }
 
       const physics = physicsRef.current;
+      const shouldShowBubble = releaseShouldShowBubble(drag, point);
 
       if (!physics) {
         return;
@@ -826,15 +958,17 @@ export function LittleAlexPhysics({
             (key === "head" ? 0.006 : 0.004)
         );
       });
-      setBubbleVisible(true);
-      if (bubbleTimeoutRef.current) {
-        window.clearTimeout(bubbleTimeoutRef.current);
+      if (shouldShowBubble) {
+        setBubbleVisible(true);
+        if (bubbleTimeoutRef.current) {
+          window.clearTimeout(bubbleTimeoutRef.current);
+        }
+        bubbleTimeoutRef.current = window.setTimeout(() => {
+          setBubbleVisible(false);
+        }, 2_800);
       }
-      bubbleTimeoutRef.current = window.setTimeout(() => {
-        setBubbleVisible(false);
-      }, 2_800);
     },
-    [reducedMotion]
+    [reducedMotion, updateGaze]
   );
 
   useEffect(() => {
@@ -874,6 +1008,7 @@ export function LittleAlexPhysics({
       ].join(" ")}
       data-chat-phrase={chatPhrase}
       data-gender-presentation={genderPresentation}
+      data-gaze-direction={gaze.direction}
       data-idle-state={
         motionPreferenceReady && reducedMotion ? "static" : idleState
       }
@@ -884,6 +1019,8 @@ export function LittleAlexPhysics({
       data-testid="little-alex-horne"
       style={
         {
+          "--little-alex-gaze-x": gaze.x.toString(),
+          "--little-alex-gaze-y": gaze.y.toString(),
           "--little-alex-skin": skinToneCssValues[skinTone],
           pointerEvents: "none"
         } as CSSProperties
