@@ -229,6 +229,44 @@ async function expectUnobscured(locator: Locator, label: string) {
   }, label);
 
   expect(blocker).toBeNull();
+
+  const visualOverlap = await locator.evaluate((element, elementLabel) => {
+    const rect = element.getBoundingClientRect();
+    const overlays = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        ".fp-little-alex-part, .fp-little-alex-chat-bubble"
+      )
+    );
+
+    return (
+      overlays
+        .filter((overlay) => {
+          const style = getComputedStyle(overlay);
+          const overlayRect = overlay.getBoundingClientRect();
+          const overlapX =
+            Math.min(rect.right, overlayRect.right) - Math.max(rect.left, overlayRect.left);
+          const overlapY =
+            Math.min(rect.bottom, overlayRect.bottom) - Math.max(rect.top, overlayRect.top);
+
+          return (
+            style.display !== "none" &&
+            style.visibility !== "hidden" &&
+            style.opacity !== "0" &&
+            overlayRect.width > 0 &&
+            overlayRect.height > 0 &&
+            overlapX > 1 &&
+            overlapY > 1
+          );
+        })
+        .map((overlay) => {
+          const part = overlay.dataset.part ? `[data-part="${overlay.dataset.part}"]` : "";
+
+          return `${elementLabel} visually overlapped by ${overlay.tagName.toLowerCase()}${part}`;
+        })[0] ?? null
+    );
+  }, label);
+
+  expect(visualOverlap).toBeNull();
 }
 
 test.describe("dark mode visual QA", () => {
