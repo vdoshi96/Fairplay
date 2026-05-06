@@ -27,6 +27,9 @@ export type CardDetailCard = {
   sourceCoverAssetPath?: string | null;
 };
 
+const aiDraftCoverPathPattern =
+  /^\/api\/ai-card-drafts\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/cover$/i;
+
 type CardDetailSheetProps = {
   card: CardDetailCard;
   onFlagForRadar?: () => void;
@@ -65,7 +68,7 @@ export function CardDetailSheet({
 }: CardDetailSheetProps) {
   const laneLabel = card.boardLane ? laneLabels[card.boardLane] : "Not placed";
   const ownerLabel = card.ownerLabel ?? laneLabel;
-  const isGeneratedCover = Boolean(card.sourceCoverAssetPath);
+  const isGeneratedCover = aiDraftCoverPathPattern.test(card.sourceCoverAssetPath ?? "");
   const coverAssetPath = card.sourceCoverAssetPath ?? card.coverAssetPath ?? null;
 
   return (

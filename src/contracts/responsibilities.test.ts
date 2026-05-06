@@ -67,6 +67,11 @@ describe("responsibility JSON contracts", () => {
           updatedAt: "2026-05-04T00:00:00.000Z"
         },
         lastReviewedAt: null,
+        sourceDefinition: "Generated definition.",
+        sourceConception: "Generated conception.",
+        sourcePlanning: "Generated planning.",
+        sourceExecution: "Generated execution.",
+        sourceMinimumStandard: "Generated minimum standard.",
         sourceCoverAssetPath:
           "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440099/cover",
         createdAt: "2026-05-04T00:00:00.000Z",
@@ -75,6 +80,7 @@ describe("responsibility JSON contracts", () => {
       })
     ).toMatchObject({
       id: summary.id,
+      sourceDefinition: "Generated definition.",
       sourceCoverAssetPath:
         "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440099/cover"
     });
@@ -185,6 +191,62 @@ describe("responsibility JSON contracts", () => {
         hiddenEffortKeys: ["planning"],
         cadence: "daily",
         visibility: "private"
+      })
+    ).toThrow();
+  });
+
+  it("rejects suffixed source cover paths", () => {
+    const summary = ResponsibilitySummarySchema.parse({
+      id: "550e8400-e29b-41d4-a716-446655440010",
+      title: "Evening kitchen reset",
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["doing"],
+      cadence: "daily",
+      status: "active",
+      visibility: "shared_household",
+      boardLane: "cards_of_concern",
+      boardSortOrder: 0,
+      currentAssignments: [],
+      nextReviewAt: null
+    });
+
+    expect(() =>
+      ResponsibilityDetailSchema.parse({
+        ...summary,
+        summary: null,
+        householdStandard: null,
+        notes: null,
+        lifecycleNotes: null,
+        lastReviewedAt: null,
+        sourceDefinition: null,
+        sourceConception: null,
+        sourcePlanning: null,
+        sourceExecution: null,
+        sourceMinimumStandard: null,
+        sourceCoverAssetPath: "/assets/fairplay/cards/auto.png?cache=1",
+        createdAt: "2026-05-04T00:00:00.000Z",
+        updatedAt: "2026-05-04T00:00:00.000Z",
+        archivedAt: null
+      })
+    ).toThrow();
+    expect(() =>
+      ResponsibilityDetailSchema.parse({
+        ...summary,
+        summary: null,
+        householdStandard: null,
+        notes: null,
+        lifecycleNotes: null,
+        lastReviewedAt: null,
+        sourceDefinition: null,
+        sourceConception: null,
+        sourcePlanning: null,
+        sourceExecution: null,
+        sourceMinimumStandard: null,
+        sourceCoverAssetPath:
+          "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440099/cover/suffix",
+        createdAt: "2026-05-04T00:00:00.000Z",
+        updatedAt: "2026-05-04T00:00:00.000Z",
+        archivedAt: null
       })
     ).toThrow();
   });

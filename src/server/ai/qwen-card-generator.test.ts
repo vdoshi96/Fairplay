@@ -34,6 +34,28 @@ function jsonResponse(body: unknown, init: ResponseInit = {}) {
   });
 }
 
+function pngBytes(width: number, height: number) {
+  const bytes = new Uint8Array(45);
+  const view = new DataView(bytes.buffer);
+  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
+  view.setUint32(8, 13);
+  bytes.set(asciiBytes("IHDR"), 12);
+  view.setUint32(16, width);
+  view.setUint32(20, height);
+  bytes[24] = 8;
+  bytes[25] = 2;
+  bytes[26] = 0;
+  bytes[27] = 0;
+  bytes[28] = 0;
+  view.setUint32(33, 0);
+  bytes.set(asciiBytes("IEND"), 37);
+  return bytes;
+}
+
+function asciiBytes(value: string) {
+  return Uint8Array.from(value, (char) => char.charCodeAt(0));
+}
+
 describe("Qwen card generator", () => {
   it("builds textless integrated app illustration prompts without fake card framing", () => {
     const prompt = buildImagePrompt(
@@ -227,7 +249,7 @@ describe("Qwen card generator", () => {
         })
       )
       .mockResolvedValueOnce(
-        new Response(new Uint8Array([1, 2, 3]), {
+        new Response(pngBytes(5, 7), {
           status: 200,
           headers: { "content-type": "image/png" }
         })
@@ -254,7 +276,7 @@ describe("Qwen card generator", () => {
   });
 
   it("generates a card cover and returns downloaded bytes", async () => {
-    const imageBytes = new Uint8Array([137, 80, 78, 71]);
+    const imageBytes = pngBytes(5, 7);
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -316,7 +338,7 @@ describe("Qwen card generator", () => {
   });
 
   it("normalizes supported raster cover MIME types before persistence", async () => {
-    const imageBytes = new Uint8Array([137, 80, 78, 71]);
+    const imageBytes = pngBytes(5, 7);
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -349,6 +371,114 @@ describe("Qwen card generator", () => {
     );
 
     expect(cover).toEqual({ bytes: imageBytes, mimeType: "image/png" });
+  });
+
+  it("throws a generation error when downloaded PNG cover is not 5:7", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.png" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(pngBytes(1, 1), {
+          status: 200,
+          headers: { "content-type": "image/png" }
+        })
+      );
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toBeInstanceOf(QwenGenerationError);
+  });
+
+  it("throws a generation error when downloaded PNG cover dimensions are undetectable", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.png" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+          {
+            status: 200,
+            headers: { "content-type": "image/png" }
+          }
+        )
+      );
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toBeInstanceOf(QwenGenerationError);
+  });
+
+  it("throws a generation error when downloaded image bytes do not match the declared MIME type", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.png" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([1, 2, 3, 4]), {
+          status: 200,
+          headers: { "content-type": "image/png" }
+        })
+      );
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toBeInstanceOf(QwenGenerationError);
   });
 
   it("throws a generation error when image response has no image URL", async () => {

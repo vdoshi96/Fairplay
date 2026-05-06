@@ -57,7 +57,7 @@ const generatedCard: StructuredAiCard = {
   imageNegativePrompt: "people, logos"
 };
 
-async function createReadyAudioDraft() {
+async function createReadyAudioDraft(card: StructuredAiCard = generatedCard) {
   const { household, personas } = await createTestHousehold();
   const draft = await createAiCardDraft({
     householdId: household.id,
@@ -70,7 +70,7 @@ async function createReadyAudioDraft() {
   await saveAiCardDraftGeneration({
     householdId: household.id,
     draftId: draft.id,
-    card: generatedCard
+    card
   });
   await saveAiCardDraftCover({
     householdId: household.id,
@@ -481,6 +481,37 @@ describe("AI card draft repository", () => {
         }
       })
     ).resolves.toBe(1);
+  });
+
+  it("returns generated source fields when accepting an AI draft titled like a source card", async () => {
+    const autoDraftCard: StructuredAiCard = {
+      ...generatedCard,
+      title: "Auto",
+      summary: "Generated auto summary.",
+      definition: "Generated auto definition.",
+      conception: "Generated auto conception.",
+      planning: "Generated auto planning.",
+      execution: "Generated auto execution.",
+      minimumStandard: "Generated auto minimum standard."
+    };
+    const { household, personas, draft } = await createReadyAudioDraft(autoDraftCard);
+
+    const responsibility = await acceptAiCardDraftAsResponsibility({
+      householdId: household.id,
+      draftId: draft.id,
+      createdByPersonaId: personas[0].id
+    });
+
+    expect(responsibility).toMatchObject({
+      title: "Auto",
+      summary: "Generated auto summary.",
+      sourceDefinition: "Generated auto definition.",
+      sourceConception: "Generated auto conception.",
+      sourcePlanning: "Generated auto planning.",
+      sourceExecution: "Generated auto execution.",
+      sourceMinimumStandard: "Generated auto minimum standard.",
+      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
+    });
   });
 
   it("rejects accepting a draft without cover bytes", async () => {

@@ -80,4 +80,24 @@ describe("CardDetailSheet", () => {
       "object-cover"
     );
   });
+
+  it("renders source-card sourceCoverAssetPath with legacy object-contain art treatment", () => {
+    const sourceCard = {
+      ...card,
+      coverAssetPath: null,
+      sourceCoverAssetPath: "/assets/fairplay/cards/auto.png"
+    };
+
+    render(<CardDetailSheet card={sourceCard} />);
+
+    expect(screen.queryByTestId("generated-cover-art-panel")).not.toBeInTheDocument();
+    expect(screen.getByTestId("source-cover-art-panel")).toBeVisible();
+    expect(screen.getByRole("img", { name: /auto cover/i })).toHaveAttribute(
+      "src",
+      "/assets/fairplay/cards/auto.png"
+    );
+    expect(screen.getByRole("img", { name: /auto cover/i })).toHaveClass(
+      "object-contain"
+    );
+  });
 });

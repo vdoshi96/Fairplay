@@ -29,6 +29,28 @@ function jsonResponse(body: unknown, init: ResponseInit = {}) {
   });
 }
 
+function pngBytes(width: number, height: number) {
+  const bytes = new Uint8Array(45);
+  const view = new DataView(bytes.buffer);
+  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
+  view.setUint32(8, 13);
+  bytes.set(asciiBytes("IHDR"), 12);
+  view.setUint32(16, width);
+  view.setUint32(20, height);
+  bytes[24] = 8;
+  bytes[25] = 2;
+  bytes[26] = 0;
+  bytes[27] = 0;
+  bytes[28] = 0;
+  view.setUint32(33, 0);
+  bytes.set(asciiBytes("IEND"), 37);
+  return bytes;
+}
+
+function asciiBytes(value: string) {
+  return Uint8Array.from(value, (char) => char.charCodeAt(0));
+}
+
 const validCard = {
   title: "Library Book Returns",
   summary: "Keep borrowed books moving back on time.",
@@ -190,7 +212,7 @@ describe("OpenAI fallback card generator", () => {
   });
 
   it("generates a portrait PNG cover from GPT image base64 output", async () => {
-    const imageBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+    const imageBytes = pngBytes(1024, 1536);
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({
         data: [

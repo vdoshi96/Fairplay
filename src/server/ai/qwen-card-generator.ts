@@ -5,6 +5,8 @@ import {
   buildImageNegativePrompt,
   buildImagePrompt,
   cardSystemPrompt,
+  detectedRasterImageMimeType,
+  isFiveBySevenPng,
   MAX_GENERATED_IMAGE_BYTES,
   parseDownloadableImageUrl,
   parseStructuredCardJson,
@@ -236,10 +238,19 @@ export async function generateCardCover(
   if (bytes.byteLength > MAX_GENERATED_IMAGE_BYTES) {
     throw new QwenGenerationError("Qwen generated image exceeded the maximum size.");
   }
+  const detectedMimeType = detectedRasterImageMimeType(bytes);
+  if (!detectedMimeType || detectedMimeType !== mimeType) {
+    throw new QwenGenerationError(
+      "Qwen generated image bytes were not a supported raster image matching the declared MIME type."
+    );
+  }
+  if (detectedMimeType === "image/png" && !isFiveBySevenPng(bytes)) {
+    throw new QwenGenerationError("Qwen generated PNG cover was not a 5:7 image.");
+  }
 
   return {
     bytes,
-    mimeType
+    mimeType: detectedMimeType
   };
 }
 

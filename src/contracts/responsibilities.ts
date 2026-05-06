@@ -29,6 +29,8 @@ const SourceCoverAssetPathSchema = z
   )
   .nullable();
 
+const SourceCardTextSchema = z.string().trim().max(3000).nullable();
+
 const ResponsibilityCreateVisibilitySchema = z
   .enum(["shared_household", "partner_visible", "check_in_only"])
   .default("shared_household");
@@ -85,6 +87,11 @@ export const ResponsibilityDetailSchema = ResponsibilitySummarySchema.extend({
   notes: z.string().trim().max(4000).nullable(),
   lifecycleNotes: ResponsibilityLifecycleNotesSchema.nullable(),
   lastReviewedAt: NullableIsoDateTimeSchema,
+  sourceDefinition: SourceCardTextSchema,
+  sourceConception: SourceCardTextSchema,
+  sourcePlanning: SourceCardTextSchema,
+  sourceExecution: SourceCardTextSchema,
+  sourceMinimumStandard: SourceCardTextSchema,
   sourceCoverAssetPath: SourceCoverAssetPathSchema,
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,

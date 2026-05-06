@@ -19,6 +19,10 @@
 - Accepted generated covers use `sourceCoverAssetPath` before title-matched source-card cover fallback. Seeded title-matched cards still use `/assets/fairplay/cards/...`.
 - `AiCardReviewPanel` now uses a larger generated-art panel with desktop `minmax(320px,42vw)` art column and object-cover art.
 - `CardDetailSheet` distinguishes generated cover art from seeded source covers. Generated art gets the larger integrated treatment; source covers keep object-contain card-cover behavior.
+- Review fix: generated-art detail treatment now requires the accepted AI cover API path shape, so `/assets/fairplay/cards/...` persisted in `sourceCoverAssetPath` keeps the legacy source-card `object-contain` treatment.
+- Review fix: `ResponsibilityDetailSchema` now exposes nullable persisted source fields (`sourceDefinition`, `sourceConception`, `sourcePlanning`, `sourceExecution`, `sourceMinimumStandard`), and repository/detail mapping uses those fields for accepted AI responsibilities before title-matched source-card text.
+- Review fix: Qwen downloaded cover bytes now must match the declared raster MIME type, and PNG output must have detectable 5:7 dimensions before being returned.
+- Review fix: source cover path contract coverage now rejects suffixed `/assets/fairplay/cards/...` and `/api/ai-card-drafts/.../cover` paths.
 
 ## Subagent / Review Fallback
 
@@ -36,8 +40,10 @@
 - Prompt tests protect against returning to title-bearing card-cover language.
 - Qwen provider tests protect the `1460*2044` request size.
 - Repository acceptance tests now prove accepted draft cover paths are returned on the created responsibility detail.
-- Detail mapping tests prove generated `sourceCoverAssetPath` wins before source-card title matching and source-card cover fallback still works.
-- Component tests prove generated art uses larger object-cover panels in draft review and responsibility detail.
+- Repository acceptance tests now prove accepted AI drafts titled like source cards return generated source fields on the created responsibility detail.
+- Detail mapping tests prove generated `sourceCoverAssetPath` wins before source-card title matching, generated source fields win for AI title collisions, and source-card cover fallback still works.
+- Component tests prove generated art uses larger object-cover panels in draft review and responsibility detail, while asset-backed `sourceCoverAssetPath` keeps legacy source-card rendering.
+- Qwen tests now use minimal PNG fixtures and prove non-5:7, dimension-undetectable, and MIME/byte-mismatched PNG downloads fail closed.
 
 ## QA Command Outputs
 
@@ -56,6 +62,21 @@ Failures included:
 - generated-cover-art-panel and ai-draft-review-art-panel were missing.
 ```
 
+### Review TDD Red
+
+```text
+$ npm test -- src/server/ai/qwen-card-generator.test.ts src/server/ai/openai-card-generator.test.ts src/contracts/responsibilities.test.ts src/server/repositories/ai-card-drafts.test.ts 'src/app/app/responsibilities/[id]/detail-card.test.ts' src/components/library/ai-task-manager.test.tsx src/components/cards/card-detail-sheet.test.tsx
+
+Test Files  5 failed | 2 passed (7)
+Tests  7 failed | 58 passed (65)
+Failures included:
+- Asset-backed sourceCoverAssetPath rendered with generated-cover-art-panel/object-cover.
+- ResponsibilityDetailSchema rejected sourceDefinition/sourceConception/sourcePlanning/sourceExecution/sourceMinimumStandard.
+- Accepted AI card titled Auto still mapped seeded source-card definition and CPE fields.
+- Qwen accepted non-5:7, dimension-undetectable, and MIME/byte-mismatched PNG downloads.
+- AI draft acceptance returned sourceCoverAssetPath but not generated source fields on the created responsibility.
+```
+
 ### Focused Green
 
 ```text
@@ -66,23 +87,19 @@ $ npm test -- src/server/ai/qwen-card-generator.test.ts src/server/ai/openai-car
 
  RUN  v3.2.4 /Users/vishal/Developer/Fairplay/.worktrees/fairplay-integrated-qwen-art
 
- ✓ src/app/app/responsibilities/[id]/detail-card.test.ts (2 tests) 6ms
- ✓ src/contracts/responsibilities.test.ts (9 tests) 12ms
- ✓ src/server/ai/qwen-card-generator.test.ts (16 tests) 32ms
- ✓ src/server/ai/openai-card-generator.test.ts (9 tests) 33ms
- ✓ src/components/cards/card-detail-sheet.test.tsx (2 tests) 407ms
-   ✓ CardDetailSheet > shows source cover, ownership, CPE, standards, and action hooks  379ms
- ✓ src/server/repositories/ai-card-drafts.test.ts (12 tests) 1825ms
-   ✓ AI card draft repository > creates a text draft scoped to household and creator persona  512ms
- ✓ src/components/library/ai-task-manager.test.tsx (8 tests) 2676ms
-   ✓ AiTaskManager > submits text captures to the draft API and refreshes the library  393ms
-   ✓ AiTaskManager > records audio into a Blob and submits multipart form data  325ms
-   ✓ AiTaskManager > fetches review detail, saves edits, and regenerates the image  980ms
+ ✓ src/app/app/responsibilities/[id]/detail-card.test.ts (3 tests) 3ms
+ ✓ src/contracts/responsibilities.test.ts (10 tests) 15ms
+ ✓ src/server/ai/qwen-card-generator.test.ts (19 tests) 18ms
+ ✓ src/server/ai/openai-card-generator.test.ts (9 tests) 16ms
+ ✓ src/components/cards/card-detail-sheet.test.tsx (3 tests) 231ms
+ ✓ src/server/repositories/ai-card-drafts.test.ts (13 tests) 666ms
+ ✓ src/components/library/ai-task-manager.test.tsx (8 tests) 1005ms
+   ✓ AiTaskManager > fetches review detail, saves edits, and regenerates the image  354ms
 
  Test Files  7 passed (7)
-      Tests  58 passed (58)
-   Start at  09:24:51
-   Duration  6.44s (transform 1.47s, setup 1.24s, collect 3.58s, tests 4.99s, environment 8.98s, prepare 5.42s)
+      Tests  65 passed (65)
+   Start at  09:43:32
+   Duration  2.32s (transform 736ms, setup 565ms, collect 1.85s, tests 1.96s, environment 2.93s, prepare 727ms)
 ```
 
 ### Lint
