@@ -10,6 +10,9 @@ type AuthPageShellProps = {
   visual?: ReactNode;
 };
 
+const AUTH_BACKGROUND =
+  "/assets/fairplay/generated-ui/backgrounds/auth-warm-threshold.png";
+
 export function AuthPageShell({
   children,
   eyebrow,
@@ -21,12 +24,20 @@ export function AuthPageShell({
   const hasVisual = Boolean(visual);
 
   return (
-    <main className="min-h-screen bg-fp-paper px-4 py-6 text-fp-ink sm:px-6">
+    <main
+      className="relative min-h-screen overflow-hidden bg-fp-paper bg-cover bg-center px-4 py-6 text-fp-ink sm:px-6"
+      data-auth-background
+      style={{ backgroundImage: `url('${AUTH_BACKGROUND}')` }}
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,251,245,0.94),rgba(255,251,245,0.84)_48%,rgba(255,251,245,0.62))]"
+      />
       <section
         className={
           hasVisual
-            ? "mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-5xl content-center gap-8 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-center"
-            : "mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-md content-center gap-6"
+            ? "relative mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-5xl content-center gap-8 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-center"
+            : "relative mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-md content-center gap-6"
         }
       >
         <div className="grid gap-6">
@@ -56,7 +67,7 @@ export function AuthPageShell({
             <p className="text-[15px] leading-6 text-fp-muted-ink">{summary}</p>
           </div>
 
-          <div className="rounded-[8px] border border-fp-line bg-fp-surface p-4">
+          <div className="rounded-[8px] border border-fp-line bg-fp-surface/95 p-4 shadow-[var(--fp-shadow-soft)] backdrop-blur">
             {children}
           </div>
 

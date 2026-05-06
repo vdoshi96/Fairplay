@@ -30,29 +30,42 @@ const steps = [
   }
 ] as const;
 
+const ONBOARDING_BACKGROUND =
+  "/assets/fairplay/generated-ui/backgrounds/onboarding-rhythm-path.png";
+
 export function OnboardingGuide({ onSkip }: OnboardingGuideProps) {
   return (
     <section className="mx-auto grid w-full max-w-3xl gap-6">
-      <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
-        <div className="grid gap-3">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
-            First setup
-          </p>
-          <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-            Set up your household rhythm
-          </h1>
-          <p className="text-[15px] leading-6 text-fp-muted-ink">
-            Fairplay is for practical household planning: make work visible, clarify
-            ownership, and return to decisions when capacity changes.
-          </p>
-        </div>
-        <div className="flex items-center justify-start gap-2 sm:justify-end">
-          <PersonaAvatar className="h-12 w-12 rounded-full" decorative persona="alex" />
-          <HelperMascot
-            className="h-20 w-20 rounded-[8px]"
-            alt="Household helper mascot"
-          />
-          <PersonaAvatar className="h-12 w-12 rounded-full" decorative persona="max" />
+      <div
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-white bg-cover bg-center p-5 shadow-[var(--fp-shadow-soft)] sm:p-6"
+        data-onboarding-background
+        style={{ backgroundImage: `url('${ONBOARDING_BACKGROUND}')` }}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.95),rgba(255,255,255,0.86)_58%,rgba(255,255,255,0.5))]"
+        />
+        <div className="relative grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="grid gap-3">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
+              First setup
+            </p>
+            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+              Set up your household rhythm
+            </h1>
+            <p className="text-[15px] leading-6 text-fp-muted-ink">
+              Fairplay is for practical household planning: make work visible, clarify
+              ownership, and return to decisions when capacity changes.
+            </p>
+          </div>
+          <div className="flex items-center justify-start gap-2 sm:justify-end">
+            <PersonaAvatar className="h-12 w-12 rounded-full" decorative persona="alex" />
+            <HelperMascot
+              className="h-20 w-20 rounded-[8px]"
+              alt="Household helper mascot"
+            />
+            <PersonaAvatar className="h-12 w-12 rounded-full" decorative persona="max" />
+          </div>
         </div>
       </div>
 
