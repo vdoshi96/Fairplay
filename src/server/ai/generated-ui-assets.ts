@@ -147,6 +147,108 @@ const crashCourseSceneSpecs = [
   }
 ] as const;
 
+const professionalPageBackgroundSpecs = [
+  {
+    alt: "Warm Fairplay threshold background",
+    composition:
+      "a softly lit entry table with a tiny home, paired avatar dots, blank tiles, plant shapes, orbit paths, and a gentle open doorway glow",
+    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/backgrounds/auth-warm-threshold.png`,
+    promptSubject:
+      "welcoming household app sign-in backdrop with professional product warmth",
+    ratio: "4:3",
+    size: "1536*1152",
+    slug: "auth-warm-threshold-background"
+  },
+  {
+    alt: "Household planning canvas background",
+    composition:
+      "an airy abstract workspace with faint room contours, calm planning paths, soft tile clusters, balanced persona color dots, and layered paper texture",
+    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/backgrounds/app-shell-household-canvas.png`,
+    promptSubject:
+      "subtle full-app canvas for a polished household operations website",
+    ratio: "3:2",
+    size: "1536*1024",
+    slug: "app-shell-household-canvas"
+  },
+  {
+    alt: "Learning studio home background",
+    composition:
+      "a friendly learning studio with abstract lesson shelves, route cards without text, small milestone objects, helper spark, and a calm work table",
+    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/backgrounds/home-learning-studio.png`,
+    promptSubject:
+      "professional website hero art for learning a household planning product",
+    ratio: "3:2",
+    size: "1536*1024",
+    slug: "home-learning-studio-background"
+  },
+  {
+    alt: "Household rhythm onboarding path background",
+    composition:
+      "a warm path through four simple household stations, paired persona dots, helper spark, blank setup tiles, and soft waypoint shapes",
+    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/backgrounds/onboarding-rhythm-path.png`,
+    promptSubject:
+      "first setup journey backdrop for a household responsibility app",
+    ratio: "3:2",
+    size: "1536*1024",
+    slug: "onboarding-rhythm-path-background"
+  },
+  {
+    alt: "Responsibility load map workbench background",
+    composition:
+      "a clean operations workbench with abstract lane zones, movable blank responsibility tiles, owner dots, signal chips, and measuring paths",
+    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/backgrounds/load-map-workbench.png`,
+    promptSubject:
+      "professional dashboard background for mapping household responsibility load",
+    ratio: "3:2",
+    size: "1536*1024",
+    slug: "load-map-workbench-background"
+  },
+  {
+    alt: "Responsibility library shelf background",
+    composition:
+      "a tidy illustrated shelf with blank rounded cards, search lens shape, small containers, warm labels as abstract color blocks, and helper spark",
+    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/backgrounds/library-shelf.png`,
+    promptSubject:
+      "premium product background for browsing a responsibility card library",
+    ratio: "3:2",
+    size: "1536*1024",
+    slug: "library-shelf-background"
+  },
+  {
+    alt: "Radar signal room background",
+    composition:
+      "a calm signal room with soft radar rings, topic bubbles, abstract trays made only of blank color blocks, a shared decision path, and paired persona dots; no paper notes, no clipped documents, no writing marks",
+    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/backgrounds/radar-signal-room.png`,
+    promptSubject:
+      "professional website background for capturing household concern signals",
+    ratio: "3:2",
+    size: "1536*1024",
+    slug: "radar-signal-room-background"
+  },
+  {
+    alt: "Check-in table background",
+    composition:
+      "a quiet meeting table with blank agenda tiles, decision loop, shared calendar shape, two balanced color dots, and a completion spark",
+    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/backgrounds/check-in-table.png`,
+    promptSubject:
+      "polished app background for a guided household check-in workflow",
+    ratio: "3:2",
+    size: "1536*1024",
+    slug: "check-in-table-background"
+  },
+  {
+    alt: "Settings preferences studio background",
+    composition:
+      "a tidy preference studio with blank control toggles, persona dots, soft theme swatches, small house mark, and calm setup path",
+    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/backgrounds/settings-preferences.png`,
+    promptSubject:
+      "professional settings page background for household app preferences",
+    ratio: "3:2",
+    size: "1536*1024",
+    slug: "settings-preferences-background"
+  }
+] as const;
+
 export const GENERATED_UI_ASSETS: GeneratedUiAssetSpec[] = [
   {
     alt: "Fairplay household garden login scene",
@@ -259,6 +361,7 @@ export const GENERATED_UI_ASSETS: GeneratedUiAssetSpec[] = [
     ratio: "3:2",
     size: "1536*1024" as const
   })),
+  ...professionalPageBackgroundSpecs,
   {
     alt: "Load Map guide thumbnail",
     composition:

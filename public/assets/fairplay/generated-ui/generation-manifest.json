@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-05T18:24:18.279Z",
+  "generatedAt": "2026-05-06T21:55:33.106Z",
   "mode": "generate",
   "approvedModel": "qwen-image-2.0-pro",
   "outputDir": "public/assets/fairplay/generated-ui",
@@ -75,6 +75,15 @@
       "size": "768*768",
       "skipped": true,
       "slug": "ai-task-helper"
+    },
+    {
+      "alt": "Greg Taskmaster avatar",
+      "prompt": "Original Fairplay app illustration.\nStyle: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.\nPalette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.\nCanvas: 1:1 composition, mobile-readable, generous breathing room, no border, no title area.\nSubject: original comedic task judge avatar for the Library AI capture control.\nComposition: stern original task judge avatar seated on a grand dark throne, wearing rectangular glasses, a black suit, darker black shirt, and holding a task card.\nAccessibility intent: Greg Taskmaster avatar.\nSafety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.\nFinal image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores.",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, copied public app style, copied book art, Fair Play source art, Better Share style, Trello board, workbook layout, worksheet, printable card, playing card, card deck, source deck style, photorealistic, 3D render, real-person likeness, celebrity, gender stereotype, chore stereotype, blame, shame, anger, crying, confrontation, therapy scene, clinical diagnosis",
+      "outputPath": "public/assets/fairplay/generated-ui/greg-taskmaster-avatar.png",
+      "size": "1254*1254",
+      "skipped": true,
+      "slug": "greg-taskmaster-avatar"
     },
     {
       "alt": "Crash course completion celebration",
@@ -174,6 +183,87 @@
       "size": "1536*1024",
       "skipped": true,
       "slug": "crash-course-repair"
+    },
+    {
+      "alt": "Warm Fairplay threshold background",
+      "prompt": "Original Fairplay app illustration.\nStyle: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.\nPalette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.\nCanvas: 4:3 composition, mobile-readable, generous breathing room, no border, no title area.\nSubject: welcoming household app sign-in backdrop with professional product warmth.\nComposition: a softly lit entry table with a tiny home, paired avatar dots, blank tiles, plant shapes, orbit paths, and a gentle open doorway glow.\nAccessibility intent: Warm Fairplay threshold background.\nSafety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.\nFinal image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores.",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, copied public app style, copied book art, Fair Play source art, Better Share style, Trello board, workbook layout, worksheet, printable card, playing card, card deck, source deck style, photorealistic, 3D render, real-person likeness, celebrity, gender stereotype, chore stereotype, blame, shame, anger, crying, confrontation, therapy scene, clinical diagnosis",
+      "outputPath": "public/assets/fairplay/generated-ui/backgrounds/auth-warm-threshold.png",
+      "size": "1536*1152",
+      "skipped": true,
+      "slug": "auth-warm-threshold-background"
+    },
+    {
+      "alt": "Household planning canvas background",
+      "prompt": "Original Fairplay app illustration.\nStyle: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.\nPalette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.\nCanvas: 3:2 composition, mobile-readable, generous breathing room, no border, no title area.\nSubject: subtle full-app canvas for a polished household operations website.\nComposition: an airy abstract workspace with faint room contours, calm planning paths, soft tile clusters, balanced persona color dots, and layered paper texture.\nAccessibility intent: Household planning canvas background.\nSafety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.\nFinal image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores.",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, copied public app style, copied book art, Fair Play source art, Better Share style, Trello board, workbook layout, worksheet, printable card, playing card, card deck, source deck style, photorealistic, 3D render, real-person likeness, celebrity, gender stereotype, chore stereotype, blame, shame, anger, crying, confrontation, therapy scene, clinical diagnosis",
+      "outputPath": "public/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png",
+      "size": "1536*1024",
+      "skipped": true,
+      "slug": "app-shell-household-canvas"
+    },
+    {
+      "alt": "Learning studio home background",
+      "prompt": "Original Fairplay app illustration.\nStyle: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.\nPalette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.\nCanvas: 3:2 composition, mobile-readable, generous breathing room, no border, no title area.\nSubject: professional website hero art for learning a household planning product.\nComposition: a friendly learning studio with abstract lesson shelves, route cards without text, small milestone objects, helper spark, and a calm work table.\nAccessibility intent: Learning studio home background.\nSafety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.\nFinal image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores.",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, copied public app style, copied book art, Fair Play source art, Better Share style, Trello board, workbook layout, worksheet, printable card, playing card, card deck, source deck style, photorealistic, 3D render, real-person likeness, celebrity, gender stereotype, chore stereotype, blame, shame, anger, crying, confrontation, therapy scene, clinical diagnosis",
+      "outputPath": "public/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png",
+      "size": "1536*1024",
+      "skipped": true,
+      "slug": "home-learning-studio-background"
+    },
+    {
+      "alt": "Household rhythm onboarding path background",
+      "prompt": "Original Fairplay app illustration.\nStyle: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.\nPalette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.\nCanvas: 3:2 composition, mobile-readable, generous breathing room, no border, no title area.\nSubject: first setup journey backdrop for a household responsibility app.\nComposition: a warm path through four simple household stations, paired persona dots, helper spark, blank setup tiles, and soft waypoint shapes.\nAccessibility intent: Household rhythm onboarding path background.\nSafety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.\nFinal image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores.",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, copied public app style, copied book art, Fair Play source art, Better Share style, Trello board, workbook layout, worksheet, printable card, playing card, card deck, source deck style, photorealistic, 3D render, real-person likeness, celebrity, gender stereotype, chore stereotype, blame, shame, anger, crying, confrontation, therapy scene, clinical diagnosis",
+      "outputPath": "public/assets/fairplay/generated-ui/backgrounds/onboarding-rhythm-path.png",
+      "size": "1536*1024",
+      "skipped": true,
+      "slug": "onboarding-rhythm-path-background"
+    },
+    {
+      "alt": "Responsibility load map workbench background",
+      "prompt": "Original Fairplay app illustration.\nStyle: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.\nPalette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.\nCanvas: 3:2 composition, mobile-readable, generous breathing room, no border, no title area.\nSubject: professional dashboard background for mapping household responsibility load.\nComposition: a clean operations workbench with abstract lane zones, movable blank responsibility tiles, owner dots, signal chips, and measuring paths.\nAccessibility intent: Responsibility load map workbench background.\nSafety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.\nFinal image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores.",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, copied public app style, copied book art, Fair Play source art, Better Share style, Trello board, workbook layout, worksheet, printable card, playing card, card deck, source deck style, photorealistic, 3D render, real-person likeness, celebrity, gender stereotype, chore stereotype, blame, shame, anger, crying, confrontation, therapy scene, clinical diagnosis",
+      "outputPath": "public/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png",
+      "size": "1536*1024",
+      "skipped": true,
+      "slug": "load-map-workbench-background"
+    },
+    {
+      "alt": "Responsibility library shelf background",
+      "prompt": "Original Fairplay app illustration.\nStyle: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.\nPalette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.\nCanvas: 3:2 composition, mobile-readable, generous breathing room, no border, no title area.\nSubject: premium product background for browsing a responsibility card library.\nComposition: a tidy illustrated shelf with blank rounded cards, search lens shape, small containers, warm labels as abstract color blocks, and helper spark.\nAccessibility intent: Responsibility library shelf background.\nSafety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.\nFinal image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores.",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, copied public app style, copied book art, Fair Play source art, Better Share style, Trello board, workbook layout, worksheet, printable card, playing card, card deck, source deck style, photorealistic, 3D render, real-person likeness, celebrity, gender stereotype, chore stereotype, blame, shame, anger, crying, confrontation, therapy scene, clinical diagnosis",
+      "outputPath": "public/assets/fairplay/generated-ui/backgrounds/library-shelf.png",
+      "size": "1536*1024",
+      "skipped": true,
+      "slug": "library-shelf-background"
+    },
+    {
+      "alt": "Radar signal room background",
+      "prompt": "Original Fairplay app illustration.\nStyle: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.\nPalette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.\nCanvas: 3:2 composition, mobile-readable, generous breathing room, no border, no title area.\nSubject: professional website background for capturing household concern signals.\nComposition: a calm signal room with soft radar rings, topic bubbles, abstract trays made only of blank color blocks, a shared decision path, and paired persona dots; no paper notes, no clipped documents, no writing marks.\nAccessibility intent: Radar signal room background.\nSafety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.\nFinal image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores.",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, copied public app style, copied book art, Fair Play source art, Better Share style, Trello board, workbook layout, worksheet, printable card, playing card, card deck, source deck style, photorealistic, 3D render, real-person likeness, celebrity, gender stereotype, chore stereotype, blame, shame, anger, crying, confrontation, therapy scene, clinical diagnosis",
+      "outputPath": "public/assets/fairplay/generated-ui/backgrounds/radar-signal-room.png",
+      "size": "1536*1024",
+      "skipped": true,
+      "slug": "radar-signal-room-background"
+    },
+    {
+      "alt": "Check-in table background",
+      "prompt": "Original Fairplay app illustration.\nStyle: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.\nPalette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.\nCanvas: 3:2 composition, mobile-readable, generous breathing room, no border, no title area.\nSubject: polished app background for a guided household check-in workflow.\nComposition: a quiet meeting table with blank agenda tiles, decision loop, shared calendar shape, two balanced color dots, and a completion spark.\nAccessibility intent: Check-in table background.\nSafety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.\nFinal image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores.",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, copied public app style, copied book art, Fair Play source art, Better Share style, Trello board, workbook layout, worksheet, printable card, playing card, card deck, source deck style, photorealistic, 3D render, real-person likeness, celebrity, gender stereotype, chore stereotype, blame, shame, anger, crying, confrontation, therapy scene, clinical diagnosis",
+      "outputPath": "public/assets/fairplay/generated-ui/backgrounds/check-in-table.png",
+      "size": "1536*1024",
+      "skipped": true,
+      "slug": "check-in-table-background"
+    },
+    {
+      "alt": "Settings preferences studio background",
+      "prompt": "Original Fairplay app illustration.\nStyle: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.\nPalette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.\nCanvas: 3:2 composition, mobile-readable, generous breathing room, no border, no title area.\nSubject: professional settings page background for household app preferences.\nComposition: a tidy preference studio with blank control toggles, persona dots, soft theme swatches, small house mark, and calm setup path.\nAccessibility intent: Settings preferences studio background.\nSafety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.\nFinal image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores.",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, copied public app style, copied book art, Fair Play source art, Better Share style, Trello board, workbook layout, worksheet, printable card, playing card, card deck, source deck style, photorealistic, 3D render, real-person likeness, celebrity, gender stereotype, chore stereotype, blame, shame, anger, crying, confrontation, therapy scene, clinical diagnosis",
+      "outputPath": "public/assets/fairplay/generated-ui/backgrounds/settings-preferences.png",
+      "size": "1536*1024",
+      "skipped": true,
+      "slug": "settings-preferences-background"
     },
     {
       "alt": "Load Map guide thumbnail",
