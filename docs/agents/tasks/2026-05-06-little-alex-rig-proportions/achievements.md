@@ -6,5 +6,6 @@
 - Rebalanced the first body-part rig attempt, then replaced the visible presentation with coherent full-body Qwen sprites when screenshot review still showed gaps.
 - Added neutral, masculine, and feminine full-body Qwen assets with equal limb proportions, a black suit, white shirt, and exactly one clipboard.
 - Kept Matter.js body parts as hidden physics geometry while rendering the coherent full-body sprite as the visible character.
+- Removed the legacy body-part sprite DOM path so disconnected limb images cannot render alongside the full-body asset.
 - Added rendered-pixel QA that catches detached visible silhouette islands, large visible part gaps, duplicate clipboard-like tan regions, and left/right leg proportion mismatches.
 - Added a synthetic pixel-QA fixture spec proving the recognizer accepts a coherent character and rejects a detached duplicate-clipboard character.

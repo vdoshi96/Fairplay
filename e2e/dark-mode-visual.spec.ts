@@ -234,7 +234,7 @@ async function expectUnobscured(locator: Locator, label: string) {
     const rect = element.getBoundingClientRect();
     const overlays = Array.from(
       document.querySelectorAll<HTMLElement>(
-        ".fp-little-alex-part, .fp-little-alex-chat-bubble"
+        ".fp-little-alex-full-sprite, .fp-little-alex-part, .fp-little-alex-chat-bubble"
       )
     );
 
@@ -260,8 +260,11 @@ async function expectUnobscured(locator: Locator, label: string) {
         })
         .map((overlay) => {
           const part = overlay.dataset.part ? `[data-part="${overlay.dataset.part}"]` : "";
+          const testId = overlay.dataset.testid
+            ? `[data-testid="${overlay.dataset.testid}"]`
+            : "";
 
-          return `${elementLabel} visually overlapped by ${overlay.tagName.toLowerCase()}${part}`;
+          return `${elementLabel} visually overlapped by ${overlay.tagName.toLowerCase()}${testId}${part}`;
         })[0] ?? null
     );
   }, label);

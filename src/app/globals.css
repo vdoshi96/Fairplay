@@ -369,6 +369,7 @@ a {
 .fp-little-alex-part {
   display: grid;
   filter: drop-shadow(0 8px 12px rgba(32, 33, 36, 0.18));
+  opacity: 0;
   place-items: center;
 }
 

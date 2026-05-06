@@ -13,3 +13,6 @@
 - On `codex/little-alex-pixel-qa`, added `sharp`-based screenshot recognition that diffs rendered frames against hidden-Little-Alex frames and added synthetic coherent/broken fixtures.
 - On `codex/little-alex-coherent-full-body`, generated original full-body Qwen assets for all three variants, rendered them as the visible character layer, kept body parts as hidden physics geometry, and added asset pixel QA for cohesion, clipboard count, and proportions.
 - Merged `codex/little-alex-coherent-assets`, which documents the original in-repo proportion template and generator prompt contract that avoids internet-copy/licensing issues.
+- Removed the stale body-part sprite image render path after user screenshot review showed the disconnected rig had reappeared, then added DOM-level e2e checks for zero legacy sprite nodes and invisible physics wrappers.
+- Fixed the visible full-body sprite viewport clamp after full Playwright QA caught the rotated sprite extending below the viewport during a fling.
+- Updated dark-mode visual QA so unobscured-target checks inspect the visible Little Alex full-body sprite, not only hidden physics wrappers.

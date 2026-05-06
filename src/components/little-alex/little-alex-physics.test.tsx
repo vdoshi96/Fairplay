@@ -575,12 +575,10 @@ describe("LittleAlexPhysics", () => {
 
       const littleAlex = screen.getByTestId("little-alex-horne");
       const details = {
-        face: screen
-          .getByTestId("little-alex-face-detail")
-          .getAttribute("data-appearance-detail"),
+        fullSprite: screen.getByTestId("little-alex-full-sprite").getAttribute("src"),
         hair: screen
-          .getByTestId("little-alex-hair")
-          .getAttribute("data-appearance-detail"),
+          .getByTestId("little-alex-full-sprite")
+          .getAttribute("data-sprite-hair"),
         head: littleAlex.getAttribute("data-appearance-head"),
         silhouette: littleAlex.getAttribute("data-appearance-silhouette")
       };
@@ -592,38 +590,31 @@ describe("LittleAlexPhysics", () => {
       expect(littleAlex).toHaveClass(
         `fp-little-alex-presentation-${genderPresentation}`
       );
-      expect(details.face).toBeTruthy();
+      expect(details.fullSprite).toBe(
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`
+      );
       expect(details.hair).toBeTruthy();
       expect(details.head).toBeTruthy();
       expect(details.silhouette).toBeTruthy();
       unmount();
 
-      return `${details.hair}/${details.head}/${details.face}/${details.silhouette}`;
+      return `${details.hair}/${details.head}/${details.fullSprite}/${details.silhouette}`;
     });
 
     expect(new Set(detailSets).size).toBe(genderPresentations.length);
   });
 
-  it("renders six presentation-specific sprite images for every appearance option", () => {
+  it("renders one coherent full-body sprite and no legacy body-part sprite images", () => {
     stubReducedMotion(true);
-    const expectedParts = [
-      "head",
-      "torso",
-      "leftArm",
-      "rightArm",
-      "leftLeg",
-      "rightLeg"
-    ];
 
     genderPresentations.forEach((genderPresentation) => {
       const { unmount } = render(
         <LittleAlexPhysics genderPresentation={genderPresentation} />
       );
 
-      const sprites = screen.getAllByTestId("little-alex-sprite");
       const fullSprite = screen.getByTestId("little-alex-full-sprite");
 
-      expect(sprites).toHaveLength(6);
+      expect(screen.queryAllByTestId("little-alex-sprite")).toHaveLength(0);
       expect(fullSprite).toHaveAttribute(
         "src",
         `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`
@@ -632,41 +623,21 @@ describe("LittleAlexPhysics", () => {
         height: "176px",
         width: "86px"
       });
-      expect(
-        sprites.map((sprite) => sprite.getAttribute("data-sprite-part"))
-      ).toEqual(expectedParts);
-      expect(
-        sprites.map((sprite) => sprite.getAttribute("src"))
-      ).toEqual(
-        expectedParts.map(
-          (part) =>
-            `/assets/fairplay/little-alex-sprites/${genderPresentation}-${part}.png`
-        )
-      );
 
       unmount();
     });
   });
 
-  it("marks the feminine head sprite as the long-hair variant", () => {
+  it("marks the feminine full-body sprite as the long-hair variant", () => {
     stubReducedMotion(true);
 
-    const { container } = render(
-      <LittleAlexPhysics genderPresentation="feminine" />
-    );
-    const headSprite = container.querySelector<HTMLImageElement>(
-      '[data-testid="little-alex-sprite"][data-sprite-part="head"]'
-    );
+    render(<LittleAlexPhysics genderPresentation="feminine" />);
+    const fullSprite = screen.getByTestId("little-alex-full-sprite");
 
-    expect(screen.getByTestId("little-alex-hair")).toHaveAttribute(
-      "data-appearance-detail",
-      "long-hair"
-    );
-    expect(headSprite).not.toBeNull();
-    expect(headSprite).toHaveAttribute("data-sprite-hair", "long-hair");
-    expect(headSprite).toHaveAttribute(
+    expect(fullSprite).toHaveAttribute("data-sprite-hair", "long-hair");
+    expect(fullSprite).toHaveAttribute(
       "src",
-      "/assets/fairplay/little-alex-sprites/feminine-head.png"
+      "/assets/fairplay/little-alex-sprites/feminine-full.png"
     );
   });
 
@@ -708,7 +679,7 @@ describe("LittleAlexPhysics", () => {
     expect(rightHipGap).toBeLessThanOrEqual(2);
   });
 
-  it("keeps the body-part contract and suit assets across appearance options", () => {
+  it("keeps the hidden body-part contract and full-body suit asset across appearance options", () => {
     stubReducedMotion(true);
 
     genderPresentations.forEach((genderPresentation) => {
@@ -724,11 +695,17 @@ describe("LittleAlexPhysics", () => {
           .getAllByTestId("little-alex-body-part")
           .map((part) => part.getAttribute("data-part"))
       ).toEqual(["head", "torso", "leftArm", "rightArm", "leftLeg", "rightLeg"]);
+      screen.getAllByTestId("little-alex-body-part").forEach((part) => {
+        expect(part).toHaveStyle({ opacity: "0" });
+      });
       expect(screen.getByTestId("little-alex-horne")).toHaveStyle({
         "--little-alex-skin": "#b7795f"
       });
-      expect(screen.getByTestId("little-alex-clipboard")).toBeInTheDocument();
-      expect(screen.getByTestId("little-alex-shirt")).toBeInTheDocument();
+      expect(screen.getByTestId("little-alex-full-sprite")).toHaveAttribute(
+        "src",
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`
+      );
+      expect(screen.queryAllByTestId("little-alex-sprite")).toHaveLength(0);
 
       unmount();
     });

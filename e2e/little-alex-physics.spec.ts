@@ -22,15 +22,7 @@ const littleAlexSpritePresentations = [
   "feminine"
 ] as const;
 
-type LittleAlexSpritePart = (typeof littleAlexSpriteParts)[number];
 type LittleAlexSpritePresentation = (typeof littleAlexSpritePresentations)[number];
-
-function expectedLittleAlexSpritePath(
-  presentation: LittleAlexSpritePresentation,
-  part: LittleAlexSpritePart
-) {
-  return `${littleAlexSpriteBasePath}/${presentation}-${part}.png`;
-}
 
 function expectedLittleAlexFullSpritePath(
   presentation: LittleAlexSpritePresentation
@@ -214,13 +206,6 @@ async function expectLittleAlexSpritesLoaded(
   page: Page,
   presentation: LittleAlexSpritePresentation
 ) {
-  const expectedSpritePaths = Object.fromEntries(
-    littleAlexSpriteParts.map((part) => [
-      part,
-      expectedLittleAlexSpritePath(presentation, part)
-    ])
-  ) as Record<LittleAlexSpritePart, string>;
-
   await expect(page.getByTestId("little-alex-body-part")).toHaveCount(
     littleAlexSpriteParts.length
   );
@@ -271,71 +256,32 @@ async function expectLittleAlexSpritesLoaded(
     )
     .toEqual([]);
 
+  await expect(page.getByTestId("little-alex-sprite")).toHaveCount(0);
   await expect
-    .poll(
-      () =>
-        page.evaluate(
-          ({ expectedSpritePaths, parts }) => {
-            const failures: string[] = [];
-            const viewport = {
-              height: window.innerHeight,
-              width: window.innerWidth
-            };
+    .poll(() =>
+      page.evaluate(() =>
+        Array.from(
+          document.querySelectorAll<HTMLElement>(
+            '[data-testid="little-alex-body-part"]'
+          )
+        ).flatMap((bodyPart) => {
+          const failures: string[] = [];
 
-            for (const part of parts) {
-              const expectedPath = expectedSpritePaths[part];
-              const expectedUrl = new URL(expectedPath, window.location.origin).href;
-              const bodyPart = document.querySelector<HTMLElement>(
-                `[data-testid="little-alex-body-part"][data-part="${part}"]`
-              );
-
-              if (!bodyPart) {
-                failures.push(`${part} body part is missing`);
-                continue;
-              }
-
-              const sprite = Array.from(bodyPart.querySelectorAll("img")).find(
-                (image) =>
-                  image.currentSrc === expectedUrl ||
-                  image.src === expectedUrl ||
-                  image.getAttribute("src") === expectedPath ||
-                  image.dataset.spriteSrc === expectedPath
-              );
-
-              if (!sprite) {
-                failures.push(`${part} sprite image missing ${expectedPath}`);
-                continue;
-              }
-
-              if (
-                !sprite.complete ||
-                sprite.naturalHeight <= 0 ||
-                sprite.naturalWidth <= 0
-              ) {
-                failures.push(`${part} sprite image did not load`);
-              }
-
-              const rect = sprite.getBoundingClientRect();
-              if (
-                rect.width <= 0 ||
-                rect.height <= 0 ||
-                rect.left < -1 ||
-                rect.top < -1 ||
-                rect.right > viewport.width + 1 ||
-                rect.bottom > viewport.height + 1
-              ) {
-                failures.push(`${part} sprite is outside safe viewport bounds`);
-              }
-            }
-
-            return failures;
-          },
-          {
-            expectedSpritePaths,
-            parts: littleAlexSpriteParts
+          if (bodyPart.querySelector("img")) {
+            failures.push(
+              `${bodyPart.dataset.part ?? "unknown"} still renders an image child`
+            );
           }
-        ),
-      { timeout: 5_000 }
+
+          if (Number.parseFloat(getComputedStyle(bodyPart).opacity) !== 0) {
+            failures.push(
+              `${bodyPart.dataset.part ?? "unknown"} physics part is visible`
+            );
+          }
+
+          return failures;
+        })
+      )
     )
     .toEqual([]);
 }

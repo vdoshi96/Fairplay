@@ -212,13 +212,6 @@ function positionForPart(anchor: Point, part: PartConfig): Point {
   };
 }
 
-function littleAlexSpritePath(
-  genderPresentation: LittleAlexGenderPresentation,
-  part: PartKey
-) {
-  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${part}.png`;
-}
-
 function littleAlexFullBodySpritePath(
   genderPresentation: LittleAlexGenderPresentation
 ) {
@@ -236,6 +229,8 @@ const characterBounds = partConfigs.reduce(
 );
 const FULL_BODY_DISPLAY_HEIGHT = characterBounds.maxY - characterBounds.minY;
 const FULL_BODY_DISPLAY_WIDTH = 86;
+const FULL_BODY_CENTER_OFFSET_Y =
+  characterBounds.minY + FULL_BODY_DISPLAY_HEIGHT / 2;
 
 function viewportSize() {
   if (typeof window === "undefined") {
@@ -318,17 +313,53 @@ function partStyle(part: PartConfig, center: Point, angle = 0): CSSProperties {
 }
 
 function reducedPartStyle(part: PartConfig, anchor: Point): CSSProperties {
-  return partStyle(part, positionForPart(anchor, part));
+  return {
+    ...partStyle(part, positionForPart(anchor, part)),
+    opacity: 0
+  };
+}
+
+function fullBodyVisualHalfExtents(angle: number) {
+  const cos = Math.abs(Math.cos(angle));
+  const sin = Math.abs(Math.sin(angle));
+
+  return {
+    x: (FULL_BODY_DISPLAY_WIDTH * cos + FULL_BODY_DISPLAY_HEIGHT * sin) / 2,
+    y: (FULL_BODY_DISPLAY_WIDTH * sin + FULL_BODY_DISPLAY_HEIGHT * cos) / 2
+  };
+}
+
+function clampFullBodyAnchor(
+  anchor: Point,
+  angle = 0,
+  bounds = playAreaBounds()
+) {
+  const halfExtents = fullBodyVisualHalfExtents(angle);
+
+  return {
+    x: clampToViewportRange(
+      anchor.x,
+      bounds.minX + halfExtents.x + VIEWPORT_PADDING,
+      bounds.maxX - halfExtents.x - VIEWPORT_PADDING
+    ),
+    y: clampToViewportRange(
+      anchor.y,
+      bounds.minY + halfExtents.y - FULL_BODY_CENTER_OFFSET_Y + VIEWPORT_PADDING,
+      bounds.maxY - halfExtents.y - FULL_BODY_CENTER_OFFSET_Y - VIEWPORT_PADDING
+    )
+  };
 }
 
 function fullBodySpriteStyle(
   anchor: Point,
   angle = 0
 ): CSSProperties {
+  const clampedAnchor = clampFullBodyAnchor(anchor, angle);
+
   return {
     height: FULL_BODY_DISPLAY_HEIGHT,
-    transform: `translate3d(${anchor.x - FULL_BODY_DISPLAY_WIDTH / 2}px, ${
-      anchor.y + characterBounds.minY
+    transform: `translate3d(${clampedAnchor.x - FULL_BODY_DISPLAY_WIDTH / 2}px, ${
+      clampedAnchor.y + characterBounds.minY
     }px, 0) rotate(${angle}rad)`,
     width: FULL_BODY_DISPLAY_WIDTH
   };
@@ -511,6 +542,7 @@ function createRagdoll(anchor: Point, width: number, height: number): PhysicsWor
 
 function syncBodyToElement(body: Matter.Body, element: HTMLElement, part: PartConfig) {
   element.style.height = `${part.height}px`;
+  element.style.opacity = "0";
   element.style.transform = `translate3d(${body.position.x - part.width / 2}px, ${
     body.position.y - part.height / 2
   }px, 0) rotate(${body.angle}rad)`;
@@ -546,7 +578,7 @@ function syncFullBodySprite(
     return;
   }
 
-  const style = fullBodySpriteStyle(clampAnchor(anchor), angle);
+  const style = fullBodySpriteStyle(anchor, angle);
   element.style.height = `${style.height}px`;
   element.style.transform = style.transform as string;
   element.style.width = `${style.width}px`;
@@ -666,70 +698,6 @@ function releaseShouldShowBubble(drag: DragState, releasePoint: Point) {
     releaseDistance >= BUBBLE_DRAG_DISTANCE_THRESHOLD ||
     releaseSpeed >= BUBBLE_RELEASE_SPEED_THRESHOLD
   );
-}
-
-function partContent(
-  part: PartKey,
-  genderPresentation: LittleAlexGenderPresentation
-) {
-  const details = appearanceDetails[genderPresentation];
-
-  if (part === "head") {
-    return (
-      <>
-        <span
-          className={`fp-little-alex-semantic-marker fp-little-alex-hair fp-little-alex-hair-${details.hair}`}
-          data-appearance-detail={details.hair}
-          data-testid="little-alex-hair"
-        />
-        <span
-          className={`fp-little-alex-semantic-marker fp-little-alex-brow fp-little-alex-brow-left fp-little-alex-brow-${details.brow}`}
-        />
-        <span
-          className={`fp-little-alex-semantic-marker fp-little-alex-brow fp-little-alex-brow-right fp-little-alex-brow-${details.brow}`}
-        />
-        <span className="fp-little-alex-semantic-marker fp-little-alex-eye fp-little-alex-eye-left" />
-        <span className="fp-little-alex-semantic-marker fp-little-alex-eye fp-little-alex-eye-right" />
-        <span
-          className={`fp-little-alex-semantic-marker fp-little-alex-face-detail fp-little-alex-face-detail-${details.face}`}
-          data-appearance-detail={details.face}
-          data-testid="little-alex-face-detail"
-        />
-        <span
-          className={`fp-little-alex-semantic-marker fp-little-alex-mouth fp-little-alex-mouth-${details.mouth}`}
-        />
-      </>
-    );
-  }
-
-  if (part === "torso") {
-    return (
-      <>
-        <span className="fp-little-alex-semantic-marker fp-little-alex-jacket-lapel fp-little-alex-jacket-lapel-left" />
-        <span className="fp-little-alex-semantic-marker fp-little-alex-jacket-lapel fp-little-alex-jacket-lapel-right" />
-        <span
-          className="fp-little-alex-semantic-marker fp-little-alex-shirt"
-          data-testid="little-alex-shirt"
-        />
-        <span
-          className={`fp-little-alex-semantic-marker fp-little-alex-silhouette-detail fp-little-alex-silhouette-detail-${details.silhouette}`}
-          data-appearance-detail={details.silhouette}
-          data-testid="little-alex-silhouette-detail"
-        />
-        <span className="fp-little-alex-semantic-marker fp-little-alex-bowtie" />
-        <span
-          className="fp-little-alex-semantic-marker fp-little-alex-clipboard"
-          data-testid="little-alex-clipboard"
-        />
-      </>
-    );
-  }
-
-  if (part === "leftLeg" || part === "rightLeg") {
-    return <span className="fp-little-alex-semantic-marker fp-little-alex-shoe" />;
-  }
-
-  return null;
 }
 
 function setBodyPose(body: Matter.Body, position: Point, angle: number) {
@@ -1410,6 +1378,7 @@ export function LittleAlexPhysics({
         alt=""
         className="fp-little-alex-full-sprite"
         data-full-sprite-src={littleAlexFullBodySpritePath(genderPresentation)}
+        data-sprite-hair={appearanceDetails[genderPresentation].hair}
         data-testid="little-alex-full-sprite"
         draggable={false}
         ref={fullBodySpriteRef}
@@ -1430,23 +1399,7 @@ export function LittleAlexPhysics({
             }
           }}
           style={reducedPartStyle(part, reducedAnchor)}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element -- Matter.js transforms these tiny sprite parts directly. */}
-          <img
-            alt=""
-            className="fp-little-alex-sprite"
-            data-sprite-part={part.key}
-            data-sprite-hair={
-              part.key === "head"
-                ? appearanceDetails[genderPresentation].hair
-                : undefined
-            }
-            data-testid="little-alex-sprite"
-            draggable={false}
-            src={littleAlexSpritePath(genderPresentation, part.key)}
-          />
-          {partContent(part.key, genderPresentation)}
-        </div>
+        />
       ))}
       <div
         className="fp-little-alex-grab-target"

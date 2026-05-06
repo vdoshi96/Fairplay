@@ -10,7 +10,7 @@ The separated Qwen body-part rig still looked visually wrong after wrapper-level
 - Render a single visible Qwen-generated full-body sprite per presentation on top of those physics bodies.
 - Clamp the visible sprite against the same play area used by the physics rig.
 - Preserve variant switching with `neutral-full.png`, `masculine-full.png`, and `feminine-full.png`.
-- Keep the older separated body-part PNGs available only as hidden compatibility/physics sprites.
+- Remove the older separated body-part images from the rendered DOM entirely; body-part wrappers remain only as invisible Matter.js geometry.
 
 ## Asset Contract
 
@@ -25,6 +25,7 @@ The separated Qwen body-part rig still looked visually wrong after wrapper-level
 - `npm test -- src/components/little-alex/little-alex-physics.test.tsx --run` passed with 22 tests.
 - `npm run test:e2e -- little-alex-physics.spec.ts --grep "captures visual QA"` passed.
 - `npm run test:e2e -- little-alex-physics.spec.ts` passed with 9 tests.
+- The e2e DOM contract asserts `0` legacy `little-alex-sprite` image nodes, no image children inside body-part wrappers, and computed opacity `0` for every body-part wrapper.
 - The e2e visual QA now includes pixel recognition over the actual full-body PNGs:
   - significant visible body area is one near-connected component,
   - exactly one large central tan clipboard region,
