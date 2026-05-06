@@ -14,6 +14,7 @@ import {
   structureTaskAsCard,
   transcribeAudio
 } from "./qwen-card-generator";
+import { buildImagePrompt, cardSystemPrompt } from "./card-generation-shared";
 
 const config: QwenConfig = {
   cardApiKey: "card-secret",
@@ -33,7 +34,49 @@ function jsonResponse(body: unknown, init: ResponseInit = {}) {
   });
 }
 
+function pngBytes(width: number, height: number) {
+  const bytes = new Uint8Array(45);
+  const view = new DataView(bytes.buffer);
+  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
+  view.setUint32(8, 13);
+  bytes.set(asciiBytes("IHDR"), 12);
+  view.setUint32(16, width);
+  view.setUint32(20, height);
+  bytes[24] = 8;
+  bytes[25] = 2;
+  bytes[26] = 0;
+  bytes[27] = 0;
+  bytes[28] = 0;
+  view.setUint32(33, 0);
+  bytes.set(asciiBytes("IEND"), 37);
+  return bytes;
+}
+
+function asciiBytes(value: string) {
+  return Uint8Array.from(value, (char) => char.charCodeAt(0));
+}
+
 describe("Qwen card generator", () => {
+  it("builds textless integrated app illustration prompts without fake card framing", () => {
+    const prompt = buildImagePrompt(
+      "Dog Meds",
+      "medicine calendar beside a leash"
+    );
+
+    expect(prompt).toContain("textless app illustration");
+    expect(prompt).toContain("large central silhouette");
+    expect(prompt).toContain("blended into the app composition");
+    expect(prompt).toContain("no fake card frame");
+    expect(prompt).not.toContain("Title:");
+    expect(prompt).not.toContain("title text near the top");
+  });
+
+  it("asks structured card generation for textless app-native illustration prompts", () => {
+    expect(cardSystemPrompt).toMatch(/textless app illustration/i);
+    expect(cardSystemPrompt).toMatch(/large central silhouette/i);
+    expect(cardSystemPrompt).not.toMatch(/card cover/i);
+  });
+
   it("throws a safe config error when required env vars are missing", async () => {
     expect(() => getQwenConfig({ QWEN_CARD_API_KEY: "present" })).toThrow(
       QwenConfigError
@@ -206,7 +249,7 @@ describe("Qwen card generator", () => {
         })
       )
       .mockResolvedValueOnce(
-        new Response(new Uint8Array([1, 2, 3]), {
+        new Response(pngBytes(5, 7), {
           status: 200,
           headers: { "content-type": "image/png" }
         })
@@ -225,7 +268,7 @@ describe("Qwen card generator", () => {
     const prompt = body.input.messages[0].content[0].text;
     const negativePrompt = body.parameters.negative_prompt;
     expect(prompt).toHaveLength(800);
-    expect(prompt.startsWith("Create an original 5:7 portrait Fairplay")).toBe(true);
+    expect(prompt.startsWith("Create an original textless app illustration")).toBe(true);
     expect(prompt).toContain("Do not copy public source decks");
     expect(negativePrompt).toHaveLength(500);
     expect(negativePrompt.startsWith("copied public source deck style")).toBe(true);
@@ -233,7 +276,7 @@ describe("Qwen card generator", () => {
   });
 
   it("generates a card cover and returns downloaded bytes", async () => {
-    const imageBytes = new Uint8Array([137, 80, 78, 71]);
+    const imageBytes = pngBytes(5, 7);
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -279,20 +322,23 @@ describe("Qwen card generator", () => {
     );
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.model).toBe("qwen-image-2.0-pro");
-    expect(body.input.messages[0].content[0].text).toContain("Dog Meds");
+    expect(body.input.messages[0].content[0].text).toContain(
+      "Responsibility theme: Dog Meds"
+    );
+    expect(body.input.messages[0].content[0].text).not.toContain("Title:");
     expect(body.parameters).toEqual(
       expect.objectContaining({
         negative_prompt: expect.stringContaining("people, logos"),
         prompt_extend: false,
         watermark: false,
-        size: "500*700",
+        size: "1460*2044",
         n: 1
       })
     );
   });
 
   it("normalizes supported raster cover MIME types before persistence", async () => {
-    const imageBytes = new Uint8Array([137, 80, 78, 71]);
+    const imageBytes = pngBytes(5, 7);
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -325,6 +371,114 @@ describe("Qwen card generator", () => {
     );
 
     expect(cover).toEqual({ bytes: imageBytes, mimeType: "image/png" });
+  });
+
+  it("throws a generation error when downloaded PNG cover is not 5:7", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.png" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(pngBytes(1, 1), {
+          status: 200,
+          headers: { "content-type": "image/png" }
+        })
+      );
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toBeInstanceOf(QwenGenerationError);
+  });
+
+  it("throws a generation error when downloaded PNG cover dimensions are undetectable", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.png" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+          {
+            status: 200,
+            headers: { "content-type": "image/png" }
+          }
+        )
+      );
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toBeInstanceOf(QwenGenerationError);
+  });
+
+  it("throws a generation error when downloaded image bytes do not match the declared MIME type", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.png" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([1, 2, 3, 4]), {
+          status: 200,
+          headers: { "content-type": "image/png" }
+        })
+      );
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock, config }
+      )
+    ).rejects.toBeInstanceOf(QwenGenerationError);
   });
 
   it("throws a generation error when image response has no image URL", async () => {
