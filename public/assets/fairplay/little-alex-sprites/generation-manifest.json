@@ -1,0 +1,457 @@
+{
+  "generatedAt": "2026-05-06T21:04:40.626Z",
+  "mode": "generate",
+  "approvedModel": "qwen-image-2.0-pro",
+  "outputDir": "public/assets/fairplay/little-alex-sprites",
+  "sourceSheetDir": "public/assets/fairplay/little-alex-sprites/source-sheets",
+  "sheetSize": "1536*1024",
+  "sheets": [
+    {
+      "alt": "Little Alex neutral matching sprite-part source sheet",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, photorealistic, 3D render, real-person likeness, celebrity, public figure, copied mascot, copied app art, source-art resemblance, green clothing, green accessories, mismatched skin tone, mismatched line style, mismatched suit fabric, detached shoulder, extra limbs, full body pose, full assembled character, complete body, three character poses, repeated full character, head attached to torso in arm or leg cells, cropped-off important edges, angry expression, scary expression",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/source-sheets/neutral-sheet.png",
+      "presentation": "neutral",
+      "prompt": "Original Fairplay app sidekick sprite sheet.\nStyle: cute flat 2D original cartoon artwork, crisp simple silhouette, clean vector-like shapes, soft paper texture, no 3D, no photorealism.\nSafety/IP: original helper character only; no real-person likeness, no public figure resemblance, no copied mascot, no logo, no watermark.\nVariant: neutral. Character: gender-neutral original helper sidekick with rounded simple face, small side-part dark hair cap, calm curious eyebrows, black suit, white shirt, tan clipboard, and compact balanced proportions.\nConsistency: all six parts belong to the same original character; identical skin tone; identical line style; identical black suit fabric; identical white shirt; identical tan clipboard style; natural shoulder caps that will overlap the torso; blank clipboard paper with no readable text.\nAsset type: animation-rig paper-doll source sheet made of separated body-part cutouts, not character pose thumbnails.\nCanvas: 1536 by 1024 PNG, strict 3x2 grid with equal 512 by 512 cells and no gutters. Do not draw grid lines, labels, numbers, or captions.\nGrid order must be exact: row 1 cell 1 contains head only; row 1 cell 2 contains headless torso only; row 1 cell 3 contains detached left arm only; row 2 cell 1 contains detached right arm only; row 2 cell 2 contains detached left leg only; row 2 cell 3 contains detached right leg only.\nEach cell contains exactly one isolated floating body part centered with generous green margin. Never draw a complete assembled person, a full body pose, or multiple character pose thumbnails.\nThe torso cell shows the black suit jacket, natural shoulder caps, white shirt, and a blank tan clipboard tucked across the front, with no head and no legs. The rightArm cell visibly holds the matching clipboard as a detached sleeve-and-hand part. The arm cells include shoulder caps for natural torso overlap.\nProduction target: pure chroma green background (#00ff00) across every cell so the generator script can remove it into alpha and crop known cells into transparent PNG sprites.\nKeep all parts mobile-readable, wholesome, and visibly different from the other presentation variants while preserving the exact same character within this sheet.",
+      "size": "1536*1024",
+      "skippedGeneration": true,
+      "slug": "neutral-sheet",
+      "sprites": [
+        {
+          "crop": {
+            "column": 0,
+            "height": 512,
+            "row": 0,
+            "width": 512,
+            "x": 0,
+            "y": 0
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-head.png",
+          "part": "head",
+          "slug": "neutral-head",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 159047,
+            "height": 512,
+            "opaquePixels": 103097,
+            "transparentPixels": 159047,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 1,
+            "height": 512,
+            "row": 0,
+            "width": 512,
+            "x": 512,
+            "y": 0
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-torso.png",
+          "part": "torso",
+          "slug": "neutral-torso",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 116779,
+            "height": 512,
+            "opaquePixels": 145365,
+            "transparentPixels": 116779,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 2,
+            "height": 512,
+            "row": 0,
+            "width": 512,
+            "x": 1024,
+            "y": 0
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-leftArm.png",
+          "part": "leftArm",
+          "slug": "neutral-leftArm",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 203782,
+            "height": 512,
+            "opaquePixels": 58362,
+            "transparentPixels": 203782,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 0,
+            "height": 512,
+            "row": 1,
+            "width": 512,
+            "x": 0,
+            "y": 512
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-rightArm.png",
+          "part": "rightArm",
+          "slug": "neutral-rightArm",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 230538,
+            "height": 512,
+            "opaquePixels": 31606,
+            "transparentPixels": 230538,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 1,
+            "height": 512,
+            "row": 1,
+            "width": 512,
+            "x": 512,
+            "y": 512
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-leftLeg.png",
+          "part": "leftLeg",
+          "slug": "neutral-leftLeg",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 210934,
+            "height": 512,
+            "opaquePixels": 51210,
+            "transparentPixels": 210934,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 2,
+            "height": 512,
+            "row": 1,
+            "width": 512,
+            "x": 1024,
+            "y": 512
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-rightLeg.png",
+          "part": "rightLeg",
+          "slug": "neutral-rightLeg",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 210794,
+            "height": 512,
+            "opaquePixels": 51350,
+            "transparentPixels": 210794,
+            "width": 512
+          },
+          "skipped": false
+        }
+      ],
+      "qa": {
+        "format": "png",
+        "height": 1024,
+        "width": 1536
+      }
+    },
+    {
+      "alt": "Little Alex masculine matching sprite-part source sheet",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, photorealistic, 3D render, real-person likeness, celebrity, public figure, copied mascot, copied app art, source-art resemblance, green clothing, green accessories, mismatched skin tone, mismatched line style, mismatched suit fabric, detached shoulder, extra limbs, full body pose, full assembled character, complete body, three character poses, repeated full character, head attached to torso in arm or leg cells, cropped-off important edges, angry expression, scary expression",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/source-sheets/masculine-sheet.png",
+      "presentation": "masculine",
+      "prompt": "Original Fairplay app sidekick sprite sheet.\nStyle: cute flat 2D original cartoon artwork, crisp simple silhouette, clean vector-like shapes, soft paper texture, no 3D, no photorealism.\nSafety/IP: original helper character only; no real-person likeness, no public figure resemblance, no copied mascot, no logo, no watermark.\nVariant: masculine. Character: masculine original helper sidekick with short swept dark hair, slightly broader jaw and confident helpful brow, black suit, white shirt, tan clipboard, and sturdy compact proportions.\nConsistency: all six parts belong to the same original character; identical skin tone; identical line style; identical black suit fabric; identical white shirt; identical tan clipboard style; natural shoulder caps that will overlap the torso; blank clipboard paper with no readable text.\nAsset type: animation-rig paper-doll source sheet made of separated body-part cutouts, not character pose thumbnails.\nCanvas: 1536 by 1024 PNG, strict 3x2 grid with equal 512 by 512 cells and no gutters. Do not draw grid lines, labels, numbers, or captions.\nGrid order must be exact: row 1 cell 1 contains head only; row 1 cell 2 contains headless torso only; row 1 cell 3 contains detached left arm only; row 2 cell 1 contains detached right arm only; row 2 cell 2 contains detached left leg only; row 2 cell 3 contains detached right leg only.\nEach cell contains exactly one isolated floating body part centered with generous green margin. Never draw a complete assembled person, a full body pose, or multiple character pose thumbnails.\nThe torso cell shows the black suit jacket, natural shoulder caps, white shirt, and a blank tan clipboard tucked across the front, with no head and no legs. The rightArm cell visibly holds the matching clipboard as a detached sleeve-and-hand part. The arm cells include shoulder caps for natural torso overlap.\nProduction target: pure chroma green background (#00ff00) across every cell so the generator script can remove it into alpha and crop known cells into transparent PNG sprites.\nKeep all parts mobile-readable, wholesome, and visibly different from the other presentation variants while preserving the exact same character within this sheet.",
+      "size": "1536*1024",
+      "skippedGeneration": true,
+      "slug": "masculine-sheet",
+      "sprites": [
+        {
+          "crop": {
+            "column": 0,
+            "height": 512,
+            "row": 0,
+            "width": 512,
+            "x": 0,
+            "y": 0
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-head.png",
+          "part": "head",
+          "slug": "masculine-head",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 178238,
+            "height": 512,
+            "opaquePixels": 83906,
+            "transparentPixels": 178238,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 1,
+            "height": 512,
+            "row": 0,
+            "width": 512,
+            "x": 512,
+            "y": 0
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-torso.png",
+          "part": "torso",
+          "slug": "masculine-torso",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 137436,
+            "height": 512,
+            "opaquePixels": 124708,
+            "transparentPixels": 137436,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 2,
+            "height": 512,
+            "row": 0,
+            "width": 512,
+            "x": 1024,
+            "y": 0
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-leftArm.png",
+          "part": "leftArm",
+          "slug": "masculine-leftArm",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 208964,
+            "height": 512,
+            "opaquePixels": 53180,
+            "transparentPixels": 208964,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 0,
+            "height": 512,
+            "row": 1,
+            "width": 512,
+            "x": 0,
+            "y": 512
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-rightArm.png",
+          "part": "rightArm",
+          "slug": "masculine-rightArm",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 226883,
+            "height": 512,
+            "opaquePixels": 35261,
+            "transparentPixels": 226883,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 1,
+            "height": 512,
+            "row": 1,
+            "width": 512,
+            "x": 512,
+            "y": 512
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-leftLeg.png",
+          "part": "leftLeg",
+          "slug": "masculine-leftLeg",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 211971,
+            "height": 512,
+            "opaquePixels": 50173,
+            "transparentPixels": 211971,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 2,
+            "height": 512,
+            "row": 1,
+            "width": 512,
+            "x": 1024,
+            "y": 512
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-rightLeg.png",
+          "part": "rightLeg",
+          "slug": "masculine-rightLeg",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 211839,
+            "height": 512,
+            "opaquePixels": 50305,
+            "transparentPixels": 211839,
+            "width": 512
+          },
+          "skipped": false
+        }
+      ],
+      "qa": {
+        "format": "png",
+        "height": 1024,
+        "width": 1536
+      }
+    },
+    {
+      "alt": "Little Alex feminine matching sprite-part source sheet",
+      "negativePrompt": "readable text, pseudo-writing, letters, numbers, logo, watermark, brand mark, photorealistic, 3D render, real-person likeness, celebrity, public figure, copied mascot, copied app art, source-art resemblance, green clothing, green accessories, mismatched skin tone, mismatched line style, mismatched suit fabric, detached shoulder, extra limbs, full body pose, full assembled character, complete body, three character poses, repeated full character, head attached to torso in arm or leg cells, cropped-off important edges, angry expression, scary expression",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/source-sheets/feminine-sheet.png",
+      "presentation": "feminine",
+      "prompt": "Original Fairplay app sidekick sprite sheet.\nStyle: cute flat 2D original cartoon artwork, crisp simple silhouette, clean vector-like shapes, soft paper texture, no 3D, no photorealism.\nSafety/IP: original helper character only; no real-person likeness, no public figure resemblance, no copied mascot, no logo, no watermark.\nVariant: feminine. Character: feminine original helper sidekick with clearly long hair in a dark flowing shape below the head, soft confident expression, black suit, white shirt, tan clipboard, and compact balanced proportions.\nConsistency: all six parts belong to the same original character; identical skin tone; identical line style; identical black suit fabric; identical white shirt; identical tan clipboard style; natural shoulder caps that will overlap the torso; blank clipboard paper with no readable text.\nAsset type: animation-rig paper-doll source sheet made of separated body-part cutouts, not character pose thumbnails.\nCanvas: 1536 by 1024 PNG, strict 3x2 grid with equal 512 by 512 cells and no gutters. Do not draw grid lines, labels, numbers, or captions.\nGrid order must be exact: row 1 cell 1 contains head only; row 1 cell 2 contains headless torso only; row 1 cell 3 contains detached left arm only; row 2 cell 1 contains detached right arm only; row 2 cell 2 contains detached left leg only; row 2 cell 3 contains detached right leg only.\nEach cell contains exactly one isolated floating body part centered with generous green margin. Never draw a complete assembled person, a full body pose, or multiple character pose thumbnails.\nThe torso cell shows the black suit jacket, natural shoulder caps, white shirt, and a blank tan clipboard tucked across the front, with no head and no legs. The rightArm cell visibly holds the matching clipboard as a detached sleeve-and-hand part. The arm cells include shoulder caps for natural torso overlap.\nProduction target: pure chroma green background (#00ff00) across every cell so the generator script can remove it into alpha and crop known cells into transparent PNG sprites.\nKeep all parts mobile-readable, wholesome, and visibly different from the other presentation variants while preserving the exact same character within this sheet.",
+      "size": "1536*1024",
+      "skippedGeneration": true,
+      "slug": "feminine-sheet",
+      "sprites": [
+        {
+          "crop": {
+            "column": 0,
+            "height": 512,
+            "row": 0,
+            "width": 512,
+            "x": 0,
+            "y": 0
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-head.png",
+          "part": "head",
+          "slug": "feminine-head",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 153927,
+            "height": 512,
+            "opaquePixels": 108217,
+            "transparentPixels": 153927,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 1,
+            "height": 512,
+            "row": 0,
+            "width": 512,
+            "x": 512,
+            "y": 0
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-torso.png",
+          "part": "torso",
+          "slug": "feminine-torso",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 143089,
+            "height": 512,
+            "opaquePixels": 119055,
+            "transparentPixels": 143089,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 2,
+            "height": 512,
+            "row": 0,
+            "width": 512,
+            "x": 1024,
+            "y": 0
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-leftArm.png",
+          "part": "leftArm",
+          "slug": "feminine-leftArm",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 199682,
+            "height": 512,
+            "opaquePixels": 62462,
+            "transparentPixels": 199682,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 0,
+            "height": 512,
+            "row": 1,
+            "width": 512,
+            "x": 0,
+            "y": 512
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-rightArm.png",
+          "part": "rightArm",
+          "slug": "feminine-rightArm",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 233950,
+            "height": 512,
+            "opaquePixels": 28194,
+            "transparentPixels": 233950,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 1,
+            "height": 512,
+            "row": 1,
+            "width": 512,
+            "x": 512,
+            "y": 512
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-leftLeg.png",
+          "part": "leftLeg",
+          "slug": "feminine-leftLeg",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 221625,
+            "height": 512,
+            "opaquePixels": 40519,
+            "transparentPixels": 221625,
+            "width": 512
+          },
+          "skipped": false
+        },
+        {
+          "crop": {
+            "column": 2,
+            "height": 512,
+            "row": 1,
+            "width": 512,
+            "x": 1024,
+            "y": 512
+          },
+          "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-rightLeg.png",
+          "part": "rightLeg",
+          "slug": "feminine-rightLeg",
+          "qa": {
+            "alpha": "present",
+            "backgroundPixels": 221542,
+            "height": 512,
+            "opaquePixels": 40602,
+            "transparentPixels": 221542,
+            "width": 512
+          },
+          "skipped": false
+        }
+      ],
+      "qa": {
+        "format": "png",
+        "height": 1024,
+        "width": 1536
+      }
+    }
+  ]
+}
