@@ -806,6 +806,42 @@ a {
   width: 26px;
 }
 
+.fp-little-alex-sprite {
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  position: relative;
+  user-select: none;
+  width: 100%;
+  z-index: 1;
+}
+
+.fp-little-alex-head,
+.fp-little-alex-torso,
+.fp-little-alex-arm,
+.fp-little-alex-leg {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.fp-little-alex-torso::before {
+  content: none;
+}
+
+.fp-little-alex-semantic-marker,
+.fp-little-alex-semantic-marker::before,
+.fp-little-alex-semantic-marker::after {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  clip-path: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

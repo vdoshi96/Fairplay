@@ -127,7 +127,7 @@ const appearanceDetails = {
   feminine: {
     brow: "arched-brow",
     face: "cheek-highlight",
-    hair: "rounded-bob",
+    hair: "long-hair",
     head: "soft-heart-head",
     mouth: "soft-smile",
     silhouette: "tapered-suit"
@@ -169,14 +169,14 @@ const partConfigs: PartConfig[] = [
     className: "fp-little-alex-arm fp-little-alex-arm-left",
     height: 58,
     key: "leftArm",
-    offset: { x: -42, y: -4 },
+    offset: { x: -26, y: -4 },
     width: 18
   },
   {
     className: "fp-little-alex-arm fp-little-alex-arm-right",
     height: 58,
     key: "rightArm",
-    offset: { x: 42, y: -4 },
+    offset: { x: 26, y: -4 },
     width: 18
   },
   {
@@ -200,6 +200,24 @@ const DEFAULT_GAZE_STATE: GazeState = {
   x: 0,
   y: 0
 };
+
+const partConfigByKey = Object.fromEntries(
+  partConfigs.map((part) => [part.key, part])
+) as Record<PartKey, PartConfig>;
+
+function positionForPart(anchor: Point, part: PartConfig): Point {
+  return {
+    x: anchor.x + part.offset.x,
+    y: anchor.y + part.offset.y
+  };
+}
+
+function littleAlexSpritePath(
+  genderPresentation: LittleAlexGenderPresentation,
+  part: PartKey
+) {
+  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${part}.png`;
+}
 
 const characterBounds = partConfigs.reduce(
   (bounds, part) => ({
@@ -292,10 +310,7 @@ function partStyle(part: PartConfig, center: Point, angle = 0): CSSProperties {
 }
 
 function reducedPartStyle(part: PartConfig, anchor: Point): CSSProperties {
-  return partStyle(part, {
-    x: anchor.x + part.offset.x,
-    y: anchor.y + part.offset.y
-  });
+  return partStyle(part, positionForPart(anchor, part));
 }
 
 function grabTargetStyle(anchor: Point): CSSProperties {
@@ -364,29 +379,26 @@ function bodyOptions() {
 function createBodies(anchor: Point): Record<PartKey, Matter.Body> {
   const options = bodyOptions();
 
-  const bodies = {
-    head: Matter.Bodies.circle(anchor.x, anchor.y - 62, 22, options),
-    leftArm: Matter.Bodies.rectangle(anchor.x - 42, anchor.y - 4, 18, 58, {
-      ...options,
-      chamfer: { radius: 8 }
-    }),
-    leftLeg: Matter.Bodies.rectangle(anchor.x - 18, anchor.y + 62, 20, 62, {
-      ...options,
-      chamfer: { radius: 8 }
-    }),
-    rightArm: Matter.Bodies.rectangle(anchor.x + 42, anchor.y - 4, 18, 58, {
-      ...options,
-      chamfer: { radius: 8 }
-    }),
-    rightLeg: Matter.Bodies.rectangle(anchor.x + 18, anchor.y + 62, 20, 62, {
-      ...options,
-      chamfer: { radius: 8 }
-    }),
-    torso: Matter.Bodies.rectangle(anchor.x, anchor.y, 50, 64, {
-      ...options,
-      chamfer: { radius: 14 }
+  const bodies = Object.fromEntries(
+    partConfigs.map((part) => {
+      const position = positionForPart(anchor, part);
+      const body =
+        part.key === "head"
+          ? Matter.Bodies.circle(position.x, position.y, part.width / 2, options)
+          : Matter.Bodies.rectangle(
+              position.x,
+              position.y,
+              part.width,
+              part.height,
+              {
+                ...options,
+                chamfer: { radius: part.key === "torso" ? 14 : 8 }
+              }
+            );
+
+      return [part.key, body];
     })
-  };
+  ) as Record<PartKey, Matter.Body>;
 
   Matter.Body.rotate(bodies.leftArm, -0.38);
   Matter.Body.rotate(bodies.rightArm, 0.38);
@@ -596,25 +608,25 @@ function partContent(
     return (
       <>
         <span
-          className={`fp-little-alex-hair fp-little-alex-hair-${details.hair}`}
+          className={`fp-little-alex-semantic-marker fp-little-alex-hair fp-little-alex-hair-${details.hair}`}
           data-appearance-detail={details.hair}
           data-testid="little-alex-hair"
         />
         <span
-          className={`fp-little-alex-brow fp-little-alex-brow-left fp-little-alex-brow-${details.brow}`}
+          className={`fp-little-alex-semantic-marker fp-little-alex-brow fp-little-alex-brow-left fp-little-alex-brow-${details.brow}`}
         />
         <span
-          className={`fp-little-alex-brow fp-little-alex-brow-right fp-little-alex-brow-${details.brow}`}
+          className={`fp-little-alex-semantic-marker fp-little-alex-brow fp-little-alex-brow-right fp-little-alex-brow-${details.brow}`}
         />
-        <span className="fp-little-alex-eye fp-little-alex-eye-left" />
-        <span className="fp-little-alex-eye fp-little-alex-eye-right" />
+        <span className="fp-little-alex-semantic-marker fp-little-alex-eye fp-little-alex-eye-left" />
+        <span className="fp-little-alex-semantic-marker fp-little-alex-eye fp-little-alex-eye-right" />
         <span
-          className={`fp-little-alex-face-detail fp-little-alex-face-detail-${details.face}`}
+          className={`fp-little-alex-semantic-marker fp-little-alex-face-detail fp-little-alex-face-detail-${details.face}`}
           data-appearance-detail={details.face}
           data-testid="little-alex-face-detail"
         />
         <span
-          className={`fp-little-alex-mouth fp-little-alex-mouth-${details.mouth}`}
+          className={`fp-little-alex-semantic-marker fp-little-alex-mouth fp-little-alex-mouth-${details.mouth}`}
         />
       </>
     );
@@ -623,17 +635,20 @@ function partContent(
   if (part === "torso") {
     return (
       <>
-        <span className="fp-little-alex-jacket-lapel fp-little-alex-jacket-lapel-left" />
-        <span className="fp-little-alex-jacket-lapel fp-little-alex-jacket-lapel-right" />
-        <span className="fp-little-alex-shirt" data-testid="little-alex-shirt" />
+        <span className="fp-little-alex-semantic-marker fp-little-alex-jacket-lapel fp-little-alex-jacket-lapel-left" />
+        <span className="fp-little-alex-semantic-marker fp-little-alex-jacket-lapel fp-little-alex-jacket-lapel-right" />
         <span
-          className={`fp-little-alex-silhouette-detail fp-little-alex-silhouette-detail-${details.silhouette}`}
+          className="fp-little-alex-semantic-marker fp-little-alex-shirt"
+          data-testid="little-alex-shirt"
+        />
+        <span
+          className={`fp-little-alex-semantic-marker fp-little-alex-silhouette-detail fp-little-alex-silhouette-detail-${details.silhouette}`}
           data-appearance-detail={details.silhouette}
           data-testid="little-alex-silhouette-detail"
         />
-        <span className="fp-little-alex-bowtie" />
+        <span className="fp-little-alex-semantic-marker fp-little-alex-bowtie" />
         <span
-          className="fp-little-alex-clipboard"
+          className="fp-little-alex-semantic-marker fp-little-alex-clipboard"
           data-testid="little-alex-clipboard"
         />
       </>
@@ -641,7 +656,7 @@ function partContent(
   }
 
   if (part === "leftLeg" || part === "rightLeg") {
-    return <span className="fp-little-alex-shoe" />;
+    return <span className="fp-little-alex-semantic-marker fp-little-alex-shoe" />;
   }
 
   return null;
@@ -753,26 +768,30 @@ function setIdlePose(
   const armAngle = state === "walking" ? 0.14 : 0.1;
   const legAngle = state === "walking" ? 0.08 : 0.025;
 
-  setBodyPose(physics.bodies.torso, anchor, 0);
-  setBodyPose(physics.bodies.head, { x: anchor.x, y: anchor.y - 62 }, 0);
+  setBodyPose(
+    physics.bodies.torso,
+    positionForPart(anchor, partConfigByKey.torso),
+    0
+  );
+  setBodyPose(physics.bodies.head, positionForPart(anchor, partConfigByKey.head), 0);
   setBodyPose(
     physics.bodies.leftArm,
-    { x: anchor.x - 42, y: anchor.y - 4 },
+    positionForPart(anchor, partConfigByKey.leftArm),
     -armAngle
   );
   setBodyPose(
     physics.bodies.rightArm,
-    { x: anchor.x + 42, y: anchor.y - 4 },
+    positionForPart(anchor, partConfigByKey.rightArm),
     armAngle
   );
   setBodyPose(
     physics.bodies.leftLeg,
-    { x: anchor.x - 18, y: anchor.y + 62 },
+    positionForPart(anchor, partConfigByKey.leftLeg),
     legAngle + sway
   );
   setBodyPose(
     physics.bodies.rightLeg,
-    { x: anchor.x + 18, y: anchor.y + 62 },
+    positionForPart(anchor, partConfigByKey.rightLeg),
     -legAngle - sway
   );
 
@@ -819,7 +838,7 @@ export function LittleAlexPhysics({
 
       const focus = physicsRef.current?.bodies.head.position ?? {
         x: reducedAnchor.x,
-        y: reducedAnchor.y - 62
+        y: reducedAnchor.y + partConfigByKey.head.offset.y
       };
       const nextGaze = gazeStateForTarget(target, focus);
 
@@ -1325,6 +1344,19 @@ export function LittleAlexPhysics({
           }}
           style={reducedPartStyle(part, reducedAnchor)}
         >
+          <img
+            alt=""
+            className="fp-little-alex-sprite"
+            data-part={part.key}
+            data-sprite-hair={
+              part.key === "head"
+                ? appearanceDetails[genderPresentation].hair
+                : undefined
+            }
+            data-testid="little-alex-sprite"
+            draggable={false}
+            src={littleAlexSpritePath(genderPresentation, part.key)}
+          />
           {partContent(part.key, genderPresentation)}
         </div>
       ))}

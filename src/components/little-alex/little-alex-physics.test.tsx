@@ -60,6 +60,33 @@ function translatedX(element: HTMLElement) {
   return Number(match[1]);
 }
 
+function partXBounds(element: HTMLElement) {
+  const x = translatedX(element);
+  const width = Number.parseFloat(element.style.width);
+
+  if (!Number.isFinite(width)) {
+    throw new Error(`Missing width value: ${element.style.width}`);
+  }
+
+  return {
+    maxX: x + width,
+    minX: x
+  };
+}
+
+function expectShouldersToOverlapArmBounds(
+  torso: HTMLElement,
+  leftArm: HTMLElement,
+  rightArm: HTMLElement
+) {
+  const torsoBounds = partXBounds(torso);
+  const leftArmBounds = partXBounds(leftArm);
+  const rightArmBounds = partXBounds(rightArm);
+
+  expect(leftArmBounds.maxX).toBeGreaterThan(torsoBounds.minX);
+  expect(rightArmBounds.minX).toBeLessThan(torsoBounds.maxX);
+}
+
 function dispatchPointer(
   target: HTMLElement | Window,
   type: "pointercancel" | "pointerdown" | "pointermove" | "pointerup",
@@ -505,6 +532,80 @@ describe("LittleAlexPhysics", () => {
     });
 
     expect(new Set(detailSets).size).toBe(genderPresentations.length);
+  });
+
+  it("renders six presentation-specific sprite images for every appearance option", () => {
+    stubReducedMotion(true);
+    const expectedParts = [
+      "head",
+      "torso",
+      "leftArm",
+      "rightArm",
+      "leftLeg",
+      "rightLeg"
+    ];
+
+    genderPresentations.forEach((genderPresentation) => {
+      const { unmount } = render(
+        <LittleAlexPhysics genderPresentation={genderPresentation} />
+      );
+
+      const sprites = screen.getAllByTestId("little-alex-sprite");
+
+      expect(sprites).toHaveLength(6);
+      expect(
+        sprites.map((sprite) => sprite.getAttribute("data-part"))
+      ).toEqual(expectedParts);
+      expect(
+        sprites.map((sprite) => sprite.getAttribute("src"))
+      ).toEqual(
+        expectedParts.map(
+          (part) =>
+            `/assets/fairplay/little-alex-sprites/${genderPresentation}-${part}.png`
+        )
+      );
+
+      unmount();
+    });
+  });
+
+  it("marks the feminine head sprite as the long-hair variant", () => {
+    stubReducedMotion(true);
+
+    const { container } = render(
+      <LittleAlexPhysics genderPresentation="feminine" />
+    );
+    const headSprite = container.querySelector<HTMLImageElement>(
+      '[data-testid="little-alex-sprite"][data-part="head"]'
+    );
+
+    expect(screen.getByTestId("little-alex-hair")).toHaveAttribute(
+      "data-appearance-detail",
+      "long-hair"
+    );
+    expect(headSprite).not.toBeNull();
+    expect(headSprite).toHaveAttribute("data-sprite-hair", "long-hair");
+    expect(headSprite).toHaveAttribute(
+      "src",
+      "/assets/fairplay/little-alex-sprites/feminine-head.png"
+    );
+  });
+
+  it("overlaps reduced-motion arm and torso x bounds at both shoulders", () => {
+    stubReducedMotion(true);
+
+    render(<LittleAlexPhysics />);
+
+    const parts = screen.getAllByTestId("little-alex-body-part");
+    const [head, torso, leftArm, rightArm, leftLeg, rightLeg] = parts;
+
+    expect(
+      parts.map((part) => part.getAttribute("data-part"))
+    ).toEqual(["head", "torso", "leftArm", "rightArm", "leftLeg", "rightLeg"]);
+    expect(head).toBeInTheDocument();
+    expect(leftLeg).toBeInTheDocument();
+    expect(rightLeg).toBeInTheDocument();
+    expectShouldersToOverlapArmBounds(torso, leftArm, rightArm);
   });
 
   it("keeps the body-part contract and suit assets across appearance options", () => {
