@@ -1,6 +1,8 @@
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, readFile, rm } from "node:fs/promises";
+import path from "node:path";
 
 import { expect, test, type Page } from "@playwright/test";
+import sharp from "sharp";
 
 const littleAlexSpriteScreenshotDir = "test-results/little-alex-qwen-sprites";
 const littleAlexSpriteBasePath = "/assets/fairplay/little-alex-sprites";
@@ -26,6 +28,12 @@ function expectedLittleAlexSpritePath(
   part: LittleAlexSpritePart
 ) {
   return `${littleAlexSpriteBasePath}/${presentation}-${part}.png`;
+}
+
+function expectedLittleAlexFullSpritePath(
+  presentation: LittleAlexSpritePresentation
+) {
+  return `${littleAlexSpriteBasePath}/${presentation}-full.png`;
 }
 
 function uniqueHouseholdSlug() {
@@ -151,6 +159,13 @@ async function expectLittleAlexInViewport(
               '[data-testid="little-alex-body-part"]'
             )
           )
+            .concat(
+              Array.from(
+                document.querySelectorAll<HTMLElement>(
+                  '[data-testid="little-alex-full-sprite"]'
+                )
+              )
+            )
             .filter((part) => {
               const style = window.getComputedStyle(part);
               const rect = part.getBoundingClientRect();
@@ -164,7 +179,7 @@ async function expectLittleAlexInViewport(
             })
             .flatMap((part) => {
               const rect = part.getBoundingClientRect();
-              const name = part.dataset.part ?? "unknown";
+              const name = part.dataset.part ?? "fullSprite";
               const failures: string[] = [];
 
               const minimumLeft = minLeft ?? 0;
@@ -207,6 +222,52 @@ async function expectLittleAlexSpritesLoaded(
   await expect(page.getByTestId("little-alex-body-part")).toHaveCount(
     littleAlexSpriteParts.length
   );
+
+  await expect
+    .poll(
+      () =>
+        page.evaluate((expectedPath) => {
+          const expectedUrl = new URL(expectedPath, window.location.origin).href;
+          const sprite = document.querySelector<HTMLImageElement>(
+            '[data-testid="little-alex-full-sprite"]'
+          );
+          const failures: string[] = [];
+
+          if (!sprite) {
+            return ["full-body sprite is missing"];
+          }
+
+          if (
+            sprite.currentSrc !== expectedUrl &&
+            sprite.src !== expectedUrl &&
+            sprite.getAttribute("src") !== expectedPath &&
+            sprite.dataset.fullSpriteSrc !== expectedPath
+          ) {
+            failures.push(`full-body sprite path mismatch: ${sprite.currentSrc}`);
+          }
+
+          if (
+            !sprite.complete ||
+            sprite.naturalHeight <= 0 ||
+            sprite.naturalWidth <= 0
+          ) {
+            failures.push("full-body sprite image did not load");
+          }
+
+          const rect = sprite.getBoundingClientRect();
+          if (rect.height < 120 || rect.width < 50) {
+            failures.push(
+              `full-body sprite rendered too small: ${rect.width.toFixed(
+                1
+              )}x${rect.height.toFixed(1)}`
+            );
+          }
+
+          return failures;
+        }, expectedLittleAlexFullSpritePath(presentation)),
+      { timeout: 5_000 }
+    )
+    .toEqual([]);
 
   await expect
     .poll(
@@ -275,6 +336,384 @@ async function expectLittleAlexSpritesLoaded(
       { timeout: 5_000 }
     )
     .toEqual([]);
+}
+
+type PixelComponent = {
+  area: number;
+  maxX: number;
+  maxY: number;
+  minX: number;
+  minY: number;
+};
+
+type PixelBounds = {
+  maxX: number;
+  maxY: number;
+  minX: number;
+  minY: number;
+};
+
+async function littleAlexFullBodyPixelFailures(
+  presentation: LittleAlexSpritePresentation
+) {
+  const assetPath = path.join(
+    process.cwd(),
+    "public/assets/fairplay/little-alex-sprites",
+    `${presentation}-full.png`
+  );
+  const { data, info } = await sharp(await readFile(assetPath))
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const visibleMask = new Uint8Array(info.width * info.height);
+  const tanMask = new Uint8Array(info.width * info.height);
+  const blackMask = new Uint8Array(info.width * info.height);
+  const failures: string[] = [];
+
+  for (let pixel = 0; pixel < visibleMask.length; pixel += 1) {
+    const offset = pixel * 4;
+    const red = data[offset];
+    const green = data[offset + 1];
+    const blue = data[offset + 2];
+    const alpha = data[offset + 3];
+
+    if (alpha >= 24) {
+      visibleMask[pixel] = 1;
+    }
+    if (alpha >= 48 && red <= 82 && green <= 82 && blue <= 88) {
+      blackMask[pixel] = 1;
+    }
+  }
+
+  const bounds = maskBounds(visibleMask, info.width, info.height);
+  if (!bounds) {
+    return [`${presentation}: full-body sprite has no visible pixels`];
+  }
+
+  const bodyWidth = bounds.maxX - bounds.minX + 1;
+  const bodyHeight = bounds.maxY - bounds.minY + 1;
+  const clipboardRegion = {
+    maxX: Math.floor(bounds.minX + bodyWidth * 0.88),
+    maxY: Math.floor(bounds.minY + bodyHeight * 0.68),
+    minX: Math.floor(bounds.minX + bodyWidth * 0.12),
+    minY: Math.floor(bounds.minY + bodyHeight * 0.33)
+  };
+
+  for (let pixel = 0; pixel < tanMask.length; pixel += 1) {
+    const x = pixel % info.width;
+    const y = Math.floor(pixel / info.width);
+    const offset = pixel * 4;
+    const red = data[offset];
+    const green = data[offset + 1];
+    const blue = data[offset + 2];
+    const alpha = data[offset + 3];
+
+    if (
+      x >= clipboardRegion.minX &&
+      x <= clipboardRegion.maxX &&
+      y >= clipboardRegion.minY &&
+      y <= clipboardRegion.maxY &&
+      alpha >= 40 &&
+      red >= 140 &&
+      red <= 235 &&
+      green >= 95 &&
+      green <= 195 &&
+      blue >= 45 &&
+      blue <= 145 &&
+      red - blue >= 38 &&
+      green - blue >= 18
+    ) {
+      tanMask[pixel] = 1;
+    }
+  }
+
+  const aspectRatio = bodyWidth / bodyHeight;
+  if (aspectRatio < 0.28 || aspectRatio > 0.52) {
+    failures.push(
+      `${presentation}: full-body aspect ratio ${aspectRatio.toFixed(
+        2
+      )} is outside 0.28..0.52`
+    );
+  }
+
+  const dilatedVisible = dilateMask(visibleMask, info.width, info.height, 10);
+  const visibleComponents = connectedComponents(
+    dilatedVisible,
+    info.width,
+    info.height
+  ).filter((component) => component.area >= 120);
+  const visibleArea = visibleComponents.reduce(
+    (total, component) => total + component.area,
+    0
+  );
+  const largestVisibleComponent = Math.max(
+    ...visibleComponents.map((component) => component.area)
+  );
+  if (
+    visibleComponents.length !== 1 &&
+    largestVisibleComponent / Math.max(visibleArea, 1) < 0.985
+  ) {
+    failures.push(
+      `${presentation}: visible body splits into ${visibleComponents.length} significant components`
+    );
+  }
+
+  const clipboardComponents = connectedComponents(
+    dilateMask(tanMask, info.width, info.height, 10),
+    info.width,
+    info.height
+  ).filter((component) => component.area >= 260);
+  const largestClipboardArea = Math.max(
+    ...clipboardComponents.map((component) => component.area),
+    0
+  );
+  const clipboardLikeComponents = clipboardComponents.filter(
+    (component) =>
+      component.area >= Math.max(1_200, largestClipboardArea * 0.22) &&
+      component.maxX - component.minX + 1 >= bodyWidth * 0.2 &&
+      component.maxY - component.minY + 1 >= bodyHeight * 0.12
+  );
+  if (clipboardLikeComponents.length !== 1) {
+    failures.push(
+      `${presentation}: expected exactly one large central tan clipboard region, found ${clipboardLikeComponents.length}`
+    );
+  }
+
+  failures.push(
+    ...limbProportionFailures({
+      blackMask,
+      bounds,
+      height: info.height,
+      presentation,
+      width: info.width
+    })
+  );
+
+  return failures;
+}
+
+function limbProportionFailures({
+  blackMask,
+  bounds,
+  height,
+  presentation,
+  width
+}: {
+  blackMask: Uint8Array;
+  bounds: PixelBounds;
+  height: number;
+  presentation: LittleAlexSpritePresentation;
+  width: number;
+}) {
+  const bodyWidth = bounds.maxX - bounds.minX + 1;
+  const bodyHeight = bounds.maxY - bounds.minY + 1;
+  const centerX = bounds.minX + bodyWidth / 2;
+  const lowerStartY = bounds.minY + bodyHeight * 0.56;
+  const lowerEndY = bounds.minY + bodyHeight * 0.98;
+  const centerGap = Math.max(4, bodyWidth * 0.04);
+  const leftLeg = maskBoundsInRegion(blackMask, width, height, {
+    maxX: Math.floor(centerX - centerGap),
+    maxY: Math.floor(lowerEndY),
+    minX: bounds.minX,
+    minY: Math.floor(lowerStartY)
+  });
+  const rightLeg = maskBoundsInRegion(blackMask, width, height, {
+    maxX: bounds.maxX,
+    maxY: Math.floor(lowerEndY),
+    minX: Math.ceil(centerX + centerGap),
+    minY: Math.floor(lowerStartY)
+  });
+  const failures: string[] = [];
+
+  if (!leftLeg || !rightLeg) {
+    failures.push(`${presentation}: could not detect both black pant legs`);
+    return failures;
+  }
+
+  const leftLegHeight = leftLeg.maxY - leftLeg.minY + 1;
+  const rightLegHeight = rightLeg.maxY - rightLeg.minY + 1;
+  const averageLegHeight = (leftLegHeight + rightLegHeight) / 2;
+  const legHeightDelta =
+    Math.abs(leftLegHeight - rightLegHeight) / Math.max(averageLegHeight, 1);
+  if (legHeightDelta > 0.2) {
+    failures.push(
+      `${presentation}: leg height mismatch ${(legHeightDelta * 100).toFixed(
+        1
+      )}%`
+    );
+  }
+
+  const legAreaRatio =
+    Math.min(leftLeg.area, rightLeg.area) / Math.max(leftLeg.area, rightLeg.area);
+  if (legAreaRatio < 0.52) {
+    failures.push(
+      `${presentation}: leg area ratio ${legAreaRatio.toFixed(2)} is too uneven`
+    );
+  }
+
+  return failures;
+}
+
+function maskBounds(mask: Uint8Array, width: number, height: number) {
+  return maskBoundsInRegion(mask, width, height, {
+    maxX: width - 1,
+    maxY: height - 1,
+    minX: 0,
+    minY: 0
+  });
+}
+
+function maskBoundsInRegion(
+  mask: Uint8Array,
+  width: number,
+  height: number,
+  region: PixelBounds
+) {
+  let area = 0;
+  const bounds = {
+    maxX: -Infinity,
+    maxY: -Infinity,
+    minX: Infinity,
+    minY: Infinity
+  };
+
+  for (
+    let y = Math.max(0, region.minY);
+    y <= Math.min(height - 1, region.maxY);
+    y += 1
+  ) {
+    for (
+      let x = Math.max(0, region.minX);
+      x <= Math.min(width - 1, region.maxX);
+      x += 1
+    ) {
+      if (!mask[y * width + x]) {
+        continue;
+      }
+
+      area += 1;
+      bounds.minX = Math.min(bounds.minX, x);
+      bounds.maxX = Math.max(bounds.maxX, x);
+      bounds.minY = Math.min(bounds.minY, y);
+      bounds.maxY = Math.max(bounds.maxY, y);
+    }
+  }
+
+  if (area === 0) {
+    return null;
+  }
+
+  return { ...bounds, area };
+}
+
+function dilateMask(
+  mask: Uint8Array,
+  width: number,
+  height: number,
+  radius: number
+) {
+  const horizontal = new Uint8Array(mask.length);
+  const output = new Uint8Array(mask.length);
+
+  for (let y = 0; y < height; y += 1) {
+    let active = 0;
+    for (let x = 0; x < width; x += 1) {
+      if (mask[y * width + x]) {
+        active += 1;
+      }
+      if (x > radius && mask[y * width + x - radius - 1]) {
+        active -= 1;
+      }
+      if (active > 0) {
+        horizontal[y * width + x] = 1;
+      }
+      const trailing = x - radius;
+      if (trailing >= 0 && horizontal[y * width + x]) {
+        for (let fillX = Math.max(0, trailing); fillX <= x; fillX += 1) {
+          horizontal[y * width + fillX] = 1;
+        }
+      }
+    }
+  }
+
+  for (let x = 0; x < width; x += 1) {
+    let active = 0;
+    for (let y = 0; y < height; y += 1) {
+      if (horizontal[y * width + x]) {
+        active += 1;
+      }
+      if (y > radius && horizontal[(y - radius - 1) * width + x]) {
+        active -= 1;
+      }
+      if (active > 0) {
+        output[y * width + x] = 1;
+      }
+      const trailing = y - radius;
+      if (trailing >= 0 && output[y * width + x]) {
+        for (let fillY = Math.max(0, trailing); fillY <= y; fillY += 1) {
+          output[fillY * width + x] = 1;
+        }
+      }
+    }
+  }
+
+  return output;
+}
+
+function connectedComponents(mask: Uint8Array, width: number, height: number) {
+  const visited = new Uint8Array(mask.length);
+  const components: PixelComponent[] = [];
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const start = y * width + x;
+      if (visited[start] || !mask[start]) {
+        continue;
+      }
+
+      const queue = [start];
+      const component: PixelComponent = {
+        area: 0,
+        maxX: x,
+        maxY: y,
+        minX: x,
+        minY: y
+      };
+      visited[start] = 1;
+
+      for (let index = 0; index < queue.length; index += 1) {
+        const pixel = queue[index];
+        const px = pixel % width;
+        const py = Math.floor(pixel / width);
+        component.area += 1;
+        component.minX = Math.min(component.minX, px);
+        component.maxX = Math.max(component.maxX, px);
+        component.minY = Math.min(component.minY, py);
+        component.maxY = Math.max(component.maxY, py);
+
+        for (const [nx, ny] of [
+          [px + 1, py],
+          [px - 1, py],
+          [px, py + 1],
+          [px, py - 1]
+        ]) {
+          if (nx < 0 || ny < 0 || nx >= width || ny >= height) {
+            continue;
+          }
+          const next = ny * width + nx;
+          if (visited[next] || !mask[next]) {
+            continue;
+          }
+          visited[next] = 1;
+          queue.push(next);
+        }
+      }
+
+      components.push(component);
+    }
+  }
+
+  return components;
 }
 
 async function littleAlexRigProportionFailures(page: Page) {
@@ -718,6 +1157,7 @@ test.describe("Little Alex physics", () => {
     await page.setViewportSize({ height: 720, width: 1280 });
     await createHouseholdAndChooseAlex(page);
     const rigProportionFailures: string[] = [];
+    const fullBodyPixelFailures: string[] = [];
 
     for (const presentation of littleAlexSpritePresentations) {
       await saveLittleAlexPresentation(page, presentation);
@@ -740,6 +1180,9 @@ test.describe("Little Alex physics", () => {
           (failure) => `${presentation}: ${failure}`
         )
       );
+      fullBodyPixelFailures.push(
+        ...(await littleAlexFullBodyPixelFailures(presentation))
+      );
 
       await dragLittleAlex(page, -220, 120);
       await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
@@ -749,5 +1192,6 @@ test.describe("Little Alex physics", () => {
     }
 
     expect(rigProportionFailures).toEqual([]);
+    expect(fullBodyPixelFailures).toEqual([]);
   });
 });

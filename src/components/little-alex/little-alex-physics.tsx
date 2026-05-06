@@ -219,6 +219,12 @@ function littleAlexSpritePath(
   return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${part}.png`;
 }
 
+function littleAlexFullBodySpritePath(
+  genderPresentation: LittleAlexGenderPresentation
+) {
+  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`;
+}
+
 const characterBounds = partConfigs.reduce(
   (bounds, part) => ({
     maxX: Math.max(bounds.maxX, part.offset.x + part.width / 2),
@@ -228,6 +234,8 @@ const characterBounds = partConfigs.reduce(
   }),
   { maxX: -Infinity, maxY: -Infinity, minX: Infinity, minY: Infinity }
 );
+const FULL_BODY_DISPLAY_HEIGHT = characterBounds.maxY - characterBounds.minY;
+const FULL_BODY_DISPLAY_WIDTH = 86;
 
 function viewportSize() {
   if (typeof window === "undefined") {
@@ -311,6 +319,19 @@ function partStyle(part: PartConfig, center: Point, angle = 0): CSSProperties {
 
 function reducedPartStyle(part: PartConfig, anchor: Point): CSSProperties {
   return partStyle(part, positionForPart(anchor, part));
+}
+
+function fullBodySpriteStyle(
+  anchor: Point,
+  angle = 0
+): CSSProperties {
+  return {
+    height: FULL_BODY_DISPLAY_HEIGHT,
+    transform: `translate3d(${anchor.x - FULL_BODY_DISPLAY_WIDTH / 2}px, ${
+      anchor.y + characterBounds.minY
+    }px, 0) rotate(${angle}rad)`,
+    width: FULL_BODY_DISPLAY_WIDTH
+  };
 }
 
 function grabTargetStyle(anchor: Point): CSSProperties {
@@ -514,6 +535,21 @@ function syncChatBubble(element: HTMLElement | null, anchor: Point) {
   }
 
   element.style.transform = bubbleStyle(anchor).transform as string;
+}
+
+function syncFullBodySprite(
+  element: HTMLElement | null,
+  anchor: Point,
+  angle = 0
+) {
+  if (!element) {
+    return;
+  }
+
+  const style = fullBodySpriteStyle(clampAnchor(anchor), angle);
+  element.style.height = `${style.height}px`;
+  element.style.transform = style.transform as string;
+  element.style.width = `${style.width}px`;
 }
 
 function visualHalfExtents(part: PartConfig, angle: number) {
@@ -849,6 +885,7 @@ export function LittleAlexPhysics({
   const bubbleRef = useRef<HTMLDivElement | null>(null);
   const bubbleTimeoutRef = useRef<number | null>(null);
   const dragRef = useRef<DragState | null>(null);
+  const fullBodySpriteRef = useRef<HTMLImageElement | null>(null);
   const grabTargetRef = useRef<HTMLDivElement | null>(null);
   const idleDirectionRef = useRef(1);
   const idleTargetReachedRef = useRef(false);
@@ -908,6 +945,11 @@ export function LittleAlexPhysics({
         syncBodyToElement(physics.bodies[part.key], element, part);
       }
     });
+    syncFullBodySprite(
+      fullBodySpriteRef.current,
+      physics.bodies.torso.position,
+      physics.bodies.torso.angle
+    );
     syncGrabTarget(grabTargetRef.current, physics.bodies.torso.position);
     syncChatBubble(bubbleRef.current, physics.bodies.head.position);
   }, []);
@@ -1363,6 +1405,17 @@ export function LittleAlexPhysics({
           {chatPhrase}
         </div>
       ) : null}
+      {/* eslint-disable-next-line @next/next/no-img-element -- The coherent Qwen character follows Matter.js bodies directly. */}
+      <img
+        alt=""
+        className="fp-little-alex-full-sprite"
+        data-full-sprite-src={littleAlexFullBodySpritePath(genderPresentation)}
+        data-testid="little-alex-full-sprite"
+        draggable={false}
+        ref={fullBodySpriteRef}
+        src={littleAlexFullBodySpritePath(genderPresentation)}
+        style={fullBodySpriteStyle(reducedAnchor)}
+      />
       {partConfigs.map((part) => (
         <div
           className={`fp-little-alex-part ${part.className}`}
