@@ -93,6 +93,10 @@ describe("AiTaskManager", () => {
       screen.getByRole("button", { name: "greg - the taskmaster" })
     );
 
+    expect(screen.getByTestId("little-alex-horne-sidekick-image")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/generated-ui/ai-task-helper.png"
+    );
     expect(screen.getByRole("region", { name: "Capture AI card draft" })).toBeVisible();
     expect(screen.getByLabelText("Describe the card")).toBeVisible();
     expect(screen.getByRole("button", { name: "Start recording" })).toBeVisible();

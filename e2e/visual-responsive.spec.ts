@@ -87,11 +87,11 @@ const visualHtml = (body: string) => `
     <body>
       <header>
         <div class="visual-row">
-          <img class="avatar" src="/assets/fairplay/pwa-icon-concept.svg" alt="" aria-hidden="true" />
+          <img class="avatar" src="/assets/fairplay/generated-ui/fairplay-mark.png" alt="" aria-hidden="true" />
           <strong>River Home</strong>
         </div>
         <div class="visual-row">
-          <img class="avatar" src="/assets/fairplay/alex-avatar.svg" alt="Alex avatar" />
+          <img class="avatar" src="/assets/fairplay/generated-ui/alex-avatar.png" alt="Alex avatar" />
           <span>Alex</span>
         </div>
       </header>
@@ -111,7 +111,7 @@ async function mockVisualRoutes(page: Page) {
               <h1>Set up your household rhythm</h1>
               <p>Make work visible, clarify ownership, and revisit decisions calmly.</p>
             </div>
-            <img class="hero-visual" src="/assets/fairplay/helper-mascot.svg" alt="Household helper mascot" />
+            <img class="hero-visual" src="/assets/fairplay/generated-ui/helper-mascot.png" alt="Household helper mascot" />
           </section>
           <section class="grid">
             <article class="panel"><h2>Map responsibilities</h2><p>Start in your own words.</p></article>
@@ -132,8 +132,8 @@ async function mockVisualRoutes(page: Page) {
               <p>Start with a few responsibilities and keep radar topics practical.</p>
             </div>
             <div class="visual-row" role="img" aria-label="Balanced household personas">
-              <img class="avatar" src="/assets/fairplay/alex-avatar.svg" alt="Alex avatar" />
-              <img class="avatar" src="/assets/fairplay/max-avatar.svg" alt="Max avatar" />
+              <img class="avatar" src="/assets/fairplay/generated-ui/alex-avatar.png" alt="Alex avatar" />
+              <img class="avatar" src="/assets/fairplay/generated-ui/max-avatar.png" alt="Max avatar" />
             </div>
           </section>
           <section class="grid"><article class="panel"><h2>Load Map</h2><p>Map household work.</p></article></section>
@@ -151,7 +151,7 @@ async function mockVisualRoutes(page: Page) {
               <h1>Responsibility overview</h1>
               <p>Owner mix and review timing stay scanable.</p>
             </div>
-            <img class="hero-visual" src="/assets/fairplay/helper-mascot.svg" alt="" aria-hidden="true" />
+            <img class="hero-visual" src="/assets/fairplay/generated-ui/helper-mascot.png" alt="" aria-hidden="true" />
           </section>
           <section class="grid two">
             <article class="panel"><h2>Owner mix</h2><p>A 1 / M 1</p></article>
@@ -171,7 +171,7 @@ async function mockVisualRoutes(page: Page) {
               <h1>Concern board</h1>
               <p>Capture blockers without blame.</p>
             </div>
-            <img class="hero-visual" src="/assets/fairplay/radar-board-placeholder.svg" alt="Shared radar illustration" />
+            <img class="hero-visual" src="/assets/fairplay/generated-ui/radar-illustration.png" alt="Shared radar illustration" />
           </section>
           <form class="grid panel">
             <label>Topic <input aria-label="Topic" /></label>
@@ -192,7 +192,7 @@ async function mockVisualRoutes(page: Page) {
               <h1>New check-in</h1>
               <p>Preview a short agenda and keep decisions clear.</p>
             </div>
-            <div class="spark" role="img" aria-label="Check-in spark"></div>
+            <img class="hero-visual" src="/assets/fairplay/generated-ui/check-in-spark.png" alt="Check-in spark" />
           </section>
           <section class="grid panel" aria-label="Agenda preview">
             <article><h2>Meal plan review</h2><p>Review due</p></article>

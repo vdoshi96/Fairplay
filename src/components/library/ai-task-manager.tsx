@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import {
@@ -228,19 +229,16 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
 function LittleAlexHorneSidekick() {
   return (
     <div className="flex items-center gap-2" data-testid="little-alex-horne-sidekick">
-      <div
+      <img
+        alt=""
         aria-hidden="true"
-        className="fp-motion-character-breathe relative h-14 w-12 shrink-0"
-      >
-        <span className="absolute bottom-0 left-3 h-7 w-6 rounded-t-[10px] border border-fp-line bg-fp-ink" />
-        <span className="absolute bottom-5 left-[15px] h-5 w-5 rounded-full border border-fp-line bg-[#f2c9a4]" />
-        <span className="absolute left-[14px] top-1 h-2 w-6 rounded-t-full bg-[#2b2420]" />
-        <span className="absolute left-[19px] top-6 h-1 w-1 rounded-full bg-fp-ink" />
-        <span className="absolute left-[27px] top-6 h-1 w-1 rounded-full bg-fp-ink" />
-        <span className="absolute bottom-1 left-[21px] h-5 w-2 rounded-sm bg-white" />
-        <span className="absolute bottom-2 left-[21px] h-4 w-1 rounded-full bg-fp-helper" />
-        <span className="absolute bottom-3 right-0 h-4 w-3 rotate-6 rounded border border-fp-line bg-white" />
-      </div>
+        className="fp-motion-character-breathe h-14 w-14 shrink-0 object-contain"
+        data-testid="little-alex-horne-sidekick-image"
+        draggable={false}
+        height={768}
+        src="/assets/fairplay/generated-ui/ai-task-helper.png"
+        width={768}
+      />
       <p className="relative max-w-[9rem] rounded-[8px] border border-fp-line bg-white px-3 py-2 text-[12px] font-bold lowercase leading-4 text-fp-ink shadow-[var(--fp-shadow-soft)] before:absolute before:-left-1.5 before:top-5 before:h-3 before:w-3 before:rotate-45 before:border-b before:border-l before:border-fp-line before:bg-white">
         hi im little alex horne
       </p>
