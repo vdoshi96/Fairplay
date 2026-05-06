@@ -2,7 +2,11 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import Matter from "matter-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { LittleAlexPhysics } from "./little-alex-physics";
+import {
+  LittleAlexPhysics,
+  nextIdleWalkTurn,
+  playAreaBounds
+} from "./little-alex-physics";
 
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
 
@@ -42,6 +46,37 @@ function stubPointerCapture() {
 function stubViewport(width: number, height: number) {
   vi.stubGlobal("innerWidth", width);
   vi.stubGlobal("innerHeight", height);
+}
+
+function translatedX(element: HTMLElement) {
+  const match = element.style.transform.match(/translate3d\((-?\d+(?:\.\d+)?)px/);
+
+  if (!match) {
+    throw new Error(`Missing translate3d x value: ${element.style.transform}`);
+  }
+
+  return Number(match[1]);
+}
+
+function firePointer(
+  target: HTMLElement,
+  type: "pointerdown" | "pointermove" | "pointerup",
+  options: { clientX: number; clientY: number; pointerId: number; timeStamp?: number }
+) {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+
+  Object.defineProperties(event, {
+    clientX: { value: options.clientX },
+    clientY: { value: options.clientY },
+    pageX: { value: options.clientX },
+    pageY: { value: options.clientY },
+    pointerId: { value: options.pointerId },
+    screenX: { value: options.clientX },
+    screenY: { value: options.clientY },
+    timeStamp: { value: options.timeStamp ?? 0 }
+  });
+
+  fireEvent(target, event);
 }
 
 describe("LittleAlexPhysics", () => {
@@ -120,19 +155,19 @@ describe("LittleAlexPhysics", () => {
     render(<LittleAlexPhysics chatPhrase="well done everyone" />);
     const grabTarget = screen.getByTestId("little-alex-grab-target");
 
-    fireEvent.pointerDown(grabTarget, {
+    firePointer(grabTarget, "pointerdown", {
       clientX: 900,
       clientY: 200,
       pointerId: 1,
       timeStamp: 0
     });
-    fireEvent.pointerMove(grabTarget, {
+    firePointer(grabTarget, "pointermove", {
       clientX: 820,
       clientY: 260,
       pointerId: 1,
       timeStamp: 80
     });
-    fireEvent.pointerUp(grabTarget, {
+    firePointer(grabTarget, "pointerup", {
       clientX: 820,
       clientY: 260,
       pointerId: 1,
@@ -145,7 +180,7 @@ describe("LittleAlexPhysics", () => {
     expect(bubble.style.transform).toContain("translate3d");
   });
 
-  it("stands upright and starts slow idle walking after five seconds untouched", () => {
+  it("stands mostly still before starting slow idle walking after five seconds untouched", () => {
     vi.useFakeTimers();
     stubReducedMotion(false);
     const addEventListenerSpy = vi.spyOn(window, "addEventListener");
@@ -160,7 +195,7 @@ describe("LittleAlexPhysics", () => {
       vi.advanceTimersByTime(5_000);
     });
 
-    expect(littleAlex).toHaveAttribute("data-idle-state", "walking");
+    expect(littleAlex).toHaveAttribute("data-idle-state", "standing");
     expect(screen.getByTestId("little-alex-grab-target")).toHaveStyle({
       pointerEvents: "auto"
     });
@@ -175,16 +210,126 @@ describe("LittleAlexPhysics", () => {
     );
 
     act(() => {
-      vi.advanceTimersByTime(5_000);
+      vi.advanceTimersByTime(3_999);
     });
 
-    expect(littleAlex).toHaveAttribute("data-idle-state", "paused");
+    expect(littleAlex).toHaveAttribute("data-idle-state", "standing");
 
     act(() => {
-      vi.advanceTimersByTime(900);
+      vi.advanceTimersByTime(1);
     });
 
     expect(littleAlex).toHaveAttribute("data-idle-state", "walking");
+  });
+
+  it("waits 1.5 seconds longer before standing after a drag release", () => {
+    vi.useFakeTimers();
+    stubReducedMotion(false);
+    stubPointerCapture();
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    firePointer(grabTarget, "pointerdown", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+    firePointer(grabTarget, "pointermove", {
+      clientX: 820,
+      clientY: 240,
+      pointerId: 1,
+      timeStamp: 80
+    });
+    firePointer(grabTarget, "pointerup", {
+      clientX: 820,
+      clientY: 240,
+      pointerId: 1,
+      timeStamp: 96
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(5_999);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-idle-state", "active");
+
+    act(() => {
+      vi.advanceTimersByTime(501);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-idle-state", "standing");
+  });
+
+  it("keeps reduced-motion body parts to the right of the desktop side panel", () => {
+    stubReducedMotion(true);
+    stubPointerCapture();
+    stubViewport(1280, 720);
+
+    render(<LittleAlexPhysics />);
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    firePointer(grabTarget, "pointerdown", {
+      clientX: 1160,
+      clientY: 220,
+      pointerId: 1,
+      timeStamp: 0
+    });
+    firePointer(grabTarget, "pointermove", {
+      clientX: 40,
+      clientY: 220,
+      pointerId: 1,
+      timeStamp: 80
+    });
+    firePointer(grabTarget, "pointerup", {
+      clientX: 40,
+      clientY: 220,
+      pointerId: 1,
+      timeStamp: 96
+    });
+
+    screen.getAllByTestId("little-alex-body-part").forEach((part) => {
+      expect(translatedX(part)).toBeGreaterThanOrEqual(256);
+    });
+  });
+
+  it("plans idle walk turns at least five percent wide and holds direction for three turns", () => {
+    const bounds = playAreaBounds({ height: 720, width: 1280 });
+    const random = vi.fn(() => 0.99);
+    const first = nextIdleWalkTurn(
+      { direction: -1, targetX: 1_000, turnsInDirection: 0 },
+      1_000,
+      bounds,
+      random
+    );
+    const second = nextIdleWalkTurn(first, first.targetX, bounds, random);
+    const third = nextIdleWalkTurn(second, second.targetX, bounds, random);
+    const fourth = nextIdleWalkTurn(third, third.targetX, bounds, random);
+    const minimumTurnDistance = bounds.width * 0.05;
+
+    expect([first, second, third]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ direction: -1, turnsInDirection: 1 }),
+        expect.objectContaining({ direction: -1, turnsInDirection: 2 }),
+        expect.objectContaining({ direction: -1, turnsInDirection: 3 })
+      ])
+    );
+    expect(random).toHaveBeenCalledTimes(1);
+    expect(fourth.direction).toBe(1);
+
+    [
+      [1_000, first.targetX],
+      [first.targetX, second.targetX],
+      [second.targetX, third.targetX],
+      [third.targetX, fourth.targetX]
+    ].forEach(([from, to]) => {
+      expect(Math.abs(to - from)).toBeGreaterThanOrEqual(minimumTurnDistance);
+      expect(to).toBeGreaterThanOrEqual(bounds.minX);
+      expect(to).toBeLessThanOrEqual(bounds.maxX);
+    });
   });
 
   it("does not run idle walking in reduced motion", () => {
@@ -233,17 +378,17 @@ describe("LittleAlexPhysics", () => {
     expect(torso).not.toBeNull();
     const initialTransform = torso?.style.transform;
 
-    fireEvent.pointerDown(grabTarget, {
+    firePointer(grabTarget, "pointerdown", {
       clientX: 900,
       clientY: 200,
       pointerId: 1
     });
-    fireEvent.pointerMove(grabTarget, {
+    firePointer(grabTarget, "pointermove", {
       clientX: 760,
       clientY: 260,
       pointerId: 1
     });
-    fireEvent.pointerUp(grabTarget, {
+    firePointer(grabTarget, "pointerup", {
       clientX: 760,
       clientY: 260,
       pointerId: 1

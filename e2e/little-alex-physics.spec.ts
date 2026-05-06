@@ -86,13 +86,16 @@ async function createHouseholdAndChooseAlex(page: Page) {
     .not.toBeNull();
 }
 
-async function expectLittleAlexInViewport(page: Page) {
+async function expectLittleAlexInViewport(
+  page: Page,
+  options: { minLeft?: number } = {}
+) {
   await expect(page.getByTestId("little-alex-body-part")).toHaveCount(6);
 
   await expect
     .poll(
       () =>
-        page.evaluate(() => {
+        page.evaluate(({ minLeft }) => {
           const tolerance = 1;
           const viewport = {
             height: window.innerHeight,
@@ -120,8 +123,10 @@ async function expectLittleAlexInViewport(page: Page) {
               const name = part.dataset.part ?? "unknown";
               const failures: string[] = [];
 
-              if (rect.left < -tolerance) {
-                failures.push(`${name} left ${rect.left}`);
+              const minimumLeft = minLeft ?? 0;
+
+              if (rect.left < minimumLeft - tolerance) {
+                failures.push(`${name} left ${rect.left} < ${minimumLeft}`);
               }
 
               if (rect.top < -tolerance) {
@@ -138,7 +143,7 @@ async function expectLittleAlexInViewport(page: Page) {
 
               return failures;
             });
-        }),
+        }, options),
       { timeout: 3_000 }
     )
     .toEqual([]);
@@ -249,6 +254,20 @@ test.describe("Little Alex physics", () => {
     await expectLittleAlexInViewport(page);
   });
 
+  test("stays to the right of the desktop sidebar after a leftward fling", async ({
+    page
+  }) => {
+    await page.setViewportSize({ height: 720, width: 1280 });
+    await createHouseholdAndChooseAlex(page);
+    await page.goto("/app/home");
+
+    await expect(page.getByTestId("little-alex-horne")).toBeVisible();
+    await dragLittleAlex(page, -1_200, 120);
+    await page.waitForTimeout(500);
+
+    await expectLittleAlexInViewport(page, { minLeft: 256 });
+  });
+
   test("uses saved Little Alex preferences for appearance and fling bubble", async ({
     page
   }) => {
@@ -284,15 +303,20 @@ test.describe("Little Alex physics", () => {
     );
   });
 
-  test("starts idle walking after five seconds untouched", async ({ page }) => {
+  test("stands still after five seconds untouched before slow idle walking", async ({
+    page
+  }) => {
     await createHouseholdAndChooseAlex(page);
     await page.goto("/app/home");
 
     const littleAlex = page.getByTestId("little-alex-horne");
 
     await expect(littleAlex).toHaveAttribute("data-idle-state", "active");
-    await expect(littleAlex).toHaveAttribute("data-idle-state", /walking|paused/, {
+    await expect(littleAlex).toHaveAttribute("data-idle-state", "standing", {
       timeout: 6_500
+    });
+    await expect(littleAlex).toHaveAttribute("data-idle-state", "walking", {
+      timeout: 5_000
     });
     await expectLittleAlexInViewport(page);
   });
