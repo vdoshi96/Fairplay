@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,14 +29,28 @@ const highlightPadding = 8;
 export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [highlightBox, setHighlightBox] = useState<HighlightBox | null>(null);
-  const [completedPracticeStepIds, setCompletedPracticeStepIds] = useState<Set<string>>(
-    () => new Set()
-  );
+  const [completedPracticeEventIds, setCompletedPracticeEventIds] = useState<
+    Set<string>
+  >(() => new Set());
   const dialogRef = useRef<HTMLDivElement>(null);
   const activeStep = steps[Math.min(activeIndex, Math.max(steps.length - 1, 0))];
   const isLastStep = activeIndex >= steps.length - 1;
+  const requiredPracticeEventIds = useMemo(
+    () =>
+      activeStep?.practice
+        ? activeStep.practice.requiredEventIds ?? [activeStep.practice.eventId]
+        : [],
+    [activeStep]
+  );
+  const completedPracticeCount = requiredPracticeEventIds.filter((eventId) =>
+    completedPracticeEventIds.has(eventId)
+  ).length;
+  const hasPractice = Boolean(activeStep?.practice);
   const practiceComplete =
-    !activeStep?.practice || completedPracticeStepIds.has(activeStep.id);
+    !hasPractice ||
+    requiredPracticeEventIds.every((eventId) =>
+      completedPracticeEventIds.has(eventId)
+    );
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -62,10 +76,12 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
     function handlePracticeComplete(event: Event) {
       const detail = (event as CustomEvent<{ eventId?: string }>).detail;
 
-      if (detail?.eventId === activeStep.practice?.eventId) {
-        setCompletedPracticeStepIds((current) => {
+      const eventId = detail?.eventId;
+
+      if (eventId && requiredPracticeEventIds.includes(eventId)) {
+        setCompletedPracticeEventIds((current) => {
           const next = new Set(current);
-          next.add(activeStep.id);
+          next.add(eventId);
           return next;
         });
       }
@@ -79,7 +95,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
         handlePracticeComplete
       );
     };
-  }, [activeStep]);
+  }, [activeStep, requiredPracticeEventIds]);
 
   useEffect(() => {
     function updateHighlight({ scroll }: { scroll: boolean }) {
@@ -129,10 +145,10 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50">
+    <>
       <button
         aria-label="Guided tour backdrop"
-        className="absolute inset-0 cursor-default bg-black/55"
+        className="fixed inset-0 z-40 cursor-default bg-black/55"
         onClick={(event) => event.stopPropagation()}
         type="button"
       />
@@ -140,7 +156,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       {highlightBox ? (
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed rounded-[8px] border-2 border-fp-helper bg-white/10 shadow-[0_0_0_9999px_rgba(0,0,0,0.18)]"
+          className="pointer-events-none fixed z-50 rounded-[8px] border-2 border-fp-helper bg-[var(--fp-surface)]/10 shadow-[0_0_0_9999px_rgba(0,0,0,0.18)]"
           data-testid="guide-highlight"
           style={{
             height: highlightBox.height,
@@ -154,7 +170,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       <section
         aria-label={`${featureName} guide`}
         aria-modal="true"
-        className="absolute bottom-5 left-1/2 grid w-[min(92vw,28rem)] -translate-x-1/2 gap-4 rounded-[8px] border border-fp-line bg-white p-5 text-fp-ink shadow-[var(--fp-shadow-elevated)] outline-none sm:bottom-8 sm:right-8 sm:left-auto sm:translate-x-0"
+        className="pointer-events-auto fixed bottom-5 left-1/2 z-[70] grid w-[min(92vw,28rem)] -translate-x-1/2 gap-4 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 text-fp-ink shadow-[var(--fp-shadow-elevated)] outline-none sm:bottom-8 sm:left-auto sm:right-8 sm:translate-x-0"
         ref={dialogRef}
         role="dialog"
         tabIndex={-1}
@@ -166,10 +182,10 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
           <h2 className="text-[22px] font-bold leading-7">{activeStep.title}</h2>
           <p className="text-[15px] leading-6 text-fp-muted-ink">{activeStep.body}</p>
           {activeStep.practice ? (
-            <div className="grid gap-2 rounded-[8px] border border-fp-line bg-fp-surface px-3 py-3 text-[14px] leading-5 text-fp-muted-ink">
+            <div className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] px-3 py-3 text-[14px] leading-5 text-fp-muted-ink">
               <p>{activeStep.practice.prompt}</p>
               <button
-                className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink outline-none transition hover:bg-fp-soft focus:ring-2 focus:ring-fp-ink/25 disabled:opacity-60"
+                className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:opacity-60"
                 disabled={practiceComplete}
                 onClick={() => requestGuidePractice(activeStep.practice?.eventId ?? "")}
                 type="button"
@@ -180,11 +196,16 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
                 <p className="font-semibold text-fp-ink">
                   {activeStep.practice.completionMessage}
                 </p>
+              ) : requiredPracticeEventIds.length > 1 ? (
+                <p className="font-semibold text-fp-muted-ink">
+                  Practice progress: {completedPracticeCount} of{" "}
+                  {requiredPracticeEventIds.length}
+                </p>
               ) : null}
             </div>
           ) : null}
           {!highlightBox ? (
-            <p className="rounded-[8px] border border-fp-line bg-fp-surface px-3 py-2 text-[14px] leading-5 text-fp-muted-ink">
+            <p className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] px-3 py-2 text-[14px] leading-5 text-fp-muted-ink">
               This part of the page is not visible right now.
             </p>
           ) : null}
@@ -218,7 +239,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 }
 

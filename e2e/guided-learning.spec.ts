@@ -69,12 +69,20 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   await expect(linkedGuide.getByRole("button", { name: "Next", exact: true }))
     .toBeDisabled();
 
-  await page.getByLabel("Guided tour backdrop").click();
-  await expect(linkedGuide).toBeVisible();
-
-  await linkedGuide.getByRole("button", { name: "Open greg in dummy mode" }).click();
+  await linkedGuide.getByRole("button", { name: "Start dummy Library workflow" }).click();
+  await page.getByLabel("Dummy card request").fill("Make a lunch packing handoff card.");
+  await page.getByRole("button", { name: "Create dummy draft" }).click();
+  await expect(page.getByText("Dummy draft created from greg capture.")).toBeVisible();
+  await page.getByRole("button", { name: "Review dummy draft" }).click();
+  await page.getByLabel("Dummy draft title").fill("Lunch kit reset");
+  await page.getByRole("button", { name: "Save dummy edits" }).click();
+  await page.getByRole("button", { name: "Preview regenerated dummy image" }).click();
+  await page.getByRole("button", { name: "Put dummy card in play" }).click();
+  await expect(page.getByText("Dummy Library workflow complete.")).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Next", exact: true }).click();
   await expect(page.getByText("Search the source deck")).toBeVisible();
+  await page.getByLabel("Guided tour backdrop").click();
+  await expect(linkedGuide).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Back", exact: true }).click();
   await expect(page.getByText("Use greg - the taskmaster")).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Skip", exact: true }).click();

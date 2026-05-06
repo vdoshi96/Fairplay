@@ -519,4 +519,73 @@ describe("RadarBoard", () => {
     expect(screen.queryByText("Revisit: May 13, 2026")).not.toBeInTheDocument();
     expect(screen.getByText("Revisit: May 14, 2026")).toBeVisible();
   });
+
+  it("walks through a local dummy radar workflow without production mutations", async () => {
+    const onCreate = vi.fn();
+    const onUpdate = vi.fn();
+    const onPublish = vi.fn();
+    const onTransition = vi.fn();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <RadarBoard
+        items={[]}
+        onCreate={onCreate}
+        onPublish={onPublish}
+        onTransition={onTransition}
+        onUpdate={onUpdate}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByRole("button", { name: "Done" })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Start dummy Radar workflow" }));
+    const practiceRegion = screen.getByRole("region", {
+      name: "Dummy Radar practice"
+    });
+    expect(practiceRegion).toBeVisible();
+    expect(practiceRegion).toHaveClass(
+      "z-[60]",
+      "bg-[var(--fp-surface-strong)]"
+    );
+    expect(practiceRegion.className).not.toContain("bg-white");
+
+    fireEvent.change(screen.getByLabelText("Dummy radar topic"), {
+      target: { value: "Clarify lunch packing ownership" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create dummy radar draft" }));
+    expect(screen.getByText("Dummy radar draft created.")).toBeVisible();
+
+    fireEvent.change(screen.getByLabelText("Edit dummy radar topic"), {
+      target: { value: "Clarify lunch kit reset" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save dummy radar edit" }));
+    expect(screen.getByText("Dummy radar draft edited.")).toBeVisible();
+
+    fireEvent.change(screen.getByLabelText("Dummy visibility"), {
+      target: { value: "check_in_only" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply dummy visibility" }));
+    expect(screen.getByText("Dummy visibility set to Check-in only.")).toBeVisible();
+
+    fireEvent.change(screen.getByLabelText("Dummy revisit date"), {
+      target: { value: "2026-05-11" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Defer dummy item" }));
+    fireEvent.click(screen.getByRole("button", { name: "Schedule dummy item" }));
+    fireEvent.click(screen.getByRole("button", { name: "Resolve dummy item" }));
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss dummy item" }));
+
+    expect(screen.getByText("Dummy Radar workflow complete.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Done" })).toBeEnabled();
+    expect(onCreate).not.toHaveBeenCalled();
+    expect(onUpdate).not.toHaveBeenCalled();
+    expect(onPublish).not.toHaveBeenCalled();
+    expect(onTransition).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

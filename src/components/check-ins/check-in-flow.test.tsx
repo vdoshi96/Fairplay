@@ -364,4 +364,64 @@ describe("CheckInFlow", () => {
       "Unable to complete check-in."
     );
   });
+
+  it("walks through a local dummy check-in workflow without production mutations", () => {
+    const onUpdateItem = vi.fn();
+    const onDecision = vi.fn();
+    const onComplete = vi.fn();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <CheckInFlow
+        initialCheckIn={checkIn}
+        onComplete={onComplete}
+        onDecision={onDecision}
+        onUpdateItem={onUpdateItem}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByRole("button", { name: "Done" })).toBeDisabled();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Start dummy Check-in workflow" })
+    );
+    const practiceRegion = screen.getByRole("region", {
+      name: "Dummy Check-in practice"
+    });
+    expect(practiceRegion).toBeVisible();
+    expect(practiceRegion).toHaveClass(
+      "z-[60]",
+      "bg-[var(--fp-surface-strong)]"
+    );
+    expect(practiceRegion.className).not.toContain("bg-white");
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview dummy agenda" }));
+    expect(screen.getByText("Dummy agenda previewed.")).toBeVisible();
+
+    fireEvent.change(screen.getByLabelText("Dummy topic owner"), {
+      target: { value: "max" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Assign dummy topic" }));
+    expect(screen.getByText("Dummy topic assigned to Max.")).toBeVisible();
+
+    fireEvent.change(screen.getByLabelText("Dummy decision summary"), {
+      target: { value: "Max owns lunch kit reset until June." }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Record dummy decision" }));
+    expect(screen.getByText("Dummy decision recorded.")).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "Defer dummy item" }));
+    expect(screen.getByText("Dummy item deferred.")).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "Complete dummy check-in" }));
+    expect(screen.getByText("Dummy Check-in workflow complete.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Done" })).toBeEnabled();
+    expect(onUpdateItem).not.toHaveBeenCalled();
+    expect(onDecision).not.toHaveBeenCalled();
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

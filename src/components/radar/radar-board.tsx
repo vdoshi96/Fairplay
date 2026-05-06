@@ -169,7 +169,7 @@ export function RadarBoard({
   const [showDeferred, setShowDeferred] = useState(false);
   const [showResolved, setShowResolved] = useState(false);
   const [showDismissed, setShowDismissed] = useState(false);
-  const [practiceResolved, setPracticeResolved] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(false);
   const [publishTargets, setPublishTargets] = useState<Record<string, Visibility>>(
     {}
   );
@@ -188,16 +188,15 @@ export function RadarBoard({
   const dialogRef = useRef<HTMLDivElement>(null);
   const confirmPublishButtonRef = useRef<HTMLButtonElement>(null);
   const publishReturnFocusRef = useRef<HTMLElement | null>(null);
-  const resolveDummyRadar = useCallback(() => {
-    setPracticeResolved(true);
-    completeGuidePractice("radar-actions");
+  const openRadarPractice = useCallback(() => {
+    setPracticeOpen(true);
   }, []);
 
   useEffect(() => {
     setBoardItems(items);
   }, [items]);
 
-  useGuidePracticeRequest("radar-actions", resolveDummyRadar);
+  useGuidePracticeRequest("radar-practice-start", openRadarPractice);
 
   useEffect(() => {
     const content = contentRef.current;
@@ -702,36 +701,8 @@ export function RadarBoard({
         )}
       </RadarSection>
 
-      {!radarActionsGuideItemId ? (
-        <div
-          className="grid gap-2 rounded-[8px] border border-dashed border-fp-line bg-white p-3"
-          data-guide-id="radar-actions"
-        >
-          <p className="text-[13px] font-bold text-fp-ink">
-            Practice radar actions
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
-              type="button"
-            >
-              Schedule
-            </button>
-            <button
-              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
-              type="button"
-            >
-              Defer
-            </button>
-            <button
-              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
-              onClick={resolveDummyRadar}
-              type="button"
-            >
-              Resolve
-            </button>
-          </div>
-        </div>
+      {practiceOpen || !radarActionsGuideItemId ? (
+        <RadarPracticeWorkflow dataGuideId={!radarActionsGuideItemId ? "radar-actions" : undefined} />
       ) : null}
 
       <div className="flex flex-wrap gap-2">
@@ -757,15 +728,6 @@ export function RadarBoard({
           {showDismissed ? "Hide dismissed" : "Show dismissed"}
         </button>
       </div>
-      {practiceResolved ? (
-        <p
-          className="rounded-[8px] border border-fp-line bg-white p-3 text-[14px] font-semibold text-fp-muted-ink"
-          role="status"
-        >
-          Dummy radar item resolved.
-        </p>
-      ) : null}
-
       {showDeferred ? (
         <RadarSection title="Deferred" items={groups.deferred}>
           {(item) => <ReadOnlyRadarCard item={item} />}
@@ -865,6 +827,184 @@ function RadarSection({
           Nothing here right now.
         </p>
       )}
+    </section>
+  );
+}
+
+function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
+  const [created, setCreated] = useState(false);
+  const [topic, setTopic] = useState("");
+  const [editTopic, setEditTopic] = useState("Clarify lunch packing ownership");
+  const [visibility, setVisibility] =
+    useState<Exclude<Visibility, "private">>("shared_household");
+  const [revisitDate, setRevisitDate] = useState("");
+  const [state, setState] = useState<
+    "draft" | "deferred" | "scheduled" | "resolved" | "dismissed"
+  >("draft");
+  const [status, setStatus] = useState<string | null>(null);
+
+  function mark(eventId: string, message: string) {
+    setStatus(message);
+    completeGuidePractice(eventId);
+  }
+
+  return (
+    <section
+      aria-label="Dummy Radar practice"
+      className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
+      data-guide-id={dataGuideId}
+    >
+      <div className="grid gap-1">
+        <h2 className="text-[16px] font-bold text-fp-ink">
+          Dummy Radar practice
+        </h2>
+        <p className="text-[13px] leading-5 text-fp-muted-ink">
+          Use this local card to practice Radar decisions without touching the
+          household board.
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+          Dummy radar topic
+          <input
+            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
+            onChange={(event) => setTopic(event.target.value)}
+            value={topic}
+          />
+        </label>
+        <button
+          className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary disabled:opacity-60 sm:self-end"
+          disabled={topic.trim().length === 0}
+          onClick={() => {
+            setCreated(true);
+            setEditTopic(topic.trim());
+            setState("draft");
+            mark("radar-practice-create", "Dummy radar draft created.");
+          }}
+          type="button"
+        >
+          Create dummy radar draft
+        </button>
+      </div>
+
+      {created ? (
+        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
+          <div className="flex flex-wrap gap-2 text-[12px] font-semibold">
+            <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-fp-ink">
+              {visibilityLabels[visibility]}
+            </span>
+            <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-fp-ink">
+              {stateLabels[state]}
+            </span>
+            {revisitDate ? (
+              <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-fp-ink">
+                Revisit {revisitDate}
+              </span>
+            ) : null}
+          </div>
+
+          <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+            Edit dummy radar topic
+            <input
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
+              onChange={(event) => setEditTopic(event.target.value)}
+              value={editTopic}
+            />
+          </label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Select
+              label="Dummy visibility"
+              onChange={(value) =>
+                setVisibility(value as Exclude<Visibility, "private">)
+              }
+              options={publishOptions}
+              value={visibility}
+            />
+            <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+              Dummy revisit date
+              <input
+                className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[15px] text-fp-ink"
+                onChange={(event) => setRevisitDate(event.target.value)}
+                type="date"
+                value={revisitDate}
+              />
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+              onClick={() =>
+                mark("radar-practice-edit", "Dummy radar draft edited.")
+              }
+              type="button"
+            >
+              Save dummy radar edit
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+              onClick={() =>
+                mark(
+                  "radar-practice-visibility",
+                  `Dummy visibility set to ${visibilityLabels[visibility]}.`
+                )
+              }
+              type="button"
+            >
+              Apply dummy visibility
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+              onClick={() => {
+                setState("deferred");
+                mark("radar-practice-defer", "Dummy radar item deferred.");
+              }}
+              type="button"
+            >
+              Defer dummy item
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+              onClick={() => {
+                setState("scheduled");
+                mark("radar-practice-schedule", "Dummy radar item scheduled.");
+              }}
+              type="button"
+            >
+              Schedule dummy item
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+              onClick={() => {
+                setState("resolved");
+                mark("radar-practice-resolve", "Dummy radar item resolved.");
+              }}
+              type="button"
+            >
+              Resolve dummy item
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+              onClick={() => {
+                setState("dismissed");
+                mark("radar-practice-dismiss", "Dummy radar item dismissed.");
+              }}
+              type="button"
+            >
+              Dismiss dummy item
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {status ? (
+        <p
+          className="rounded-[8px] border border-fp-line bg-fp-surface p-3 text-[13px] font-semibold text-fp-muted-ink"
+          role="status"
+        >
+          {status}
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -1093,7 +1233,7 @@ function Select<T extends string>({
     <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
       {labelText}
       <select
-        className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+        className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
         data-guide-id={dataGuideId}
         onChange={(event) => onChange(event.target.value as T)}
         value={value}

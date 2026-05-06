@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import type { CardTemplateSummary } from "@/contracts/card-templates";
@@ -56,6 +56,10 @@ const aiDrafts: AiCardDraftSummary[] = [
 ];
 
 describe("CardLibrary", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("renders greg and little alex horne above source card filters", () => {
     const { container } = render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
 
@@ -129,6 +133,8 @@ describe("CardLibrary", () => {
 
   it("walks through dummy Library practice without creating a real card", async () => {
     const onCreateFromTemplate = vi.fn();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
     render(
       <CardLibrary
         aiDrafts={aiDrafts}
@@ -143,11 +149,50 @@ describe("CardLibrary", () => {
     expect(screen.getByText("Step 1 of 4")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
 
-    await userEvent.click(screen.getByRole("button", { name: "Open greg in dummy mode" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Start dummy Library workflow" })
+    );
 
-    expect(screen.getByRole("region", { name: "Capture AI card draft" })).toBeVisible();
-    expect(screen.getByText("Dummy greg tray opened.")).toBeVisible();
+    const practiceRegion = screen.getByRole("region", {
+      name: "Dummy Library practice"
+    });
+    expect(practiceRegion).toBeVisible();
+    expect(practiceRegion).toHaveClass(
+      "z-[60]",
+      "bg-[var(--fp-surface-strong)]"
+    );
+    expect(practiceRegion.className).not.toContain("bg-white");
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+
+    await userEvent.type(
+      screen.getByLabelText("Dummy card request"),
+      "Make a card for lunch packing handoffs."
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Create dummy draft" }));
+    expect(screen.getByText("Dummy draft created from greg capture.")).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "Review dummy draft" }));
+    expect(screen.getByLabelText("Dummy draft title")).toHaveValue(
+      "Lunch packing handoff"
+    );
+
+    await userEvent.clear(screen.getByLabelText("Dummy draft title"));
+    await userEvent.type(screen.getByLabelText("Dummy draft title"), "Lunch kit reset");
+    await userEvent.click(screen.getByRole("button", { name: "Save dummy edits" }));
+    expect(screen.getByText("Dummy draft edits saved.")).toBeVisible();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Preview regenerated dummy image" })
+    );
+    expect(screen.getByText("Dummy image preview refreshed.")).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "Put dummy card in play" }));
+    expect(
+      screen.getByText("Dummy card is ready for the Load Map. No real card was created.")
+    ).toBeVisible();
+    expect(screen.getByText("Dummy Library workflow complete.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
     expect(onCreateFromTemplate).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

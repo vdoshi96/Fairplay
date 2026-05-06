@@ -265,4 +265,80 @@ describe("ResponsibilityLoadMap", () => {
       toLane: "player_1"
     });
   });
+
+  it("walks through a local dummy setup workflow without moving real responsibilities", async () => {
+    const onMove = vi.fn();
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        onMove={onMove}
+        responsibilities={[responsibility({ title: "Auto", boardLane: "not_in_play" })]}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+
+    expect(screen.getByRole("dialog", { name: "Load Map guide" })).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+    );
+    expect(screen.getByTestId("load-map-practice-board")).toBeVisible();
+    expect(screen.getByTestId("load-map-practice-board")).toHaveClass(
+      "z-[60]",
+      "bg-[var(--fp-surface-strong)]"
+    );
+    expect(screen.getByTestId("load-map-practice-board").className).not.toContain(
+      "bg-white"
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Open dummy move menu" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "Player 1" }));
+    expect(screen.getByText("Dummy lunch plan is in Player 1.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+
+    await userEvent.clear(screen.getByLabelText("Dummy card title"));
+    await userEvent.type(screen.getByLabelText("Dummy card title"), "Lunch handoff");
+    await userEvent.click(screen.getByRole("button", { name: "Save dummy card edit" }));
+    expect(screen.getByText("Lunch handoff is in Player 1.")).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "Trim dummy duplicate" }));
+    await userEvent.click(screen.getByRole("button", { name: "Delete dummy duplicate" }));
+
+    expect(screen.getByText("Dummy card moved, edited, trimmed, and deleted."))
+      .toBeVisible();
+    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it("completes dummy trim credit when deleting a duplicate before trimming", async () => {
+    const onMove = vi.fn();
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        onMove={onMove}
+        responsibilities={[responsibility({ title: "Auto", boardLane: "not_in_play" })]}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Open dummy move menu" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "Player 1" }));
+    await userEvent.click(screen.getByRole("button", { name: "Save dummy card edit" }));
+    await userEvent.click(screen.getByRole("button", { name: "Delete dummy duplicate" }));
+
+    expect(screen.getByText("Dummy card moved, edited, trimmed, and deleted."))
+      .toBeVisible();
+    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
+    expect(onMove).not.toHaveBeenCalled();
+  });
 });

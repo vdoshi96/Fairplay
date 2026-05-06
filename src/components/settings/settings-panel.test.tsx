@@ -259,4 +259,49 @@ describe("settings panel", () => {
       )
     ).toBeVisible();
   });
+
+  it("walks through local dummy settings practice without changing account data", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    renderSettings();
+
+    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Start dummy Settings workflow" }));
+    const practiceRegion = screen.getByRole("region", {
+      name: "Dummy Settings practice"
+    });
+    expect(practiceRegion).toBeVisible();
+    expect(practiceRegion).toHaveClass(
+      "z-[60]",
+      "bg-[var(--fp-surface-strong)]"
+    );
+    expect(practiceRegion.className).not.toContain("bg-white");
+
+    fireEvent.change(screen.getByLabelText("Dummy appearance mode"), {
+      target: { value: "dark" }
+    });
+    expect(screen.getByText("Dummy appearance mode changed to Dark.")).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "Check dummy welcome replay" }));
+    expect(screen.getByText("Dummy welcome replay checked.")).toBeVisible();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open dummy persona confirmation" })
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Dummy persona switch confirmation" })
+    ).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Stay in settings" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Locate dummy learning hub" }));
+    expect(screen.getByText("Dummy Settings workflow complete.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(routerPush).not.toHaveBeenCalled();
+    expect(routerRefresh).not.toHaveBeenCalled();
+    expect(routerReplace).not.toHaveBeenCalled();
+  });
 });
