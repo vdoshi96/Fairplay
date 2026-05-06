@@ -118,6 +118,18 @@ function expectShouldersToOverlapArmBounds(
   expect(rightArmYBounds.maxY).toBeGreaterThan(torsoYBounds.minY);
 }
 
+function bodyPart(part: string) {
+  const element = screen
+    .getAllByTestId("little-alex-body-part")
+    .find((bodyPartElement) => bodyPartElement.getAttribute("data-part") === part);
+
+  if (!element) {
+    throw new Error(`Missing Little Alex body part: ${part}`);
+  }
+
+  return element;
+}
+
 function dispatchPointer(
   target: HTMLElement | Window,
   type: "pointercancel" | "pointerdown" | "pointermove" | "pointerup",
@@ -381,6 +393,31 @@ describe("LittleAlexPhysics", () => {
     });
 
     expect(littleAlex).toHaveAttribute("data-idle-state", "walking");
+  });
+
+  it("moves one half-speed idle step when idle walking starts", () => {
+    vi.useFakeTimers();
+    stubReducedMotion(false);
+    stubViewport(1024, 768);
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const torso = bodyPart("torso");
+
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-idle-state", "standing");
+    const standingX = translatedX(torso);
+
+    act(() => {
+      vi.advanceTimersByTime(4_000);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-idle-state", "walking");
+    expect(Math.abs(translatedX(torso) - standingX)).toBeCloseTo(0.36);
   });
 
   it("waits 1.5 seconds longer before standing after a drag release", () => {
