@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
+import type { LittleAlexPreferences } from "@/contracts/preferences";
 import {
   THEME_STORAGE_KEY,
   ThemeProvider
@@ -35,12 +36,24 @@ const selectedPersona: PersonaSummary = {
   avatarKey: "alex"
 };
 
+const littleAlexPreferences: LittleAlexPreferences = {
+  personaId: selectedPersona.id,
+  genderPresentation: "neutral",
+  chatPhrase: "i'm little alex horne",
+  skinTone: "tone_2",
+  updatedAt: "2026-05-06T12:00:00.000Z"
+};
+
 const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
 
 function renderSettings() {
   render(
     <ThemeProvider>
-      <SettingsPanel household={household} selectedPersona={selectedPersona} />
+      <SettingsPanel
+        household={household}
+        littleAlexPreferences={littleAlexPreferences}
+        selectedPersona={selectedPersona}
+      />
     </ThemeProvider>
   );
 }
@@ -112,6 +125,61 @@ describe("settings panel", () => {
     });
     expect(systemSwitch).toHaveAttribute("aria-checked", "true");
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("system");
+  });
+
+  it("customizes Little Alex preferences for the selected persona", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...littleAlexPreferences,
+        genderPresentation: "feminine",
+        chatPhrase: "well done everyone",
+        skinTone: "tone_4"
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderSettings();
+
+    expect(
+      screen.getByRole("group", { name: "Little Alex gender presentation" })
+    ).toBeVisible();
+    expect(screen.getByLabelText("Little Alex chat bubble phrase")).toHaveValue(
+      "i'm little alex horne"
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Feminine" }));
+    fireEvent.change(screen.getByLabelText("Little Alex chat bubble phrase"), {
+      target: { value: "well done everyone" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Tone 4" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save Little Alex" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/preferences/little-alex",
+      expect.objectContaining({
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" }
+      })
+    );
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      genderPresentation: "feminine",
+      chatPhrase: "well done everyone",
+      skinTone: "tone_4"
+    });
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Little Alex updated for Alex."
+    );
+  });
+
+  it("keeps Little Alex phrases to 30 characters", () => {
+    renderSettings();
+
+    expect(screen.getByLabelText("Little Alex chat bubble phrase")).toHaveAttribute(
+      "maxLength",
+      "30"
+    );
+    expect(screen.getByText("21/30")).toBeVisible();
   });
 
   it("uses theme primary tokens for selected appearance and persona dialog actions", async () => {
@@ -262,7 +330,11 @@ describe("settings panel", () => {
   it("marks settings guide targets and links back to replay learning", () => {
     const { container } = render(
       <ThemeProvider>
-        <SettingsPanel household={household} selectedPersona={selectedPersona} />
+        <SettingsPanel
+          household={household}
+          littleAlexPreferences={littleAlexPreferences}
+          selectedPersona={selectedPersona}
+        />
       </ThemeProvider>
     );
 

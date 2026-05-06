@@ -11,15 +11,32 @@ async function expectApiPost(
   path: string,
   action: () => Promise<void>
 ) {
+  return expectApiRequest(page, path, "POST", action);
+}
+
+async function expectApiPatch(
+  page: Page,
+  path: string,
+  action: () => Promise<void>
+) {
+  return expectApiRequest(page, path, "PATCH", action);
+}
+
+async function expectApiRequest(
+  page: Page,
+  path: string,
+  method: "PATCH" | "POST",
+  action: () => Promise<void>
+) {
   const apiResponse = page
     .waitForResponse((response) =>
-      response.url().includes(path) && response.request().method() === "POST"
+      response.url().includes(path) && response.request().method() === method
     )
     .then((response) => ({ response }));
   const apiFailure = page
     .waitForEvent("requestfailed", {
       predicate: (request) =>
-        request.url().includes(path) && request.method() === "POST",
+        request.url().includes(path) && request.method() === method,
       timeout: 20_000
     })
     .then((request) => ({ request }));
@@ -149,6 +166,28 @@ async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
   await page.mouse.up();
 }
 
+async function dragLittleAlexTo(page: Page, targetX: number, targetY: number) {
+  const grabTarget = page.getByTestId("little-alex-grab-target");
+  const box = await grabTarget.boundingBox();
+
+  expect(box).not.toBeNull();
+
+  if (!box) {
+    return;
+  }
+
+  const startX = box.x + box.width / 2;
+  const startY = box.y + box.height / 2;
+
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move((startX + targetX) / 2, (startY + targetY) / 2, {
+    steps: 4
+  });
+  await page.mouse.move(targetX, targetY, { steps: 4 });
+  await page.mouse.up();
+}
+
 test.describe("Little Alex physics", () => {
   test.describe.configure({ mode: "serial" });
 
@@ -192,6 +231,9 @@ test.describe("Little Alex physics", () => {
     const before = await torso.boundingBox();
 
     await dragLittleAlex(page, -240, 180);
+    await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
+      "i'm little alex horne"
+    );
     await page.waitForTimeout(500);
 
     const after = await torso.boundingBox();
@@ -204,6 +246,54 @@ test.describe("Little Alex physics", () => {
       );
     }
 
+    await expectLittleAlexInViewport(page);
+  });
+
+  test("uses saved Little Alex preferences for appearance and fling bubble", async ({
+    page
+  }) => {
+    await createHouseholdAndChooseAlex(page);
+    await page.goto("/app/settings");
+
+    await page.getByRole("button", { name: "Feminine" }).click();
+    await page
+      .getByLabel("Little Alex chat bubble phrase")
+      .fill("well done everyone");
+    await page.getByRole("button", { name: "Tone 4" }).click();
+    await expectApiPatch(page, "/api/preferences/little-alex", () =>
+      page.getByRole("button", { name: "Save Little Alex" }).click()
+    );
+    await expect(page.getByRole("status")).toContainText(
+      "Little Alex updated for Alex."
+    );
+
+    await page.goto("/app/home");
+    const littleAlex = page.getByTestId("little-alex-horne");
+
+    await expect(littleAlex).toHaveAttribute(
+      "data-gender-presentation",
+      "feminine"
+    );
+    await expect(littleAlex).toHaveAttribute(
+      "data-chat-phrase",
+      "well done everyone"
+    );
+    await dragLittleAlex(page, -180, 120);
+    await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
+      "well done everyone"
+    );
+  });
+
+  test("starts idle walking after five seconds untouched", async ({ page }) => {
+    await createHouseholdAndChooseAlex(page);
+    await page.goto("/app/home");
+
+    const littleAlex = page.getByTestId("little-alex-horne");
+
+    await expect(littleAlex).toHaveAttribute("data-idle-state", "active");
+    await expect(littleAlex).toHaveAttribute("data-idle-state", /walking|paused/, {
+      timeout: 6_500
+    });
     await expectLittleAlexInViewport(page);
   });
 
@@ -223,6 +313,36 @@ test.describe("Little Alex physics", () => {
     await expectLittleAlexInViewport(page);
   });
 
+  test("does not cover mobile navigation taps when resting near the bottom nav", async ({
+    page
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize({ height: 720, width: 390 });
+    await createHouseholdAndChooseAlex(page);
+    await page.goto("/app/home");
+
+    await expect(page.getByTestId("little-alex-horne")).toHaveCSS("z-index", "9");
+
+    const mobileNav = page.getByRole("navigation", { name: "Primary" });
+    const libraryLink = mobileNav.getByRole("link", { name: "Library" });
+    const libraryBox = await libraryLink.boundingBox();
+
+    expect(libraryBox).not.toBeNull();
+
+    if (!libraryBox) {
+      return;
+    }
+
+    await dragLittleAlexTo(
+      page,
+      libraryBox.x + libraryBox.width / 2,
+      libraryBox.y + libraryBox.height / 2
+    );
+
+    await libraryLink.click();
+    await expect(page).toHaveURL(/\/app\/library/);
+  });
+
   test("uses a static draggable-safe mode with reduced motion", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await createHouseholdAndChooseAlex(page);
@@ -230,6 +350,7 @@ test.describe("Little Alex physics", () => {
 
     const littleAlex = page.getByTestId("little-alex-horne");
     await expect(littleAlex).toHaveAttribute("data-motion-mode", "reduced");
+    await expect(littleAlex).toHaveAttribute("data-idle-state", "static");
 
     const torso = page.locator('[data-part="torso"]');
     const before = await torso.boundingBox();

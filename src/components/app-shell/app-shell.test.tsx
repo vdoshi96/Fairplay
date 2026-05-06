@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import AppHomePage from "@/app/app/home/page";
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
+import type { LittleAlexPreferences } from "@/contracts/preferences";
 import { OnboardingPageClient } from "@/components/onboarding/onboarding-page-client";
 import { SettingsPanel } from "@/components/settings/settings-panel";
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -36,6 +37,14 @@ const selectedPersona: PersonaSummary = {
   avatarKey: "alex"
 };
 
+const littleAlexPreferences: LittleAlexPreferences = {
+  personaId: selectedPersona.id,
+  genderPresentation: "masculine",
+  chatPhrase: "hello from alex",
+  skinTone: "tone_5",
+  updatedAt: "2026-05-06T12:00:00.000Z"
+};
+
 const retiredGuideAnchor = ["app", "guide", "101"].join("-");
 const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
@@ -43,7 +52,11 @@ const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
 function renderProtectedUi(children: ReactNode) {
   return render(
     <ThemeProvider>
-      <AppShell household={household} selectedPersona={selectedPersona}>
+      <AppShell
+        household={household}
+        littleAlexPreferences={littleAlexPreferences}
+        selectedPersona={selectedPersona}
+      >
         {children}
       </AppShell>
     </ThemeProvider>
@@ -155,6 +168,9 @@ describe("protected app UI", () => {
     expect(littleAlex).toHaveAttribute("aria-hidden", "true");
     expect(littleAlex).toHaveAttribute("data-physics-engine", "matter-js");
     expect(littleAlex).toHaveAttribute("data-motion-mode", "physics");
+    expect(littleAlex).toHaveAttribute("data-chat-phrase", "hello from alex");
+    expect(littleAlex).toHaveAttribute("data-gender-presentation", "masculine");
+    expect(littleAlex).toHaveStyle({ "--little-alex-skin": "#8f5f45" });
     expect(littleAlex).toHaveStyle({ pointerEvents: "none" });
     expect(screen.queryByRole("button", { name: /little alex/i })).not.toBeInTheDocument();
     expect(screen.getAllByTestId("little-alex-body-part")).toHaveLength(6);
@@ -220,7 +236,11 @@ describe("protected app UI", () => {
 
   it("renders settings inside the app shell with household and persona state", () => {
     renderProtectedUi(
-      <SettingsPanel household={household} selectedPersona={selectedPersona} />
+      <SettingsPanel
+        household={household}
+        littleAlexPreferences={littleAlexPreferences}
+        selectedPersona={selectedPersona}
+      />
     );
 
     expect(screen.getByRole("heading", { name: "Household settings" })).toBeVisible();

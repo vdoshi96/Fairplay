@@ -1,9 +1,15 @@
-import type { PersonaOnboardingPreferences } from "@prisma/client";
+import type {
+  PersonaLittleAlexPreferences,
+  PersonaOnboardingPreferences
+} from "@prisma/client";
 
 import type {
+  LittleAlexPreferences,
+  LittleAlexPreferencesMutation,
   OnboardingPreferences,
   OnboardingPreferencesMutation
 } from "../../contracts/preferences";
+import { LITTLE_ALEX_DEFAULT_PREFERENCES } from "../../contracts/preferences";
 import type { PersonaId } from "../../domain/ids";
 import { isUniqueConstraintError } from "../db/errors";
 import { prisma } from "../db/prisma";
@@ -32,6 +38,18 @@ function toOnboardingPreferences(
     crashCourseReplayRequestedAt: nullableIso(
       preferences.crashCourseReplayRequestedAt
     ),
+    updatedAt: preferences.updatedAt.toISOString()
+  };
+}
+
+function toLittleAlexPreferences(
+  preferences: PersonaLittleAlexPreferences
+): LittleAlexPreferences {
+  return {
+    personaId: preferences.personaId,
+    genderPresentation: preferences.genderPresentation,
+    chatPhrase: preferences.chatPhrase,
+    skinTone: preferences.skinTone,
     updatedAt: preferences.updatedAt.toISOString()
   };
 }
@@ -80,6 +98,35 @@ export async function replayWelcome(
   });
 }
 
+export async function getLittleAlexPreferences(
+  personaId: PersonaId
+): Promise<LittleAlexPreferences> {
+  const preferences = await getOrCreateLittleAlexPreferences(personaId);
+
+  return toLittleAlexPreferences(preferences);
+}
+
+export async function updateLittleAlexPreferences(
+  personaId: PersonaId,
+  input: LittleAlexPreferencesMutation
+): Promise<LittleAlexPreferences> {
+  const preferences = await prisma.personaLittleAlexPreferences.upsert({
+    where: { personaId },
+    update: {
+      genderPresentation: input.genderPresentation,
+      chatPhrase: input.chatPhrase,
+      skinTone: input.skinTone
+    },
+    create: {
+      personaId,
+      ...LITTLE_ALEX_DEFAULT_PREFERENCES,
+      ...input
+    }
+  });
+
+  return toLittleAlexPreferences(preferences);
+}
+
 async function getOrCreateOnboardingPreferences(personaId: PersonaId) {
   try {
     return await prisma.personaOnboardingPreferences.upsert({
@@ -93,6 +140,33 @@ async function getOrCreateOnboardingPreferences(personaId: PersonaId) {
     }
 
     const preferences = await prisma.personaOnboardingPreferences.findUnique({
+      where: { personaId }
+    });
+
+    if (!preferences) {
+      throw error;
+    }
+
+    return preferences;
+  }
+}
+
+async function getOrCreateLittleAlexPreferences(personaId: PersonaId) {
+  try {
+    return await prisma.personaLittleAlexPreferences.upsert({
+      where: { personaId },
+      update: {},
+      create: {
+        personaId,
+        ...LITTLE_ALEX_DEFAULT_PREFERENCES
+      }
+    });
+  } catch (error) {
+    if (!isUniqueConstraintError(error)) {
+      throw error;
+    }
+
+    const preferences = await prisma.personaLittleAlexPreferences.findUnique({
       where: { personaId }
     });
 
