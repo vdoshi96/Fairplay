@@ -827,16 +827,19 @@ export function AiCardReviewPanel({
 
   return (
     <Sheet aria-label="Review AI card draft" className="grid gap-4">
-      <div className="grid gap-4 lg:grid-cols-[180px_1fr]">
-        <div className="grid aspect-[5/7] place-items-center overflow-hidden rounded border border-fp-line bg-white">
+      <div className="grid gap-4 lg:grid-cols-[minmax(320px,42vw)_1fr]">
+        <div
+          className="grid min-h-[420px] place-items-center overflow-hidden rounded bg-fp-surface lg:min-h-[560px]"
+          data-testid="ai-draft-review-art-panel"
+        >
           {coverUrl ? (
             <Image
               alt={`${form.title || draft.title || "AI card"} cover`}
-              className="h-full w-full object-contain p-2"
-              height={700}
+              className="h-full min-h-[420px] w-full object-cover lg:min-h-[560px]"
+              height={2044}
               src={coverUrl}
               unoptimized
-              width={500}
+              width={1460}
             />
           ) : (
             <Sparkles aria-hidden="true" className="text-fp-muted-ink" size={32} />

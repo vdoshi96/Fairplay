@@ -399,6 +399,12 @@ describe("AiTaskManager", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Review" }));
 
+    const artPanel = await screen.findByTestId("ai-draft-review-art-panel");
+    expect(artPanel).toHaveClass("min-h-[420px]");
+    expect(artPanel).toHaveClass("lg:min-h-[560px]");
+    expect(screen.getByRole("img", { name: /laundry reset cover/i })).toHaveClass(
+      "object-cover"
+    );
     expect(await screen.findByLabelText("Draft title")).toHaveValue("Laundry reset");
     expect(screen.getByLabelText("Definition")).toHaveValue("Own the laundry flow.");
     expect(screen.getByLabelText("Conception")).toHaveValue(

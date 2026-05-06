@@ -7,6 +7,7 @@ import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
 import { OnboardingPageClient } from "@/components/onboarding/onboarding-page-client";
 import { SettingsPanel } from "@/components/settings/settings-panel";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AppShell } from "./app-shell";
 
 const routerPush = vi.hoisted(() => vi.fn());
@@ -40,9 +41,11 @@ const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
 
 function renderProtectedUi(children: ReactNode) {
   return render(
-    <AppShell household={household} selectedPersona={selectedPersona}>
-      {children}
-    </AppShell>
+    <ThemeProvider>
+      <AppShell household={household} selectedPersona={selectedPersona}>
+        {children}
+      </AppShell>
+    </ThemeProvider>
   );
 }
 
@@ -51,6 +54,9 @@ describe("protected app UI", () => {
     pathname.mockReturnValue("/app/load-map");
     routerPush.mockReset();
     routerReplace.mockReset();
+    window.localStorage.clear();
+    document.documentElement.removeAttribute("data-theme");
+    document.documentElement.removeAttribute("data-theme-mode");
   });
 
   it("renders the app shell around the real home page", () => {
@@ -122,6 +128,20 @@ describe("protected app UI", () => {
       "aria-current",
       "page"
     );
+  });
+
+  it("uses theme primary tokens for active app navigation items", () => {
+    renderProtectedUi(<AppHomePage />);
+
+    const activeLoadMapLinks = screen
+      .getAllByRole("link", { name: /Load map/i })
+      .filter((link) => link.getAttribute("aria-current") === "page");
+
+    expect(activeLoadMapLinks).toHaveLength(2);
+    activeLoadMapLinks.forEach((link) => {
+      expect(link).toHaveClass("bg-fp-primary", "text-fp-on-primary");
+      expect(link.className).not.toContain("text-white");
+    });
   });
 
   it("lets the crash course route use the full app canvas", () => {
