@@ -3,6 +3,7 @@ import Matter from "matter-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  clampIdleWalkTurnToBounds,
   LittleAlexPhysics,
   nextIdleWalkTurn,
   playAreaBounds
@@ -330,6 +331,23 @@ describe("LittleAlexPhysics", () => {
       expect(to).toBeGreaterThanOrEqual(bounds.minX);
       expect(to).toBeLessThanOrEqual(bounds.maxX);
     });
+  });
+
+  it("reclamps stale idle walk targets after the play area changes", () => {
+    const resizedBounds = playAreaBounds({ height: 720, width: 500 });
+    const clamped = clampIdleWalkTurnToBounds(
+      { direction: 1, targetX: 1_200, turnsInDirection: 2 },
+      resizedBounds
+    );
+    const next = nextIdleWalkTurn(
+      clamped,
+      clamped.targetX,
+      resizedBounds,
+      vi.fn(() => 0.99)
+    );
+
+    expect(clamped.targetX).toBeLessThan(resizedBounds.maxX);
+    expect(next.targetX).toBeLessThanOrEqual(resizedBounds.maxX);
   });
 
   it("does not run idle walking in reduced motion", () => {

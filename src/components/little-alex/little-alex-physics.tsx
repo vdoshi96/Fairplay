@@ -572,6 +572,18 @@ export function nextIdleWalkTurn(
   };
 }
 
+export function clampIdleWalkTurnToBounds(
+  current: IdleWalkTurn,
+  bounds = playAreaBounds()
+): IdleWalkTurn {
+  const range = anchorRange(bounds);
+
+  return {
+    ...current,
+    targetX: clampToViewportRange(current.targetX, range.minX, range.maxX)
+  };
+}
+
 function initialIdleWalkTurn(anchorX: number, bounds = playAreaBounds()): IdleWalkTurn {
   const range = anchorRange(bounds);
   const direction = anchorX >= (range.minX + range.maxX) / 2 ? -1 : 1;
@@ -843,11 +855,16 @@ export function LittleAlexPhysics({
     };
     const handleResize = () => {
       const nextSize = viewportSize();
+      const nextBounds = playAreaBounds(nextSize);
 
       Matter.Composite.remove(physics.engine.world, physics.walls);
-      physics.walls = createWalls(playAreaBounds(nextSize));
+      physics.walls = createWalls(nextBounds);
       Matter.Composite.add(physics.engine.world, physics.walls);
-      containBodiesInPlayArea(physics.bodies, playAreaBounds(nextSize));
+      containBodiesInPlayArea(physics.bodies, nextBounds);
+      idleWalkTurnRef.current = clampIdleWalkTurnToBounds(
+        idleWalkTurnRef.current,
+        nextBounds
+      );
       sync();
     };
 

@@ -16,13 +16,14 @@ Branch: `codex/little-alex-bounds-idle`
 - Added a 6.5s post-release stand-up delay, 1.5s longer than the untouched 5s delay.
 - Added turn planning with a 5% minimum horizontal distance and three-turn minimum before random direction changes.
 - Hardened pointer coordinate handling so tests and drag events cannot leak `NaN` into reduced-motion transforms.
+- Clamped in-progress idle walk targets during resize so Alex cannot get stuck walking toward an unreachable pre-resize coordinate.
 
 ## Tests
 
 - Red observed: `npm test -- src/components/little-alex/little-alex-physics.test.tsx`
   - New tests failed against the old implementation for direct-to-walking idle, old post-release delay, sidebar unsafe reduced-motion drag, and missing turn planner.
 - Green observed: `npm test -- src/components/little-alex/little-alex-physics.test.tsx`
-  - 12 tests passed.
+  - 13 tests passed after adding the resize target regression case.
 - Green observed: `npm run typecheck`
   - Passed.
 - Green observed: `npm run lint`
