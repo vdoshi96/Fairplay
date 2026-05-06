@@ -82,6 +82,68 @@ html[data-theme="dark"] {
   --fp-danger: #e0929b;
 }
 
+@layer utilities {
+  html[data-theme="dark"] :is(.bg-white, .hover\:bg-white:hover) {
+    background-color: var(--fp-surface-strong) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/55) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 55%,
+      transparent
+    ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/75) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 75%,
+      transparent
+    ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/80) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 80%,
+      transparent
+    ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/95) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 95%,
+      transparent
+    ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/\[0\.92\]) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 92%,
+      transparent
+    ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-stone-50\/80) {
+    background-color: var(--fp-surface-muted) !important;
+  }
+
+  html[data-theme="dark"] :is(.text-stone-950) {
+    color: var(--fp-ink) !important;
+  }
+
+  html[data-theme="dark"] :is(.text-stone-700, .text-stone-600) {
+    color: var(--fp-muted-ink) !important;
+  }
+
+  html[data-theme="dark"] :is(.border-stone-300, .border-stone-200) {
+    border-color: var(--fp-line) !important;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -253,7 +315,7 @@ a {
   inset: 0;
   position: fixed;
   user-select: none;
-  z-index: 35;
+  z-index: 9;
 }
 
 .fp-little-alex-part,

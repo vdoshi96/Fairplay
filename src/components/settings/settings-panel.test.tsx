@@ -69,13 +69,26 @@ describe("settings panel", () => {
     vi.restoreAllMocks();
   });
 
-  it("shows appearance controls and persists the selected theme mode", async () => {
+  it("uses a system-follow switch and persists explicit light or dark overrides", async () => {
     renderSettings();
 
-    expect(
-      screen.getByRole("group", { name: "Appearance mode" })
-    ).toBeVisible();
-    expect(screen.getByRole("button", { name: "System" })).toHaveAttribute(
+    const systemSwitch = screen.getByRole("switch", {
+      name: "Follow system settings"
+    });
+    expect(systemSwitch).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("group", { name: "Theme override" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Light" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Dark" })).toBeDisabled();
+
+    fireEvent.click(systemSwitch);
+
+    await waitFor(() => {
+      expect(document.documentElement).toHaveAttribute("data-theme", "light");
+      expect(document.documentElement).toHaveAttribute("data-theme-mode", "light");
+    });
+    expect(systemSwitch).toHaveAttribute("aria-checked", "false");
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("light");
+    expect(screen.getByRole("button", { name: "Light" })).toHaveAttribute(
       "aria-pressed",
       "true"
     );
@@ -88,30 +101,41 @@ describe("settings panel", () => {
     });
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
 
-    fireEvent.click(screen.getByRole("button", { name: "Light" }));
+    fireEvent.click(systemSwitch);
 
     await waitFor(() => {
       expect(document.documentElement).toHaveAttribute("data-theme", "light");
-      expect(document.documentElement).toHaveAttribute("data-theme-mode", "light");
+      expect(document.documentElement).toHaveAttribute(
+        "data-theme-mode",
+        "system"
+      );
     });
-    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("light");
+    expect(systemSwitch).toHaveAttribute("aria-checked", "true");
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("system");
   });
 
   it("uses theme primary tokens for selected appearance and persona dialog actions", async () => {
     renderSettings();
 
-    const selectedAppearanceMode = screen.getByRole("button", { name: "System" });
+    fireEvent.click(
+      screen.getByRole("switch", { name: "Follow system settings" })
+    );
+    const selectedAppearanceMode = screen.getByRole("button", { name: "Light" });
     expect(selectedAppearanceMode).toHaveClass(
       "bg-fp-primary",
       "text-fp-on-primary"
     );
     expect(selectedAppearanceMode.className).not.toContain("text-white");
+    expect(screen.getByRole("button", { name: "Log out" }).className).not.toContain(
+      "bg-white"
+    );
 
-    const { continueButton } = openSwitchDialog();
+    const { cancelButton, continueButton } = openSwitchDialog();
 
     await waitFor(() => expect(continueButton).toHaveFocus());
     expect(continueButton).toHaveClass("bg-fp-primary", "text-fp-on-primary");
     expect(continueButton.className).not.toContain("text-white");
+    expect(cancelButton.className).not.toContain("bg-white");
   });
 
   it("moves focus into the persona switch dialog when opened", async () => {

@@ -18,16 +18,14 @@ import {
   completeGuidePractice,
   useGuidePracticeRequest
 } from "@/components/guide/guide-practice";
-import { useTheme, type ThemeMode } from "@/components/theme/theme-provider";
-import { SegmentedControl } from "@/components/ui/segmented-control";
+import { useTheme, type ResolvedTheme } from "@/components/theme/theme-provider";
 
 type SettingsPanelProps = {
   household: HouseholdSummary;
   selectedPersona: PersonaSummary;
 };
 
-const themeModeOptions: Array<{ label: string; value: ThemeMode }> = [
-  { label: "System", value: "system" },
+const overrideThemeOptions: Array<{ label: string; value: ResolvedTheme }> = [
   { label: "Light", value: "light" },
   { label: "Dark", value: "dark" }
 ];
@@ -155,7 +153,12 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
     });
   }
 
-  function handleThemeModeChange(nextMode: ThemeMode) {
+  function handleSystemThemeToggle() {
+    setThemeMode(themeMode === "system" ? resolvedTheme : "system");
+    completeGuidePractice("settings-appearance");
+  }
+
+  function handleThemeOverrideChange(nextMode: ResolvedTheme) {
     setThemeMode(nextMode);
     completeGuidePractice("settings-appearance");
   }
@@ -245,7 +248,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
           className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4"
           data-guide-id="settings-appearance"
         >
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
             <div className="grid gap-1">
               <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
                 Appearance
@@ -256,12 +259,61 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
                   : `Using ${themeMode} mode on this device.`}
               </p>
             </div>
-            <SegmentedControl
-              ariaLabel="Appearance mode"
-              onChange={handleThemeModeChange}
-              options={themeModeOptions}
-              value={themeMode}
-            />
+            <div className="grid gap-3 sm:grid-cols-[auto_auto] sm:items-center">
+              <button
+                aria-checked={themeMode === "system"}
+                className="inline-flex min-h-11 items-center justify-between gap-3 rounded-[8px] border border-fp-line bg-fp-surface px-3 text-left text-[14px] font-semibold text-fp-ink outline-none transition focus:ring-2 focus:ring-fp-ink/25"
+                onClick={handleSystemThemeToggle}
+                role="switch"
+                type="button"
+              >
+                <span>Follow system settings</span>
+                <span
+                  aria-hidden="true"
+                  className={[
+                    "relative h-6 w-11 rounded-full border border-fp-line transition",
+                    themeMode === "system"
+                      ? "bg-fp-primary"
+                      : "bg-[var(--fp-surface-muted)]"
+                  ].join(" ")}
+                >
+                  <span
+                    className={[
+                      "absolute top-1 h-4 w-4 rounded-full bg-fp-on-primary shadow-[var(--fp-shadow-soft)] transition",
+                      themeMode === "system" ? "left-6" : "left-1 bg-fp-ink"
+                    ].join(" ")}
+                  />
+                </span>
+              </button>
+              <div
+                aria-label="Theme override"
+                className="inline-flex max-w-full gap-1 overflow-hidden rounded border border-[var(--fp-line)] bg-[var(--fp-surface)] p-1"
+                role="group"
+              >
+                {overrideThemeOptions.map((option) => {
+                  const isSelected =
+                    themeMode !== "system" && option.value === themeMode;
+
+                  return (
+                    <button
+                      aria-pressed={isSelected}
+                      className={[
+                        "min-h-9 min-w-16 rounded px-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)] disabled:cursor-not-allowed disabled:opacity-55",
+                        isSelected
+                          ? "bg-fp-primary text-fp-on-primary shadow-[var(--fp-shadow-soft)]"
+                          : "text-[var(--fp-muted)] hover:bg-[var(--fp-surface-strong)] hover:text-[var(--fp-ink)]"
+                      ].join(" ")}
+                      disabled={themeMode === "system"}
+                      key={option.value}
+                      onClick={() => handleThemeOverrideChange(option.value)}
+                      type="button"
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -351,7 +403,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
         </section>
 
         <button
-          className="min-h-11 rounded-[8px] border border-fp-danger/40 bg-white px-4 text-[14px] font-semibold text-fp-danger outline-none focus:ring-2 focus:ring-fp-danger/25 disabled:cursor-not-allowed disabled:opacity-70"
+          className="min-h-11 rounded-[8px] border border-fp-danger/40 bg-[var(--fp-surface-strong)] px-4 text-[14px] font-semibold text-fp-danger outline-none focus:ring-2 focus:ring-fp-danger/25 disabled:cursor-not-allowed disabled:opacity-70"
           data-guide-id="settings-logout"
           disabled={loggingOut}
           onClick={() => void logout()}
@@ -394,7 +446,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
                 Continue
               </button>
               <button
-                className="min-h-11 flex-1 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
+                className="min-h-11 flex-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
                 onClick={closeSwitchConfirm}
                 type="button"
               >
