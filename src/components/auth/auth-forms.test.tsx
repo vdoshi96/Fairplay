@@ -60,6 +60,58 @@ describe("auth forms", () => {
     expect(screen.getByText("Enter the household password.")).toBeVisible();
   });
 
+  it("submits login when Enter is pressed in a logged-out username field", async () => {
+    const onAuthenticated = vi.fn();
+    const fetchMock = vi.fn(async () =>
+      Response.json({ requiresPersonaSelection: true })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    render(<LoginForm onAuthenticated={onAuthenticated} />);
+
+    fireEvent.change(screen.getByLabelText("Household username"), {
+      target: { value: "river-home" }
+    });
+    fireEvent.change(screen.getByLabelText("Household password"), {
+      target: { value: "correct horse battery staple" }
+    });
+    fireEvent.keyDown(screen.getByLabelText("Household username"), {
+      key: "Enter",
+      code: "Enter"
+    });
+
+    await waitFor(() => expect(onAuthenticated).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/auth/login",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("submits login when Enter is pressed in a logged-out password field", async () => {
+    const onAuthenticated = vi.fn();
+    const fetchMock = vi.fn(async () =>
+      Response.json({ requiresPersonaSelection: true })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    render(<LoginForm onAuthenticated={onAuthenticated} />);
+
+    fireEvent.change(screen.getByLabelText("Household username"), {
+      target: { value: "river-home" }
+    });
+    fireEvent.change(screen.getByLabelText("Household password"), {
+      target: { value: "correct horse battery staple" }
+    });
+    fireEvent.keyDown(screen.getByLabelText("Household password"), {
+      key: "Enter",
+      code: "Enter"
+    });
+
+    await waitFor(() => expect(onAuthenticated).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/auth/login",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
   it("disables login submit while pending", async () => {
     let resolveFetch: (response: Response) => void = () => undefined;
     vi.stubGlobal(

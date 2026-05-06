@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { THEME_STORAGE_KEY } from "@/components/theme/theme-constants";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,9 +35,33 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#FFFDF8",
-  colorScheme: "light"
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFDF8" },
+    { media: "(prefers-color-scheme: dark)", color: "#161411" }
+  ],
+  colorScheme: "light dark"
 };
+
+const themeInitScript = `
+(function() {
+  try {
+    var mode = window.localStorage.getItem("${THEME_STORAGE_KEY}");
+    if (mode !== "system" && mode !== "light" && mode !== "dark") {
+      mode = "system";
+    }
+    var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var theme = mode === "dark" || (mode === "system" && prefersDark) ? "dark" : "light";
+    var root = document.documentElement;
+    root.dataset.theme = theme;
+    root.dataset.themeMode = mode;
+    root.style.colorScheme = theme;
+  } catch (error) {
+    document.documentElement.dataset.theme = "light";
+    document.documentElement.dataset.themeMode = "system";
+    document.documentElement.style.colorScheme = "light";
+  }
+})();
+`;
 
 export default function RootLayout({
   children
@@ -43,8 +69,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={geistSans.variable}>
-      <body>{children}</body>
+    <html lang="en" className={geistSans.variable} suppressHydrationWarning>
+      <body>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

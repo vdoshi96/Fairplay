@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, KeyboardEvent, useState } from "react";
 
 import { errorId, fieldId, GENERIC_LOGIN_ERROR, readApiError } from "./form-utils";
 
@@ -19,6 +19,15 @@ export function LoginForm({ onAuthenticated }: LoginFormProps) {
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [errors, setErrors] = useState<LoginErrors>({});
+
+  function handleFieldKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing || pending) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -96,6 +105,7 @@ export function LoginForm({ onAuthenticated }: LoginFormProps) {
           id={fieldId("login-username")}
           name="username"
           onChange={(event) => setUsername(event.target.value)}
+          onKeyDown={handleFieldKeyDown}
           value={username}
         />
         {errors.username ? (
@@ -117,6 +127,7 @@ export function LoginForm({ onAuthenticated }: LoginFormProps) {
           id={fieldId("login-password")}
           name="password"
           onChange={(event) => setPassword(event.target.value)}
+          onKeyDown={handleFieldKeyDown}
           type="password"
           value={password}
         />
