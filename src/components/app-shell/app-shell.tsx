@@ -15,6 +15,7 @@ import {
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
+import { LittleAlexPhysics } from "@/components/little-alex/little-alex-physics";
 import { FairplayMark, PersonaAvatar } from "@/components/visuals/fairplay-visuals";
 
 type AppShellProps = {
@@ -50,6 +51,8 @@ export function AppShell({ children, household, selectedPersona }: AppShellProps
 
   return (
     <div className="min-h-screen bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <LittleAlexPhysics />
+
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-fp-line bg-[var(--fp-surface-strong)] px-4 py-5 shadow-[var(--fp-shadow-soft)] backdrop-blur lg:flex lg:flex-col">
         <Link
           className="flex min-w-0 items-center gap-3 rounded outline-none focus:ring-2 focus:ring-fp-ink/25"
