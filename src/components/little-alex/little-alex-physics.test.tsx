@@ -196,9 +196,12 @@ describe("LittleAlexPhysics", () => {
       0
     );
 
-    fireEvent.touchStart(window, {
+    fireEvent.touchMove(window, {
       changedTouches: [{ clientX: 370, clientY: 120 }],
-      touches: [{ clientX: 370, clientY: 120 }]
+      touches: [
+        { clientX: 24, clientY: 420 },
+        { clientX: 370, clientY: 120 }
+      ]
     });
 
     expect(littleAlex).toHaveAttribute("data-gaze-direction", "right");

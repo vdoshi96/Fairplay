@@ -8,13 +8,14 @@ Own the Little Alex gaze tracking and chat-bubble trigger fixes on `codex/little
 
 - Added observable gaze state through `data-gaze-direction` and CSS variables for horizontal/vertical eye movement.
 - Updated desktop pointer and mobile touch listeners so Little Alex looks toward the cursor or the latest touch point.
+- Prioritized `changedTouches` for mobile gaze so multi-touch gestures follow the newest touch instead of the first active finger.
 - Added drag tracking for start point, max distance, and release velocity.
 - Changed bubble behavior so a simple click does not show the phrase, while a real drag/fling release does.
 - Added Playwright assertions for desktop gaze and click-not-bubble behavior in the drag/fling flow.
 
 ## QA
 
-- `npm test -- src/components/little-alex/little-alex-physics.test.tsx` passed with 12 tests.
+- `npm test -- src/components/little-alex/little-alex-physics.test.tsx` passed with 12 tests, including the multi-touch last-changed touch case.
 - `npm run typecheck` passed.
 - `npm run lint` passed.
 

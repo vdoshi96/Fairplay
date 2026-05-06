@@ -738,7 +738,7 @@ export function LittleAlexPhysics({
       }
     };
     const trackTouch = (event: TouchEvent) => {
-      const touch = event.touches[0] ?? event.changedTouches[0];
+      const touch = event.changedTouches[0] ?? event.touches[0];
 
       if (!touch) {
         return;
