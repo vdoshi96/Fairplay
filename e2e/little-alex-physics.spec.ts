@@ -275,9 +275,30 @@ test.describe("Little Alex physics", () => {
       "feminine"
     );
     await expect(littleAlex).toHaveAttribute(
+      "data-appearance-head",
+      "soft-heart-head"
+    );
+    await expect(littleAlex).toHaveAttribute(
+      "data-appearance-silhouette",
+      "tapered-suit"
+    );
+    await expect(littleAlex).toHaveAttribute(
       "data-chat-phrase",
       "well done everyone"
     );
+    await expect(page.getByTestId("little-alex-hair")).toHaveAttribute(
+      "data-appearance-detail",
+      "rounded-bob"
+    );
+    await expect(page.getByTestId("little-alex-face-detail")).toHaveAttribute(
+      "data-appearance-detail",
+      "cheek-highlight"
+    );
+    await expect(
+      page.getByTestId("little-alex-silhouette-detail")
+    ).toHaveAttribute("data-appearance-detail", "tapered-suit");
+    await expect(page.getByTestId("little-alex-shirt")).toBeVisible();
+    await expect(page.getByTestId("little-alex-clipboard")).toBeVisible();
     await dragLittleAlex(page, -180, 120);
     await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
       "well done everyone"

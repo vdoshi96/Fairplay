@@ -35,6 +35,15 @@ type PartConfig = {
   width: number;
 };
 
+type AppearanceDetails = {
+  brow: string;
+  face: string;
+  hair: string;
+  head: string;
+  mouth: string;
+  silhouette: string;
+};
+
 type DragState = {
   lastPoint: Point;
   lastTime: number;
@@ -74,6 +83,33 @@ const skinToneCssValues: Record<LittleAlexSkinTone, string> = {
   tone_4: "#b7795f",
   tone_5: "#8f5f45"
 };
+
+const appearanceDetails = {
+  feminine: {
+    brow: "arched-brow",
+    face: "cheek-highlight",
+    hair: "rounded-bob",
+    head: "soft-heart-head",
+    mouth: "soft-smile",
+    silhouette: "tapered-suit"
+  },
+  masculine: {
+    brow: "strong-brow",
+    face: "square-jaw",
+    hair: "cropped-sideburns",
+    head: "square-jaw-head",
+    mouth: "confident-smirk",
+    silhouette: "broad-shoulder-suit"
+  },
+  neutral: {
+    brow: "relaxed-brow",
+    face: "freckle-pair",
+    hair: "side-swept",
+    head: "round-head",
+    mouth: "straight-smile",
+    silhouette: "classic-suit"
+  }
+} satisfies Record<LittleAlexGenderPresentation, AppearanceDetails>;
 
 const partConfigs: PartConfig[] = [
   {
@@ -416,14 +452,36 @@ function clampVelocity(value: number) {
   return clamp(value, -26 * PHYSICS_SPEED_MULTIPLIER, 26 * PHYSICS_SPEED_MULTIPLIER);
 }
 
-function partContent(part: PartKey) {
+function partContent(
+  part: PartKey,
+  genderPresentation: LittleAlexGenderPresentation
+) {
+  const details = appearanceDetails[genderPresentation];
+
   if (part === "head") {
     return (
       <>
-        <span className="fp-little-alex-hair" />
+        <span
+          className={`fp-little-alex-hair fp-little-alex-hair-${details.hair}`}
+          data-appearance-detail={details.hair}
+          data-testid="little-alex-hair"
+        />
+        <span
+          className={`fp-little-alex-brow fp-little-alex-brow-left fp-little-alex-brow-${details.brow}`}
+        />
+        <span
+          className={`fp-little-alex-brow fp-little-alex-brow-right fp-little-alex-brow-${details.brow}`}
+        />
         <span className="fp-little-alex-eye fp-little-alex-eye-left" />
         <span className="fp-little-alex-eye fp-little-alex-eye-right" />
-        <span className="fp-little-alex-mouth" />
+        <span
+          className={`fp-little-alex-face-detail fp-little-alex-face-detail-${details.face}`}
+          data-appearance-detail={details.face}
+          data-testid="little-alex-face-detail"
+        />
+        <span
+          className={`fp-little-alex-mouth fp-little-alex-mouth-${details.mouth}`}
+        />
       </>
     );
   }
@@ -431,7 +489,14 @@ function partContent(part: PartKey) {
   if (part === "torso") {
     return (
       <>
+        <span className="fp-little-alex-jacket-lapel fp-little-alex-jacket-lapel-left" />
+        <span className="fp-little-alex-jacket-lapel fp-little-alex-jacket-lapel-right" />
         <span className="fp-little-alex-shirt" data-testid="little-alex-shirt" />
+        <span
+          className={`fp-little-alex-silhouette-detail fp-little-alex-silhouette-detail-${details.silhouette}`}
+          data-appearance-detail={details.silhouette}
+          data-testid="little-alex-silhouette-detail"
+        />
         <span className="fp-little-alex-bowtie" />
         <span
           className="fp-little-alex-clipboard"
@@ -873,6 +938,10 @@ export function LittleAlexPhysics({
         `fp-little-alex-presentation-${genderPresentation}`
       ].join(" ")}
       data-chat-phrase={chatPhrase}
+      data-appearance-head={appearanceDetails[genderPresentation].head}
+      data-appearance-silhouette={
+        appearanceDetails[genderPresentation].silhouette
+      }
       data-gender-presentation={genderPresentation}
       data-idle-state={
         motionPreferenceReady && reducedMotion ? "static" : idleState
@@ -914,7 +983,7 @@ export function LittleAlexPhysics({
           }}
           style={reducedPartStyle(part, reducedAnchor)}
         >
-          {partContent(part.key)}
+          {partContent(part.key, genderPresentation)}
         </div>
       ))}
       <div
