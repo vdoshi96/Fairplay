@@ -8,6 +8,7 @@ import {
   LITTLE_ALEX_SPRITE_OUTPUT_DIR,
   LITTLE_ALEX_SPRITE_PARTS,
   LITTLE_ALEX_SPRITE_PRESENTATIONS,
+  LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE,
   LITTLE_ALEX_SPRITE_QWEN_MODEL,
   LITTLE_ALEX_SPRITE_SHEETS,
   LITTLE_ALEX_SPRITE_SHEET_OUTPUT_DIR,
@@ -28,6 +29,18 @@ describe("Little Alex sprite asset specs", () => {
     expect(LITTLE_ALEX_SPRITE_SHEET_SIZE).toBe("1536*1024");
     expect(LITTLE_ALEX_SPRITE_CELL_WIDTH).toBe(512);
     expect(LITTLE_ALEX_SPRITE_CELL_HEIGHT).toBe(512);
+    expect(LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE.slug).toBe(
+      "fairplay-little-alex-original-proportion-template-v1"
+    );
+    expect(LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE.documentationPath).toBe(
+      "docs/assets/little-alex-proportion-template.svg"
+    );
+    expect(LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE.provenance).toMatch(
+      /no internet image/i
+    );
+    expect(LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE.license).toMatch(
+      /No external license applies/i
+    );
     expect(LITTLE_ALEX_SPRITE_PRESENTATIONS).toEqual([
       "neutral",
       "masculine",
@@ -77,6 +90,10 @@ describe("Little Alex sprite asset specs", () => {
       expect(asset.crop.height).toBe(LITTLE_ALEX_SPRITE_CELL_HEIGHT);
       expect(asset.sourceSheetSlug).toBe(`${asset.presentation}-sheet`);
     }
+
+    for (const sheet of LITTLE_ALEX_SPRITE_SHEETS) {
+      expect(sheet.proportionTemplate).toBe(LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE);
+    }
   });
 
   it("builds original flat 2D sheet prompts with matching-part and crop instructions", () => {
@@ -98,6 +115,15 @@ describe("Little Alex sprite asset specs", () => {
 
     expect(prompt).toContain("Original Fairplay app sidekick sprite sheet");
     expect(prompt).toContain("cute flat 2D");
+    expect(prompt).toContain(
+      "fairplay-little-alex-original-proportion-template-v1"
+    );
+    expect(prompt).toContain("no internet image reference");
+    expect(prompt).toContain("no third-party mannequin");
+    expect(prompt).toContain("single complete original character");
+    expect(prompt).toContain("equal left and right limb proportions");
+    expect(prompt).toContain("leftArm and rightArm cells must match");
+    expect(prompt).toContain("leftLeg and rightLeg cells must match");
     expect(prompt).toContain("strict 3x2 grid");
     expect(prompt).toContain("paper-doll source sheet");
     expect(prompt).toContain("row 1 cell 1 contains head only");
@@ -114,5 +140,7 @@ describe("Little Alex sprite asset specs", () => {
     expect(neutralSheet!.promptSubject).not.toBe(masculineSheet!.promptSubject);
     expect(littleAlexSpriteNegativePrompt).toMatch(/photorealistic/);
     expect(littleAlexSpriteNegativePrompt).toMatch(/real-person likeness/);
+    expect(littleAlexSpriteNegativePrompt).toMatch(/internet image reference/);
+    expect(littleAlexSpriteNegativePrompt).toMatch(/unequal left and right limbs/);
   });
 });

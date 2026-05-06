@@ -7,6 +7,27 @@ export const LITTLE_ALEX_SPRITE_SHEET_SIZE = "1536*1024";
 export const LITTLE_ALEX_SPRITE_CELL_WIDTH = 512;
 export const LITTLE_ALEX_SPRITE_CELL_HEIGHT = 512;
 
+export const LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE = {
+  slug: "fairplay-little-alex-original-proportion-template-v1",
+  documentationPath: "docs/assets/little-alex-proportion-template.svg",
+  provenance:
+    "Original in-repo Fairplay proportion template; no internet image, mannequin, celebrity likeness, public figure, mascot, or third-party reference asset is used",
+  license:
+    "Project-owned generated/illustrated template for Fairplay asset production. No external license applies.",
+  description:
+    "One front-facing compact full-body paper-doll character with a single shared centerline, balanced shoulders and hips, equal left/right limb lengths, and a head-to-body scale that stays consistent across all cutout cells",
+  measurements: [
+    "head height is one unit",
+    "neck is short and centered under the head",
+    "torso is about 1.2 head-heights tall from collar to hem",
+    "each arm reaches from shoulder cap to just below the jacket hem",
+    "left arm and right arm use matching sleeve width, hand scale, and shoulder cap size",
+    "each leg is about 1.25 head-heights from hip opening to shoe sole",
+    "left leg and right leg use matching inseam, shoe size, and ankle width",
+    "assembled character reads as roughly 3.2 to 3.5 head-heights tall"
+  ]
+} as const;
+
 export const LITTLE_ALEX_SPRITE_PRESENTATIONS = [
   "neutral",
   "masculine",
@@ -47,6 +68,7 @@ export type LittleAlexSpriteSheetSpec = {
   outputPath: `${typeof LITTLE_ALEX_SPRITE_SHEET_OUTPUT_DIR}/${LittleAlexSpriteSheetSlug}.png`;
   presentation: LittleAlexSpritePresentation;
   promptSubject: string;
+  proportionTemplate: typeof LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE;
   sheetInstructions: string;
   size: typeof LITTLE_ALEX_SPRITE_SHEET_SIZE;
   slug: LittleAlexSpriteSheetSlug;
@@ -83,6 +105,10 @@ export const littleAlexSpriteNegativePrompt = [
   "real-person likeness",
   "celebrity",
   "public figure",
+  "internet image reference",
+  "licensed mannequin reference",
+  "stock mannequin",
+  "traced pose",
   "copied mascot",
   "copied app art",
   "source-art resemblance",
@@ -92,6 +118,10 @@ export const littleAlexSpriteNegativePrompt = [
   "mismatched line style",
   "mismatched suit fabric",
   "detached shoulder",
+  "unequal left and right limbs",
+  "mismatched limb proportions",
+  "oversized head",
+  "tiny torso",
   "extra limbs",
   "full body pose",
   "full assembled character",
@@ -114,7 +144,11 @@ const presentationSubjects = {
 } satisfies Record<LittleAlexSpritePresentation, string>;
 
 const sharedSheetInstructions = [
+  `derive every cutout from ${LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE.slug}`,
   "all six parts belong to the same original character",
+  "single coherent full-body plan before separation",
+  "equal left and right limb proportions",
+  "matching shoulder width and hip width across cells",
   "identical skin tone",
   "identical line style",
   "identical black suit fabric",
@@ -132,6 +166,7 @@ export const LITTLE_ALEX_SPRITE_SHEETS: LittleAlexSpriteSheetSpec[] =
       outputPath: `${LITTLE_ALEX_SPRITE_SHEET_OUTPUT_DIR}/${slug}.png`,
       presentation,
       promptSubject: presentationSubjects[presentation],
+      proportionTemplate: LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE,
       sheetInstructions: sharedSheetInstructions,
       size: LITTLE_ALEX_SPRITE_SHEET_SIZE,
       slug
@@ -166,15 +201,28 @@ export function buildLittleAlexSpritePrompt(input: LittleAlexSpriteSheetSpec) {
   return [
     "Original Fairplay app sidekick sprite sheet.",
     "Style: cute flat 2D original cartoon artwork, crisp simple silhouette, clean vector-like shapes, soft paper texture, no 3D, no photorealism.",
-    "Safety/IP: original helper character only; no real-person likeness, no public figure resemblance, no copied mascot, no logo, no watermark.",
+    "Safety/IP: original helper character only; no internet image reference, no third-party mannequin, no real-person likeness, no public figure resemblance, no copied mascot, no logo, no watermark.",
     `Variant: ${input.presentation}. Character: ${input.promptSubject}.`,
+    `Original proportion template: ${buildLittleAlexTemplatePrompt(input.proportionTemplate)}.`,
     `Consistency: ${input.sheetInstructions}.`,
     "Asset type: animation-rig paper-doll source sheet made of separated body-part cutouts, not character pose thumbnails.",
     "Canvas: 1536 by 1024 PNG, strict 3x2 grid with equal 512 by 512 cells and no gutters. Do not draw grid lines, labels, numbers, or captions.",
     "Grid order must be exact: row 1 cell 1 contains head only; row 1 cell 2 contains headless torso only; row 1 cell 3 contains detached left arm only; row 2 cell 1 contains detached right arm only; row 2 cell 2 contains detached left leg only; row 2 cell 3 contains detached right leg only.",
-    "Each cell contains exactly one isolated floating body part centered with generous green margin. Never draw a complete assembled person, a full body pose, or multiple character pose thumbnails.",
+    "Before separating the parts, imagine the single complete original character standing front-facing on that template; then place only the requested cutout in each cell. Each cell contains exactly one isolated floating body part centered with generous green margin. Never draw a complete assembled person, a full body pose, or multiple character pose thumbnails.",
     "The torso cell shows the black suit jacket, natural shoulder caps, white shirt, and a blank tan clipboard tucked across the front, with no head and no legs. The rightArm cell visibly holds the matching clipboard as a detached sleeve-and-hand part. The arm cells include shoulder caps for natural torso overlap.",
+    "The leftArm and rightArm cells must match each other in length, hand scale, shoulder-cap size, sleeve width, and line weight. The leftLeg and rightLeg cells must match each other in length, shoe scale, ankle width, and line weight.",
     "Production target: pure chroma green background (#00ff00) across every cell so the generator script can remove it into alpha and crop known cells into transparent PNG sprites.",
     "Keep all parts mobile-readable, wholesome, and visibly different from the other presentation variants while preserving the exact same character within this sheet."
   ].join("\n");
+}
+
+function buildLittleAlexTemplatePrompt(
+  template: typeof LITTLE_ALEX_SPRITE_PROPORTION_TEMPLATE
+) {
+  return [
+    `${template.slug}`,
+    template.description,
+    `Measurements: ${template.measurements.join("; ")}`,
+    template.provenance
+  ].join(". ");
 }
