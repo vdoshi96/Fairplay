@@ -36,6 +36,9 @@ const navItems = [
   { href: "/app/settings", icon: Settings, label: "Settings" }
 ] as const;
 
+const APP_SHELL_BACKGROUND =
+  "/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png";
+
 function isActiveRoute(pathname: string, href: string) {
   if (href === "/app/home") {
     return pathname === href;
@@ -54,7 +57,7 @@ export function AppShell({
   const isImmersiveRoute = pathname === "/app/crash-course";
   const mainClassName = isImmersiveRoute
     ? "w-full pb-24 lg:pb-0"
-    : "mx-auto w-full max-w-6xl px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10 lg:pr-44 lg:pt-8";
+    : "mx-auto w-full max-w-6xl bg-[length:min(820px,92vw)_auto] bg-right-top bg-no-repeat px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-10 lg:pr-44 lg:pt-8";
 
   return (
     <div className="min-h-screen bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
@@ -159,6 +162,11 @@ export function AppShell({
           className={mainClassName}
           data-layout={isImmersiveRoute ? "immersive" : "standard"}
           data-testid="app-main"
+          style={
+            isImmersiveRoute
+              ? undefined
+              : { backgroundImage: `url('${APP_SHELL_BACKGROUND}')` }
+          }
         >
           {children}
         </main>

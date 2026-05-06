@@ -103,6 +103,12 @@ describe("protected app UI", () => {
     expect(
       screen.getByRole("heading", { name: "Learn Fairplay in layers" })
     ).toBeVisible();
+    const homeBackground = container.querySelector("[data-home-background]");
+    expect(homeBackground).not.toBeNull();
+    expect(homeBackground).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
+    });
     expect(
       screen
         .getAllByRole("link", { name: "Crash course" })
@@ -146,6 +152,10 @@ describe("protected app UI", () => {
       "data-layout",
       "standard"
     );
+    expect(screen.getByTestId("app-main")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png')"
+    });
     expect(screen.getAllByRole("navigation", { name: "Primary" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: /Library/i })[0]).toHaveAttribute(
       "href",
@@ -200,6 +210,10 @@ describe("protected app UI", () => {
 
     const main = screen.getByTestId("app-main");
     expect(main).toHaveAttribute("data-layout", "immersive");
+    expect(main).not.toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png')"
+    });
     expect(main.className).toContain("w-full");
     expect(main.className).not.toContain("max-w-6xl");
     expect(screen.getAllByRole("link", { name: /Crash course/i })[0]).toHaveAttribute(

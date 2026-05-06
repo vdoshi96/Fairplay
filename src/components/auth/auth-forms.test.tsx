@@ -40,9 +40,15 @@ describe("auth forms", () => {
   });
 
   it("renders login page content with the household garden splash", () => {
-    render(<LoginPageClient />);
+    const { container } = render(<LoginPageClient />);
 
     expect(screen.getByRole("heading", { name: "Log in to Fairplay" })).toBeVisible();
+    const authBackground = container.querySelector("[data-auth-background]");
+    expect(authBackground).not.toBeNull();
+    expect(authBackground).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/auth-warm-threshold.png')"
+    });
     expect(
       screen.getByRole("img", { name: "Animated Fairplay household garden scene" })
     ).toBeVisible();
