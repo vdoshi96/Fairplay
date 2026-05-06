@@ -153,45 +153,45 @@ const appearanceDetails = {
 const partConfigs: PartConfig[] = [
   {
     className: "fp-little-alex-head",
-    height: 44,
+    height: 46,
     key: "head",
-    offset: { x: 0, y: -62 },
-    width: 44
+    offset: { x: 0, y: -56 },
+    width: 46
   },
   {
     className: "fp-little-alex-torso",
-    height: 64,
+    height: 68,
     key: "torso",
     offset: { x: 0, y: 0 },
-    width: 50
+    width: 54
   },
   {
     className: "fp-little-alex-arm fp-little-alex-arm-left",
-    height: 58,
+    height: 66,
     key: "leftArm",
-    offset: { x: -26, y: -4 },
-    width: 18
+    offset: { x: -31, y: -1 },
+    width: 20
   },
   {
     className: "fp-little-alex-arm fp-little-alex-arm-right",
-    height: 58,
+    height: 66,
     key: "rightArm",
-    offset: { x: 26, y: -4 },
-    width: 18
+    offset: { x: 31, y: -1 },
+    width: 20
   },
   {
     className: "fp-little-alex-leg fp-little-alex-leg-left",
-    height: 62,
+    height: 66,
     key: "leftLeg",
-    offset: { x: -18, y: 62 },
-    width: 20
+    offset: { x: -14, y: 64 },
+    width: 22
   },
   {
     className: "fp-little-alex-leg fp-little-alex-leg-right",
-    height: 62,
+    height: 66,
     key: "rightLeg",
-    offset: { x: 18, y: 62 },
-    width: 20
+    offset: { x: 14, y: 64 },
+    width: 22
   }
 ];
 
@@ -431,12 +431,46 @@ function createRagdoll(anchor: Point, width: number, height: number): PhysicsWor
   engine.gravity.y = 0.82 * PHYSICS_SPEED_MULTIPLIER;
 
   const bodies = createBodies(anchor);
+  const head = partConfigByKey.head;
+  const torso = partConfigByKey.torso;
+  const arm = partConfigByKey.leftArm;
+  const leg = partConfigByKey.leftLeg;
   const constraints = [
-    joint(bodies.torso, { x: 0, y: -32 }, bodies.head, { x: 0, y: 22 }, 12),
-    joint(bodies.torso, { x: -26, y: -22 }, bodies.leftArm, { x: 0, y: -24 }, 12),
-    joint(bodies.torso, { x: 26, y: -22 }, bodies.rightArm, { x: 0, y: -24 }, 12),
-    joint(bodies.torso, { x: -15, y: 32 }, bodies.leftLeg, { x: 0, y: -28 }, 12),
-    joint(bodies.torso, { x: 15, y: 32 }, bodies.rightLeg, { x: 0, y: -28 }, 12)
+    joint(
+      bodies.torso,
+      { x: 0, y: -torso.height / 2 },
+      bodies.head,
+      { x: 0, y: head.height / 2 },
+      2
+    ),
+    joint(
+      bodies.torso,
+      { x: -torso.width / 2, y: -torso.height / 3 },
+      bodies.leftArm,
+      { x: 0, y: -arm.height / 2 + 3 },
+      8
+    ),
+    joint(
+      bodies.torso,
+      { x: torso.width / 2, y: -torso.height / 3 },
+      bodies.rightArm,
+      { x: 0, y: -arm.height / 2 + 3 },
+      8
+    ),
+    joint(
+      bodies.torso,
+      { x: -torso.width / 4, y: torso.height / 2 - 2 },
+      bodies.leftLeg,
+      { x: 0, y: -leg.height / 2 + 2 },
+      4
+    ),
+    joint(
+      bodies.torso,
+      { x: torso.width / 4, y: torso.height / 2 - 2 },
+      bodies.rightLeg,
+      { x: 0, y: -leg.height / 2 + 2 },
+      4
+    )
   ];
   const walls = createWalls(playAreaBounds({ height, width }));
 

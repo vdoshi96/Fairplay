@@ -829,7 +829,7 @@ a {
 .fp-little-alex-sprite {
   display: block;
   height: 100%;
-  object-fit: contain;
+  object-fit: fill;
   pointer-events: none;
   position: relative;
   user-select: none;

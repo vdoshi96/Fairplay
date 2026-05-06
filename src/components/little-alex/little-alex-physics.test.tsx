@@ -60,6 +60,18 @@ function translatedX(element: HTMLElement) {
   return Number(match[1]);
 }
 
+function translatedY(element: HTMLElement) {
+  const match = element.style.transform.match(
+    /translate3d\(-?\d+(?:\.\d+)?px, (-?\d+(?:\.\d+)?)px/
+  );
+
+  if (!match) {
+    throw new Error(`Missing translate3d y value: ${element.style.transform}`);
+  }
+
+  return Number(match[1]);
+}
+
 function partXBounds(element: HTMLElement) {
   const x = translatedX(element);
   const width = Number.parseFloat(element.style.width);
@@ -74,6 +86,20 @@ function partXBounds(element: HTMLElement) {
   };
 }
 
+function partYBounds(element: HTMLElement) {
+  const y = translatedY(element);
+  const height = Number.parseFloat(element.style.height);
+
+  if (!Number.isFinite(height)) {
+    throw new Error(`Missing height value: ${element.style.height}`);
+  }
+
+  return {
+    maxY: y + height,
+    minY: y
+  };
+}
+
 function expectShouldersToOverlapArmBounds(
   torso: HTMLElement,
   leftArm: HTMLElement,
@@ -82,9 +108,14 @@ function expectShouldersToOverlapArmBounds(
   const torsoBounds = partXBounds(torso);
   const leftArmBounds = partXBounds(leftArm);
   const rightArmBounds = partXBounds(rightArm);
+  const torsoYBounds = partYBounds(torso);
+  const leftArmYBounds = partYBounds(leftArm);
+  const rightArmYBounds = partYBounds(rightArm);
 
   expect(leftArmBounds.maxX).toBeGreaterThan(torsoBounds.minX);
   expect(rightArmBounds.minX).toBeLessThan(torsoBounds.maxX);
+  expect(leftArmYBounds.maxY).toBeGreaterThan(torsoYBounds.minY);
+  expect(rightArmYBounds.maxY).toBeGreaterThan(torsoYBounds.minY);
 }
 
 function dispatchPointer(
@@ -606,6 +637,27 @@ describe("LittleAlexPhysics", () => {
     expect(leftLeg).toBeInTheDocument();
     expect(rightLeg).toBeInTheDocument();
     expectShouldersToOverlapArmBounds(torso, leftArm, rightArm);
+  });
+
+  it("keeps reduced-motion head, torso, and legs vertically connected", () => {
+    stubReducedMotion(true);
+
+    render(<LittleAlexPhysics />);
+
+    const [head, torso, , , leftLeg, rightLeg] =
+      screen.getAllByTestId("little-alex-body-part");
+    const headBounds = partYBounds(head);
+    const torsoBounds = partYBounds(torso);
+    const leftLegBounds = partYBounds(leftLeg);
+    const rightLegBounds = partYBounds(rightLeg);
+    const headToTorsoGap = torsoBounds.minY - headBounds.maxY;
+    const leftHipGap = leftLegBounds.minY - torsoBounds.maxY;
+    const rightHipGap = rightLegBounds.minY - torsoBounds.maxY;
+
+    expect(headToTorsoGap).toBeGreaterThanOrEqual(-2);
+    expect(headToTorsoGap).toBeLessThanOrEqual(4);
+    expect(leftHipGap).toBeLessThanOrEqual(2);
+    expect(rightHipGap).toBeLessThanOrEqual(2);
   });
 
   it("keeps the body-part contract and suit assets across appearance options", () => {
