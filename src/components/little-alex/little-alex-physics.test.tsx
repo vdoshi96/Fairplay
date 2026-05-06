@@ -60,23 +60,34 @@ function translatedX(element: HTMLElement) {
   return Number(match[1]);
 }
 
-function firePointer(
-  target: HTMLElement,
-  type: "pointerdown" | "pointermove" | "pointerup",
-  options: { clientX: number; clientY: number; pointerId: number; timeStamp?: number }
+function dispatchPointer(
+  target: HTMLElement | Window,
+  type: "pointercancel" | "pointerdown" | "pointermove" | "pointerup",
+  init: {
+    clientX: number;
+    clientY: number;
+    pointerId?: number;
+    timeStamp?: number;
+  }
 ) {
-  const event = new Event(type, { bubbles: true, cancelable: true });
-
-  Object.defineProperties(event, {
-    clientX: { value: options.clientX },
-    clientY: { value: options.clientY },
-    pageX: { value: options.clientX },
-    pageY: { value: options.clientY },
-    pointerId: { value: options.pointerId },
-    screenX: { value: options.clientX },
-    screenY: { value: options.clientY },
-    timeStamp: { value: options.timeStamp ?? 0 }
+  const event = new MouseEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    clientX: init.clientX,
+    clientY: init.clientY
   });
+
+  Object.defineProperty(event, "pointerId", {
+    configurable: true,
+    value: init.pointerId ?? 1
+  });
+
+  if (init.timeStamp !== undefined) {
+    Object.defineProperty(event, "timeStamp", {
+      configurable: true,
+      value: init.timeStamp
+    });
+  }
 
   fireEvent(target, event);
 }
@@ -149,7 +160,73 @@ describe("LittleAlexPhysics", () => {
     expect(engine.gravity.y).toBeCloseTo(0.902, 3);
   });
 
-  it("shows the configured chat bubble after every fling", () => {
+  it("updates visible gaze state toward desktop pointer movement", () => {
+    stubReducedMotion(false);
+    stubViewport(1024, 768);
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+
+    expect(littleAlex).toHaveAttribute("data-gaze-direction", "center");
+    expect(littleAlex.style.getPropertyValue("--little-alex-gaze-x")).toBe("0");
+
+    dispatchPointer(window, "pointermove", {
+      clientX: 80,
+      clientY: 220,
+      pointerId: 1
+    });
+
+    expect(littleAlex).toHaveAttribute("data-gaze-direction", "left");
+    expect(Number(littleAlex.style.getPropertyValue("--little-alex-gaze-x"))).toBeLessThan(
+      0
+    );
+
+    dispatchPointer(window, "pointermove", {
+      clientX: 1000,
+      clientY: 220,
+      pointerId: 1
+    });
+
+    expect(littleAlex).toHaveAttribute("data-gaze-direction", "right");
+    expect(
+      Number(littleAlex.style.getPropertyValue("--little-alex-gaze-x"))
+    ).toBeGreaterThan(0);
+  });
+
+  it("updates visible gaze state toward the last touched point", () => {
+    stubReducedMotion(false);
+    stubViewport(390, 720);
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+
+    fireEvent.touchStart(window, {
+      changedTouches: [{ clientX: 24, clientY: 420 }],
+      touches: [{ clientX: 24, clientY: 420 }]
+    });
+
+    expect(littleAlex).toHaveAttribute("data-gaze-direction", "left");
+    expect(Number(littleAlex.style.getPropertyValue("--little-alex-gaze-x"))).toBeLessThan(
+      0
+    );
+
+    fireEvent.touchMove(window, {
+      changedTouches: [{ clientX: 370, clientY: 120 }],
+      touches: [
+        { clientX: 24, clientY: 420 },
+        { clientX: 370, clientY: 120 }
+      ]
+    });
+
+    expect(littleAlex).toHaveAttribute("data-gaze-direction", "right");
+    expect(
+      Number(littleAlex.style.getPropertyValue("--little-alex-gaze-x"))
+    ).toBeGreaterThan(0);
+  });
+
+  it("does not show the chat bubble for a simple click release", () => {
     stubReducedMotion(false);
     stubPointerCapture();
     vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
@@ -157,19 +234,43 @@ describe("LittleAlexPhysics", () => {
     render(<LittleAlexPhysics chatPhrase="well done everyone" />);
     const grabTarget = screen.getByTestId("little-alex-grab-target");
 
-    firePointer(grabTarget, "pointerdown", {
+    dispatchPointer(grabTarget, "pointerdown", {
       clientX: 900,
       clientY: 200,
       pointerId: 1,
       timeStamp: 0
     });
-    firePointer(grabTarget, "pointermove", {
+    dispatchPointer(grabTarget, "pointerup", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 16
+    });
+
+    expect(screen.queryByTestId("little-alex-chat-bubble")).not.toBeInTheDocument();
+  });
+
+  it("shows the configured chat bubble after a real drag or fling", () => {
+    stubReducedMotion(false);
+    stubPointerCapture();
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics chatPhrase="well done everyone" />);
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    dispatchPointer(grabTarget, "pointerdown", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+    dispatchPointer(grabTarget, "pointermove", {
       clientX: 820,
       clientY: 260,
       pointerId: 1,
       timeStamp: 80
     });
-    firePointer(grabTarget, "pointerup", {
+    dispatchPointer(grabTarget, "pointerup", {
       clientX: 820,
       clientY: 260,
       pointerId: 1,
@@ -234,19 +335,19 @@ describe("LittleAlexPhysics", () => {
     const littleAlex = screen.getByTestId("little-alex-horne");
     const grabTarget = screen.getByTestId("little-alex-grab-target");
 
-    firePointer(grabTarget, "pointerdown", {
+    dispatchPointer(grabTarget, "pointerdown", {
       clientX: 900,
       clientY: 200,
       pointerId: 1,
       timeStamp: 0
     });
-    firePointer(grabTarget, "pointermove", {
+    dispatchPointer(grabTarget, "pointermove", {
       clientX: 820,
       clientY: 240,
       pointerId: 1,
       timeStamp: 80
     });
-    firePointer(grabTarget, "pointerup", {
+    dispatchPointer(grabTarget, "pointerup", {
       clientX: 820,
       clientY: 240,
       pointerId: 1,
@@ -274,19 +375,19 @@ describe("LittleAlexPhysics", () => {
     render(<LittleAlexPhysics />);
     const grabTarget = screen.getByTestId("little-alex-grab-target");
 
-    firePointer(grabTarget, "pointerdown", {
+    dispatchPointer(grabTarget, "pointerdown", {
       clientX: 1160,
       clientY: 220,
       pointerId: 1,
       timeStamp: 0
     });
-    firePointer(grabTarget, "pointermove", {
+    dispatchPointer(grabTarget, "pointermove", {
       clientX: 40,
       clientY: 220,
       pointerId: 1,
       timeStamp: 80
     });
-    firePointer(grabTarget, "pointerup", {
+    dispatchPointer(grabTarget, "pointerup", {
       clientX: 40,
       clientY: 220,
       pointerId: 1,
@@ -444,17 +545,17 @@ describe("LittleAlexPhysics", () => {
     expect(torso).not.toBeNull();
     const initialTransform = torso?.style.transform;
 
-    firePointer(grabTarget, "pointerdown", {
+    dispatchPointer(grabTarget, "pointerdown", {
       clientX: 900,
       clientY: 200,
       pointerId: 1
     });
-    firePointer(grabTarget, "pointermove", {
+    dispatchPointer(grabTarget, "pointermove", {
       clientX: 760,
       clientY: 260,
       pointerId: 1
     });
-    firePointer(grabTarget, "pointerup", {
+    dispatchPointer(grabTarget, "pointerup", {
       clientX: 760,
       clientY: 260,
       pointerId: 1

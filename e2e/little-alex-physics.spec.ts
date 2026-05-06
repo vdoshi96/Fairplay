@@ -232,6 +232,39 @@ test.describe("Little Alex physics", () => {
     await page.goto("/app/home");
 
     await expect(page.getByTestId("little-alex-horne")).toBeVisible();
+    const littleAlex = page.getByTestId("little-alex-horne");
+    const viewport = page.viewportSize();
+
+    await expect
+      .poll(async () => {
+        await page.mouse.move(32, 180);
+
+        return littleAlex.getAttribute("data-gaze-direction");
+      })
+      .toBe("left");
+    await expect
+      .poll(async () => {
+        await page.mouse.move((viewport?.width ?? 1280) - 24, 180);
+
+        return littleAlex.getAttribute("data-gaze-direction");
+      })
+      .toBe("right");
+
+    const grabTarget = page.getByTestId("little-alex-grab-target");
+    const grabBox = await grabTarget.boundingBox();
+
+    expect(grabBox).not.toBeNull();
+
+    if (!grabBox) {
+      return;
+    }
+
+    await page.mouse.click(
+      grabBox.x + grabBox.width / 2,
+      grabBox.y + grabBox.height / 2
+    );
+    await expect(page.getByTestId("little-alex-chat-bubble")).toHaveCount(0);
+
     const torso = page.locator('[data-part="torso"]');
     const before = await torso.boundingBox();
 
