@@ -1344,10 +1344,11 @@ export function LittleAlexPhysics({
           }}
           style={reducedPartStyle(part, reducedAnchor)}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element -- Matter.js transforms these tiny sprite parts directly. */}
           <img
             alt=""
             className="fp-little-alex-sprite"
-            data-part={part.key}
+            data-sprite-part={part.key}
             data-sprite-hair={
               part.key === "head"
                 ? appearanceDetails[genderPresentation].hair

@@ -554,7 +554,7 @@ describe("LittleAlexPhysics", () => {
 
       expect(sprites).toHaveLength(6);
       expect(
-        sprites.map((sprite) => sprite.getAttribute("data-part"))
+        sprites.map((sprite) => sprite.getAttribute("data-sprite-part"))
       ).toEqual(expectedParts);
       expect(
         sprites.map((sprite) => sprite.getAttribute("src"))
@@ -576,7 +576,7 @@ describe("LittleAlexPhysics", () => {
       <LittleAlexPhysics genderPresentation="feminine" />
     );
     const headSprite = container.querySelector<HTMLImageElement>(
-      '[data-testid="little-alex-sprite"][data-part="head"]'
+      '[data-testid="little-alex-sprite"][data-sprite-part="head"]'
     );
 
     expect(screen.getByTestId("little-alex-hair")).toHaveAttribute(
