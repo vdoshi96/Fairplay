@@ -14,8 +14,14 @@ const DEFAULT_CHAT_PHRASE = "i'm little alex horne";
 const DEFAULT_GENDER_PRESENTATION: LittleAlexGenderPresentation = "neutral";
 const DEFAULT_SKIN_TONE: LittleAlexSkinTone = "tone_2";
 const PHYSICS_SPEED_MULTIPLIER = 1.1;
-const IDLE_DELAY_MS = 5_000;
-const IDLE_PAUSE_MS = 900;
+const IDLE_STAND_DELAY_MS = 5_000;
+const IDLE_RELEASE_STAND_DELAY_MS = 6_500;
+const IDLE_STANDING_PAUSE_MS = 4_000;
+const IDLE_WALK_STEP_PX = 0.72;
+const MIN_IDLE_WALK_TURN_FRACTION = 0.05;
+const MIN_IDLE_TURNS_BEFORE_DIRECTION_CHANGE = 3;
+const DESKTOP_PLAY_AREA_BREAKPOINT = 1024;
+const DESKTOP_SIDEBAR_WIDTH = 16 * 16;
 const WALL_THICKNESS = 96;
 const VIEWPORT_PADDING = 2;
 const SERVER_SAFE_ANCHOR = { x: 906, y: 218 };
@@ -52,13 +58,34 @@ type DragState = {
   velocity: Point;
 };
 
-type IdleState = "active" | "walking" | "paused";
+type IdleState = "active" | "standing" | "walking";
+
+type WalkDirection = -1 | 1;
+
+export type PlayAreaBounds = {
+  height: number;
+  maxX: number;
+  maxY: number;
+  minX: number;
+  minY: number;
+  width: number;
+};
+
+export type IdleWalkTurn = {
+  direction: WalkDirection;
+  targetX: number;
+  turnsInDirection: number;
+};
 
 type PointerInput = {
   clientX: number;
   clientY: number;
+  pageX?: number;
+  pageY?: number;
   pointerId: number;
   preventDefault: () => void;
+  screenX?: number;
+  screenY?: number;
   stopPropagation: () => void;
   timeStamp: number;
 };
@@ -189,26 +216,56 @@ function clampToViewportRange(value: number, min: number, max: number) {
   return clamp(value, min, max);
 }
 
-function clampAnchor(anchor: Point) {
-  const { height, width } = viewportSize();
-  const minX = -characterBounds.minX + VIEWPORT_PADDING;
-  const maxX = width - characterBounds.maxX - VIEWPORT_PADDING;
-  const minY = -characterBounds.minY + VIEWPORT_PADDING;
-  const maxY = height - characterBounds.maxY - VIEWPORT_PADDING;
+function firstFiniteCoordinate(...values: Array<number | undefined>) {
+  return values.find((value) => Number.isFinite(value)) ?? 0;
+}
+
+function pointerPoint(event: PointerInput): Point {
+  return {
+    x: firstFiniteCoordinate(event.clientX, event.pageX, event.screenX),
+    y: firstFiniteCoordinate(event.clientY, event.pageY, event.screenY)
+  };
+}
+
+export function playAreaBounds(viewport = viewportSize()): PlayAreaBounds {
+  const minX =
+    viewport.width >= DESKTOP_PLAY_AREA_BREAKPOINT ? DESKTOP_SIDEBAR_WIDTH : 0;
 
   return {
-    x: clampToViewportRange(anchor.x, minX, maxX),
-    y: clampToViewportRange(anchor.y, minY, maxY)
+    height: viewport.height,
+    maxX: viewport.width,
+    maxY: viewport.height,
+    minX,
+    minY: 0,
+    width: Math.max(viewport.width - minX, 0)
+  };
+}
+
+function anchorRange(bounds: PlayAreaBounds) {
+  return {
+    maxX: bounds.maxX - characterBounds.maxX - VIEWPORT_PADDING,
+    maxY: bounds.maxY - characterBounds.maxY - VIEWPORT_PADDING,
+    minX: bounds.minX - characterBounds.minX + VIEWPORT_PADDING,
+    minY: bounds.minY - characterBounds.minY + VIEWPORT_PADDING
+  };
+}
+
+function clampAnchor(anchor: Point, bounds = playAreaBounds()) {
+  const range = anchorRange(bounds);
+
+  return {
+    x: clampToViewportRange(anchor.x, range.minX, range.maxX),
+    y: clampToViewportRange(anchor.y, range.minY, range.maxY)
   };
 }
 
 function initialAnchor() {
-  const { height, width } = viewportSize();
+  const viewport = viewportSize();
 
   return clampAnchor({
-    x: width - 118,
-    y: Math.min(218, height - 140)
-  });
+    x: viewport.width - 118,
+    y: Math.min(218, viewport.height - 140)
+  }, playAreaBounds(viewport));
 }
 
 function partStyle(part: PartConfig, center: Point, angle = 0): CSSProperties {
@@ -237,42 +294,46 @@ function grabTargetStyle(anchor: Point): CSSProperties {
 }
 
 function bubbleStyle(anchor: Point, viewport = viewportSize()): CSSProperties {
-  const x = clampToViewportRange(anchor.x - 88, 12, viewport.width - 192);
-  const y = clampToViewportRange(anchor.y - 138, 12, viewport.height - 80);
+  const bounds = playAreaBounds(viewport);
+  const x = clampToViewportRange(anchor.x - 88, bounds.minX + 12, bounds.maxX - 192);
+  const y = clampToViewportRange(anchor.y - 138, 12, bounds.maxY - 80);
 
   return {
     transform: `translate3d(${x}px, ${y}px, 0)`
   };
 }
 
-function createWalls(width: number, height: number) {
+function createWalls(bounds: PlayAreaBounds) {
+  const centerX = bounds.minX + bounds.width / 2;
+  const centerY = bounds.minY + bounds.height / 2;
+
   return [
     Matter.Bodies.rectangle(
-      width / 2,
-      -WALL_THICKNESS / 2,
-      width + WALL_THICKNESS * 2,
+      centerX,
+      bounds.minY - WALL_THICKNESS / 2,
+      bounds.width + WALL_THICKNESS * 2,
       WALL_THICKNESS,
       { isStatic: true }
     ),
     Matter.Bodies.rectangle(
-      width / 2,
-      height + WALL_THICKNESS / 2,
-      width + WALL_THICKNESS * 2,
+      centerX,
+      bounds.maxY + WALL_THICKNESS / 2,
+      bounds.width + WALL_THICKNESS * 2,
       WALL_THICKNESS,
       { isStatic: true }
     ),
     Matter.Bodies.rectangle(
-      -WALL_THICKNESS / 2,
-      height / 2,
+      bounds.minX - WALL_THICKNESS / 2,
+      centerY,
       WALL_THICKNESS,
-      height + WALL_THICKNESS * 2,
+      bounds.height + WALL_THICKNESS * 2,
       { isStatic: true }
     ),
     Matter.Bodies.rectangle(
-      width + WALL_THICKNESS / 2,
-      height / 2,
+      bounds.maxX + WALL_THICKNESS / 2,
+      centerY,
       WALL_THICKNESS,
-      height + WALL_THICKNESS * 2,
+      bounds.height + WALL_THICKNESS * 2,
       { isStatic: true }
     )
   ];
@@ -352,7 +413,7 @@ function createRagdoll(anchor: Point, width: number, height: number): PhysicsWor
     joint(bodies.torso, { x: -15, y: 32 }, bodies.leftLeg, { x: 0, y: -28 }, 12),
     joint(bodies.torso, { x: 15, y: 32 }, bodies.rightLeg, { x: 0, y: -28 }, 12)
   ];
-  const walls = createWalls(width, height);
+  const walls = createWalls(playAreaBounds({ height, width }));
 
   Matter.Composite.add(engine.world, [
     ...Object.values(bodies),
@@ -406,22 +467,22 @@ function visualHalfExtents(part: PartConfig, angle: number) {
   };
 }
 
-function containBodyInViewport(
+function containBodyInPlayArea(
   body: Matter.Body,
   part: PartConfig,
-  viewport: { height: number; width: number }
+  bounds: PlayAreaBounds
 ) {
   const halfExtents = visualHalfExtents(part, body.angle);
   const nextPosition = {
     x: clampToViewportRange(
       body.position.x,
-      halfExtents.x + VIEWPORT_PADDING,
-      viewport.width - halfExtents.x - VIEWPORT_PADDING
+      bounds.minX + halfExtents.x + VIEWPORT_PADDING,
+      bounds.maxX - halfExtents.x - VIEWPORT_PADDING
     ),
     y: clampToViewportRange(
       body.position.y,
-      halfExtents.y + VIEWPORT_PADDING,
-      viewport.height - halfExtents.y - VIEWPORT_PADDING
+      bounds.minY + halfExtents.y + VIEWPORT_PADDING,
+      bounds.maxY - halfExtents.y - VIEWPORT_PADDING
     )
   };
 
@@ -439,12 +500,12 @@ function containBodyInViewport(
   });
 }
 
-function containBodiesInViewport(
+function containBodiesInPlayArea(
   bodies: Record<PartKey, Matter.Body>,
-  viewport = viewportSize()
+  bounds = playAreaBounds()
 ) {
   partConfigs.forEach((part) => {
-    containBodyInViewport(bodies[part.key], part, viewport);
+    containBodyInPlayArea(bodies[part.key], part, bounds);
   });
 }
 
@@ -520,42 +581,129 @@ function setBodyPose(body: Matter.Body, position: Point, angle: number) {
   Matter.Body.setAngularVelocity(body, 0);
 }
 
+function canWalkDistance(
+  anchorX: number,
+  direction: WalkDirection,
+  range: Pick<ReturnType<typeof anchorRange>, "maxX" | "minX">,
+  distance: number
+) {
+  return direction === -1
+    ? anchorX - range.minX >= distance
+    : range.maxX - anchorX >= distance;
+}
+
+export function nextIdleWalkTurn(
+  current: IdleWalkTurn,
+  anchorX: number,
+  bounds = playAreaBounds(),
+  random = Math.random
+): IdleWalkTurn {
+  const range = anchorRange(bounds);
+  const minimumDistance = Math.max(bounds.width * MIN_IDLE_WALK_TURN_FRACTION, 1);
+  let direction = current.direction;
+  let turnsInDirection = current.turnsInDirection + 1;
+
+  if (current.turnsInDirection >= MIN_IDLE_TURNS_BEFORE_DIRECTION_CHANGE) {
+    const canMoveLeft = canWalkDistance(anchorX, -1, range, minimumDistance);
+    const canMoveRight = canWalkDistance(anchorX, 1, range, minimumDistance);
+
+    if (canMoveLeft && canMoveRight) {
+      direction = random() < 0.5 ? -1 : 1;
+    } else if (canMoveLeft) {
+      direction = -1;
+    } else if (canMoveRight) {
+      direction = 1;
+    }
+
+    turnsInDirection =
+      direction === current.direction ? current.turnsInDirection + 1 : 1;
+  } else if (!canWalkDistance(anchorX, direction, range, minimumDistance)) {
+    const oppositeDirection = (direction * -1) as WalkDirection;
+
+    if (canWalkDistance(anchorX, oppositeDirection, range, minimumDistance)) {
+      direction = oppositeDirection;
+      turnsInDirection = 1;
+    }
+  }
+
+  return {
+    direction,
+    targetX: clampToViewportRange(
+      anchorX + direction * minimumDistance,
+      range.minX,
+      range.maxX
+    ),
+    turnsInDirection
+  };
+}
+
+export function clampIdleWalkTurnToBounds(
+  current: IdleWalkTurn,
+  bounds = playAreaBounds()
+): IdleWalkTurn {
+  const range = anchorRange(bounds);
+
+  return {
+    ...current,
+    targetX: clampToViewportRange(current.targetX, range.minX, range.maxX)
+  };
+}
+
+function initialIdleWalkTurn(anchorX: number, bounds = playAreaBounds()): IdleWalkTurn {
+  const range = anchorRange(bounds);
+  const direction = anchorX >= (range.minX + range.maxX) / 2 ? -1 : 1;
+
+  return {
+    direction,
+    targetX: anchorX,
+    turnsInDirection: 0
+  };
+}
+
 function setIdlePose(
   physics: PhysicsWorld,
   state: IdleState,
-  direction: number,
+  walkTurn: IdleWalkTurn,
   viewport = viewportSize()
 ) {
   const torso = physics.bodies.torso;
-  const step = state === "walking" ? direction * 0.22 : 0;
+  const bounds = playAreaBounds(viewport);
+  const deltaX = walkTurn.targetX - torso.position.x;
+  const step = clamp(deltaX, -IDLE_WALK_STEP_PX, IDLE_WALK_STEP_PX);
   const anchor = clampAnchor({
-    x: torso.position.x + step,
+    x: torso.position.x + (state === "walking" ? step : 0),
     y: viewport.height - characterBounds.maxY - VIEWPORT_PADDING
-  });
-  const sway = state === "walking" ? Math.sin(Date.now() / 420) * 0.18 : 0;
+  }, bounds);
+  const reachedTarget =
+    state === "walking" && Math.abs(walkTurn.targetX - anchor.x) <= IDLE_WALK_STEP_PX;
+  const sway = state === "walking" ? Math.sin(Date.now() / 420) * 0.12 : 0;
+  const armAngle = state === "walking" ? 0.14 : 0.1;
+  const legAngle = state === "walking" ? 0.08 : 0.025;
 
   setBodyPose(physics.bodies.torso, anchor, 0);
   setBodyPose(physics.bodies.head, { x: anchor.x, y: anchor.y - 62 }, 0);
   setBodyPose(
     physics.bodies.leftArm,
     { x: anchor.x - 42, y: anchor.y - 4 },
-    -0.18
+    -armAngle
   );
   setBodyPose(
     physics.bodies.rightArm,
     { x: anchor.x + 42, y: anchor.y - 4 },
-    0.18
+    armAngle
   );
   setBodyPose(
     physics.bodies.leftLeg,
     { x: anchor.x - 18, y: anchor.y + 62 },
-    state === "walking" ? 0.08 + sway : 0.04
+    legAngle + sway
   );
   setBodyPose(
     physics.bodies.rightLeg,
     { x: anchor.x + 18, y: anchor.y + 62 },
-    state === "walking" ? -0.08 - sway : -0.04
+    -legAngle - sway
   );
+
+  return reachedTarget;
 }
 
 export function LittleAlexPhysics({
@@ -567,6 +715,7 @@ export function LittleAlexPhysics({
   const [reducedMotion, setReducedMotion] = useState(false);
   const [reducedAnchor, setReducedAnchor] = useState(SERVER_SAFE_ANCHOR);
   const [idleState, setIdleState] = useState<IdleState>("active");
+  const [idleStandDelayMs, setIdleStandDelayMs] = useState(IDLE_STAND_DELAY_MS);
   const [activityVersion, setActivityVersion] = useState(0);
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const bodyRefs = useRef<Partial<Record<PartKey, HTMLDivElement>>>({});
@@ -575,7 +724,13 @@ export function LittleAlexPhysics({
   const dragRef = useRef<DragState | null>(null);
   const grabTargetRef = useRef<HTMLDivElement | null>(null);
   const idleDirectionRef = useRef(1);
+  const idleTargetReachedRef = useRef(false);
   const idleStateRef = useRef<IdleState>("active");
+  const idleWalkTurnRef = useRef<IdleWalkTurn>({
+    direction: -1,
+    targetX: SERVER_SAFE_ANCHOR.x,
+    turnsInDirection: 0
+  });
   const physicsRef = useRef<PhysicsWorld | null>(null);
 
   useEffect(() => {
@@ -590,9 +745,18 @@ export function LittleAlexPhysics({
     }
 
     if (idleStateRef.current !== "active") {
-      setIdlePose(physics, idleStateRef.current, idleDirectionRef.current);
+      const reachedTarget = setIdlePose(
+        physics,
+        idleStateRef.current,
+        idleWalkTurnRef.current
+      );
+
+      if (reachedTarget && !idleTargetReachedRef.current) {
+        idleTargetReachedRef.current = true;
+        setIdleState("standing");
+      }
     }
-    containBodiesInViewport(physics.bodies);
+    containBodiesInPlayArea(physics.bodies);
     partConfigs.forEach((part) => {
       const element = bodyRefs.current[part.key];
 
@@ -605,7 +769,10 @@ export function LittleAlexPhysics({
   }, []);
 
   useEffect(() => {
-    setReducedAnchor(initialAnchor());
+    const anchor = initialAnchor();
+
+    idleWalkTurnRef.current = initialIdleWalkTurn(anchor.x);
+    setReducedAnchor(anchor);
   }, []);
 
   useEffect(() => {
@@ -660,41 +827,45 @@ export function LittleAlexPhysics({
     }
 
     const timeout = window.setTimeout(() => {
-      setIdleState("walking");
-    }, IDLE_DELAY_MS);
+      setIdleState("standing");
+    }, idleStandDelayMs);
 
     return () => {
       window.clearTimeout(timeout);
     };
-  }, [activityVersion, motionPreferenceReady, reducedMotion]);
+  }, [activityVersion, idleStandDelayMs, motionPreferenceReady, reducedMotion]);
 
   useEffect(() => {
     if (!motionPreferenceReady || reducedMotion) {
       return undefined;
     }
 
-    if (idleState === "walking") {
-      const pauseTimeout = window.setTimeout(() => {
-        setIdleState("paused");
-      }, IDLE_DELAY_MS);
+    if (idleState === "standing") {
+      const walkTimeout = window.setTimeout(() => {
+        const anchorX =
+          physicsRef.current?.bodies.torso.position.x ?? reducedAnchor.x;
 
-      return () => {
-        window.clearTimeout(pauseTimeout);
-      };
-    }
-
-    if (idleState === "paused") {
-      const resumeTimeout = window.setTimeout(() => {
+        idleTargetReachedRef.current = false;
+        idleWalkTurnRef.current = nextIdleWalkTurn(
+          idleWalkTurnRef.current,
+          anchorX
+        );
         setIdleState("walking");
-      }, IDLE_PAUSE_MS);
+      }, IDLE_STANDING_PAUSE_MS);
 
       return () => {
-        window.clearTimeout(resumeTimeout);
+        window.clearTimeout(walkTimeout);
       };
     }
 
     return undefined;
-  }, [idleState, motionPreferenceReady, reducedMotion]);
+  }, [idleState, motionPreferenceReady, reducedAnchor.x, reducedMotion]);
+
+  useEffect(() => {
+    if (idleState !== "active") {
+      syncPhysicsDom();
+    }
+  }, [idleState, syncPhysicsDom]);
 
   useEffect(() => {
     if (!motionPreferenceReady || reducedMotion) {
@@ -749,11 +920,16 @@ export function LittleAlexPhysics({
     };
     const handleResize = () => {
       const nextSize = viewportSize();
+      const nextBounds = playAreaBounds(nextSize);
 
       Matter.Composite.remove(physics.engine.world, physics.walls);
-      physics.walls = createWalls(nextSize.width, nextSize.height);
+      physics.walls = createWalls(nextBounds);
       Matter.Composite.add(physics.engine.world, physics.walls);
-      containBodiesInViewport(physics.bodies, nextSize);
+      containBodiesInPlayArea(physics.bodies, nextBounds);
+      idleWalkTurnRef.current = clampIdleWalkTurnToBounds(
+        idleWalkTurnRef.current,
+        nextBounds
+      );
       sync();
     };
 
@@ -780,18 +956,21 @@ export function LittleAlexPhysics({
       event.stopPropagation();
       event.currentTarget.setPointerCapture(event.pointerId);
       setIdleState("active");
+      setIdleStandDelayMs(IDLE_STAND_DELAY_MS);
       setActivityVersion((current) => current + 1);
+      idleTargetReachedRef.current = false;
 
       const center = reducedMotion
         ? reducedAnchor
         : physicsRef.current?.bodies.torso.position ?? reducedAnchor;
+      const point = pointerPoint(event);
 
       dragRef.current = {
-        lastPoint: { x: event.clientX, y: event.clientY },
-        lastTime: event.timeStamp,
+        lastPoint: point,
+        lastTime: Number.isFinite(event.timeStamp) ? event.timeStamp : 0,
         offset: {
-          x: event.clientX - center.x,
-          y: event.clientY - center.y
+          x: point.x - center.x,
+          y: point.y - center.y
         },
         pointerId: event.pointerId,
         velocity: { x: 0, y: 0 }
@@ -811,18 +990,22 @@ export function LittleAlexPhysics({
       event.preventDefault();
       event.stopPropagation();
 
+      const point = pointerPoint(event);
       const nextAnchor = clampAnchor({
-        x: event.clientX - drag.offset.x,
-        y: event.clientY - drag.offset.y
+        x: point.x - drag.offset.x,
+        y: point.y - drag.offset.y
       });
-      const elapsed = Math.max(event.timeStamp - drag.lastTime, 16);
-      idleDirectionRef.current = event.clientX >= drag.lastPoint.x ? 1 : -1;
+      const eventTime = Number.isFinite(event.timeStamp)
+        ? event.timeStamp
+        : drag.lastTime + 16;
+      const elapsed = Math.max(eventTime - drag.lastTime, 16);
+      idleDirectionRef.current = point.x >= drag.lastPoint.x ? 1 : -1;
       drag.velocity = {
-        x: clampVelocity(((event.clientX - drag.lastPoint.x) / elapsed) * 16),
-        y: clampVelocity(((event.clientY - drag.lastPoint.y) / elapsed) * 16)
+        x: clampVelocity(((point.x - drag.lastPoint.x) / elapsed) * 16),
+        y: clampVelocity(((point.y - drag.lastPoint.y) / elapsed) * 16)
       };
-      drag.lastPoint = { x: event.clientX, y: event.clientY };
-      drag.lastTime = event.timeStamp;
+      drag.lastPoint = point;
+      drag.lastTime = eventTime;
 
       if (reducedMotion) {
         setReducedAnchor(nextAnchor);
@@ -845,7 +1028,7 @@ export function LittleAlexPhysics({
         Matter.Body.translate(body, translation);
         Matter.Body.setVelocity(body, { x: 0, y: 0 });
       });
-      containBodiesInViewport(physics.bodies);
+      containBodiesInPlayArea(physics.bodies);
       syncPhysicsDom();
     },
     [reducedMotion, syncPhysicsDom]
@@ -862,13 +1045,17 @@ export function LittleAlexPhysics({
       event.preventDefault();
       event.stopPropagation();
       dragRef.current = null;
+      setIdleState("active");
+      setIdleStandDelayMs(IDLE_RELEASE_STAND_DELAY_MS);
       setActivityVersion((current) => current + 1);
+      idleTargetReachedRef.current = false;
 
       if (captureTarget?.hasPointerCapture(event.pointerId)) {
         captureTarget.releasePointerCapture(event.pointerId);
       }
 
       if (reducedMotion) {
+        idleWalkTurnRef.current = initialIdleWalkTurn(reducedAnchor.x);
         return;
       }
 
@@ -891,6 +1078,7 @@ export function LittleAlexPhysics({
             (key === "head" ? 0.006 : 0.004)
         );
       });
+      idleWalkTurnRef.current = initialIdleWalkTurn(physics.bodies.torso.position.x);
       setBubbleVisible(true);
       if (bubbleTimeoutRef.current) {
         window.clearTimeout(bubbleTimeoutRef.current);
@@ -899,7 +1087,7 @@ export function LittleAlexPhysics({
         setBubbleVisible(false);
       }, 2_800);
     },
-    [reducedMotion]
+    [reducedAnchor.x, reducedMotion]
   );
 
   useEffect(() => {
@@ -950,6 +1138,9 @@ export function LittleAlexPhysics({
         motionPreferenceReady && reducedMotion ? "reduced" : "physics"
       }
       data-physics-engine="matter-js"
+      data-idle-walk-direction={idleWalkTurnRef.current.direction}
+      data-idle-walk-target-x={Math.round(idleWalkTurnRef.current.targetX)}
+      data-idle-walk-turns={idleWalkTurnRef.current.turnsInDirection}
       data-testid="little-alex-horne"
       style={
         {
