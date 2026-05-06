@@ -234,7 +234,9 @@ function clampToViewportRange(value: number, min: number, max: number) {
   return clamp(value, min, max);
 }
 
-function firstFiniteCoordinate(...values: Array<number | undefined>) {
+function firstFiniteCoordinate(
+  ...values: Array<number | undefined>
+): number | undefined {
   return values.find((value) => Number.isFinite(value));
 }
 
@@ -538,11 +540,11 @@ function pointFromClient(
     screenY?: number;
   },
   fallback?: Point
-) {
+): Point | null {
   const x = firstFiniteCoordinate(input.clientX, input.pageX, input.screenX);
   const y = firstFiniteCoordinate(input.clientY, input.pageY, input.screenY);
 
-  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+  if (x === undefined || y === undefined) {
     return fallback ?? null;
   }
 
