@@ -20,12 +20,15 @@
 - Resize updates the Matter wall bodies and clamps bodies back inside the current viewport.
 - Reduced-motion mode waits until media preference is resolved after hydration, does not start `Matter.Runner.run`, and uses React state for static dragging.
 - Fixed a hydration mismatch discovered in Playwright by making the first render server-safe and starting physics only after motion preference resolution.
+- Review fix: viewport measurement now uses the actual browser viewport for Matter wall placement and drag containment instead of clamping the viewport up to `320x480`.
+- Review fix: containment now clamps against the whole rendered Little Alex body-part footprint, including rotated physics parts, before syncing DOM positions.
 
 ## Subagent / Review Notes
 
 - Required subagent delegation was attempted conceptually, but no Task/subagent tool was exposed in this Codex session. `tool_search` did not expose a general subagent or review-agent tool.
 - Fallback: performed a direct diff review after implementation, plus focused unit/component tests, lint, typecheck, `git diff --check`, and Playwright smoke coverage.
 - Review finding: no blocking code-quality issues remained after removing an unused constant and fixing the Matter runner mock type.
+- Review items addressed on 2026-05-06: P2 virtual viewport bounds and P3 torso-only E2E containment coverage.
 
 ## TDD Evidence
 
@@ -52,6 +55,25 @@ Test Files  1 failed (1)
      Tests  3 failed | 4 passed (7)
 ```
 
+Review red test commands:
+
+```text
+npm test -- src/components/little-alex/little-alex-physics.test.tsx -t "actual small viewport"
+npm run test:e2e -- little-alex-physics.spec.ts --grep "constrained mobile landscape"
+```
+
+Review red output excerpts:
+
+```text
+× LittleAlexPhysics > uses the actual small viewport dimensions for physics walls
+  → expected wall bodies for 300x260, received wall bodies for 320x480
+
+× Little Alex physics › keeps every body part inside a constrained mobile landscape viewport
+  → "head bottom 369.1667175292969 > 260"
+  → "torso bottom 432.1703796386719 > 260"
+  → "leftLeg bottom 482.4284362792969 > 260"
+```
+
 ## QA Command Outputs
 
 Focused Vitest:
@@ -64,13 +86,13 @@ npm test -- src/components/app-shell/app-shell.test.tsx src/components/little-al
 
  RUN  v3.2.4 /Users/vishal/Developer/Fairplay/.worktrees/fairplay-little-alex-physics
 
- ✓ src/components/little-alex/little-alex-physics.test.tsx (3 tests) 52ms
- ✓ src/components/app-shell/app-shell.test.tsx (7 tests) 261ms
+ ✓ src/components/little-alex/little-alex-physics.test.tsx (4 tests) 58ms
+ ✓ src/components/app-shell/app-shell.test.tsx (7 tests) 270ms
 
  Test Files  2 passed (2)
-      Tests  10 passed (10)
-   Start at  09:30:03
-   Duration  996ms (transform 123ms, setup 69ms, collect 298ms, tests 313ms, environment 395ms, prepare 78ms)
+      Tests  11 passed (11)
+   Start at  09:42:04
+   Duration  1.08s (transform 128ms, setup 77ms, collect 324ms, tests 329ms, environment 402ms, prepare 123ms)
 ```
 
 Lint:
@@ -111,17 +133,18 @@ npm run test:e2e -- little-alex-physics.spec.ts
 [WebServer] (node:149) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 [WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
 
-Running 3 tests using 1 worker
+Running 4 tests using 1 worker
 
-(node:292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:42790) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:42790) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-  ✓  1 [chromium] › e2e/little-alex-physics.spec.ts:115:7 › Little Alex physics › appears globally on standard and immersive protected app routes (4.0s)
-  ✓  2 [chromium] › e2e/little-alex-physics.spec.ts:144:7 › Little Alex physics › can be dragged and flung while staying inside the viewport (2.8s)
-  ✓  3 [chromium] › e2e/little-alex-physics.spec.ts:170:7 › Little Alex physics › uses a static draggable-safe mode with reduced motion (2.0s)
+  ✓  1 [chromium] › e2e/little-alex-physics.spec.ts:155:7 › Little Alex physics › appears globally on standard and immersive protected app routes (4.5s)
+  ✓  2 [chromium] › e2e/little-alex-physics.spec.ts:184:7 › Little Alex physics › can be dragged and flung while staying inside the viewport (3.3s)
+  ✓  3 [chromium] › e2e/little-alex-physics.spec.ts:210:7 › Little Alex physics › keeps every body part inside a constrained mobile landscape viewport (3.1s)
+  ✓  4 [chromium] › e2e/little-alex-physics.spec.ts:226:7 › Little Alex physics › uses a static draggable-safe mode with reduced motion (2.1s)
 
-  3 passed (13.9s)
+  4 passed (16.9s)
 ```
 
 Diff hygiene:
@@ -145,4 +168,6 @@ No output; exit code 0.
 - Little Alex remains decorative and absent from keyboard/role-based UI.
 - Normal mode uses Matter.js runner, bodies, constraints, velocity, and viewport walls for drag/fling and bounce behavior.
 - Reduced-motion mode avoids the continuous Matter runner and remains safely draggable.
+- Small constrained viewports use real viewport bounds for walls and body-part containment.
+- Playwright now checks every visible Little Alex body part, not just the torso.
 - Focused component tests, lint, typecheck, diff hygiene, and Playwright smoke all pass.

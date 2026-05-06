@@ -70,21 +70,61 @@ async function createHouseholdAndChooseAlex(page: Page) {
 }
 
 async function expectLittleAlexInViewport(page: Page) {
-  const torso = page.locator('[data-part="torso"]');
-  const box = await torso.boundingBox();
-  const viewport = page.viewportSize();
+  await expect(page.getByTestId("little-alex-body-part")).toHaveCount(6);
 
-  expect(box).not.toBeNull();
-  expect(viewport).not.toBeNull();
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const tolerance = 1;
+          const viewport = {
+            height: window.innerHeight,
+            width: window.innerWidth
+          };
 
-  if (!box || !viewport) {
-    return;
-  }
+          return Array.from(
+            document.querySelectorAll<HTMLElement>(
+              '[data-testid="little-alex-body-part"]'
+            )
+          )
+            .filter((part) => {
+              const style = window.getComputedStyle(part);
+              const rect = part.getBoundingClientRect();
 
-  expect(box.x).toBeGreaterThanOrEqual(0);
-  expect(box.y).toBeGreaterThanOrEqual(0);
-  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
-  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+              return (
+                style.display !== "none" &&
+                style.visibility !== "hidden" &&
+                rect.height > 0 &&
+                rect.width > 0
+              );
+            })
+            .flatMap((part) => {
+              const rect = part.getBoundingClientRect();
+              const name = part.dataset.part ?? "unknown";
+              const failures: string[] = [];
+
+              if (rect.left < -tolerance) {
+                failures.push(`${name} left ${rect.left}`);
+              }
+
+              if (rect.top < -tolerance) {
+                failures.push(`${name} top ${rect.top}`);
+              }
+
+              if (rect.right > viewport.width + tolerance) {
+                failures.push(`${name} right ${rect.right} > ${viewport.width}`);
+              }
+
+              if (rect.bottom > viewport.height + tolerance) {
+                failures.push(`${name} bottom ${rect.bottom} > ${viewport.height}`);
+              }
+
+              return failures;
+            });
+        }),
+      { timeout: 3_000 }
+    )
+    .toEqual([]);
 }
 
 async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
@@ -163,6 +203,22 @@ test.describe("Little Alex physics", () => {
         20
       );
     }
+
+    await expectLittleAlexInViewport(page);
+  });
+
+  test("keeps every body part inside a constrained mobile landscape viewport", async ({
+    page
+  }) => {
+    await createHouseholdAndChooseAlex(page);
+    await page.setViewportSize({ height: 260, width: 300 });
+    await page.goto("/app/home");
+
+    await expect(page.getByTestId("little-alex-horne")).toBeVisible();
+    await expectLittleAlexInViewport(page);
+
+    await dragLittleAlex(page, 220, 160);
+    await page.waitForTimeout(500);
 
     await expectLittleAlexInViewport(page);
   });

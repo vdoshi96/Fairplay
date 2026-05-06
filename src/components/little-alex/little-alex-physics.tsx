@@ -6,8 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const WALL_THICKNESS = 96;
-const MIN_VIEWPORT_WIDTH = 320;
-const MIN_VIEWPORT_HEIGHT = 480;
+const VIEWPORT_PADDING = 2;
 const SERVER_SAFE_ANCHOR = { x: 906, y: 218 };
 
 type Point = {
@@ -85,14 +84,24 @@ const partConfigs: PartConfig[] = [
   }
 ];
 
+const characterBounds = partConfigs.reduce(
+  (bounds, part) => ({
+    maxX: Math.max(bounds.maxX, part.offset.x + part.width / 2),
+    maxY: Math.max(bounds.maxY, part.offset.y + part.height / 2),
+    minX: Math.min(bounds.minX, part.offset.x - part.width / 2),
+    minY: Math.min(bounds.minY, part.offset.y - part.height / 2)
+  }),
+  { maxX: -Infinity, maxY: -Infinity, minX: Infinity, minY: Infinity }
+);
+
 function viewportSize() {
   if (typeof window === "undefined") {
     return { height: 768, width: 1024 };
   }
 
   return {
-    height: Math.max(window.innerHeight || 0, MIN_VIEWPORT_HEIGHT),
-    width: Math.max(window.innerWidth || 0, MIN_VIEWPORT_WIDTH)
+    height: window.innerHeight || document.documentElement.clientHeight || 0,
+    width: window.innerWidth || document.documentElement.clientWidth || 0
   };
 }
 
@@ -100,12 +109,24 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
+function clampToViewportRange(value: number, min: number, max: number) {
+  if (min > max) {
+    return (min + max) / 2;
+  }
+
+  return clamp(value, min, max);
+}
+
 function clampAnchor(anchor: Point) {
   const { height, width } = viewportSize();
+  const minX = -characterBounds.minX + VIEWPORT_PADDING;
+  const maxX = width - characterBounds.maxX - VIEWPORT_PADDING;
+  const minY = -characterBounds.minY + VIEWPORT_PADDING;
+  const maxY = height - characterBounds.maxY - VIEWPORT_PADDING;
 
   return {
-    x: clamp(anchor.x, 74, width - 74),
-    y: clamp(anchor.y, 108, height - 92)
+    x: clampToViewportRange(anchor.x, minX, maxX),
+    y: clampToViewportRange(anchor.y, minY, maxY)
   };
 }
 
@@ -286,6 +307,58 @@ function syncGrabTarget(element: HTMLElement | null, anchor: Point) {
   element.style.width = "96px";
 }
 
+function visualHalfExtents(part: PartConfig, angle: number) {
+  const cos = Math.abs(Math.cos(angle));
+  const sin = Math.abs(Math.sin(angle));
+
+  return {
+    x: (part.width * cos + part.height * sin) / 2,
+    y: (part.width * sin + part.height * cos) / 2
+  };
+}
+
+function containBodyInViewport(
+  body: Matter.Body,
+  part: PartConfig,
+  viewport: { height: number; width: number }
+) {
+  const halfExtents = visualHalfExtents(part, body.angle);
+  const nextPosition = {
+    x: clampToViewportRange(
+      body.position.x,
+      halfExtents.x + VIEWPORT_PADDING,
+      viewport.width - halfExtents.x - VIEWPORT_PADDING
+    ),
+    y: clampToViewportRange(
+      body.position.y,
+      halfExtents.y + VIEWPORT_PADDING,
+      viewport.height - halfExtents.y - VIEWPORT_PADDING
+    )
+  };
+
+  const clampedX = nextPosition.x !== body.position.x;
+  const clampedY = nextPosition.y !== body.position.y;
+
+  if (!clampedX && !clampedY) {
+    return;
+  }
+
+  Matter.Body.setPosition(body, nextPosition);
+  Matter.Body.setVelocity(body, {
+    x: clampedX ? 0 : body.velocity.x,
+    y: clampedY ? 0 : body.velocity.y
+  });
+}
+
+function containBodiesInViewport(
+  bodies: Record<PartKey, Matter.Body>,
+  viewport = viewportSize()
+) {
+  partConfigs.forEach((part) => {
+    containBodyInViewport(bodies[part.key], part, viewport);
+  });
+}
+
 function clampVelocity(value: number) {
   return clamp(value, -26, 26);
 }
@@ -329,6 +402,7 @@ export function LittleAlexPhysics() {
       return;
     }
 
+    containBodiesInViewport(physics.bodies);
     partConfigs.forEach((part) => {
       const element = bodyRefs.current[part.key];
 
@@ -406,9 +480,7 @@ export function LittleAlexPhysics() {
       Matter.Composite.remove(physics.engine.world, physics.walls);
       physics.walls = createWalls(nextSize.width, nextSize.height);
       Matter.Composite.add(physics.engine.world, physics.walls);
-      Object.values(physics.bodies).forEach((body) => {
-        Matter.Body.setPosition(body, clampAnchor(body.position));
-      });
+      containBodiesInViewport(physics.bodies, nextSize);
       sync();
     };
 
@@ -497,6 +569,7 @@ export function LittleAlexPhysics() {
         Matter.Body.translate(body, translation);
         Matter.Body.setVelocity(body, { x: 0, y: 0 });
       });
+      containBodiesInViewport(physics.bodies);
       syncPhysicsDom();
     },
     [reducedMotion, syncPhysicsDom]
