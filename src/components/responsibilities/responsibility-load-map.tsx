@@ -99,6 +99,9 @@ const laneDotClasses: Record<BoardLaneTone, string> = {
   trimmed: "bg-emerald-500"
 };
 
+const loadMapWorkbenchBackground =
+  "url('/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png')";
+
 function label(value: string) {
   return value
     .split("_")
@@ -277,23 +280,32 @@ export function ResponsibilityLoadMap({
 
   return (
     <section className="grid gap-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="grid gap-1">
-          <p className="text-[13px] font-semibold text-fp-muted-ink">Load map</p>
-          <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-            Responsibility overview
-          </h1>
-        </div>
-        <div className="grid gap-3 sm:justify-items-end">
-          <FeatureGuideLauncher guide={FEATURE_GUIDES.loadMap} showDescription={false} />
-          {responsibilities.length > 0 ? (
-            <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/25"
-              href="/app/responsibilities/new"
-            >
-              Add responsibility
-            </Link>
-          ) : null}
+      <div
+        className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+        data-testid="load-map-hero-visual"
+        style={{ backgroundImage: loadMapWorkbenchBackground }}
+      >
+        <div className="flex flex-col gap-3 bg-gradient-to-r from-white/95 via-white/86 to-white/56 p-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="grid gap-1">
+            <p className="text-[13px] font-semibold text-fp-muted-ink">Load map</p>
+            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+              Responsibility overview
+            </h1>
+          </div>
+          <div className="grid gap-3 sm:justify-items-end">
+            <FeatureGuideLauncher
+              guide={FEATURE_GUIDES.loadMap}
+              showDescription={false}
+            />
+            {responsibilities.length > 0 ? (
+              <Link
+                className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/25"
+                href="/app/responsibilities/new"
+              >
+                Add responsibility
+              </Link>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -382,23 +394,29 @@ export function ResponsibilityLoadMap({
       </div>
 
       {responsibilities.length === 0 ? (
-        <div className="grid gap-4 rounded-[8px] border border-fp-line bg-white p-5 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div className="grid gap-3">
-            <h2 className="text-[18px] font-bold">No responsibilities mapped yet.</h2>
-            <p className="text-[14px] leading-6 text-fp-muted-ink">
-              Add one household responsibility and decide what needs attention first.
-            </p>
-            <LoadMapPracticeBoard
-              useBoardGuideTarget
-            />
-            <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-bold sm:w-fit"
-              href="/app/responsibilities/new"
-            >
-              Add responsibility
-            </Link>
+        <div
+          className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center"
+          data-testid="load-map-empty-visual"
+          style={{ backgroundImage: loadMapWorkbenchBackground }}
+        >
+          <div className="grid gap-4 bg-white/88 p-5 backdrop-blur-[1px] sm:grid-cols-[1fr_auto] sm:items-center">
+            <div className="grid gap-3">
+              <h2 className="text-[18px] font-bold">No responsibilities mapped yet.</h2>
+              <p className="text-[14px] leading-6 text-fp-muted-ink">
+                Add one household responsibility and decide what needs attention first.
+              </p>
+              <LoadMapPracticeBoard
+                useBoardGuideTarget
+              />
+              <Link
+                className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-bold sm:w-fit"
+                href="/app/responsibilities/new"
+              >
+                Add responsibility
+              </Link>
+            </div>
+            <HelperMascot className="h-24 w-24 justify-self-start sm:justify-self-end" decorative />
           </div>
-          <HelperMascot className="h-24 w-24 justify-self-start sm:justify-self-end" decorative />
         </div>
       ) : (
         <DndContext

@@ -85,6 +85,10 @@ describe("settings panel", () => {
   it("uses a system-follow switch and persists explicit light or dark overrides", async () => {
     renderSettings();
 
+    expect(screen.getByTestId("settings-preferences-visual")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/settings-preferences.png')"
+    });
     const systemSwitch = screen.getByRole("switch", {
       name: "Follow system settings"
     });

@@ -58,6 +58,14 @@ describe("ResponsibilityLoadMap", () => {
       />
     );
 
+    expect(screen.getByTestId("load-map-hero-visual")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png')"
+    });
+    expect(screen.getByTestId("load-map-empty-visual")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png')"
+    });
     expect(screen.getByText("No responsibilities mapped yet.")).toBeVisible();
     expect(screen.getByTestId("load-map-practice-board")).toHaveAttribute(
       "data-guide-id",

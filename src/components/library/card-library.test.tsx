@@ -63,6 +63,10 @@ describe("CardLibrary", () => {
   it("renders Greg avatar above source card filters without local Little Alex copy", () => {
     const { container } = render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
 
+    expect(screen.getByTestId("library-shelf-visual")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/library-shelf.png')"
+    });
     expect(
       screen.getByRole("button", { name: "Greg - The Taskmaster" })
     ).toBeVisible();
