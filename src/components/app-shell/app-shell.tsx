@@ -83,7 +83,7 @@ export function AppShell({ children, household, selectedPersona }: AppShellProps
                 className={[
                   "flex min-h-11 items-center gap-3 rounded px-3 text-[14px] font-semibold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
                   isActive
-                    ? "bg-[var(--fp-ink)] text-white shadow-[var(--fp-shadow-soft)]"
+                    ? "bg-fp-primary text-fp-on-primary shadow-[var(--fp-shadow-soft)]"
                     : "text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
                 ].join(" ")}
                 href={item.href}
@@ -167,7 +167,7 @@ export function AppShell({ children, household, selectedPersona }: AppShellProps
                   className={[
                     "grid min-h-12 min-w-[4.8rem] place-items-center gap-1 rounded px-2 text-center text-[11px] font-semibold leading-4 outline-none transition focus:ring-2 focus:ring-fp-ink/20",
                     isActive
-                      ? "bg-[var(--fp-ink)] text-white"
+                      ? "bg-fp-primary text-fp-on-primary"
                       : "text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
                   ].join(" ")}
                   href={item.href}

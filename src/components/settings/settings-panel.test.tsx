@@ -3,6 +3,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
+import {
+  THEME_STORAGE_KEY,
+  ThemeProvider
+} from "@/components/theme/theme-provider";
 import { SettingsPanel } from "./settings-panel";
 
 const routerPush = vi.hoisted(() => vi.fn());
@@ -34,7 +38,11 @@ const selectedPersona: PersonaSummary = {
 const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
 
 function renderSettings() {
-  render(<SettingsPanel household={household} selectedPersona={selectedPersona} />);
+  render(
+    <ThemeProvider>
+      <SettingsPanel household={household} selectedPersona={selectedPersona} />
+    </ThemeProvider>
+  );
 }
 
 function openSwitchDialog() {
@@ -54,8 +62,56 @@ describe("settings panel", () => {
     routerPush.mockReset();
     routerReplace.mockReset();
     routerRefresh.mockReset();
+    window.localStorage.clear();
+    document.documentElement.removeAttribute("data-theme");
+    document.documentElement.removeAttribute("data-theme-mode");
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+  });
+
+  it("shows appearance controls and persists the selected theme mode", async () => {
+    renderSettings();
+
+    expect(
+      screen.getByRole("group", { name: "Appearance mode" })
+    ).toBeVisible();
+    expect(screen.getByRole("button", { name: "System" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Dark" }));
+
+    await waitFor(() => {
+      expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+      expect(document.documentElement).toHaveAttribute("data-theme-mode", "dark");
+    });
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+
+    fireEvent.click(screen.getByRole("button", { name: "Light" }));
+
+    await waitFor(() => {
+      expect(document.documentElement).toHaveAttribute("data-theme", "light");
+      expect(document.documentElement).toHaveAttribute("data-theme-mode", "light");
+    });
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("light");
+  });
+
+  it("uses theme primary tokens for selected appearance and persona dialog actions", async () => {
+    renderSettings();
+
+    const selectedAppearanceMode = screen.getByRole("button", { name: "System" });
+    expect(selectedAppearanceMode).toHaveClass(
+      "bg-fp-primary",
+      "text-fp-on-primary"
+    );
+    expect(selectedAppearanceMode.className).not.toContain("text-white");
+
+    const { continueButton } = openSwitchDialog();
+
+    await waitFor(() => expect(continueButton).toHaveFocus());
+    expect(continueButton).toHaveClass("bg-fp-primary", "text-fp-on-primary");
+    expect(continueButton.className).not.toContain("text-white");
   });
 
   it("moves focus into the persona switch dialog when opened", async () => {
@@ -181,9 +237,12 @@ describe("settings panel", () => {
 
   it("marks settings guide targets and links back to replay learning", () => {
     const { container } = render(
-      <SettingsPanel household={household} selectedPersona={selectedPersona} />
+      <ThemeProvider>
+        <SettingsPanel household={household} selectedPersona={selectedPersona} />
+      </ThemeProvider>
     );
 
+    expect(container.querySelector('[data-guide-id="settings-appearance"]')).not.toBeNull();
     expect(container.querySelector('[data-guide-id="settings-persona"]')).not.toBeNull();
     expect(
       container.querySelector('[data-guide-id="settings-guided-start"]')

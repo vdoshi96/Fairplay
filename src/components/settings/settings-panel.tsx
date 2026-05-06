@@ -18,14 +18,23 @@ import {
   completeGuidePractice,
   useGuidePracticeRequest
 } from "@/components/guide/guide-practice";
+import { useTheme, type ThemeMode } from "@/components/theme/theme-provider";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 
 type SettingsPanelProps = {
   household: HouseholdSummary;
   selectedPersona: PersonaSummary;
 };
 
+const themeModeOptions: Array<{ label: string; value: ThemeMode }> = [
+  { label: "System", value: "system" },
+  { label: "Light", value: "light" },
+  { label: "Dark", value: "dark" }
+];
+
 export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps) {
   const router = useRouter();
+  const { mode: themeMode, resolvedTheme, setMode: setThemeMode } = useTheme();
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [preferenceAction, setPreferenceAction] = useState<
@@ -145,6 +154,11 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
     });
   }
 
+  function handleThemeModeChange(nextMode: ThemeMode) {
+    setThemeMode(nextMode);
+    completeGuidePractice("settings-appearance");
+  }
+
   function handleDialogKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
       event.preventDefault();
@@ -190,7 +204,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
 
         {error ? (
           <p
-            className="rounded-[8px] border border-fp-danger/40 bg-white px-3 py-2 text-[14px] leading-5 text-fp-danger"
+            className="rounded-[8px] border border-fp-danger/40 bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] leading-5 text-fp-danger"
             role="alert"
           >
             {error}
@@ -199,14 +213,14 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
 
         {actionStatus ? (
           <p
-            className="rounded-[8px] border border-fp-line bg-white px-3 py-2 text-[14px] font-semibold leading-5 text-fp-muted-ink"
+            className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] font-semibold leading-5 text-fp-muted-ink"
             role="status"
           >
             {actionStatus}
           </p>
         ) : null}
 
-        <section className="rounded-[8px] border border-fp-line bg-white p-4">
+        <section className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4">
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Household
           </h2>
@@ -227,7 +241,31 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
         </section>
 
         <section
-          className="rounded-[8px] border border-fp-line bg-white p-4"
+          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4"
+          data-guide-id="settings-appearance"
+        >
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div className="grid gap-1">
+              <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
+                Appearance
+              </h2>
+              <p className="text-[14px] leading-5 text-fp-muted-ink">
+                {themeMode === "system"
+                  ? `Following your system, currently ${resolvedTheme}.`
+                  : `Using ${themeMode} mode on this device.`}
+              </p>
+            </div>
+            <SegmentedControl
+              ariaLabel="Appearance mode"
+              onChange={handleThemeModeChange}
+              options={themeModeOptions}
+              value={themeMode}
+            />
+          </div>
+        </section>
+
+        <section
+          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4"
           data-guide-id="settings-persona"
         >
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
@@ -247,7 +285,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
         </section>
 
         <section
-          className="rounded-[8px] border border-fp-line bg-white p-4"
+          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4"
           data-guide-id="settings-guided-start"
         >
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
@@ -296,7 +334,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
           </div>
         </section>
 
-        <section className="rounded-[8px] border border-fp-line bg-white p-4">
+        <section className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4">
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Data controls
           </h2>
@@ -327,7 +365,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
           ref={dialogRef}
           role="dialog"
         >
-          <div className="w-full max-w-sm rounded-[8px] border border-fp-line bg-white p-4 shadow-soft">
+          <div className="w-full max-w-sm rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-soft">
             <h2
               className="text-[17px] font-bold leading-6 text-fp-ink"
               id="switch-persona-title"
@@ -342,7 +380,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
             </p>
             <div className="mt-4 flex gap-3">
               <button
-                className="min-h-11 flex-1 rounded-[8px] bg-fp-ink px-4 text-[14px] font-semibold text-white outline-none focus:ring-2 focus:ring-fp-ink/30"
+                className="min-h-11 flex-1 rounded-[8px] bg-fp-primary px-4 text-[14px] font-semibold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/30"
                 onClick={() => router.push("/choose-persona?next=/app/home")}
                 ref={continueButtonRef}
                 type="button"

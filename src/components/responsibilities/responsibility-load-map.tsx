@@ -289,7 +289,7 @@ export function ResponsibilityLoadMap({
           <FeatureGuideLauncher guide={FEATURE_GUIDES.loadMap} showDescription={false} />
           {responsibilities.length > 0 ? (
             <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white outline-none focus:ring-2 focus:ring-fp-ink/25"
+              className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/25"
               href="/app/responsibilities/new"
             >
               Add responsibility

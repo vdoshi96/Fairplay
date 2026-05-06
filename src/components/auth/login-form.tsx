@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, KeyboardEvent, useState } from "react";
 
 import { errorId, fieldId, GENERIC_LOGIN_ERROR, readApiError } from "./form-utils";
 
@@ -19,6 +19,15 @@ export function LoginForm({ onAuthenticated }: LoginFormProps) {
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [errors, setErrors] = useState<LoginErrors>({});
+
+  function handleFieldKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing || pending) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -96,6 +105,7 @@ export function LoginForm({ onAuthenticated }: LoginFormProps) {
           id={fieldId("login-username")}
           name="username"
           onChange={(event) => setUsername(event.target.value)}
+          onKeyDown={handleFieldKeyDown}
           value={username}
         />
         {errors.username ? (
@@ -117,6 +127,7 @@ export function LoginForm({ onAuthenticated }: LoginFormProps) {
           id={fieldId("login-password")}
           name="password"
           onChange={(event) => setPassword(event.target.value)}
+          onKeyDown={handleFieldKeyDown}
           type="password"
           value={password}
         />
@@ -128,7 +139,7 @@ export function LoginForm({ onAuthenticated }: LoginFormProps) {
       </div>
 
       <button
-        className="min-h-11 rounded-[8px] bg-fp-ink px-4 text-[14px] font-semibold text-white outline-none transition hover:bg-fp-ink/90 focus:ring-2 focus:ring-fp-ink/30 disabled:cursor-not-allowed disabled:bg-fp-muted-ink"
+        className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-semibold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/30 disabled:cursor-not-allowed disabled:bg-fp-primary-disabled"
         disabled={pending}
         type="submit"
       >

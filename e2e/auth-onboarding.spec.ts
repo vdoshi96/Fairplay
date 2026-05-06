@@ -161,6 +161,30 @@ test.describe("auth and onboarding", () => {
     await expect(page).toHaveURL(/\/app\/home/);
   });
 
+  test("Enter in the login username field submits like the button", async ({ page }) => {
+    await mockAuthApis(page);
+    await mockProtectedRouteHandoffs(page);
+
+    await page.goto("/login");
+    await page.getByLabel("Household password").fill("correct horse battery staple");
+    await page.getByLabel("Household username").fill("river-home");
+    await page.getByLabel("Household username").press("Enter");
+
+    await expect(page).toHaveURL(/\/choose-persona\?next=(%2F|\/)app(%2F|\/)home/);
+  });
+
+  test("Enter in the login password field submits like the button", async ({ page }) => {
+    await mockAuthApis(page);
+    await mockProtectedRouteHandoffs(page);
+
+    await page.goto("/login");
+    await page.getByLabel("Household username").fill("river-home");
+    await page.getByLabel("Household password").fill("correct horse battery staple");
+    await page.getByLabel("Household password").press("Enter");
+
+    await expect(page).toHaveURL(/\/choose-persona\?next=(%2F|\/)app(%2F|\/)home/);
+  });
+
   test("cleared cookie redirects app home to login", async ({ page, context }) => {
     await context.clearCookies();
 

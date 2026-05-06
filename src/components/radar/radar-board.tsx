@@ -587,7 +587,7 @@ export function RadarBoard({
           {SAFETY_COPY.unsafeRelationshipCaution}
         </p>
         <button
-          className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white outline-none focus:ring-2 focus:ring-fp-ink/25 sm:w-fit"
+          className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/25 sm:w-fit"
           onClick={createItem}
           type="button"
         >
@@ -815,7 +815,7 @@ export function RadarBoard({
           ) : null}
           <div className="flex gap-2">
             <button
-              className="min-h-11 rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white"
+              className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary"
               onClick={publishPending}
               ref={confirmPublishButtonRef}
               type="button"
@@ -962,7 +962,7 @@ function RadarCard({
             value={publishTarget}
           />
           <button
-            className="min-h-11 rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white sm:self-end"
+            className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary sm:self-end"
             onClick={onPublish}
             type="button"
           >
@@ -985,7 +985,7 @@ function RadarCard({
         {isEditing ? (
           <>
             <button
-              className="min-h-11 rounded-[8px] bg-fp-ink px-3 text-[13px] font-bold text-white"
+              className="min-h-11 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary"
               onClick={onSaveEdit}
               type="button"
             >

@@ -107,7 +107,7 @@ export function CrashCourseFlow({
 
               <div className="flex border-t border-fp-line pt-4">
                 <Link
-                  className="inline-flex min-h-11 items-center rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white outline-none transition hover:bg-fp-ink/90 focus:ring-2 focus:ring-fp-ink/25"
+                  className="inline-flex min-h-11 items-center rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/25"
                   href="/app/load-map"
                 >
                   Open the Load Map
@@ -182,7 +182,7 @@ export function CrashCourseFlow({
                   {isLast ? (
                     <button
                       type="button"
-                      className="min-h-11 rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white outline-none transition hover:bg-fp-ink/90 focus:ring-2 focus:ring-fp-ink/25"
+                      className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/25"
                       onClick={onComplete}
                     >
                       Finish course
@@ -190,7 +190,7 @@ export function CrashCourseFlow({
                   ) : (
                     <button
                       type="button"
-                      className="min-h-11 rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white outline-none transition hover:bg-fp-ink/90 focus:ring-2 focus:ring-fp-ink/25"
+                      className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/25"
                       onClick={() => moveTo(step + 1)}
                     >
                       Next lesson

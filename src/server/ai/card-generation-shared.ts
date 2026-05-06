@@ -63,13 +63,14 @@ export const cardSystemPrompt = [
   "Keep the tone practical, non-clinical, non-blaming, and safe for collaborative household planning.",
   "Do not diagnose relationships, score partners, assign blame, or write therapy-style advice.",
   "Create original wording and source-style/IP guardrails: do not copy public decks, proprietary card language, workbook text, labels, logos, layouts, or distinctive source material.",
-  "Image prompts must describe an original warm household-object card cover and avoid people, stereotypes, brand marks, watermarks, or readable proprietary labels."
+  "Image prompts must describe an original textless app illustration with a large central silhouette, generous whitespace, app-native colors, no fake card frame, no readable words, and no people, stereotypes, brand marks, watermarks, or proprietary labels."
 ].join("\n");
 
 const imageStylePrompt = [
-  "Create an original 5:7 portrait Fairplay household card cover.",
-  "Use a warm pale background, simple household-object line drawing, strong black outline, restrained orange/yellow accents, and title text near the top.",
-  "Do not copy public source decks, workbook/Trello/card layouts, proprietary labels, logos, watermarks, people, partner blame, or gendered chore stereotypes."
+  "Create an original textless app illustration for Fairplay in a 5:7 portrait composition.",
+  "Make it feel like a Duolingo-style integrated app illustration: one large central silhouette, generous whitespace, soft Fairplay teal/coral/yellow/dark-ink accents, and artwork blended into the app composition.",
+  "Use household-object shapes and friendly abstract forms, with no fake card frame, no border, no readable words, no captions, no labels, no logos, no watermarks, and no standalone thumbnail layout.",
+  "Do not copy public source decks, workbook/Trello/card layouts, proprietary labels, people, partner blame, or gendered chore stereotypes."
 ].join(" ");
 
 const imageNegativePrompt = [
@@ -126,7 +127,7 @@ export function buildImagePrompt(title: string, generatedPrompt: string) {
   return capText(
     [
       imageStylePrompt,
-      `Title: ${title.trim()}`,
+      `Responsibility theme: ${title.trim()}`,
       generatedPrompt.trim()
     ].join("\n"),
     MAX_IMAGE_PROMPT_CHARS
