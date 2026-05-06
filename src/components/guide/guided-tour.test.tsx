@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -217,5 +217,85 @@ describe("GuidedTour", () => {
     expect(screen.getByText("Dummy card moved to Player 1.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
     window.removeEventListener(GUIDE_PRACTICE_REQUEST_EVENT, handlePracticeRequest);
+  });
+
+  it("requires every marker in a multi-step practice before advancing", async () => {
+    installVisibleTargetGeometry();
+    const multiStepPractice = [
+      {
+        id: "workflow",
+        title: "Practice the full workflow",
+        body: "Complete each page-level dummy action before continuing.",
+        targetId: "load-map-move-target",
+        practice: {
+          actionLabel: "Start dummy workflow",
+          completionMessage: "Dummy workflow complete.",
+          eventId: "load-map-practice-start",
+          prompt: "Use the page-level dummy workflow.",
+          requiredEventIds: [
+            "load-map-move",
+            "load-map-edit",
+            "load-map-trim"
+          ]
+        }
+      },
+      steps[0]
+    ] as unknown as GuideStep[];
+    render(
+      <div>
+        <button data-guide-id="load-map-move-target">Move menu target</button>
+        <GuidedTour
+          featureName="Load Map"
+          onExit={vi.fn()}
+          steps={multiStepPractice}
+        />
+      </div>
+    );
+
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+
+    act(() => completeGuidePractice("load-map-move"));
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+    expect(screen.getByText("Practice progress: 1 of 3")).toBeVisible();
+
+    act(() => completeGuidePractice("load-map-edit"));
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+    expect(screen.getByText("Practice progress: 2 of 3")).toBeVisible();
+
+    act(() => completeGuidePractice("load-map-trim"));
+    expect(screen.getByText("Dummy workflow complete.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
+  });
+
+  it("lets page-level dummy controls receive clicks during required practice", () => {
+    installVisibleTargetGeometry();
+    render(
+      <div>
+        <button data-guide-id="load-map-move-target">Move menu target</button>
+        <GuidedTour
+          featureName="Load Map"
+          onExit={vi.fn()}
+          steps={[
+            {
+              id: "move",
+              title: "Practice moving a card",
+              body: "Move a pretend card before continuing.",
+              targetId: "load-map-move-target",
+              practice: {
+                actionLabel: "Start dummy workflow",
+                completionMessage: "Dummy workflow complete.",
+                eventId: "load-map-practice-start",
+                prompt: "Use the page-level dummy workflow.",
+                requiredEventIds: ["load-map-move"]
+              }
+            }
+          ]}
+        />
+      </div>
+    );
+
+    expect(screen.getByLabelText("Guided tour backdrop")).toHaveClass(
+      "pointer-events-none"
+    );
   });
 });

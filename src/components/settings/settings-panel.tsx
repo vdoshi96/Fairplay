@@ -31,18 +31,19 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
   const [preferenceAction, setPreferenceAction] = useState<
     "restart-course" | "show-welcome" | null
   >(null);
+  const [practiceOpen, setPracticeOpen] = useState(false);
+  const [dummyPersonaConfirmOpen, setDummyPersonaConfirmOpen] = useState(false);
   const [actionStatus, setActionStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const contentRef = useRef<HTMLElement>(null);
   const switchTriggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const continueButtonRef = useRef<HTMLButtonElement>(null);
-  const openDummyLearningHub = useCallback(() => {
-    setActionStatus("Dummy learning hub opened.");
-    completeGuidePractice("settings-learning-hub");
+  const openSettingsPractice = useCallback(() => {
+    setPracticeOpen(true);
   }, []);
 
-  useGuidePracticeRequest("settings-learning-hub", openDummyLearningHub);
+  useGuidePracticeRequest("settings-practice-start", openSettingsPractice);
 
   useEffect(() => {
     const content = contentRef.current;
@@ -294,6 +295,11 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
               showDescription={false}
             />
           </div>
+          {practiceOpen ? (
+            <SettingsPracticeWorkflow
+              onOpenPersonaConfirm={() => setDummyPersonaConfirmOpen(true)}
+            />
+          ) : null}
         </section>
 
         <section className="rounded-[8px] border border-fp-line bg-white p-4">
@@ -360,6 +366,132 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
           </div>
         </div>
       ) : null}
+      {dummyPersonaConfirmOpen ? (
+        <div
+          aria-labelledby="dummy-persona-confirm-title"
+          aria-modal="true"
+          className="fixed inset-0 z-30 grid place-items-center bg-fp-ink/35 px-4"
+          role="dialog"
+        >
+          <div className="grid w-full max-w-sm gap-3 rounded-[8px] border border-fp-line bg-white p-4 shadow-soft">
+            <h2
+              className="text-[17px] font-bold leading-6 text-fp-ink"
+              id="dummy-persona-confirm-title"
+            >
+              Dummy persona switch confirmation
+            </h2>
+            <p className="text-[14px] leading-5 text-fp-muted-ink">
+              This is a local practice confirmation. It will not leave Settings.
+            </p>
+            <button
+              className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-semibold text-fp-ink"
+              onClick={() => setDummyPersonaConfirmOpen(false)}
+              type="button"
+            >
+              Stay in settings
+            </button>
+          </div>
+        </div>
+      ) : null}
     </>
   );
+}
+
+function SettingsPracticeWorkflow({
+  onOpenPersonaConfirm
+}: {
+  onOpenPersonaConfirm: () => void;
+}) {
+  const [appearanceMode, setAppearanceMode] = useState<"system" | "light" | "dark">(
+    "system"
+  );
+  const [status, setStatus] = useState<string | null>(null);
+
+  function mark(eventId: string, message: string) {
+    setStatus(message);
+    completeGuidePractice(eventId);
+  }
+
+  return (
+    <section
+      aria-label="Dummy Settings practice"
+      className="mt-4 grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-fp-surface p-3"
+    >
+      <div className="grid gap-1">
+        <h3 className="text-[16px] font-bold text-fp-ink">
+          Dummy Settings practice
+        </h3>
+        <p className="text-[13px] leading-5 text-fp-muted-ink">
+          Practice settings actions locally without changing household data.
+        </p>
+      </div>
+      <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+        Dummy appearance mode
+        <select
+          className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] text-fp-ink"
+          onChange={(event) => {
+            const value = event.target.value as "system" | "light" | "dark";
+            setAppearanceMode(value);
+            mark(
+              "settings-appearance-mode",
+              `Dummy appearance mode changed to ${label(value)}.`
+            );
+          }}
+          value={appearanceMode}
+        >
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <div className="flex flex-wrap gap-2">
+        <button
+          className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+          onClick={() =>
+            mark("settings-welcome-replay", "Dummy welcome replay checked.")
+          }
+          type="button"
+        >
+          Check dummy welcome replay
+        </button>
+        <button
+          className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+          onClick={() => {
+            onOpenPersonaConfirm();
+            mark(
+              "settings-persona-confirm",
+              "Dummy persona confirmation opened."
+            );
+          }}
+          type="button"
+        >
+          Open dummy persona confirmation
+        </button>
+        <button
+          className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+          onClick={() =>
+            mark("settings-learning-hub", "Dummy learning hub located.")
+          }
+          type="button"
+        >
+          Locate dummy learning hub
+        </button>
+      </div>
+      {status ? (
+        <p
+          className="rounded-[8px] border border-fp-line bg-white p-3 text-[13px] font-semibold text-fp-muted-ink"
+          role="status"
+        >
+          {status}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function label(value: string) {
+  return value
+    .split("_")
+    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
+    .join(" ");
 }

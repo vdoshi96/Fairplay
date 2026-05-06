@@ -67,12 +67,12 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
   const [reviewDraft, setReviewDraft] = useState<AiCardDraftSummary | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [error, setError] = useState<string | null>(null);
-  const openGregPractice = useCallback(() => {
-    setCaptureOpen(true);
-    completeGuidePractice("library-ai-task-manager");
+  const [practiceOpen, setPracticeOpen] = useState(false);
+  const openLibraryPractice = useCallback(() => {
+    setPracticeOpen(true);
   }, []);
 
-  useGuidePracticeRequest("library-ai-task-manager", openGregPractice);
+  useGuidePracticeRequest("library-practice-start", openLibraryPractice);
 
   async function mutateDraft(path: string, action: Exclude<PendingAction, "capture" | null>) {
     setPendingAction(action);
@@ -193,6 +193,8 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
         />
       ) : null}
 
+      {practiceOpen ? <LibraryPracticeWorkflow /> : null}
+
       {error ? (
         <p className="rounded border border-fp-line bg-white p-3 text-[14px] font-semibold text-fp-muted-ink">
           {error}
@@ -220,6 +222,154 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
           onClose={() => setReviewDraft(null)}
           onPutInPlay={() => putInPlay(reviewDraft.id)}
         />
+      ) : null}
+    </section>
+  );
+}
+
+function LibraryPracticeWorkflow() {
+  const [request, setRequest] = useState("");
+  const [draftCreated, setDraftCreated] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [title, setTitle] = useState("Lunch packing handoff");
+  const [summary, setSummary] = useState(
+    "Keep lunch kits reset, packed, and ready before school mornings."
+  );
+  const [imagePreviewVersion, setImagePreviewVersion] = useState(0);
+  const [status, setStatus] = useState<string | null>(null);
+
+  function mark(eventId: string, message: string) {
+    setStatus(message);
+    completeGuidePractice(eventId);
+  }
+
+  return (
+    <section
+      aria-label="Dummy Library practice"
+      className="grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-fp-surface p-4"
+    >
+      <div className="grid gap-1">
+        <h3 className="text-[16px] font-bold text-fp-ink">
+          Dummy Library practice
+        </h3>
+        <p className="text-[13px] leading-5 text-fp-muted-ink">
+          Practice greg and draft review locally. These controls never call the
+          draft API or create a household card.
+        </p>
+      </div>
+
+      <div className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-3">
+        <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+          Dummy card request
+          <textarea
+            className="min-h-20 rounded-[8px] border border-fp-line px-3 py-2 text-[14px] text-fp-ink"
+            onChange={(event) => setRequest(event.target.value)}
+            value={request}
+          />
+        </label>
+        <button
+          className="min-h-10 rounded-[8px] bg-fp-ink px-3 text-[13px] font-bold text-white disabled:opacity-60 sm:w-fit"
+          disabled={request.trim().length === 0}
+          onClick={() => {
+            setDraftCreated(true);
+            mark("library-capture-filled", "Dummy draft created from greg capture.");
+          }}
+          type="button"
+        >
+          Create dummy draft
+        </button>
+      </div>
+
+      {draftCreated ? (
+        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-3">
+          <div className="grid gap-1">
+            <p className="text-[13px] font-bold text-fp-ink">{title}</p>
+            <p className="text-[13px] leading-5 text-fp-muted-ink">{summary}</p>
+          </div>
+          <button
+            className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold sm:w-fit"
+            onClick={() => {
+              setReviewOpen(true);
+              mark("library-draft-reviewed", "Dummy draft opened for review.");
+            }}
+            type="button"
+          >
+            Review dummy draft
+          </button>
+        </div>
+      ) : null}
+
+      {reviewOpen ? (
+        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-3">
+          <div className="grid gap-3 md:grid-cols-[minmax(9rem,14rem)_1fr]">
+            <div className="grid min-h-40 place-items-center rounded-[8px] border border-fp-line bg-fp-soft p-3 text-center text-[13px] font-bold text-fp-muted-ink">
+              Dummy textless image preview {imagePreviewVersion + 1}
+            </div>
+            <div className="grid gap-3">
+              <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+                Dummy draft title
+                <input
+                  className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[14px] text-fp-ink"
+                  onChange={(event) => setTitle(event.target.value)}
+                  value={title}
+                />
+              </label>
+              <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+                Dummy summary
+                <textarea
+                  className="min-h-20 rounded-[8px] border border-fp-line px-3 py-2 text-[14px] text-fp-ink"
+                  onChange={(event) => setSummary(event.target.value)}
+                  value={summary}
+                />
+              </label>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className="min-h-10 rounded-[8px] bg-fp-ink px-3 text-[13px] font-bold text-white"
+              onClick={() =>
+                mark("library-draft-edited", "Dummy draft edits saved.")
+              }
+              type="button"
+            >
+              Save dummy edits
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              onClick={() => {
+                setImagePreviewVersion((version) => version + 1);
+                mark(
+                  "library-image-previewed",
+                  "Dummy image preview refreshed."
+                );
+              }}
+              type="button"
+            >
+              Preview regenerated dummy image
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              onClick={() =>
+                mark(
+                  "library-put-in-play",
+                  "Dummy card is ready for the Load Map. No real card was created."
+                )
+              }
+              type="button"
+            >
+              Put dummy card in play
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {status ? (
+        <p
+          className="rounded-[8px] border border-fp-line bg-white p-3 text-[13px] font-semibold text-fp-muted-ink"
+          role="status"
+        >
+          {status}
+        </p>
       ) : null}
     </section>
   );

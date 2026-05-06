@@ -93,14 +93,13 @@ export function CheckInFlow({
   const [pendingAction, setPendingAction] = useState<
     "skip" | "defer" | "decision" | "complete" | null
   >(null);
-  const [dummyCheckInComplete, setDummyCheckInComplete] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(false);
   const errorRef = useRef<HTMLParagraphElement>(null);
-  const completeDummyCheckIn = useCallback(() => {
-    setDummyCheckInComplete(true);
-    completeGuidePractice("check-in-complete");
+  const openCheckInPractice = useCallback(() => {
+    setPracticeOpen(true);
   }, []);
 
-  useGuidePracticeRequest("check-in-complete", completeDummyCheckIn);
+  useGuidePracticeRequest("check-in-practice-start", openCheckInPractice);
 
   const currentItem = useMemo(
     () => checkIn.items[currentIndex] ?? checkIn.items.at(-1) ?? null,
@@ -440,14 +439,7 @@ export function CheckInFlow({
       >
         Complete check-in
       </button>
-      {dummyCheckInComplete ? (
-        <p
-          className="rounded-[8px] border border-fp-line bg-white p-3 text-sm font-semibold text-fp-muted-ink"
-          role="status"
-        >
-          Dummy check-in completed.
-        </p>
-      ) : null}
+      {practiceOpen ? <CheckInPracticeWorkflow /> : null}
     </main>
   );
 }
@@ -462,13 +454,12 @@ export function NewCheckInLauncher({
   const [suggestions, setSuggestions] = useState<SuggestedItem[]>(initialSuggestions);
   const [startedCheckIn, setStartedCheckIn] = useState<GuidedCheckIn | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [dummyCheckInComplete, setDummyCheckInComplete] = useState(false);
-  const completeDummyCheckIn = useCallback(() => {
-    setDummyCheckInComplete(true);
-    completeGuidePractice("check-in-complete");
+  const [practiceOpen, setPracticeOpen] = useState(false);
+  const openCheckInPractice = useCallback(() => {
+    setPracticeOpen(true);
   }, []);
 
-  useGuidePracticeRequest("check-in-complete", completeDummyCheckIn);
+  useGuidePracticeRequest("check-in-practice-start", openCheckInPractice);
 
   async function previewAgenda() {
     try {
@@ -564,26 +555,130 @@ export function NewCheckInLauncher({
       >
         Start check-in
       </button>
-      <div
-        className="grid gap-2 rounded-[8px] border border-dashed border-fp-line bg-white p-3"
-        data-guide-id="check-in-complete-action"
-      >
-        <p className="text-sm font-semibold text-fp-ink">
-          Practice completing a check-in
-        </p>
-        <button
-          className="rounded-md border border-stone-300 px-3 py-2 text-sm font-medium"
-          onClick={completeDummyCheckIn}
-          type="button"
-        >
-          Complete dummy check-in
-        </button>
-        {dummyCheckInComplete ? (
-          <p className="text-sm font-semibold text-fp-muted-ink" role="status">
-            Dummy check-in completed.
-          </p>
-        ) : null}
+      <div data-guide-id="check-in-complete-action">
+        {practiceOpen ? <CheckInPracticeWorkflow /> : null}
       </div>
     </main>
+  );
+}
+
+function CheckInPracticeWorkflow() {
+  const [agendaPreviewed, setAgendaPreviewed] = useState(false);
+  const [owner, setOwner] = useState<PersonaKey>("alex");
+  const [decisionSummary, setDecisionSummary] = useState("");
+  const [status, setStatus] = useState<string | null>(null);
+
+  function mark(eventId: string, message: string) {
+    setStatus(message);
+    completeGuidePractice(eventId);
+  }
+
+  return (
+    <section
+      aria-label="Dummy Check-in practice"
+      className="grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-white p-3"
+    >
+      <div className="grid gap-1">
+        <h2 className="text-[16px] font-bold text-fp-ink">
+          Dummy Check-in practice
+        </h2>
+        <p className="text-[13px] leading-5 text-fp-muted-ink">
+          Practice the check-in flow locally without saving decisions or summaries.
+        </p>
+      </div>
+      <button
+        className="min-h-10 rounded-[8px] bg-fp-ink px-3 text-[13px] font-bold text-white sm:w-fit"
+        onClick={() => {
+          setAgendaPreviewed(true);
+          mark("check-in-agenda-previewed", "Dummy agenda previewed.");
+        }}
+        type="button"
+      >
+        Preview dummy agenda
+      </button>
+
+      {agendaPreviewed ? (
+        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-fp-surface p-3">
+          <article className="rounded-[8px] border border-fp-line bg-white p-3">
+            <h3 className="text-[15px] font-bold text-fp-ink">
+              Lunch kit reset
+            </h3>
+            <p className="text-[13px] leading-5 text-fp-muted-ink">
+              Decide who owns lunch kit reset and when to revisit.
+            </p>
+          </article>
+          <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+            Dummy topic owner
+            <select
+              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[14px] text-fp-ink"
+              onChange={(event) => setOwner(event.target.value as PersonaKey)}
+              value={owner}
+            >
+              <option value="alex">Alex</option>
+              <option value="max">Max</option>
+            </select>
+          </label>
+          <button
+            className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold sm:w-fit"
+            onClick={() =>
+              mark(
+                "check-in-topic-assigned",
+                `Dummy topic assigned to ${label(owner)}.`
+              )
+            }
+            type="button"
+          >
+            Assign dummy topic
+          </button>
+          <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+            Dummy decision summary
+            <textarea
+              className="min-h-20 rounded-[8px] border border-fp-line px-3 py-2 text-[14px] text-fp-ink"
+              onChange={(event) => setDecisionSummary(event.target.value)}
+              value={decisionSummary}
+            />
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              disabled={decisionSummary.trim().length === 0}
+              onClick={() =>
+                mark("check-in-decision-recorded", "Dummy decision recorded.")
+              }
+              type="button"
+            >
+              Record dummy decision
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              onClick={() =>
+                mark("check-in-item-deferred", "Dummy item deferred.")
+              }
+              type="button"
+            >
+              Defer dummy item
+            </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              onClick={() =>
+                mark("check-in-complete", "Dummy check-in completed.")
+              }
+              type="button"
+            >
+              Complete dummy check-in
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {status ? (
+        <p
+          className="rounded-[8px] border border-fp-line bg-fp-surface p-3 text-[13px] font-semibold text-fp-muted-ink"
+          role="status"
+        >
+          {status}
+        </p>
+      ) : null}
+    </section>
   );
 }
