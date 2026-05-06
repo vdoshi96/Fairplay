@@ -169,14 +169,14 @@ const partConfigs: PartConfig[] = [
     className: "fp-little-alex-arm fp-little-alex-arm-left",
     height: 66,
     key: "leftArm",
-    offset: { x: -31, y: -1 },
+    offset: { x: -27, y: -1 },
     width: 20
   },
   {
     className: "fp-little-alex-arm fp-little-alex-arm-right",
     height: 66,
     key: "rightArm",
-    offset: { x: 31, y: -1 },
+    offset: { x: 27, y: -1 },
     width: 20
   },
   {
