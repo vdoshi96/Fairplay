@@ -10,6 +10,7 @@ const appPages = [
   { name: "load-map", path: "/app/load-map", heading: "Responsibility overview" },
   { name: "radar", path: "/app/radar", heading: "Concern board" },
   { name: "check-ins", path: "/app/check-ins/new", heading: "New check-in" },
+  { name: "crash-course", path: "/app/crash-course", heading: "Why this is not a chore app" },
   { name: "settings", path: "/app/settings", heading: "Household settings" }
 ] as const;
 
@@ -183,11 +184,16 @@ async function expectReadableText(page: Page) {
         const background = backgroundFor(element);
         const ratio = contrastRatio(foreground, background);
 
-        return ratio < 3
+        const fontSize = Number.parseFloat(getComputedStyle(element).fontSize);
+        const fontWeight = Number.parseInt(getComputedStyle(element).fontWeight, 10);
+        const isLargeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
+        const threshold = isLargeText ? 3 : 4.5;
+
+        return ratio < threshold
           ? [
               `${element.tagName.toLowerCase()} "${element.innerText
                 .trim()
-                .slice(0, 60)}" contrast ${ratio.toFixed(2)}`
+                .slice(0, 60)}" contrast ${ratio.toFixed(2)} < ${threshold}`
             ]
           : [];
       })

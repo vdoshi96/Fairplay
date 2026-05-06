@@ -32,8 +32,10 @@ describe("crash course flow", () => {
     expect(stage.className).toContain("min-h-[100svh]");
     expect(stage.className).toContain("overflow-hidden");
     expect(stage.className).toContain("relative");
+    expect(stage.className).toContain("bg-fp-paper");
     expect(panel.className).toContain("z-10");
-    expect(panel.className).toContain("bg-white/");
+    expect(panel.className).toContain("bg-[var(--fp-surface-strong)]");
+    expect(panel.className).not.toContain("bg-white/");
     expect(scene).toHaveAttribute("data-scene-scale", "immersive-background");
     expect(scene.className).toContain("absolute");
     expect(scene.className).toContain("inset-0");

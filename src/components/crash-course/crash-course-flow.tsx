@@ -52,7 +52,7 @@ export function CrashCourseFlow({
   return (
     <section
       aria-labelledby="crash-course-title"
-      className="relative isolate min-h-[100svh] overflow-hidden bg-[#edf4ee] px-4 py-6 sm:px-6 lg:px-8"
+      className="relative isolate min-h-[100svh] overflow-hidden bg-fp-paper px-4 py-6 sm:px-6 lg:px-8"
       data-testid="crash-course-stage"
     >
       <CrashCourseScene
@@ -62,7 +62,7 @@ export function CrashCourseFlow({
 
       <div className="relative z-10 flex min-h-[calc(100svh_-_3rem)] items-center py-4 sm:py-8">
         <div
-          className="z-10 grid w-full max-w-2xl gap-5 rounded-[8px] border border-white/80 bg-white/[0.92] p-5 shadow-2xl backdrop-blur-md sm:p-7"
+          className="z-10 grid w-full max-w-2xl gap-5 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 shadow-2xl backdrop-blur-md sm:p-7"
           data-testid="crash-course-lesson-panel"
         >
           {completed ? (
@@ -137,7 +137,7 @@ export function CrashCourseFlow({
               </div>
 
               {lesson.id === "minimum-standards" ? (
-                <div className="grid gap-2 rounded-[8px] border border-fp-line bg-fp-soft p-4">
+                <div className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-4">
                   <label
                     htmlFor="minimum-standard-draft"
                     className="text-[14px] font-bold leading-5 text-fp-ink"
@@ -146,7 +146,7 @@ export function CrashCourseFlow({
                   </label>
                   <textarea
                     id="minimum-standard-draft"
-                    className="min-h-28 resize-y rounded-[8px] border border-fp-line bg-white p-3 text-[15px] leading-6 text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
+                    className="min-h-28 resize-y rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3 text-[15px] leading-6 text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
                     placeholder="Example: Lunches are packed before bedtime, and backup lunch money is ready for rushed mornings."
                     value={standardDraft}
                     onChange={(event) => setStandardDraft(event.target.value)}
@@ -162,7 +162,7 @@ export function CrashCourseFlow({
               <div className="grid gap-3 border-t border-fp-line pt-4 sm:grid-cols-[1fr_auto] sm:items-center">
                 <button
                   type="button"
-                  className="min-h-11 rounded-[8px] border border-fp-line px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-fp-soft focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-45"
+                  className="min-h-11 rounded-[8px] border border-fp-line px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-45"
                   onClick={onSkip}
                 >
                   Skip crash course
@@ -171,7 +171,7 @@ export function CrashCourseFlow({
                 <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
                   <button
                     type="button"
-                    className="min-h-11 rounded-[8px] border border-fp-line px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-fp-soft focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-45"
+                    className="min-h-11 rounded-[8px] border border-fp-line px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-45"
                     disabled={isFirst}
                     onClick={() => moveTo(step - 1)}
                   >
