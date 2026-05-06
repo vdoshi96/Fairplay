@@ -1,6 +1,6 @@
 import { mkdir, rm } from "node:fs/promises";
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const screenshotDir = "test-results/dark-mode-polish";
 
@@ -203,6 +203,34 @@ async function expectReadableText(page: Page) {
   expect(failures).toEqual([]);
 }
 
+async function expectUnobscured(locator: Locator, label: string) {
+  await expect(locator).toBeVisible();
+
+  const blocker = await locator.evaluate((element, elementLabel) => {
+    const rect = element.getBoundingClientRect();
+    const topElement = document.elementFromPoint(
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2
+    );
+
+    if (!topElement || topElement === element || element.contains(topElement)) {
+      return null;
+    }
+
+    const blockerName = [
+      topElement.tagName.toLowerCase(),
+      topElement.id ? `#${topElement.id}` : "",
+      topElement.className && typeof topElement.className === "string"
+        ? `.${topElement.className.trim().split(/\s+/).join(".")}`
+        : ""
+    ].join("");
+
+    return `${elementLabel} center blocked by ${blockerName}`;
+  }, label);
+
+  expect(blocker).toBeNull();
+}
+
 test.describe("dark mode visual QA", () => {
   test.beforeEach(async ({ context, page }) => {
     await context.clearCookies();
@@ -224,6 +252,25 @@ test.describe("dark mode visual QA", () => {
         page.getByRole("heading", { name: appPage.heading })
       ).toBeVisible();
       await expectReadableText(page);
+
+      if (appPage.name === "settings") {
+        await expectUnobscured(
+          page.getByRole("switch", { name: "Follow system settings" }),
+          "settings system theme switch"
+        );
+        await expectUnobscured(
+          page.getByRole("button", { name: "Dark" }),
+          "settings dark theme override"
+        );
+      }
+
+      if (appPage.name === "load-map") {
+        await expectUnobscured(
+          page.getByText("Owner mix").first(),
+          "load map owner mix summary"
+        );
+      }
+
       await page.screenshot({
         fullPage: true,
         path: `${screenshotDir}/${appPage.name}.png`

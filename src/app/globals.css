@@ -315,7 +315,7 @@ a {
   inset: 0;
   position: fixed;
   user-select: none;
-  z-index: 35;
+  z-index: 9;
 }
 
 .fp-little-alex-part,
