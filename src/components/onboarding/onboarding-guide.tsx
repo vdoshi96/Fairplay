@@ -85,7 +85,7 @@ export function OnboardingGuide({ onSkip }: OnboardingGuideProps) {
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <a
-          className="grid min-h-11 place-items-center rounded-[8px] bg-fp-ink px-4 text-center text-[14px] font-semibold text-white outline-none focus:ring-2 focus:ring-fp-ink/30"
+          className="grid min-h-11 place-items-center rounded-[8px] bg-fp-primary px-4 text-center text-[14px] font-semibold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/30"
           href="/app/load-map"
         >
           Start with load map

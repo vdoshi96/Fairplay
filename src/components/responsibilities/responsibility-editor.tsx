@@ -472,7 +472,7 @@ export function ResponsibilityEditor({
 
       <div className="flex flex-wrap gap-2">
         <button
-          className="min-h-11 rounded-[8px] bg-fp-ink px-4 text-[14px] font-bold text-white"
+          className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary"
           onClick={save}
           type="button"
         >

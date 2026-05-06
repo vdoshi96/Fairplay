@@ -8,6 +8,10 @@ const config: Config = {
         fp: {
           ink: "var(--fp-ink)",
           "muted-ink": "var(--fp-muted-ink)",
+          primary: "var(--fp-primary)",
+          "primary-hover": "var(--fp-primary-hover)",
+          "primary-disabled": "var(--fp-primary-disabled)",
+          "on-primary": "var(--fp-on-primary)",
           paper: "var(--fp-paper)",
           surface: "var(--fp-surface)",
           line: "var(--fp-line)",
