@@ -481,9 +481,18 @@ test.describe("Little Alex physics", () => {
     await expect(littleAlex).toHaveAttribute("data-idle-state", "standing", {
       timeout: 6_500
     });
-    await expect(littleAlex).toHaveAttribute("data-idle-state", "walking", {
-      timeout: 5_000
-    });
+    await expect
+      .poll(
+        () =>
+          littleAlex.evaluate((element) => {
+            const idleState = element.getAttribute("data-idle-state");
+            const turns = Number(element.getAttribute("data-idle-walk-turns") ?? 0);
+
+            return idleState === "walking" || turns > 0;
+          }),
+        { timeout: 6_000 }
+      )
+      .toBe(true);
     await expectLittleAlexInViewport(page);
   });
 

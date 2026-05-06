@@ -1,26 +1,30 @@
 # Final QA
 
-Final QA is not green on the isolated QA branch because the renderer and asset branches have not been merged here.
+## 2026-05-06 Integrated Main Run
 
-## 2026-05-06 QA Branch Run
+- `npm run assets:generate-little-alex -- --dry-run`: passed before restoring the production manifest.
+- `npm test -- src/server/ai/little-alex-sprite-assets.test.ts src/components/little-alex/little-alex-physics.test.tsx --run`: passed, 22 tests.
+- `npm run prisma:generate`: passed.
+- `npm run prisma:validate`: passed.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm test -- --run`: passed, 95 files and 501 tests.
+- `npm run test:e2e -- little-alex-physics.spec.ts`: passed, 9 tests.
+- `npx eslint e2e/little-alex-physics.spec.ts`: passed after hardening the idle-walk timing assertion.
+- `npm run test:e2e -- guided-learning.spec.ts`: passed, verifying the one full-suite flake was not persistent.
+- `npm run test:e2e`: passed on rerun, 23 tests.
+- `npm run build`: passed.
 
-- Command: `npm run test:e2e -- little-alex-physics.spec.ts`
-- Result: failed as expected on the new sprite visual QA contract.
-- Passing coverage before the blocker: 8 tests passed for global availability, drag/fling, desktop sidebar bounds, saved preferences and bubble phrase, idle standing/walking, constrained mobile viewport, mobile nav taps, and reduced-motion dragging.
-- Failing coverage: `captures visual QA screenshots for all sprite presentations`.
-- Failure reason: missing loaded images for:
-  - `/assets/fairplay/little-alex-sprites/neutral-head.png`
-  - `/assets/fairplay/little-alex-sprites/neutral-torso.png`
-  - `/assets/fairplay/little-alex-sprites/neutral-leftArm.png`
-  - `/assets/fairplay/little-alex-sprites/neutral-rightArm.png`
-  - `/assets/fairplay/little-alex-sprites/neutral-leftLeg.png`
-  - `/assets/fairplay/little-alex-sprites/neutral-rightLeg.png`
-- Screenshot status: `test-results/little-alex-qwen-sprites/` was created, but no neutral/masculine/feminine screenshots were captured because the neutral sprite image loading assertion failed before screenshot capture.
+## Visual QA
 
-## Re-run After Merge
+- Qwen source sheets were generated one per presentation and cropped into 18 transparent sprites.
+- Final screenshot artifacts were captured and inspected:
+  - `test-results/little-alex-qwen-sprites/neutral.png`
+  - `test-results/little-alex-qwen-sprites/masculine.png`
+  - `test-results/little-alex-qwen-sprites/feminine.png`
+- Visual inspection passed for visibly distinct variants, feminine long hair, black suit, white shirt, clipboard, loaded sprite assets, viewport containment, and no desktop-sidebar overlap.
 
-Re-run `npm run test:e2e -- little-alex-physics.spec.ts` after the asset and renderer branches are merged. Expected new artifacts:
+## Notes
 
-- `test-results/little-alex-qwen-sprites/neutral.png`
-- `test-results/little-alex-qwen-sprites/masculine.png`
-- `test-results/little-alex-qwen-sprites/feminine.png`
+- The first full `npm run test:e2e` pass failed in `guided-learning.spec.ts` while Little Alex tests stayed green. The guided-learning spec passed standalone, and the full suite passed on rerun.
+- The idle-walk e2e assertion was hardened because under parallel load the walking state could complete between Playwright polls while `data-idle-walk-turns` already proved a walking turn occurred.
