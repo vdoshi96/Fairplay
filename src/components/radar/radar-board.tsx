@@ -851,7 +851,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
   return (
     <section
       aria-label="Dummy Radar practice"
-      className="grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-white p-3"
+      className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
       data-guide-id={dataGuideId}
     >
       <div className="grid gap-1">
@@ -868,13 +868,13 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
           Dummy radar topic
           <input
-            className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[14px] text-fp-ink"
+            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
             onChange={(event) => setTopic(event.target.value)}
             value={topic}
           />
         </label>
         <button
-          className="min-h-10 rounded-[8px] bg-fp-ink px-3 text-[13px] font-bold text-white disabled:opacity-60 sm:self-end"
+          className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary disabled:opacity-60 sm:self-end"
           disabled={topic.trim().length === 0}
           onClick={() => {
             setCreated(true);
@@ -889,16 +889,16 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
       </div>
 
       {created ? (
-        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-fp-surface p-3">
+        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
           <div className="flex flex-wrap gap-2 text-[12px] font-semibold">
-            <span className="rounded-[8px] border border-fp-line bg-white px-2 py-1">
+            <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-fp-ink">
               {visibilityLabels[visibility]}
             </span>
-            <span className="rounded-[8px] border border-fp-line bg-white px-2 py-1">
+            <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-fp-ink">
               {stateLabels[state]}
             </span>
             {revisitDate ? (
-              <span className="rounded-[8px] border border-fp-line bg-white px-2 py-1">
+              <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-fp-ink">
                 Revisit {revisitDate}
               </span>
             ) : null}
@@ -907,7 +907,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Edit dummy radar topic
             <input
-              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[14px] text-fp-ink"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
               onChange={(event) => setEditTopic(event.target.value)}
               value={editTopic}
             />
@@ -924,7 +924,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
             <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
               Dummy revisit date
               <input
-                className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+                className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[15px] text-fp-ink"
                 onChange={(event) => setRevisitDate(event.target.value)}
                 type="date"
                 value={revisitDate}
@@ -933,7 +933,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
           </div>
           <div className="flex flex-wrap gap-2">
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               onClick={() =>
                 mark("radar-practice-edit", "Dummy radar draft edited.")
               }
@@ -942,7 +942,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
               Save dummy radar edit
             </button>
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               onClick={() =>
                 mark(
                   "radar-practice-visibility",
@@ -954,7 +954,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
               Apply dummy visibility
             </button>
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               onClick={() => {
                 setState("deferred");
                 mark("radar-practice-defer", "Dummy radar item deferred.");
@@ -964,7 +964,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
               Defer dummy item
             </button>
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               onClick={() => {
                 setState("scheduled");
                 mark("radar-practice-schedule", "Dummy radar item scheduled.");
@@ -974,7 +974,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
               Schedule dummy item
             </button>
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               onClick={() => {
                 setState("resolved");
                 mark("radar-practice-resolve", "Dummy radar item resolved.");
@@ -984,7 +984,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
               Resolve dummy item
             </button>
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               onClick={() => {
                 setState("dismissed");
                 mark("radar-practice-dismiss", "Dummy radar item dismissed.");
@@ -1233,7 +1233,7 @@ function Select<T extends string>({
     <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
       {labelText}
       <select
-        className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+        className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
         data-guide-id={dataGuideId}
         onChange={(event) => onChange(event.target.value as T)}
         value={value}

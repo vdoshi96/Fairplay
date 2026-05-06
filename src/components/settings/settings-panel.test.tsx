@@ -270,8 +270,15 @@ describe("settings panel", () => {
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
 
     fireEvent.click(screen.getByRole("button", { name: "Start dummy Settings workflow" }));
-    expect(screen.getByRole("region", { name: "Dummy Settings practice" }))
-      .toBeVisible();
+    const practiceRegion = screen.getByRole("region", {
+      name: "Dummy Settings practice"
+    });
+    expect(practiceRegion).toBeVisible();
+    expect(practiceRegion).toHaveClass(
+      "z-[60]",
+      "bg-[var(--fp-surface-strong)]"
+    );
+    expect(practiceRegion.className).not.toContain("bg-white");
 
     fireEvent.change(screen.getByLabelText("Dummy appearance mode"), {
       target: { value: "dark" }

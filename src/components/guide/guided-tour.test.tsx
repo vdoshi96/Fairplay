@@ -267,7 +267,53 @@ describe("GuidedTour", () => {
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
   });
 
-  it("lets page-level dummy controls receive clicks during required practice", () => {
+  it("blocks live background controls during required practice while exit controls still work", () => {
+    installVisibleTargetGeometry();
+    const onExit = vi.fn();
+    const onLiveControl = vi.fn();
+
+    render(
+      <div>
+        <button data-guide-id="load-map-move-target" onClick={onLiveControl}>
+          Live production move
+        </button>
+        <GuidedTour
+          featureName="Load Map"
+          onExit={onExit}
+          steps={[
+            {
+              id: "move",
+              title: "Practice moving a card",
+              body: "Move a pretend card before continuing.",
+              targetId: "load-map-move-target",
+              practice: {
+                actionLabel: "Start dummy workflow",
+                completionMessage: "Dummy workflow complete.",
+                eventId: "load-map-practice-start",
+                prompt: "Use the page-level dummy workflow.",
+                requiredEventIds: ["load-map-move"]
+              }
+            }
+          ]}
+        />
+      </div>
+    );
+
+    const backdrop = screen.getByLabelText("Guided tour backdrop");
+    expect(backdrop.parentElement?.className).not.toContain("pointer-events-none");
+    expect(backdrop.className).not.toContain("pointer-events-none");
+
+    fireEvent.click(backdrop);
+    expect(onLiveControl).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Skip" }));
+    expect(onExit).toHaveBeenCalledTimes(1);
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(onExit).toHaveBeenCalledTimes(2);
+  });
+
+  it("uses theme-aware surface classes for the guide dialog and practice prompt", () => {
     installVisibleTargetGeometry();
     render(
       <div>
@@ -294,8 +340,14 @@ describe("GuidedTour", () => {
       </div>
     );
 
-    expect(screen.getByLabelText("Guided tour backdrop")).toHaveClass(
-      "pointer-events-none"
-    );
+    const dialog = screen.getByRole("dialog", { name: "Load Map guide" });
+    const practiceButton = screen.getByRole("button", {
+      name: "Start dummy workflow"
+    });
+
+    expect(dialog).toHaveClass("bg-[var(--fp-surface-strong)]");
+    expect(dialog.className).not.toContain("bg-white");
+    expect(practiceButton).toHaveClass("bg-[var(--fp-surface-strong)]");
+    expect(practiceButton.className).not.toContain("bg-white");
   });
 });

@@ -576,7 +576,7 @@ function CheckInPracticeWorkflow() {
   return (
     <section
       aria-label="Dummy Check-in practice"
-      className="grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-white p-3"
+      className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
     >
       <div className="grid gap-1">
         <h2 className="text-[16px] font-bold text-fp-ink">
@@ -587,7 +587,7 @@ function CheckInPracticeWorkflow() {
         </p>
       </div>
       <button
-        className="min-h-10 rounded-[8px] bg-fp-ink px-3 text-[13px] font-bold text-white sm:w-fit"
+        className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary sm:w-fit"
         onClick={() => {
           setAgendaPreviewed(true);
           mark("check-in-agenda-previewed", "Dummy agenda previewed.");
@@ -598,8 +598,8 @@ function CheckInPracticeWorkflow() {
       </button>
 
       {agendaPreviewed ? (
-        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-fp-surface p-3">
-          <article className="rounded-[8px] border border-fp-line bg-white p-3">
+        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
+          <article className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
             <h3 className="text-[15px] font-bold text-fp-ink">
               Lunch kit reset
             </h3>
@@ -610,7 +610,7 @@ function CheckInPracticeWorkflow() {
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Dummy topic owner
             <select
-              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[14px] text-fp-ink"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
               onChange={(event) => setOwner(event.target.value as PersonaKey)}
               value={owner}
             >
@@ -619,7 +619,7 @@ function CheckInPracticeWorkflow() {
             </select>
           </label>
           <button
-            className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold sm:w-fit"
+            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
             onClick={() =>
               mark(
                 "check-in-topic-assigned",
@@ -633,14 +633,14 @@ function CheckInPracticeWorkflow() {
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Dummy decision summary
             <textarea
-              className="min-h-20 rounded-[8px] border border-fp-line px-3 py-2 text-[14px] text-fp-ink"
+              className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
               onChange={(event) => setDecisionSummary(event.target.value)}
               value={decisionSummary}
             />
           </label>
           <div className="flex flex-wrap gap-2">
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               disabled={decisionSummary.trim().length === 0}
               onClick={() =>
                 mark("check-in-decision-recorded", "Dummy decision recorded.")
@@ -650,7 +650,7 @@ function CheckInPracticeWorkflow() {
               Record dummy decision
             </button>
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               onClick={() =>
                 mark("check-in-item-deferred", "Dummy item deferred.")
               }
@@ -659,7 +659,7 @@ function CheckInPracticeWorkflow() {
               Defer dummy item
             </button>
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               onClick={() =>
                 mark("check-in-complete", "Dummy check-in completed.")
               }
@@ -673,7 +673,7 @@ function CheckInPracticeWorkflow() {
 
       {status ? (
         <p
-          className="rounded-[8px] border border-fp-line bg-fp-surface p-3 text-[13px] font-semibold text-fp-muted-ink"
+          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3 text-[13px] font-semibold text-fp-muted-ink"
           role="status"
         >
           {status}

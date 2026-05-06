@@ -567,7 +567,7 @@ function LoadMapPracticeBoard({
 
   return (
     <div
-      className="grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-fp-surface p-3"
+      className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
       data-guide-id={useBoardGuideTarget ? "load-map-board" : undefined}
       data-testid="load-map-practice-board"
     >
@@ -576,23 +576,23 @@ function LoadMapPracticeBoard({
         className="grid gap-2 sm:grid-cols-3"
         data-guide-id={useBoardGuideTarget ? "load-map-lanes" : undefined}
       >
-        <div className="rounded-[8px] border border-fp-line bg-white p-3">
+        <div className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
           <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
             Not in Play
           </p>
           {primaryLane === "not_in_play" ? (
-            <div className="mt-2 grid gap-2 rounded-[8px] border border-fp-line bg-fp-soft p-3">
+            <div className="mt-2 grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
               <p className="text-[13px] font-bold text-fp-ink">{savedTitle}</p>
               <label className="grid gap-1 text-[12px] font-semibold text-fp-muted-ink">
                 Dummy card title
                 <input
-                  className="min-h-9 rounded-[8px] border border-fp-line bg-white px-2 text-[13px] text-fp-ink"
+                  className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 text-[13px] text-fp-ink"
                   onChange={(event) => setDraftTitle(event.target.value)}
                   value={draftTitle}
                 />
               </label>
               <button
-                className="min-h-9 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink"
+                className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
                 onClick={() => {
                   setSavedTitle(draftTitle.trim() || "Dummy lunch plan");
                   completeOnce("load-map-edit");
@@ -605,7 +605,7 @@ function LoadMapPracticeBoard({
                 <button
                   aria-expanded={moveMenuOpen}
                   aria-haspopup="menu"
-                  className="min-h-9 w-full rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink"
+                  className="min-h-9 w-full rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
                   data-guide-id="load-map-move-target"
                   onClick={() => setMoveMenuOpen((open) => !open)}
                   type="button"
@@ -614,11 +614,11 @@ function LoadMapPracticeBoard({
                 </button>
                 {moveMenuOpen ? (
                   <div
-                    className="absolute left-0 right-0 top-10 z-10 grid rounded-[8px] border border-fp-line bg-white p-2 shadow-lg"
+                    className="absolute left-0 right-0 top-10 z-10 grid rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-lg"
                     role="menu"
                   >
                     <button
-                      className="rounded-[6px] px-3 py-2 text-left text-[13px] font-semibold"
+                      className="rounded-[6px] px-3 py-2 text-left text-[13px] font-semibold text-fp-ink hover:bg-[var(--fp-surface-muted)]"
                       onClick={() => {
                         setPrimaryLane("player_1");
                         setMoveMenuOpen(false);
@@ -634,30 +634,30 @@ function LoadMapPracticeBoard({
               </div>
             </div>
           ) : (
-            <p className="mt-2 rounded-[8px] border border-dashed border-fp-line bg-fp-soft p-3 text-[13px] text-fp-muted-ink">
+            <p className="mt-2 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] text-fp-muted-ink">
               Moved out of this lane.
             </p>
           )}
         </div>
-        <div className="rounded-[8px] border border-fp-line bg-white p-3">
+        <div className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
           <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
             Player 1
           </p>
           {primaryLane === "player_1" ? (
-            <div className="mt-2 grid gap-2 rounded-[8px] border border-fp-line bg-fp-soft p-3">
+            <div className="mt-2 grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
               <p className="text-[13px] font-bold text-fp-ink">
                 {savedTitle} is in Player 1.
               </p>
               <label className="grid gap-1 text-[12px] font-semibold text-fp-muted-ink">
                 Dummy card title
                 <input
-                  className="min-h-9 rounded-[8px] border border-fp-line bg-white px-2 text-[13px] text-fp-ink"
+                  className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 text-[13px] text-fp-ink"
                   onChange={(event) => setDraftTitle(event.target.value)}
                   value={draftTitle}
                 />
               </label>
               <button
-                className="min-h-9 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink"
+                className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
                 onClick={() => {
                   setSavedTitle(draftTitle.trim() || "Dummy lunch plan");
                   completeOnce("load-map-edit");
@@ -668,28 +668,28 @@ function LoadMapPracticeBoard({
               </button>
             </div>
           ) : (
-            <p className="mt-2 rounded-[8px] border border-dashed border-fp-line bg-fp-soft p-3 text-[13px] text-fp-muted-ink">
+            <p className="mt-2 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] text-fp-muted-ink">
               Practice landing lane
             </p>
           )}
         </div>
-        <div className="rounded-[8px] border border-fp-line bg-white p-3">
+        <div className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
           <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
             Trimmed
           </p>
           {duplicateState === "deleted" ? (
-            <p className="mt-2 rounded-[8px] border border-dashed border-fp-line bg-fp-soft p-3 text-[13px] text-fp-muted-ink">
+            <p className="mt-2 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] text-fp-muted-ink">
               Dummy duplicate deleted.
             </p>
           ) : (
-            <div className="mt-2 grid gap-2 rounded-[8px] border border-fp-line bg-fp-soft p-3">
+            <div className="mt-2 grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
               <p className="text-[13px] font-bold text-fp-ink">
                 {duplicateState === "trimmed"
                   ? "Dummy duplicate is trimmed."
                   : "Dummy duplicate card"}
               </p>
               <button
-                className="min-h-9 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink"
+                className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
                 onClick={() => {
                   setDuplicateState("trimmed");
                   completeOnce("load-map-trim");
@@ -699,9 +699,10 @@ function LoadMapPracticeBoard({
                 Trim dummy duplicate
               </button>
               <button
-                className="min-h-9 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink"
+                className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
                 onClick={() => {
                   setDuplicateState("deleted");
+                  completeOnce("load-map-trim");
                   completeOnce("load-map-delete");
                 }}
                 type="button"

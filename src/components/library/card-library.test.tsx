@@ -153,8 +153,15 @@ describe("CardLibrary", () => {
       screen.getByRole("button", { name: "Start dummy Library workflow" })
     );
 
-    expect(screen.getByRole("region", { name: "Dummy Library practice" }))
-      .toBeVisible();
+    const practiceRegion = screen.getByRole("region", {
+      name: "Dummy Library practice"
+    });
+    expect(practiceRegion).toBeVisible();
+    expect(practiceRegion).toHaveClass(
+      "z-[60]",
+      "bg-[var(--fp-surface-strong)]"
+    );
+    expect(practiceRegion.className).not.toContain("bg-white");
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
 
     await userEvent.type(

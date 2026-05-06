@@ -408,10 +408,10 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
         <div
           aria-labelledby="dummy-persona-confirm-title"
           aria-modal="true"
-          className="fixed inset-0 z-30 grid place-items-center bg-fp-ink/35 px-4"
+          className="fixed inset-0 z-[65] grid place-items-center bg-fp-ink/35 px-4"
           role="dialog"
         >
-          <div className="grid w-full max-w-sm gap-3 rounded-[8px] border border-fp-line bg-white p-4 shadow-soft">
+          <div className="grid w-full max-w-sm gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 text-fp-ink shadow-soft">
             <h2
               className="text-[17px] font-bold leading-6 text-fp-ink"
               id="dummy-persona-confirm-title"
@@ -422,7 +422,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
               This is a local practice confirmation. It will not leave Settings.
             </p>
             <button
-              className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-semibold text-fp-ink"
+              className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-4 text-[14px] font-semibold text-fp-ink"
               onClick={() => setDummyPersonaConfirmOpen(false)}
               type="button"
             >
@@ -453,7 +453,7 @@ function SettingsPracticeWorkflow({
   return (
     <section
       aria-label="Dummy Settings practice"
-      className="mt-4 grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-fp-surface p-3"
+      className="relative z-[60] mt-4 grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
     >
       <div className="grid gap-1">
         <h3 className="text-[16px] font-bold text-fp-ink">
@@ -466,7 +466,7 @@ function SettingsPracticeWorkflow({
       <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
         Dummy appearance mode
         <select
-          className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] text-fp-ink"
+          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
           onChange={(event) => {
             const value = event.target.value as "system" | "light" | "dark";
             setAppearanceMode(value);
@@ -484,7 +484,7 @@ function SettingsPracticeWorkflow({
       </label>
       <div className="flex flex-wrap gap-2">
         <button
-          className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
           onClick={() =>
             mark("settings-welcome-replay", "Dummy welcome replay checked.")
           }
@@ -493,7 +493,7 @@ function SettingsPracticeWorkflow({
           Check dummy welcome replay
         </button>
         <button
-          className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
           onClick={() => {
             onOpenPersonaConfirm();
             mark(
@@ -506,7 +506,7 @@ function SettingsPracticeWorkflow({
           Open dummy persona confirmation
         </button>
         <button
-          className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold"
+          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
           onClick={() =>
             mark("settings-learning-hub", "Dummy learning hub located.")
           }
@@ -517,7 +517,7 @@ function SettingsPracticeWorkflow({
       </div>
       {status ? (
         <p
-          className="rounded-[8px] border border-fp-line bg-white p-3 text-[13px] font-semibold text-fp-muted-ink"
+          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3 text-[13px] font-semibold text-fp-muted-ink"
           role="status"
         >
           {status}

@@ -544,8 +544,15 @@ describe("RadarBoard", () => {
     expect(screen.getByRole("button", { name: "Done" })).toBeDisabled();
 
     fireEvent.click(screen.getByRole("button", { name: "Start dummy Radar workflow" }));
-    expect(screen.getByRole("region", { name: "Dummy Radar practice" }))
-      .toBeVisible();
+    const practiceRegion = screen.getByRole("region", {
+      name: "Dummy Radar practice"
+    });
+    expect(practiceRegion).toBeVisible();
+    expect(practiceRegion).toHaveClass(
+      "z-[60]",
+      "bg-[var(--fp-surface-strong)]"
+    );
+    expect(practiceRegion.className).not.toContain("bg-white");
 
     fireEvent.change(screen.getByLabelText("Dummy radar topic"), {
       target: { value: "Clarify lunch packing ownership" }

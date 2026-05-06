@@ -388,8 +388,15 @@ describe("CheckInFlow", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Start dummy Check-in workflow" })
     );
-    expect(screen.getByRole("region", { name: "Dummy Check-in practice" }))
-      .toBeVisible();
+    const practiceRegion = screen.getByRole("region", {
+      name: "Dummy Check-in practice"
+    });
+    expect(practiceRegion).toBeVisible();
+    expect(practiceRegion).toHaveClass(
+      "z-[60]",
+      "bg-[var(--fp-surface-strong)]"
+    );
+    expect(practiceRegion.className).not.toContain("bg-white");
 
     fireEvent.click(screen.getByRole("button", { name: "Preview dummy agenda" }));
     expect(screen.getByText("Dummy agenda previewed.")).toBeVisible();

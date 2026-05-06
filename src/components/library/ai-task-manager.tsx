@@ -246,7 +246,7 @@ function LibraryPracticeWorkflow() {
   return (
     <section
       aria-label="Dummy Library practice"
-      className="grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-fp-surface p-4"
+      className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-4 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
     >
       <div className="grid gap-1">
         <h3 className="text-[16px] font-bold text-fp-ink">
@@ -258,17 +258,17 @@ function LibraryPracticeWorkflow() {
         </p>
       </div>
 
-      <div className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-3">
+      <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
           Dummy card request
           <textarea
-            className="min-h-20 rounded-[8px] border border-fp-line px-3 py-2 text-[14px] text-fp-ink"
+            className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
             onChange={(event) => setRequest(event.target.value)}
             value={request}
           />
         </label>
         <button
-          className="min-h-10 rounded-[8px] bg-fp-ink px-3 text-[13px] font-bold text-white disabled:opacity-60 sm:w-fit"
+          className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary disabled:opacity-60 sm:w-fit"
           disabled={request.trim().length === 0}
           onClick={() => {
             setDraftCreated(true);
@@ -281,13 +281,13 @@ function LibraryPracticeWorkflow() {
       </div>
 
       {draftCreated ? (
-        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-3">
+        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
           <div className="grid gap-1">
             <p className="text-[13px] font-bold text-fp-ink">{title}</p>
             <p className="text-[13px] leading-5 text-fp-muted-ink">{summary}</p>
           </div>
           <button
-            className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold sm:w-fit"
+            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
             onClick={() => {
               setReviewOpen(true);
               mark("library-draft-reviewed", "Dummy draft opened for review.");
@@ -300,16 +300,16 @@ function LibraryPracticeWorkflow() {
       ) : null}
 
       {reviewOpen ? (
-        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-3">
+        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
           <div className="grid gap-3 md:grid-cols-[minmax(9rem,14rem)_1fr]">
-            <div className="grid min-h-40 place-items-center rounded-[8px] border border-fp-line bg-fp-soft p-3 text-center text-[13px] font-bold text-fp-muted-ink">
+            <div className="grid min-h-40 place-items-center rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-center text-[13px] font-bold text-fp-muted-ink">
               Dummy textless image preview {imagePreviewVersion + 1}
             </div>
             <div className="grid gap-3">
               <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
                 Dummy draft title
                 <input
-                  className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[14px] text-fp-ink"
+                  className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
                   onChange={(event) => setTitle(event.target.value)}
                   value={title}
                 />
@@ -317,7 +317,7 @@ function LibraryPracticeWorkflow() {
               <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
                 Dummy summary
                 <textarea
-                  className="min-h-20 rounded-[8px] border border-fp-line px-3 py-2 text-[14px] text-fp-ink"
+                  className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
                   onChange={(event) => setSummary(event.target.value)}
                   value={summary}
                 />
@@ -326,7 +326,7 @@ function LibraryPracticeWorkflow() {
           </div>
           <div className="flex flex-wrap gap-2">
             <button
-              className="min-h-10 rounded-[8px] bg-fp-ink px-3 text-[13px] font-bold text-white"
+              className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary"
               onClick={() =>
                 mark("library-draft-edited", "Dummy draft edits saved.")
               }
@@ -335,7 +335,7 @@ function LibraryPracticeWorkflow() {
               Save dummy edits
             </button>
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               onClick={() => {
                 setImagePreviewVersion((version) => version + 1);
                 mark(
@@ -348,7 +348,7 @@ function LibraryPracticeWorkflow() {
               Preview regenerated dummy image
             </button>
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line px-3 text-[13px] font-bold"
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
               onClick={() =>
                 mark(
                   "library-put-in-play",
@@ -365,7 +365,7 @@ function LibraryPracticeWorkflow() {
 
       {status ? (
         <p
-          className="rounded-[8px] border border-fp-line bg-white p-3 text-[13px] font-semibold text-fp-muted-ink"
+          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3 text-[13px] font-semibold text-fp-muted-ink"
           role="status"
         >
           {status}
