@@ -621,8 +621,17 @@ describe("LittleAlexPhysics", () => {
       );
 
       const sprites = screen.getAllByTestId("little-alex-sprite");
+      const fullSprite = screen.getByTestId("little-alex-full-sprite");
 
       expect(sprites).toHaveLength(6);
+      expect(fullSprite).toHaveAttribute(
+        "src",
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`
+      );
+      expect(fullSprite).toHaveStyle({
+        height: "176px",
+        width: "86px"
+      });
       expect(
         sprites.map((sprite) => sprite.getAttribute("data-sprite-part"))
       ).toEqual(expectedParts);

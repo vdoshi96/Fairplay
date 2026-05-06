@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-05-06T23:49:00.000Z",
+  "approvedModel": "qwen-image-2.0-pro",
+  "mode": "full-body-coherent-render",
+  "outputDir": "public/assets/fairplay/little-alex-sprites",
+  "sourceDir": "public/assets/fairplay/little-alex-sprites/source-sheets",
+  "assets": [
+    {
+      "variant": "neutral",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-full.png",
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/source-sheets/neutral-full-source.png",
+      "qa": {
+        "height": 868,
+        "nearConnectedComponents": 1,
+        "rawAlphaComponents": 1,
+        "width": 334
+      }
+    },
+    {
+      "variant": "masculine",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-full.png",
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/source-sheets/masculine-full-source.png",
+      "qa": {
+        "height": 906,
+        "nearConnectedComponents": 1,
+        "rawAlphaComponents": 1,
+        "width": 343
+      }
+    },
+    {
+      "variant": "feminine",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-full.png",
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/source-sheets/feminine-full-source.png",
+      "qa": {
+        "height": 901,
+        "nearConnectedComponents": 1,
+        "rawAlphaComponents": 3,
+        "width": 351
+      }
+    }
+  ],
+  "promptContract": [
+    "one complete coherent character only",
+    "no separated body parts",
+    "shoulders, hips, head, arms, and legs visibly attached",
+    "equal left and right arm lengths",
+    "equal left and right leg lengths",
+    "exactly one tan clipboard total",
+    "black suit and white shirt for every variant"
+  ],
+  "negativePromptHighlights": [
+    "extra clipboard",
+    "two clipboards",
+    "duplicate clipboard",
+    "detached limbs",
+    "floating limbs",
+    "separated head",
+    "uneven limb lengths"
+  ]
+}

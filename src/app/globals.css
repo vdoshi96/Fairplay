@@ -372,6 +372,20 @@ a {
   place-items: center;
 }
 
+.fp-little-alex-full-sprite {
+  display: block;
+  filter: drop-shadow(0 8px 12px rgba(32, 33, 36, 0.18));
+  left: 0;
+  object-fit: contain;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transform-origin: center;
+  user-select: none;
+  will-change: transform;
+  z-index: 2;
+}
+
 .fp-little-alex-chat-bubble {
   background: var(--fp-surface-strong);
   border: 2px solid rgba(32, 33, 36, 0.68);
@@ -830,6 +844,7 @@ a {
   display: block;
   height: 100%;
   object-fit: fill;
+  opacity: 0;
   pointer-events: none;
   position: relative;
   user-select: none;
