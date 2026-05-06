@@ -172,7 +172,7 @@ function filterButtonClass(active: boolean) {
   return [
     "inline-flex min-h-10 shrink-0 items-center rounded border px-3 text-[13px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
     active
-      ? "border-fp-ink bg-fp-ink text-white"
+      ? "border-fp-primary bg-fp-primary text-fp-on-primary"
       : "border-fp-line bg-white text-fp-ink hover:bg-fp-surface"
   ].join(" ");
 }

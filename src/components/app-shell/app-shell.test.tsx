@@ -130,6 +130,20 @@ describe("protected app UI", () => {
     );
   });
 
+  it("uses theme primary tokens for active app navigation items", () => {
+    renderProtectedUi(<AppHomePage />);
+
+    const activeLoadMapLinks = screen
+      .getAllByRole("link", { name: /Load map/i })
+      .filter((link) => link.getAttribute("aria-current") === "page");
+
+    expect(activeLoadMapLinks).toHaveLength(2);
+    activeLoadMapLinks.forEach((link) => {
+      expect(link).toHaveClass("bg-fp-primary", "text-fp-on-primary");
+      expect(link.className).not.toContain("text-white");
+    });
+  });
+
   it("lets the crash course route use the full app canvas", () => {
     pathname.mockReturnValue("/app/crash-course");
 

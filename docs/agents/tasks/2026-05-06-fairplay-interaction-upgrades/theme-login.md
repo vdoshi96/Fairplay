@@ -20,6 +20,9 @@
 - System mode follows `window.matchMedia("(prefers-color-scheme: dark)")` and updates on media query changes.
 - `src/app/layout.tsx` now runs an inline no-flash script before the app tree and wraps the app in `ThemeProvider`.
 - `src/app/globals.css` now includes `html[data-theme="dark"]` tokens and color-scheme support.
+- Review fix: added `--fp-primary`, `--fp-primary-hover`, `--fp-primary-disabled`, and `--fp-on-primary` so filled primary controls are high-contrast in both light and dark themes.
+- Review fix: primary Button, SegmentedControl selected state, login/create-household submits, Settings persona dialog primary action, AppShell active nav items, and the remaining direct ink-filled primary controls now use `bg-fp-primary text-fp-on-primary`.
+- Review fix: `ThemeProvider` now starts React state from the server-safe `system` / `light` fallback and reconciles stored/system preferences after mount, preserving the inline pre-paint root `data-theme` script.
 - Settings includes an Appearance section backed by the existing `SegmentedControl`.
 - Login Enter handling is input-scoped only. It calls `event.currentTarget.form?.requestSubmit()` and does not add any document-level handler.
 - Added Playwright coverage for Enter in both login fields, in addition to component coverage.
@@ -45,7 +48,7 @@ This existing listener belongs to the guided tour escape/keyboard handling, not 
 
 - Active blockers: none.
 - Playwright emits existing environment warnings about `FORCE_COLOR` and multiple lockfiles/worktree root inference. Tests still pass.
-- Dark tokens are app-wide, but many older feature surfaces still contain hard-coded `bg-white` utilities. This branch normalized the Settings surface and root tokens; broader dark visual polish should stay scoped to follow-up visual QA or relevant workstreams.
+- Dark tokens are app-wide, but some older feature surfaces still contain hard-coded `bg-white` utilities. This branch fixed reviewed primary contrast blockers and normalized the Settings surface/root tokens; broader dark visual polish should stay scoped to follow-up visual QA or relevant workstreams.
 
 ## Achievements
 
@@ -55,6 +58,8 @@ This existing listener belongs to the guided tour escape/keyboard handling, not 
 - Added dark theme CSS tokens.
 - Added Settings appearance controls with current resolved system state copy.
 - Added component and Playwright regressions for Enter-submit from logged-out username/password fields.
+- Fixed review blockers for dark-mode primary control contrast and hydration-safe theme provider initialization.
+- Added component regressions asserting primary/on-primary token usage and server-safe initial theme context snapshots.
 - Ran focused tests, lint, typecheck, full Vitest, and auth onboarding Playwright smoke successfully.
 
 ## QA Command Outputs
@@ -93,13 +98,15 @@ $ npm test -- src/components/auth/auth-forms.test.tsx src/components/settings/se
 
 RUN  v3.2.4 /Users/vishal/Developer/Fairplay/.worktrees/fairplay-theme-login
 
-✓ src/components/theme/theme-provider.test.tsx (4 tests) 102ms
-✓ src/components/auth/auth-forms.test.tsx (8 tests) 250ms
-✓ src/components/app-shell/app-shell.test.tsx (5 tests) 356ms
-✓ src/components/settings/settings-panel.test.tsx (10 tests) 512ms
+✓ src/components/theme/theme-provider.test.tsx (5 tests) 100ms
+✓ src/components/auth/auth-forms.test.tsx (9 tests) 201ms
+✓ src/components/app-shell/app-shell.test.tsx (6 tests) 400ms
+✓ src/components/settings/settings-panel.test.tsx (11 tests) 461ms
 
 Test Files  4 passed (4)
-Tests  27 passed (27)
+Tests  31 passed (31)
+Start at  09:35:37
+Duration  1.44s (transform 307ms, setup 188ms, collect 892ms, tests 1.16s, environment 1.12s, prepare 244ms)
 ```
 
 ### Lint

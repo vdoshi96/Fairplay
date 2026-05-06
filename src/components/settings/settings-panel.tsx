@@ -380,7 +380,7 @@ export function SettingsPanel({ household, selectedPersona }: SettingsPanelProps
             </p>
             <div className="mt-4 flex gap-3">
               <button
-                className="min-h-11 flex-1 rounded-[8px] bg-fp-ink px-4 text-[14px] font-semibold text-white outline-none focus:ring-2 focus:ring-fp-ink/30"
+                className="min-h-11 flex-1 rounded-[8px] bg-fp-primary px-4 text-[14px] font-semibold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/30"
                 onClick={() => router.push("/choose-persona?next=/app/home")}
                 ref={continueButtonRef}
                 type="button"

@@ -141,6 +141,36 @@ describe("ThemeProvider", () => {
     expect(screen.getByText("Mode: light")).toBeVisible();
   });
 
+  it("starts from the server-safe theme state before applying stored preferences", async () => {
+    installMatchMedia(true);
+    window.localStorage.setItem(THEME_STORAGE_KEY, "dark");
+    const snapshots: Array<{ mode: ThemeMode; resolvedTheme: string }> = [];
+
+    function SnapshotHarness() {
+      const { mode, resolvedTheme } = useTheme();
+      snapshots.push({ mode, resolvedTheme });
+
+      return <ThemeHarness />;
+    }
+
+    render(
+      <ThemeProvider>
+        <SnapshotHarness />
+      </ThemeProvider>
+    );
+
+    expect(snapshots[0]).toEqual({
+      mode: "system",
+      resolvedTheme: "light"
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Mode: dark")).toBeVisible();
+      expect(screen.getByText("Resolved: dark")).toBeVisible();
+    });
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+    expect(document.documentElement).toHaveAttribute("data-theme-mode", "dark");
+  });
+
   it("loads a previously selected mode from local storage", async () => {
     installMatchMedia(false);
     window.localStorage.setItem(THEME_STORAGE_KEY, "dark");

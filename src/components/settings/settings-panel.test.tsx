@@ -97,6 +97,23 @@ describe("settings panel", () => {
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("light");
   });
 
+  it("uses theme primary tokens for selected appearance and persona dialog actions", async () => {
+    renderSettings();
+
+    const selectedAppearanceMode = screen.getByRole("button", { name: "System" });
+    expect(selectedAppearanceMode).toHaveClass(
+      "bg-fp-primary",
+      "text-fp-on-primary"
+    );
+    expect(selectedAppearanceMode.className).not.toContain("text-white");
+
+    const { continueButton } = openSwitchDialog();
+
+    await waitFor(() => expect(continueButton).toHaveFocus());
+    expect(continueButton).toHaveClass("bg-fp-primary", "text-fp-on-primary");
+    expect(continueButton.className).not.toContain("text-white");
+  });
+
   it("moves focus into the persona switch dialog when opened", async () => {
     renderSettings();
 

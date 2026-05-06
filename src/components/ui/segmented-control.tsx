@@ -38,7 +38,7 @@ export function SegmentedControl<T extends string>({
             className={[
               "min-h-9 min-w-16 rounded px-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
               isSelected
-                ? "bg-[var(--fp-ink)] text-white shadow-[var(--fp-shadow-soft)]"
+                ? "bg-fp-primary text-fp-on-primary shadow-[var(--fp-shadow-soft)]"
                 : "text-[var(--fp-muted)] hover:bg-[var(--fp-surface-strong)] hover:text-[var(--fp-ink)]"
             ].join(" ")}
             key={option.value}

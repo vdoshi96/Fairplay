@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { PersonaSummary } from "@/contracts/personas";
+import { Button } from "@/components/ui/button";
 import { CreateHouseholdForm } from "./create-household-form";
 import { LoginForm } from "./login-form";
 import { LoginPageClient } from "./login-page-client";
@@ -58,6 +59,24 @@ describe("auth forms", () => {
 
     expect(await screen.findByText("Enter the household username.")).toBeVisible();
     expect(screen.getByText("Enter the household password.")).toBeVisible();
+  });
+
+  it("uses theme primary tokens for shared and login primary controls", () => {
+    const { rerender } = render(
+      <Button variant="primary">Shared primary action</Button>
+    );
+
+    const sharedPrimary = screen.getByRole("button", {
+      name: "Shared primary action"
+    });
+    expect(sharedPrimary).toHaveClass("bg-fp-primary", "text-fp-on-primary");
+    expect(sharedPrimary.className).not.toContain("text-white");
+
+    rerender(<LoginForm onAuthenticated={vi.fn()} />);
+
+    const loginSubmit = screen.getByRole("button", { name: "Log in" });
+    expect(loginSubmit).toHaveClass("bg-fp-primary", "text-fp-on-primary");
+    expect(loginSubmit.className).not.toContain("text-white");
   });
 
   it("submits login when Enter is pressed in a logged-out username field", async () => {

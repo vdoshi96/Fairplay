@@ -73,11 +73,16 @@ function persistThemeMode(mode: ThemeMode) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>(readStoredMode);
-  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(readSystemTheme);
+  const [mode, setModeState] = useState<ThemeMode>("system");
+  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>("light");
+  const [hasMounted, setHasMounted] = useState(false);
   const resolvedTheme = resolveTheme(mode, systemTheme);
 
   useEffect(() => {
+    setModeState(readStoredMode());
+    setSystemTheme(readSystemTheme());
+    setHasMounted(true);
+
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
       return;
     }
@@ -105,9 +110,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!hasMounted) {
+      return;
+    }
+
     applyRootTheme(mode, resolvedTheme);
     persistThemeMode(mode);
-  }, [mode, resolvedTheme]);
+  }, [hasMounted, mode, resolvedTheme]);
 
   const setMode = useCallback((nextMode: ThemeMode) => {
     setModeState(nextMode);

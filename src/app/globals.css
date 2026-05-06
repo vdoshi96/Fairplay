@@ -8,6 +8,10 @@
   --fp-paper: var(--fp-bg);
   --fp-ink: #202124;
   --fp-ink-soft: #3b3d42;
+  --fp-primary: var(--fp-ink);
+  --fp-primary-hover: var(--fp-ink-soft);
+  --fp-primary-disabled: var(--fp-muted);
+  --fp-on-primary: #ffffff;
   --fp-muted: #6a6761;
   --fp-muted-ink: var(--fp-muted);
   --fp-line: rgba(32, 33, 36, 0.14);
@@ -46,6 +50,10 @@ html[data-theme="dark"] {
   --fp-paper: var(--fp-bg);
   --fp-ink: #f4efe7;
   --fp-ink-soft: #dfd7ca;
+  --fp-primary: var(--fp-ink);
+  --fp-primary-hover: var(--fp-ink-soft);
+  --fp-primary-disabled: var(--fp-muted);
+  --fp-on-primary: #161411;
   --fp-muted: #b8afa2;
   --fp-muted-ink: var(--fp-muted);
   --fp-line: rgba(244, 239, 231, 0.18);

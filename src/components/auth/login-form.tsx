@@ -139,7 +139,7 @@ export function LoginForm({ onAuthenticated }: LoginFormProps) {
       </div>
 
       <button
-        className="min-h-11 rounded-[8px] bg-fp-ink px-4 text-[14px] font-semibold text-white outline-none transition hover:bg-fp-ink/90 focus:ring-2 focus:ring-fp-ink/30 disabled:cursor-not-allowed disabled:bg-fp-muted-ink"
+        className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-semibold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/30 disabled:cursor-not-allowed disabled:bg-fp-primary-disabled"
         disabled={pending}
         type="submit"
       >
