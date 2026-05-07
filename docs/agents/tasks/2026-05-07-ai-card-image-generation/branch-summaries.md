@@ -12,7 +12,7 @@
 - Worktree: `.worktrees/ai-card-image-backend`
 - Role: backend-focused investigation of service, repository, provider prompt, and contract failures.
 - Outcome: exploratory red-test edits identified missing cover generation, missing cover path serialization, and stale provider prompt expectations. Implementation was consolidated on the integration branch.
-- Status: sidecar worktree still contains exploratory edits and was not merged directly.
+- Status: local-only sidecar worktree and branch were removed after the integration PR merged.
 
 ## UI/QA Branch Manager
 
@@ -20,7 +20,7 @@
 - Worktree: `.worktrees/ai-card-image-ui-qa`
 - Role: UI-focused investigation of draft tracker and review-panel behavior.
 - Outcome: exploratory red-test edits confirmed that ready drafts had no generated cover rendering path. Implementation was consolidated on the integration branch.
-- Status: sidecar worktree still contains exploratory edits and was not merged directly.
+- Status: local-only sidecar worktree and branch were removed after the integration PR merged.
 
 ## Notes
 
