@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -42,6 +43,129 @@ function installVisibleTargetGeometry() {
   Object.defineProperty(window, "innerWidth", {
     configurable: true,
     value: 1024
+  });
+}
+
+function installTargetGeometry({
+  height,
+  left,
+  top,
+  viewportHeight,
+  viewportWidth,
+  width
+}: {
+  height: number;
+  left: number;
+  top: number;
+  viewportHeight: number;
+  viewportWidth: number;
+  width: number;
+}) {
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function getBoundingClientRect(this: HTMLElement) {
+      if (this.dataset.guideId) {
+        return {
+          bottom: top + height,
+          height,
+          left,
+          right: left + width,
+          top,
+          width,
+          x: left,
+          y: top,
+          toJSON: () => ({})
+        };
+      }
+
+      return {
+        bottom: 0,
+        height: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+        width: 0,
+        x: 0,
+        y: 0,
+        toJSON: () => ({})
+      };
+    }
+  );
+  Object.defineProperty(window, "innerHeight", {
+    configurable: true,
+    value: viewportHeight
+  });
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    value: viewportWidth
+  });
+}
+
+function installTargetAndDialogGeometry({
+  dialogHeight,
+  target,
+  viewportHeight,
+  viewportWidth
+}: {
+  dialogHeight: number;
+  target: {
+    height: number;
+    left: number;
+    top: number;
+    width: number;
+  };
+  viewportHeight: number;
+  viewportWidth: number;
+}) {
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function getBoundingClientRect(this: HTMLElement) {
+      if (this.dataset.guideId) {
+        return {
+          bottom: target.top + target.height,
+          height: target.height,
+          left: target.left,
+          right: target.left + target.width,
+          top: target.top,
+          width: target.width,
+          x: target.left,
+          y: target.top,
+          toJSON: () => ({})
+        };
+      }
+
+      if (this.getAttribute("role") === "dialog") {
+        return {
+          bottom: 16 + dialogHeight,
+          height: dialogHeight,
+          left: 16,
+          right: 496,
+          top: 16,
+          width: 480,
+          x: 16,
+          y: 16,
+          toJSON: () => ({})
+        };
+      }
+
+      return {
+        bottom: 0,
+        height: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+        width: 0,
+        x: 0,
+        y: 0,
+        toJSON: () => ({})
+      };
+    }
+  );
+  Object.defineProperty(window, "innerHeight", {
+    configurable: true,
+    value: viewportHeight
+  });
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    value: viewportWidth
   });
 }
 
@@ -392,8 +516,15 @@ describe("GuidedTour", () => {
     );
   });
 
-  it("keeps the guide dialog viewport safe with lower placement and internal scrolling", () => {
-    installVisibleTargetGeometry();
+  it("keeps a top-edge target dialog below the safe viewport margin", () => {
+    installTargetGeometry({
+      height: 36,
+      left: 280,
+      top: 2,
+      viewportHeight: 720,
+      viewportWidth: 1024,
+      width: 180
+    });
     render(
       <div>
         <button data-guide-id="load-map-board">Board target</button>
@@ -403,10 +534,130 @@ describe("GuidedTour", () => {
 
     const dialog = screen.getByRole("dialog", { name: "Load Map guide" });
 
-    expect(dialog).toHaveClass("bottom-4", "left-1/2", "-translate-x-1/2");
-    expect(dialog).toHaveClass("max-h-[calc(100dvh-2rem)]", "overflow-y-auto");
-    expect(dialog).toHaveClass("sm:bottom-6", "sm:right-6");
-    expect(dialog.className).not.toContain("top-1/2");
-    expect(dialog.className).not.toContain("bottom-5");
+    expect(Number.parseFloat(dialog.style.top)).toBeGreaterThanOrEqual(16);
+    expect(dialog.style.bottom).toBe("");
+    expect(Number.parseFloat(dialog.style.maxHeight)).toBeLessThanOrEqual(688);
+    expect(
+      Number.parseFloat(dialog.style.top) +
+        Number.parseFloat(dialog.style.maxHeight)
+    ).toBeLessThanOrEqual(720 - 16);
+    expect(dialog).toHaveClass("overflow-hidden");
+    expect(screen.getByTestId("guide-dialog-body")).toHaveClass(
+      "overflow-y-auto"
+    );
+  });
+
+  it("renders safe guide dialog placement defaults before effects measure the page", () => {
+    const markup = renderToString(
+      <GuidedTour featureName="Load Map" onExit={vi.fn()} steps={steps} />
+    );
+
+    expect(markup).toContain("top:16px");
+    expect(markup).toContain("left:16px");
+    expect(markup).toContain("max-height:calc(100dvh - 32px)");
+    expect(markup).toContain("width:min(calc(100dvw - 32px), 480px)");
+  });
+
+  it("fits the guide dialog inside a constrained mobile viewport with internal scrolling", () => {
+    installTargetGeometry({
+      height: 36,
+      left: 16,
+      top: 48,
+      viewportHeight: 360,
+      viewportWidth: 320,
+      width: 240
+    });
+    render(
+      <div>
+        <button data-guide-id="load-map-board">Board target</button>
+        <GuidedTour
+          featureName="Load Map"
+          onExit={vi.fn()}
+          steps={[
+            {
+              ...steps[0],
+              body:
+                "Cards in play live here so the household can see ownership. Use this short guide to understand what is visible and where decisions move next."
+            }
+          ]}
+        />
+      </div>
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Load Map guide" });
+    const top = Number.parseFloat(dialog.style.top);
+    const maxHeight = Number.parseFloat(dialog.style.maxHeight);
+
+    expect(top).toBeGreaterThanOrEqual(16);
+    expect(maxHeight).toBeLessThanOrEqual(328);
+    expect(top + maxHeight).toBeLessThanOrEqual(360 - 16);
+    expect(dialog.style.width).toBe("288px");
+    expect(dialog).toHaveClass("overflow-hidden");
+    const body = screen.getByTestId("guide-dialog-body");
+    expect(body).toHaveClass("overflow-y-auto");
+    expect(body).toHaveAttribute("tabindex", "0");
+    expect(body).toHaveAccessibleName("This is the Load Map guide text");
+    expect(
+      screen.getByText(
+        "Cards in play live here so the household can see ownership. Use this short guide to understand what is visible and where decisions move next."
+      )
+    ).toBeVisible();
+    expect(screen.getByRole("button", { name: "Skip" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Done" })).toBeVisible();
+  });
+
+  it("uses the measured dialog height when choosing a collision-safe placement", () => {
+    installTargetAndDialogGeometry({
+      dialogHeight: 120,
+      target: {
+        height: 48,
+        left: 900,
+        top: 650,
+        width: 96
+      },
+      viewportHeight: 720,
+      viewportWidth: 1024
+    });
+    render(
+      <div>
+        <button data-guide-id="load-map-board">Board target</button>
+        <GuidedTour featureName="Load Map" onExit={vi.fn()} steps={steps} />
+      </div>
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Load Map guide" });
+
+    expect(dialog.style.top).toBe("510px");
+    expect(dialog.style.maxHeight).toBe("194px");
+    expect(dialog.style.width).toBe("480px");
+  });
+
+  it("collides away from a lower side target so the dialog remains visible", () => {
+    installTargetGeometry({
+      height: 48,
+      left: 900,
+      top: 650,
+      viewportHeight: 720,
+      viewportWidth: 1024,
+      width: 96
+    });
+    render(
+      <div>
+        <button data-guide-id="load-map-board">Board target</button>
+        <GuidedTour featureName="Load Map" onExit={vi.fn()} steps={steps} />
+      </div>
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Load Map guide" });
+    const top = Number.parseFloat(dialog.style.top);
+    const left = Number.parseFloat(dialog.style.left);
+    const maxHeight = Number.parseFloat(dialog.style.maxHeight);
+    const width = Number.parseFloat(dialog.style.width);
+
+    expect(top).toBeLessThan(650);
+    expect(top).toBeGreaterThanOrEqual(16);
+    expect(top + maxHeight).toBeLessThanOrEqual(720 - 16);
+    expect(left).toBeGreaterThanOrEqual(16);
+    expect(left + width).toBeLessThanOrEqual(1024 - 16);
   });
 });
