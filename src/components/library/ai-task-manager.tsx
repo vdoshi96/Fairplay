@@ -240,11 +240,23 @@ function LibraryPracticeWorkflow() {
     "Keep lunch kits reset, packed, and ready before school mornings."
   );
   const [imagePreviewVersion, setImagePreviewVersion] = useState(0);
+  const [putInPlayPreviewed, setPutInPlayPreviewed] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
   function mark(eventId: string, message: string) {
     setStatus(message);
     completeGuidePractice(eventId);
+  }
+
+  function cleanUpWorkspace() {
+    setRequest("");
+    setDraftCreated(false);
+    setReviewOpen(false);
+    setTitle("Lunch packing handoff");
+    setSummary("Keep lunch kits reset, packed, and ready before school mornings.");
+    setImagePreviewVersion(0);
+    setPutInPlayPreviewed(false);
+    setStatus("Dummy Library workspace cleaned up.");
   }
 
   return (
@@ -257,8 +269,9 @@ function LibraryPracticeWorkflow() {
           Dummy Library practice
         </h3>
         <p className="text-[13px] leading-5 text-fp-muted-ink">
-          Practice Greg and draft review locally. These controls never call the
-          draft API or create a household card.
+          About this feature: practice Greg capture, draft review, image preview,
+          and putting a card in play. Demo data is temporary; nothing permanent
+          is created.
         </p>
       </div>
 
@@ -266,10 +279,15 @@ function LibraryPracticeWorkflow() {
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
           Dummy card request
           <textarea
+            aria-label="Dummy card request"
             className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
             onChange={(event) => setRequest(event.target.value)}
             value={request}
           />
+          <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+            Type the responsibility you want Greg to structure. This only feeds
+            the temporary workspace below.
+          </span>
         </label>
         <button
           className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary disabled:opacity-60 sm:w-fit"
@@ -285,10 +303,25 @@ function LibraryPracticeWorkflow() {
       </div>
 
       {draftCreated ? (
-        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
+        <section
+          aria-label="Temporary Library workspace"
+          className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3"
+        >
+          <div className="grid gap-1">
+            <h4 className="text-[14px] font-bold text-fp-ink">
+              Temporary Library workspace
+            </h4>
+            <p className="text-[13px] leading-5 text-fp-muted-ink">
+              This temporary workspace keeps mock artifacts visible while
+              onboarding is open. Clean it up when you are done practicing.
+            </p>
+          </div>
           <div className="grid gap-1">
             <p className="text-[13px] font-bold text-fp-ink">{title}</p>
             <p className="text-[13px] leading-5 text-fp-muted-ink">{summary}</p>
+            <p className="text-[12px] leading-4 text-fp-muted-ink">
+              Mock artifact: Greg draft, not a household card.
+            </p>
           </div>
           <button
             className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
@@ -300,7 +333,7 @@ function LibraryPracticeWorkflow() {
           >
             Review dummy draft
           </button>
-        </div>
+        </section>
       ) : null}
 
       {reviewOpen ? (
@@ -313,18 +346,27 @@ function LibraryPracticeWorkflow() {
               <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
                 Dummy draft title
                 <input
+                  aria-label="Dummy draft title"
                   className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
                   onChange={(event) => setTitle(event.target.value)}
                   value={title}
                 />
+                <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+                  This is the card name learners would confirm before saving.
+                </span>
               </label>
               <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
                 Dummy summary
                 <textarea
+                  aria-label="Dummy summary"
                   className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
                   onChange={(event) => setSummary(event.target.value)}
                   value={summary}
                 />
+                <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+                  This explains the expected outcome before the card is put in
+                  play.
+                </span>
               </label>
             </div>
           </div>
@@ -353,18 +395,41 @@ function LibraryPracticeWorkflow() {
             </button>
             <button
               className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-              onClick={() =>
+              onClick={() => {
+                setPutInPlayPreviewed(true);
                 mark(
                   "library-put-in-play",
                   "Dummy card is ready for the Load Map. No real card was created."
-                )
-              }
+                );
+              }}
               type="button"
             >
               Put dummy card in play
             </button>
           </div>
+          {putInPlayPreviewed ? (
+            <article className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
+              <h4 className="text-[14px] font-bold text-fp-ink">
+                Mock Load Map artifact
+              </h4>
+              <p className="text-[13px] leading-5 text-fp-muted-ink">{title}</p>
+              <p className="text-[12px] leading-4 text-fp-muted-ink">
+                Preview only. It persists during onboarding and is removed by
+                cleanup.
+              </p>
+            </article>
+          ) : null}
         </div>
+      ) : null}
+
+      {draftCreated ? (
+        <button
+          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
+          onClick={cleanUpWorkspace}
+          type="button"
+        >
+          Clean up dummy workspace
+        </button>
       ) : null}
 
       {status ? (

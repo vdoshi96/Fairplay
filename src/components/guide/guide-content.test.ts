@@ -62,15 +62,23 @@ describe("feature guide content", () => {
     }
   });
 
-  it("teaches Greg before source-card browsing in the Library guide", () => {
+  it("teaches temporary feature practice before source-card browsing in the Library guide", () => {
     expect(FEATURE_GUIDES.library.steps).toHaveLength(4);
     expect(FEATURE_GUIDES.library.steps[0]).toMatchObject({
       targetId: "library-ai-task-manager",
-      title: "Use Greg - The Taskmaster",
+      title: "About this feature",
       practice: {
         actionLabel: "Start dummy Library workflow"
       }
     });
+    expect(FEATURE_GUIDES.library.steps[0].body).toMatch(/temporary/i);
+    expect(FEATURE_GUIDES.library.steps[0].body).toMatch(/nothing permanent/i);
+  });
+
+  it("explains what learners practice and why in the Load Map first step", () => {
+    expect(FEATURE_GUIDES.loadMap.steps[0].title).toBe("About this feature");
+    expect(FEATURE_GUIDES.loadMap.steps[0].body).toMatch(/practice/i);
+    expect(FEATURE_GUIDES.loadMap.steps[0].body).toMatch(/why/i);
   });
 
   it("uses precise guide targets for completion and movement actions", () => {

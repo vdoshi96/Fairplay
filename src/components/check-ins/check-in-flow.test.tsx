@@ -139,6 +139,31 @@ describe("CheckInFlow", () => {
       .not.toContain("550e8400-e29b-41d4-a716-446655440070");
   });
 
+  it("opens an empty agenda modal when preview finds no check-in items", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ items: [] })
+      })
+    );
+    render(<NewCheckInLauncher />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview agenda" }));
+
+    const dialog = await screen.findByRole("dialog", {
+      name: "No agenda items yet"
+    });
+    expect(dialog).toBeVisible();
+    expect(within(dialog).getByText(/Radar topics and review-due cards/i))
+      .toBeVisible();
+    expect(within(dialog).getByRole("button", { name: "Close" })).toBeVisible();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("dialog", { name: "No agenda items yet" }))
+      .not.toBeInTheDocument();
+  });
+
   it("starts with selected preview item ids without expanding linked radar responsibilities", async () => {
     vi.stubGlobal(
       "fetch",
@@ -459,6 +484,8 @@ describe("CheckInFlow", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Preview dummy agenda" }));
     expect(screen.getByText("Dummy agenda previewed.")).toBeVisible();
+    expect(screen.getByRole("region", { name: "Temporary Check-in workspace" }))
+      .toBeVisible();
 
     fireEvent.change(screen.getByLabelText("Dummy topic owner"), {
       target: { value: "max" }
@@ -482,5 +509,9 @@ describe("CheckInFlow", () => {
     expect(onDecision).not.toHaveBeenCalled();
     expect(onComplete).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clean up dummy check-in workspace" }));
+    expect(screen.queryByRole("region", { name: "Temporary Check-in workspace" }))
+      .not.toBeInTheDocument();
   });
 });
