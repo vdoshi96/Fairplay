@@ -63,7 +63,15 @@ describe("CardLibrary", () => {
   it("renders Greg avatar above source card filters without local Little Alex copy", () => {
     const { container } = render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
 
-    expect(screen.getByTestId("library-shelf-visual")).toHaveStyle({
+    expect(screen.getByTestId("library-shelf-visual")).not.toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/library-shelf.png')"
+    });
+    expect(screen.getByTestId("library-shelf-background")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
+    expect(screen.getByTestId("library-shelf-background")).toHaveStyle({
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/library-shelf.png')"
     });

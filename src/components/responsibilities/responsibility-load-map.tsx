@@ -32,7 +32,10 @@ import {
   useGuidePracticeRequest
 } from "@/components/guide/guide-practice";
 import { AssignmentShift, MotionPanel } from "@/components/motion/fairplay-motion";
-import { HelperMascot } from "@/components/visuals/fairplay-visuals";
+import {
+  DecorativeBackgroundLayer,
+  HelperMascot
+} from "@/components/visuals/fairplay-visuals";
 import { BOARD_LANES, type BoardLaneTone } from "./board-lanes";
 
 type ResponsibilityLoadMapProps = {
@@ -100,7 +103,7 @@ const laneDotClasses: Record<BoardLaneTone, string> = {
 };
 
 const loadMapWorkbenchBackground =
-  "url('/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png')";
+  "/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png";
 
 function label(value: string) {
   return value
@@ -281,11 +284,16 @@ export function ResponsibilityLoadMap({
   return (
     <section className="grid gap-5">
       <div
-        className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
         data-testid="load-map-hero-visual"
-        style={{ backgroundImage: loadMapWorkbenchBackground }}
       >
-        <div className="fp-generated-surface-wash flex flex-col gap-3 p-4 sm:flex-row sm:items-end sm:justify-between">
+        <DecorativeBackgroundLayer
+          className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.52)_50%,rgba(0,0,0,0.1)_100%)]"
+          src={loadMapWorkbenchBackground}
+          testId="load-map-hero-background"
+          washClassName="bg-white/80"
+        />
+        <div className="fp-generated-surface-wash relative z-10 flex flex-col gap-3 p-4 backdrop-blur-[1px] sm:flex-row sm:items-end sm:justify-between">
           <div className="grid gap-1">
             <p className="text-[13px] font-semibold text-fp-muted-ink">Load map</p>
             <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
@@ -395,11 +403,16 @@ export function ResponsibilityLoadMap({
 
       {responsibilities.length === 0 ? (
         <div
-          className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center"
+          className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink"
           data-testid="load-map-empty-visual"
-          style={{ backgroundImage: loadMapWorkbenchBackground }}
         >
-          <div className="fp-generated-surface-wash grid gap-4 p-5 backdrop-blur-[1px] sm:grid-cols-[1fr_auto] sm:items-center">
+          <DecorativeBackgroundLayer
+            className="opacity-30 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.5)_52%,rgba(0,0,0,0.12)_100%)]"
+            src={loadMapWorkbenchBackground}
+            testId="load-map-empty-background"
+            washClassName="bg-white/85"
+          />
+          <div className="fp-generated-surface-wash relative z-10 grid gap-4 p-5 backdrop-blur-[1px] sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="grid gap-3">
               <h2 className="text-[18px] font-bold">No responsibilities mapped yet.</h2>
               <p className="text-[14px] leading-6 text-fp-muted-ink">

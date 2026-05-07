@@ -107,9 +107,17 @@ describe("protected app UI", () => {
       "data-page-shell",
       "foreground"
     );
-    const homeBackground = container.querySelector("[data-home-background]");
-    expect(homeBackground).not.toBeNull();
-    expect(homeBackground).toHaveStyle({
+    const homePanel = container.querySelector("[data-home-background]");
+    expect(homePanel).not.toBeNull();
+    expect(homePanel).not.toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
+    });
+    expect(screen.getByTestId("home-learning-studio-background")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
+    expect(screen.getByTestId("home-learning-studio-background")).toHaveStyle({
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
     });

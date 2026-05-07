@@ -14,6 +14,7 @@ import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher"
 import { AiTaskManager } from "@/components/library/ai-task-manager";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
+import { DecorativeBackgroundLayer } from "@/components/visuals/fairplay-visuals";
 
 type CardLibraryProps = {
   templates: CardTemplateSummary[];
@@ -34,7 +35,7 @@ const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> =
 };
 
 const libraryShelfBackground =
-  "url('/assets/fairplay/generated-ui/backgrounds/library-shelf.png')";
+  "/assets/fairplay/generated-ui/backgrounds/library-shelf.png";
 
 export function CardLibrary({
   aiDrafts = [],
@@ -67,11 +68,16 @@ export function CardLibrary({
   return (
     <section className="grid gap-5">
       <div
-        className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
         data-testid="library-shelf-visual"
-        style={{ backgroundImage: libraryShelfBackground }}
       >
-        <div className="fp-generated-surface-wash p-4">
+        <DecorativeBackgroundLayer
+          className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.5)_50%,rgba(0,0,0,0.12)_100%)]"
+          src={libraryShelfBackground}
+          testId="library-shelf-background"
+          washClassName="bg-white/75"
+        />
+        <div className="fp-generated-surface-wash relative z-10 p-4 backdrop-blur-[1px]">
           <AiTaskManager drafts={aiDrafts} />
         </div>
       </div>

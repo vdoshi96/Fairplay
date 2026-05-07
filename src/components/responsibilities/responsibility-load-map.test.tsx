@@ -58,11 +58,27 @@ describe("ResponsibilityLoadMap", () => {
       />
     );
 
-    expect(screen.getByTestId("load-map-hero-visual")).toHaveStyle({
+    expect(screen.getByTestId("load-map-hero-visual")).not.toHaveStyle({
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png')"
     });
-    expect(screen.getByTestId("load-map-empty-visual")).toHaveStyle({
+    expect(screen.getByTestId("load-map-hero-background")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
+    expect(screen.getByTestId("load-map-hero-background")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png')"
+    });
+    expect(screen.getByTestId("load-map-empty-visual")).not.toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png')"
+    });
+    expect(screen.getByTestId("load-map-empty-background")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
+    expect(screen.getByTestId("load-map-empty-background")).toHaveStyle({
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png')"
     });

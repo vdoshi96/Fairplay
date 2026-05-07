@@ -74,7 +74,15 @@ describe("CheckInFlow", () => {
     );
     render(<NewCheckInLauncher />);
 
-    expect(screen.getByTestId("check-in-new-visual")).toHaveStyle({
+    expect(screen.getByTestId("check-in-new-visual")).not.toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
+    });
+    expect(screen.getByTestId("check-in-new-background")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
+    expect(screen.getByTestId("check-in-new-background")).toHaveStyle({
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
     });
@@ -194,7 +202,15 @@ describe("CheckInFlow", () => {
     const onUpdateItem = vi.fn();
     render(<CheckInFlow initialCheckIn={checkIn} onUpdateItem={onUpdateItem} />);
 
-    expect(screen.getByTestId("check-in-active-visual")).toHaveStyle({
+    expect(screen.getByTestId("check-in-active-visual")).not.toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
+    });
+    expect(screen.getByTestId("check-in-active-background")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
+    expect(screen.getByTestId("check-in-active-background")).toHaveStyle({
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
     });
@@ -277,7 +293,15 @@ describe("CheckInFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Complete check-in" }));
 
     const region = await screen.findByRole("region", { name: "Check-in summary" });
-    expect(screen.getByTestId("check-in-complete-visual")).toHaveStyle({
+    expect(screen.getByTestId("check-in-complete-visual")).not.toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
+    });
+    expect(screen.getByTestId("check-in-complete-background")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
+    expect(screen.getByTestId("check-in-complete-background")).toHaveStyle({
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
     });
