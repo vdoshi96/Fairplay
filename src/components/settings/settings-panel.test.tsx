@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
@@ -13,9 +13,10 @@ import { SettingsPanel } from "./settings-panel";
 const routerPush = vi.hoisted(() => vi.fn());
 const routerReplace = vi.hoisted(() => vi.fn());
 const routerRefresh = vi.hoisted(() => vi.fn());
+const queryValue = vi.hoisted(() => ({ value: "" }));
 
 vi.mock("next/navigation", () => ({
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => new URLSearchParams(queryValue.value),
   useRouter: () => ({
     push: routerPush,
     replace: routerReplace,
@@ -71,6 +72,10 @@ function openSwitchDialog() {
 }
 
 describe("settings panel", () => {
+  beforeEach(() => {
+    queryValue.value = "";
+  });
+
   afterEach(() => {
     routerPush.mockReset();
     routerReplace.mockReset();
@@ -351,6 +356,7 @@ describe("settings panel", () => {
     );
 
     expect(container.querySelector('[data-guide-id="settings-appearance"]')).not.toBeNull();
+    expect(container.querySelector('[data-guide-id="settings-overview"]')).not.toBeNull();
     expect(container.querySelector('[data-guide-id="settings-persona"]')).not.toBeNull();
     expect(
       container.querySelector('[data-guide-id="settings-guided-start"]')
@@ -374,6 +380,7 @@ describe("settings panel", () => {
     renderSettings();
 
     fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
 
@@ -411,5 +418,24 @@ describe("settings panel", () => {
     expect(routerPush).not.toHaveBeenCalled();
     expect(routerRefresh).not.toHaveBeenCalled();
     expect(routerReplace).not.toHaveBeenCalled();
+  });
+
+  it("opens the settings-specific guide from the route query on the overview step", () => {
+    queryValue.value = "guide=settings";
+
+    renderSettings();
+
+    const guide = screen.getByRole("dialog", { name: "Settings guide" });
+    expect(guide).toBeVisible();
+    expect(
+      screen.queryByRole("dialog", { name: "Load Map guide" })
+    ).not.toBeInTheDocument();
+    expect(within(guide).getByText("Step 1 of 4")).toBeVisible();
+    expect(
+      within(guide).getByRole("heading", { name: "About this feature" })
+    ).toBeVisible();
+    expect(within(guide).getByTestId("guide-dialog-body")).toHaveTextContent(
+      /settings/i
+    );
   });
 });

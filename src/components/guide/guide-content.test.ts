@@ -83,6 +83,35 @@ describe("feature guide content", () => {
     );
   });
 
+  it("starts Settings on a clear feature overview before persona controls", () => {
+    expect(FEATURE_GUIDES.settings.steps[0]).toMatchObject({
+      id: "overview",
+      targetId: "settings-overview",
+      title: "About this feature"
+    });
+    expect(FEATURE_GUIDES.settings.steps[0].body).toMatch(/settings/i);
+    expect(FEATURE_GUIDES.settings.steps[0].body).toMatch(/appearance/i);
+    expect(FEATURE_GUIDES.settings.steps[0].body).toMatch(/learning/i);
+  });
+
+  it("starts Check-ins on a clear overview and makes dummy practice actionable", () => {
+    expect(FEATURE_GUIDES.checkIns.steps[0]).toMatchObject({
+      id: "overview",
+      targetId: "check-in-overview",
+      title: "About this feature"
+    });
+    expect(FEATURE_GUIDES.checkIns.steps[0].body).toMatch(/check-ins/i);
+    expect(FEATURE_GUIDES.checkIns.steps[0].body).toMatch(/agenda/i);
+    expect(FEATURE_GUIDES.checkIns.steps[0].body).toMatch(/next step/i);
+
+    const practice = FEATURE_GUIDES.checkIns.steps.find(
+      (step) => step.practice
+    )?.practice;
+    expect(practice?.prompt).toMatch(/temporary/i);
+    expect(practice?.prompt).toMatch(/Preview dummy agenda/i);
+    expect(practice?.prompt).toMatch(/next/i);
+  });
+
   it("keeps settings copy aligned with the learning hub", () => {
     const guidedStart = FEATURE_GUIDES.settings.steps.find(
       (step) => step.id === "guided-start"

@@ -299,6 +299,7 @@ export function CheckInFlow({
     <section className="mx-auto flex w-full max-w-2xl flex-col gap-5">
       <div
         className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
+        data-guide-id="check-in-overview"
         data-testid="check-in-active-visual"
       >
         <DecorativeBackgroundLayer
@@ -538,6 +539,7 @@ export function NewCheckInLauncher({
       <section className="grid w-full max-w-3xl gap-5 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-[var(--fp-shadow-soft)] sm:p-6">
         <div
           className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
+          data-guide-id="check-in-overview"
           data-testid="check-in-new-visual"
         >
           <DecorativeBackgroundLayer
@@ -697,9 +699,9 @@ function CheckInPracticeWorkflow() {
           Dummy Check-in practice
         </h2>
         <p className="text-[13px] leading-5 text-fp-muted-ink">
-          About this feature: practice previewing an agenda, assigning a topic,
-          recording a decision, deferring an item, and completing a check-in
-          without saving decisions or summaries.
+          This temporary practice workflow shows the check-in path. Nothing is
+          saved. First click Preview dummy agenda, then assign a topic, record a
+          decision, defer an item, and complete the dummy check-in.
         </p>
       </div>
       <button
@@ -724,7 +726,8 @@ function CheckInPracticeWorkflow() {
             </h3>
             <p className="text-[13px] leading-5 text-fp-muted-ink">
               This agenda and its outcomes persist only during onboarding.
-              Cleanup removes the mock state.
+              Nothing is saved to the household, and cleanup removes the mock
+              state.
             </p>
           </div>
           <article className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">

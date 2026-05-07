@@ -122,9 +122,15 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
     description: "Learn agenda preview, decisions, deferrals, and completion summaries.",
     steps: [
       {
-        id: "agenda",
+        id: "overview",
         title: "About this feature",
-        body: "Practice previewing a temporary agenda and recording calm outcomes. Check-ins turn review-due work and partner notes into things to discuss, skip, defer, or decide.",
+        body: "Check-ins help the household preview an agenda, talk through review-due work, and leave with a clear next step. Use this guide to see what gets previewed, recorded, deferred, or completed.",
+        targetId: "check-in-overview"
+      },
+      {
+        id: "agenda",
+        title: "Review the agenda before you begin",
+        body: "The agenda shows the topics ready for attention. Remove anything that can wait so the check-in stays focused on useful next steps.",
         targetId: "check-in-agenda"
       },
       {
@@ -143,7 +149,7 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
           completionMessage: "Dummy Check-in workflow complete.",
           eventId: "check-in-practice-start",
           prompt:
-            "Preview a dummy agenda, assign a topic, record a decision, defer an item, and complete a dummy check-in.",
+            "Start a temporary practice workflow. First click Preview dummy agenda, then follow the next actions to assign a topic, record a decision, defer an item, and complete the dummy check-in. Nothing is saved.",
           requiredEventIds: [
             "check-in-agenda-previewed",
             "check-in-topic-assigned",
@@ -160,6 +166,12 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
     title: "Settings",
     description: "Learn replay controls, persona switching, and session actions.",
     steps: [
+      {
+        id: "overview",
+        title: "About this feature",
+        body: "Settings collects device appearance, replay learning controls, persona actions, Little Alex preferences, and session controls so you know where to adjust the app without changing household work.",
+        targetId: "settings-overview"
+      },
       {
         id: "persona",
         title: "Persona controls the current viewpoint",
