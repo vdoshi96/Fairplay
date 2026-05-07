@@ -4,6 +4,7 @@ import Matter from "matter-js";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { APP_LAYOUT_METRICS } from "@/components/app-shell/layout-tokens";
 import { LITTLE_ALEX_SKIN_TONE_COLORS } from "@/contracts/little-alex";
 import {
   type LittleAlexGenderPresentation,
@@ -21,8 +22,6 @@ const IDLE_STANDING_PAUSE_MS = 4_000;
 const IDLE_WALK_STEP_PX = 0.36;
 const MIN_IDLE_WALK_TURN_FRACTION = 0.05;
 const MIN_IDLE_TURNS_BEFORE_DIRECTION_CHANGE = 3;
-const DESKTOP_PLAY_AREA_BREAKPOINT = 1024;
-const DESKTOP_SIDEBAR_WIDTH = 16 * 16;
 const BUBBLE_DRAG_DISTANCE_THRESHOLD = 14;
 const BUBBLE_RELEASE_SPEED_THRESHOLD = 6;
 const WALL_THICKNESS = 96;
@@ -275,13 +274,21 @@ function firstFiniteCoordinate(
 }
 
 export function playAreaBounds(viewport = viewportSize()): PlayAreaBounds {
+  const isDesktop = viewport.width >= APP_LAYOUT_METRICS.desktopBreakpointPx;
   const minX =
-    viewport.width >= DESKTOP_PLAY_AREA_BREAKPOINT ? DESKTOP_SIDEBAR_WIDTH : 0;
+    isDesktop ? APP_LAYOUT_METRICS.sidebarWidthPx : 0;
+  const maxY = Math.max(
+    viewport.height -
+      (isDesktop
+        ? APP_LAYOUT_METRICS.littleAlexDesktopBottomReservePx
+        : APP_LAYOUT_METRICS.littleAlexMobileBottomReservePx),
+    0
+  );
 
   return {
-    height: viewport.height,
+    height: maxY,
     maxX: viewport.width,
-    maxY: viewport.height,
+    maxY,
     minX,
     minY: 0,
     width: Math.max(viewport.width - minX, 0)
