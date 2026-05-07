@@ -5,6 +5,11 @@ export type CrashCourseLesson = {
   action: string;
   scene: CrashCourseSceneKey;
   exampleCardTitle?: string;
+  featurePath?: Array<{
+    description: string;
+    href: string;
+    label: string;
+  }>;
 };
 
 export type CrashCourseSceneKey =
@@ -21,103 +26,75 @@ export type CrashCourseSceneKey =
 
 export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
   {
-    id: "not-a-chore-app",
-    title: "Why this is not a chore app",
+    id: "hidden-load",
+    title: "See the hidden load",
     concept:
-      "Household work is more than visible work. Every responsibility can include physical doing, cognitive tracking, emotional care, and hidden work such as noticing, remembering, coordinating, and following up. The board makes that load discussable without turning either person into the problem.",
+      "Fairplay starts with the idea that a household responsibility is bigger than visible work. The visible part might be a form submitted, a meal cooked, or a ride given. The hidden work is the noticing, remembering, researching, coordinating, emotional care, follow-through, and recovery that happen before and after anyone sees the task. Recurring treadmill work can also feel heavier than a finite project because it resets again tomorrow. A finite project may take effort, but it usually gives everyone a clearer finish line. The goal is to make that load discussable without making either person the villain, and without pretending that equal card counts automatically mean equal capacity, time pressure, or attention.",
     action:
-      "Before moving one responsibility, name the visible work and the hidden work that happens before or after it.",
+      "Before moving a card, name the physical work, the cognitive work, and any emotional work it carries. A card is ready to discuss when both people can see more than the final action.",
     scene: "not-chore",
     exampleCardTitle: "School forms"
   },
   {
-    id: "owner-vs-helper",
-    title: "Owner vs. helper",
+    id: "ownership-cpe",
+    title: "Own the outcome",
     concept:
-      "A helper can complete a step while someone else still carries the outcome. An owner notices the need, understands the standard, plans the path, initiates without being managed, and follows through when the plan changes.",
+      "Helping is useful, but it is not the same as owning. A helper can complete a step while someone else still watches the deadline, explains the standard, remembers the next move, and absorbs the consequence if it slips. An owner carries CPE: conception, planning, and execution. That means noticing the need, defining the outcome, arranging timing and resources, doing or coordinating the work, and following through when the plan changes. Full ownership builds trust because the other person can stop acting as manager. It also lets the owner build competence instead of waiting for instructions.",
     action:
-      "When you assign a card, name the owner of the outcome first, then name any helper, backup, or support role separately.",
+      "When a responsibility moves to Alex or Max, ask who owns the outcome and which support roles are separate. If one person conceives and plans while the other only executes, the card still needs a clearer agreement.",
     scene: "owner-helper",
     exampleCardTitle: "Groceries"
   },
   {
-    id: "cpe",
-    title: "CPE: Conception, Planning, Execution",
+    id: "done-well-enough",
+    title: "Define done well enough",
     concept:
-      "CPE is the ownership lifecycle: conception is seeing the need and defining the outcome, planning is sequencing and coordinating, and execution is doing the work to the agreed standard. Splitting CPE by accident keeps one person as the manager.",
+      "Resentment often grows around standards that were never said out loud. Done well enough is the household's shared answer to what good enough means, what matters, what is flexible, what timing is acceptable, and what safety or care details cannot be skipped. It is not an inspection checklist written by the more anxious person, and it is not permission to do the least possible work. It is a short agreement that gives the owner autonomy inside a realistic standard, with room to update it as capacity and life seasons change.",
     action:
-      "Open a card detail and check whether one owner can carry all three parts, or whether the card needs a clearer support role.",
-    scene: "cpe-path",
-    exampleCardTitle: "Birthday party"
-  },
-  {
-    id: "minimum-standards",
-    title: "Minimum standards and done well enough",
-    concept:
-      "Unspoken standards create resentment and rework. A household standard should explain what good enough means here: plain, realistic, shared, and revisable before anyone judges follow-through. The owner gets autonomy inside that agreement.",
-    action:
-      "Rewrite one standard in your own words so it names what matters, what is flexible, and when it should be reviewed.",
+      "Rewrite one standard in plain language. Name the outcome, one or two non-negotiables, what can vary, and when the standard should be reviewed instead of silently judged.",
     scene: "standards-note",
     exampleCardTitle: "Packed lunches"
   },
   {
-    id: "board-lanes",
-    title: "The board lanes",
+    id: "handoffs-load-map",
+    title: "Move work with the context",
     concept:
-      "The lanes describe the state of a responsibility, not a score. A daily treadmill task with no lasting finish line may carry more load than a finite project, so lane moves should preserve cadence, urgency, and context.",
+      "A handoff is not a last-minute dump or a vague request for help. When ownership changes, the context has to move too: current state, timing, access, dependencies, likely blockers, training or practice needed, the done-well-enough standard, and a review date. The Load Map is the place to make those agreements visible. Use it to see concentration, cadence, unclear ownership, and due reviews without turning the household into a scoreboard.",
     action:
-      "Move cards only when the lane meaning matches the household decision you want to remember: active, uncertain, owned, intentionally split, paused, or not relevant.",
-    scene: "board-lanes",
-    exampleCardTitle: "Pet care"
-  },
-  {
-    id: "active-deck",
-    title: "Build your active deck",
-    concept:
-      "A useful board starts by removing noise. Keep irrelevant cards out of play, move uncertain cards to concern, and assign only responsibilities that are active in this season. Fairness improves when the active deck reflects real capacity instead of imagined ideals.",
-    action:
-      "Trim what does not matter this season before balancing the cards that remain, and mark anything that needs a later review.",
-    scene: "active-deck",
-    exampleCardTitle: "Holiday cards"
-  },
-  {
-    id: "handoffs",
-    title: "Handoffs and re-deals",
-    concept:
-      "Ownership can change, but context has to move with it. A handoff needs the standard, timing, access, dependencies, likely blockers, training or practice the next owner needs, and a date to review how it is working.",
-    action:
-      "Before moving an owned card, add the context the next owner would otherwise have to extract by asking, then let the owner learn inside the agreed standard.",
+      "Before moving an owned card, add the context the next owner would otherwise have to extract by asking. If the work is no longer relevant this season, move it out of play rather than balancing an imaginary deck.",
     scene: "handoff",
     exampleCardTitle: "Medical appointments"
   },
   {
-    id: "radar-check-ins",
-    title: "Radar and check-ins",
+    id: "repair-loop",
+    title: "Keep a repair loop",
     concept:
-      "Radar holds unclear standards, blockers, appreciation, and topics that need a calm decision. A check-in turns those signals into choices, deferral when the timing is wrong, acknowledgement, repair, or a next review date.",
+      "Fairness is dynamic. Work seasons, health, travel, children, recovery, stress, and emotional bandwidth change what is workable. Radar gives tension a neutral holding place before it becomes an argument: unclear standards, blockers, appreciation, due reviews, or a decision that needs calmer timing. Check-ins turn those signals into choices, acknowledgement, deferral, repair, or a next review date. Repair is part of the system because missed standards and defensive moments will happen. If a topic feels unsafe, coercive, or likely to escalate, keep notes private, pause the workflow, and choose outside support over forcing a conversation.",
     action:
-      "Send tension to Radar as a neutral topic instead of waiting until it becomes an argument, and bring one clear decision to the next check-in.",
+      "Use the learning path below when you are ready to move from concepts to features. Start with the Library, make ownership visible in the Load Map, send uncertainty to Radar, and use Check-ins to repair, revise, and rebuild trust.",
     scene: "radar-check-in",
-    exampleCardTitle: "Bedtime routine"
-  },
-  {
-    id: "fair-is-dynamic",
-    title: "Fair is dynamic",
-    concept:
-      "Fairness is dynamic, not a permanent 50/50 count. Capacity, work seasons, health, travel, children, recovery, and the mix of physical, cognitive, and emotional load all change what a workable share looks like.",
-    action:
-      "Review whether the current share feels workable before treating card counts as the whole story.",
-    scene: "dynamic-fair",
-    exampleCardTitle: "Dinner"
-  },
-  {
-    id: "repair-resistance",
-    title: "Repair and resistance",
-    concept:
-      "Defensiveness, hidden expectations, and solo drafting are normal parts of changing a household pattern. Repair works better when the ask is specific, appreciation is real, deferral is allowed, and safety boundaries matter more than finishing a workflow.",
-    action:
-      "If a topic feels charged or unsafe, keep the draft private, simplify the ask, pause the conversation, and choose outside support instead of forcing a check-in.",
-    scene: "repair",
-    exampleCardTitle: "Family calendar"
+    exampleCardTitle: "Bedtime routine",
+    featurePath: [
+      {
+        description: "Find the responsibilities that match your household.",
+        href: "/app/library",
+        label: "Browse the Library"
+      },
+      {
+        description: "Assign owners, preserve context, and review the load.",
+        href: "/app/load-map",
+        label: "Open the Load Map"
+      },
+      {
+        description: "Capture uncertainty before it turns into a fight.",
+        href: "/app/radar",
+        label: "Add a Radar item"
+      },
+      {
+        description: "Turn signals into decisions, deferrals, and repair.",
+        href: "/app/check-ins/new",
+        label: "Run a Check-in"
+      }
+    ]
   }
 ];

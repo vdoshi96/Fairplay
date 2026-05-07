@@ -10,7 +10,7 @@ const appPages = [
   { name: "load-map", path: "/app/load-map", heading: "Responsibility overview" },
   { name: "radar", path: "/app/radar", heading: "Concern board" },
   { name: "check-ins", path: "/app/check-ins/new", heading: "New check-in" },
-  { name: "crash-course", path: "/app/crash-course", heading: "Why this is not a chore app" },
+  { name: "crash-course", path: "/app/crash-course", heading: "See the hidden load" },
   { name: "settings", path: "/app/settings", heading: "Household settings" }
 ] as const;
 
