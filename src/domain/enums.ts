@@ -73,6 +73,9 @@ export const SOURCE_REVIEW_STATUSES = [
   "blocked",
   "needs_review"
 ] as const;
+// Persisted API/database keys. User-facing labels live in
+// src/components/responsibilities/board-lanes.ts; rename these only with a
+// dedicated compatibility migration.
 export const RESPONSIBILITY_BOARD_LANES = [
   "cards_of_concern",
   "player_1",

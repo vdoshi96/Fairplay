@@ -1,5 +1,15 @@
 # Fairplay Context Log
 
+## 2026-05-07 - Board Lane Compatibility Decision
+
+Requested by the user: use the recommended board lane path before opening the PR to main.
+
+Actions completed:
+
+- Kept `ResponsibilityBoardLane` enum/API/database values stable.
+- Documented that `cards_of_concern`, `player_1`, `player_2`, and `kid_split` are persisted keys with UI label mapping.
+- Marked any future board lane rename as a separate compatibility migration rather than part of the Radar cleanup.
+
 ## 2026-05-07 - Radar Removal Documentation Update
 
 Requested by the user: update active project documentation only, within the approved docs scope, so current architecture and data-model docs reflect that the Radar backend/API/model/assets were removed in the cleanup pass.

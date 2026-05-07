@@ -53,7 +53,6 @@ Result: requested files are present and non-empty. The trailing-whitespace scan 
 
 ## Needs Verification
 
-- Board lane enum/database names that still use `player_1`, `player_2`, `kid_split`, and `cards_of_concern`.
 - Deprecated `/api/ai-card-drafts/[id]/regenerate-image` route behavior and whether it should remain for compatibility.
 - Browser storage audit beyond theme-only `localStorage`: household data, private drafts, sensitive notes, concern details, session secrets, API keys, credentials, and plaintext passwords must remain out of `localStorage`, `sessionStorage`, and `indexedDB`.
 - Local ignored clutter: `.DS_Store`, `docs/.DS_Store`, `docs/agents/.DS_Store`, `docs/superpowers/.DS_Store`, `References/.DS_Store`, and `tsconfig.tsbuildinfo`.
@@ -62,11 +61,12 @@ Result: requested files are present and non-empty. The trailing-whitespace scan 
 
 - Applied `20260507120000_remove_radar` to the local Postgres database.
 - Reran `npm run test -- --run`; all 85 test files and 475 tests passed, including `src/server/repositories/persistence.integration.test.ts`.
+- Accepted the board lane recommendation: keep persisted lane keys stable and use UI labels; any rename should be a separate compatibility migration.
 
 ## Suggested Cleanup Plan
 
 1. Stabilize this memory/wiki layer as the shared map for future agents.
-2. Verify board lane naming and deprecated AI routes before deleting or renaming anything.
+2. Verify deprecated AI routes before deleting compatibility behavior.
 3. Split cleanup into small PRs by ownership: docs hygiene, generated/ignored clutter, schema naming compatibility, and asset inventory.
 4. Add or refresh tests before removing legacy route/service/schema behavior.
 5. Run full verification, including DB-backed repository tests and persisted browser flows, after each behavioral cleanup.

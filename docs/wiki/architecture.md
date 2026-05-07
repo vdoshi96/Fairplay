@@ -69,7 +69,7 @@ Migrations currently include initial schema, legacy Radar timing/removal history
 
 ## Architecture Risks
 
-- Legacy board lane enum names may not match current user-facing labels: needs verification.
+- Board lane enum values are intentionally stable persisted keys; do not rename them without a dedicated compatibility migration.
 - Some generated assets/prompts may reference retired surfaces: needs verification.
 - `docs/agents/tasks/` is useful history but very large and not a concise onboarding layer.
 - Full DB-backed behavior was verified locally after the Radar removal migration; production deployment should still run normal migration verification.

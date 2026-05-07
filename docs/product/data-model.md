@@ -223,7 +223,10 @@ Snapshots are aggregate household summaries. They must not produce a "bad partne
 - `CheckInState`: `draft`, `scheduled`, `active`, `completed`, `skipped`
 - `CheckInItemState`: `queued`, `discussed`, `deferred`, `skipped`
 - `DecisionType`: `assign_owner`, `change_role`, `change_standard`, `change_cadence`, `pause`, `mark_not_relevant`, `archive`, `schedule_review`, `custom_note`
+- `ResponsibilityBoardLane`: `cards_of_concern`, `player_1`, `player_2`, `kid_split`, `not_in_play`, `trimmed`
 - `SourceReviewStatus`: `not_reviewed`, `approved_original`, `blocked`, `needs_review`
+
+`ResponsibilityBoardLane` values are persisted internal API/database keys. Display labels such as Alex, Max, Cards of Concern, and Kid Split are mapped in UI metadata; do not rename the enum values without a dedicated compatibility migration.
 
 ## Platform-Neutral JSON Contracts
 

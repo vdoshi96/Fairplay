@@ -60,5 +60,5 @@ The current v1 product centers on a two-person household using shared credential
 
 ## Open Questions
 
-- Whether board lane names such as `cards_of_concern`, `player_1`, `player_2`, and `kid_split` should be renamed in schema/contracts after UI cleanup: needs verification.
-- Whether DB-backed integration tests have recently run against live Postgres after the latest merged changes: needs verification.
+- Whether deprecated AI media routes and fields should remain for backward compatibility.
+- Whether production DB migration/deploy verification differs from the local Postgres verification already completed after the Radar removal migration.

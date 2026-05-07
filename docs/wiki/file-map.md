@@ -113,8 +113,12 @@ This is a practical index, not a reorganization plan.
 
 ## Needs Verification
 
-- `src/components/responsibilities/board-lanes.ts` and `ResponsibilityBoardLane` enum names before any rename or migration.
 - Deprecated `/api/ai-card-drafts/[id]/regenerate-image` route and AI media columns.
 - `src/seed/fairplay-source-cards.ts` naming and content provenance before expanding templates.
 - Browser storage audit beyond theme-only `localStorage`; household/private/secrets storage remains prohibited.
 - Local ignored `.DS_Store` files and `tsconfig.tsbuildinfo` cleanup.
+
+## Board Lane Compatibility Note
+
+- `ResponsibilityBoardLane` values are persisted API/database keys. Keep `cards_of_concern`, `player_1`, `player_2`, and `kid_split` stable unless a later PR performs an explicit compatibility migration.
+- User-facing labels and help text live in `src/components/responsibilities/board-lanes.ts`.

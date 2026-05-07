@@ -33,7 +33,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 
 ## Current Cleanup Priority
 
-1. Verify legacy board lane names and migration impact.
-2. Inventory generated assets for live usage after the Radar asset removal.
-3. Separate current docs from historical agent logs.
-4. Complete live persisted browser-flow verification before production release.
+1. Inventory generated assets for live usage after the Radar asset removal.
+2. Separate current docs from historical agent logs.
+3. Complete live persisted browser-flow verification before production release.
+4. Revisit board lane enum renames only as a dedicated compatibility migration.
