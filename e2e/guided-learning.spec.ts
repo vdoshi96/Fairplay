@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 function uniqueHouseholdSlug() {
   return `guide-${Date.now().toString(36)}-${Math.random()
@@ -8,11 +8,35 @@ function uniqueHouseholdSlug() {
 
 const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
 
+async function mockOnboardingPreviewRoute(page: Page) {
+  await page.route("**/api/ai-card-drafts/onboarding-preview", async (route) => {
+    const request = route.request();
+    const body = request.postDataJSON() as { inputText?: string };
+
+    await route.fulfill({
+      contentType: "application/json",
+      json: {
+        title: "Lunch packing handoff",
+        summary:
+          body.inputText?.trim() ||
+          "Make a lunch packing handoff card.",
+        definition: "Pack lunches and return the kit to the same place.",
+        conception: "Decide what counts as ready before the school morning.",
+        planning: "Check supplies and assign the next visible step.",
+        execution: "Pack, label, and reset the lunch kit.",
+        minimumStandard: "Lunches are ready before departure."
+      },
+      status: 200
+    });
+  });
+}
+
 test("guided learning surfaces are persistent, skippable, and user-triggered", async ({
   context,
   page
 }) => {
   await context.clearCookies();
+  await mockOnboardingPreviewRoute(page);
 
   await page.goto("/login");
   await expect(
@@ -122,6 +146,6 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   ).toBeVisible();
   await page.getByRole("button", { name: "Next lesson" }).click();
   await expect(
-    page.getByRole("img", { name: "Owner and helper learning scene" })
+    page.getByRole("img", { name: "Reminder and visible work storyboard scene" })
   ).toBeVisible();
 });
