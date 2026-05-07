@@ -52,8 +52,8 @@ const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> =
 
 const laneLabels: Record<ResponsibilityBoardLane, string> = {
   cards_of_concern: "Cards of Concern",
-  player_1: "Player 1",
-  player_2: "Player 2",
+  player_1: "Alex",
+  player_2: "Max",
   kid_split: "Kid Split",
   not_in_play: "Not in Play",
   trimmed: "Trimmed"

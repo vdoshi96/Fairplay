@@ -51,7 +51,7 @@ describe("CardDetailSheet", () => {
     ).toBeVisible();
     expect(screen.getByText("Insurance card lives in the glove box.")).toBeVisible();
 
-    await userEvent.click(screen.getByRole("button", { name: /move to Player 1/i }));
+    await userEvent.click(screen.getByRole("button", { name: /move to Alex/i }));
     await userEvent.click(screen.getByRole("button", { name: /flag for radar/i }));
 
     expect(onMove).toHaveBeenCalledWith("player_1");
@@ -112,6 +112,6 @@ describe("CardDetailSheet", () => {
     expect(screen.getByRole("button", { name: /flag for radar/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /schedule check-in/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /^Trim$/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /move to Player 1/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /move to Alex/i })).toBeDisabled();
   });
 });

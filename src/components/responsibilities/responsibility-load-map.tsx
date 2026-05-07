@@ -648,6 +648,7 @@ function LoadMapPracticeBoard({
     <div
       className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
       data-guide-id={useBoardGuideTarget ? "load-map-board" : undefined}
+      data-guide-practice-surface
       data-testid="load-map-practice-board"
     >
       <p className="text-[13px] font-bold text-fp-ink">Practice board</p>

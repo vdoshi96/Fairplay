@@ -263,6 +263,7 @@ function LibraryPracticeWorkflow() {
     <section
       aria-label="Dummy Library practice"
       className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-4 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
+      data-guide-practice-surface
     >
       <div className="grid gap-1">
         <h3 className="text-[16px] font-bold text-fp-ink">

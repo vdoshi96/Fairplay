@@ -115,6 +115,14 @@ html[data-theme="dark"] {
     ) !important;
   }
 
+  html[data-theme="dark"] :is(.bg-white\/70) {
+    background-color: rgba(45, 41, 35, 0.7) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/72) {
+    background-color: rgba(45, 41, 35, 0.72) !important;
+  }
+
   html[data-theme="dark"] :is(.bg-white\/75) {
     background-color: color-mix(
       in srgb,
@@ -129,6 +137,18 @@ html[data-theme="dark"] {
       var(--fp-surface-strong) 80%,
       transparent
     ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/82) {
+    background-color: rgba(45, 41, 35, 0.82) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/88) {
+    background-color: rgba(45, 41, 35, 0.88) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/90) {
+    background-color: rgba(45, 41, 35, 0.9) !important;
   }
 
   html[data-theme="dark"] :is(.bg-white\/95) {
@@ -154,16 +174,20 @@ html[data-theme="dark"] {
   html[data-theme="dark"]
     :is(
       .bg-amber-50\/80,
+      .bg-amber-50\/90,
       .bg-sky-50\/80,
+      .bg-sky-50\/90,
       .bg-rose-50\/80,
+      .bg-rose-50\/90,
       .bg-violet-50\/80,
-      .bg-emerald-50\/80
+      .bg-violet-50\/90,
+      .bg-emerald-50\/80,
+      .bg-emerald-50\/90,
+      .bg-indigo-50\/90,
+      .bg-teal-50\/90,
+      .bg-stone-50\/90
     ) {
-    background-color: color-mix(
-      in srgb,
-      var(--fp-surface-muted) 82%,
-      var(--fp-ink) 18%
-    ) !important;
+    background-color: rgba(45, 41, 35, 0.96) !important;
   }
 
   html[data-theme="dark"]
@@ -173,6 +197,8 @@ html[data-theme="dark"] {
       .border-rose-200,
       .border-violet-200,
       .border-emerald-200,
+      .border-indigo-200,
+      .border-teal-200,
       .border-white\/70,
       .border-white\/80
     ) {

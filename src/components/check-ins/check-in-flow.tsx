@@ -693,6 +693,7 @@ function CheckInPracticeWorkflow() {
     <section
       aria-label="Dummy Check-in practice"
       className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
+      data-guide-practice-surface
     >
       <div className="grid gap-1">
         <h2 className="text-[16px] font-bold text-fp-ink">
