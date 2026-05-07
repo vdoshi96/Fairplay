@@ -262,7 +262,7 @@ export function CheckInFlow({
     return (
       <section
         aria-label="Check-in summary"
-        className="mx-auto grid w-full max-w-2xl gap-4 px-4 py-6"
+        className="mx-auto grid w-full max-w-2xl gap-4"
         data-guide-id="check-in-complete-summary"
       >
         <div
@@ -296,7 +296,7 @@ export function CheckInFlow({
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 py-6">
+    <section className="mx-auto flex w-full max-w-2xl flex-col gap-5">
       <div
         className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
         data-testid="check-in-active-visual"
@@ -307,9 +307,9 @@ export function CheckInFlow({
           testId="check-in-active-background"
           washClassName="bg-white/80"
         />
-        <div className="fp-generated-surface-wash relative z-10 flex items-center justify-between gap-3 p-4 backdrop-blur-[1px]">
+        <div className="fp-generated-surface-wash relative z-10 grid gap-3 p-4 backdrop-blur-[1px] sm:grid-cols-[1fr_auto] sm:items-center">
           <h1 className="text-2xl font-semibold text-stone-950">Guided check-in</h1>
-          <div className="grid gap-2 justify-items-end">
+          <div className="grid gap-2 justify-items-start sm:justify-items-end">
             <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />
             <span className="text-sm text-stone-600">
               {Math.min(currentIndex + 1, checkIn.items.length)} of {checkIn.items.length}
@@ -468,7 +468,7 @@ export function CheckInFlow({
         Complete check-in
       </button>
       {practiceOpen ? <CheckInPracticeWorkflow /> : null}
-    </main>
+    </section>
   );
 }
 
@@ -533,8 +533,8 @@ export function NewCheckInLauncher({
   }
 
   return (
-    <main
-      className="mx-auto flex w-full max-w-4xl flex-col items-center px-4 py-8 sm:py-12"
+    <section
+      className="mx-auto flex w-full max-w-4xl flex-col items-center"
       data-testid="check-in-new-workflow"
     >
       <section className="grid w-full max-w-3xl gap-5 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-[var(--fp-shadow-soft)] sm:p-6">
@@ -634,7 +634,7 @@ export function NewCheckInLauncher({
 
         {practiceOpen ? <CheckInPracticeWorkflow /> : null}
       </section>
-    </main>
+    </section>
   );
 }
 

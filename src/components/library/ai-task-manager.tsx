@@ -134,10 +134,10 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
   return (
     <section className="grid gap-3" aria-label="AI Task Manager">
       <div
-        className="flex flex-wrap items-center justify-between gap-3"
+        className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
         data-guide-id="library-ai-task-manager"
       >
-        <div className="grid gap-1">
+        <div className="grid min-w-0 gap-1">
           <p className="text-[13px] font-semibold text-fp-muted-ink">
             AI-created cards
           </p>

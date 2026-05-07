@@ -52,6 +52,19 @@ describe("PersistentWelcome", () => {
       "href",
       "/app/library"
     );
+    const compactActions = screen.getByTestId("welcome-compact-actions");
+    expect(compactActions).toContainElement(
+      screen.getByRole("link", { name: "Start crash course" })
+    );
+    expect(compactActions).toContainElement(
+      screen.getByRole("link", { name: "Learn a feature" })
+    );
+    expect(compactActions).toContainElement(
+      screen.getByRole("link", { name: "Browse card library" })
+    );
+    expect(compactActions).toContainElement(
+      screen.getByRole("button", { name: "Close welcome" })
+    );
   });
 
   it("stays visible until the user explicitly closes it", async () => {
