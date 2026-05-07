@@ -12,10 +12,6 @@ const primaryActions = [
   {
     href: "/app/library",
     label: "Card library"
-  },
-  {
-    href: "/app/home#learn-a-feature",
-    label: "Learn a feature"
   }
 ] as const;
 
@@ -88,14 +84,9 @@ export default function AppHomePage() {
             </p>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-2">
             {primaryActions.map((action) => (
               <Link
-                aria-describedby={
-                  action.href.endsWith("#learn-a-feature")
-                    ? "learn-a-feature-heading"
-                    : undefined
-                }
                 className="flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-white/95 px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-fp-soft focus:ring-2 focus:ring-fp-ink/25"
                 href={action.href}
                 key={action.href}

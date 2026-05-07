@@ -202,7 +202,29 @@ describe("LittleAlexPhysics", () => {
     expect(runSpy).not.toHaveBeenCalled();
   });
 
-  it("uses the actual small viewport dimensions for physics walls", () => {
+  it("reserves mobile bottom navigation space from the play area", () => {
+    expect(playAreaBounds({ width: 390, height: 720 })).toEqual({
+      height: 636,
+      maxX: 390,
+      maxY: 636,
+      minX: 0,
+      minY: 0,
+      width: 390
+    });
+  });
+
+  it("reserves desktop sidebar space and a small bottom safety margin", () => {
+    expect(playAreaBounds({ width: 1280, height: 800 })).toEqual({
+      height: 788,
+      maxX: 1280,
+      maxY: 788,
+      minX: 256,
+      minY: 0,
+      width: 1024
+    });
+  });
+
+  it("uses the actual small viewport dimensions minus reserved navigation space for physics walls", () => {
     stubReducedMotion(false);
     stubViewport(300, 260);
     vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
@@ -216,9 +238,9 @@ describe("LittleAlexPhysics", () => {
 
     expect(wallCalls).toEqual([
       [150, -48, 492, 96, { isStatic: true }],
-      [150, 308, 492, 96, { isStatic: true }],
-      [-48, 130, 96, 452, { isStatic: true }],
-      [348, 130, 96, 452, { isStatic: true }]
+      [150, 224, 492, 96, { isStatic: true }],
+      [-48, 88, 96, 368, { isStatic: true }],
+      [348, 88, 96, 368, { isStatic: true }]
     ]);
   });
 

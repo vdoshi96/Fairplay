@@ -18,7 +18,7 @@ import type { PersonaSummary } from "@/contracts/personas";
 import type { LittleAlexPreferences } from "@/contracts/preferences";
 import { LittleAlexPhysics } from "@/components/little-alex/little-alex-physics";
 import { FairplayMark, PersonaAvatar } from "@/components/visuals/fairplay-visuals";
-import { PageShell } from "./page-shell";
+import { PageShell, pageShellBackgroundForPathname } from "./page-shell";
 
 type AppShellProps = {
   children: ReactNode;
@@ -53,19 +53,22 @@ export function AppShell({
 }: AppShellProps) {
   const pathname = usePathname();
   const isImmersiveRoute = pathname === "/app/crash-course";
+  const pageBackground = isImmersiveRoute
+    ? undefined
+    : pageShellBackgroundForPathname(pathname);
   const mainClassName = isImmersiveRoute
     ? "w-full pb-24 lg:pb-0"
     : "w-full";
 
   return (
-    <div className="min-h-screen bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
+    <div className="min-h-screen bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[var(--fp-app-sidebar-width)_minmax(0,1fr)]">
       <LittleAlexPhysics
         chatPhrase={littleAlexPreferences.chatPhrase}
         genderPresentation={littleAlexPreferences.genderPresentation}
         skinTone={littleAlexPreferences.skinTone}
       />
 
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-fp-line bg-[var(--fp-surface-strong)] px-4 py-5 shadow-[var(--fp-shadow-soft)] backdrop-blur lg:flex lg:flex-col">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-[var(--fp-app-sidebar-width)] border-r border-fp-line bg-[var(--fp-surface-strong)] px-4 py-5 shadow-[var(--fp-shadow-soft)] backdrop-blur lg:flex lg:flex-col">
         <Link
           className="flex min-w-0 items-center gap-3 rounded outline-none focus:ring-2 focus:ring-fp-ink/25"
           href="/app/home"
@@ -161,12 +164,16 @@ export function AppShell({
           data-layout={isImmersiveRoute ? "immersive" : "standard"}
           data-testid="app-main"
         >
-          {isImmersiveRoute ? children : <PageShell>{children}</PageShell>}
+          {isImmersiveRoute ? (
+            children
+          ) : (
+            <PageShell background={pageBackground}>{children}</PageShell>
+          )}
         </main>
 
         <nav
           aria-label="Primary"
-          className="fixed inset-x-0 bottom-0 z-10 border-t border-fp-line bg-[var(--fp-surface-strong)] px-2 py-2 shadow-[0_-10px_30px_rgba(32,33,36,0.08)] backdrop-blur lg:hidden"
+          className="fixed inset-x-0 bottom-0 z-10 min-h-[var(--fp-app-bottom-nav-height)] border-t border-fp-line bg-[var(--fp-surface-strong)] px-2 pb-[max(0.5rem,var(--fp-app-safe-area-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,33,36,0.08)] backdrop-blur lg:hidden"
         >
           <div className="flex gap-1 overflow-x-auto">
             {navItems.map((item) => {

@@ -91,6 +91,8 @@ describe("protected app UI", () => {
   });
 
   it("renders the app shell around the real home page", () => {
+    pathname.mockReturnValue("/app/home");
+
     const { container } = renderProtectedUi(<AppHomePage />);
 
     expect(
@@ -107,6 +109,18 @@ describe("protected app UI", () => {
       "data-page-shell",
       "foreground"
     );
+    expect(screen.getByTestId("page-shell")).toHaveAttribute(
+      "data-page-background-id",
+      "home"
+    );
+    expect(screen.getByTestId("page-shell-background-home")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
+    expect(screen.getByTestId("page-shell-background-home")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
+    });
     const homePanel = container.querySelector("[data-home-background]");
     expect(homePanel).not.toBeNull();
     expect(homePanel).not.toHaveStyle({
@@ -126,14 +140,9 @@ describe("protected app UI", () => {
         .getAllByRole("link", { name: "Crash course" })
         .some((link) => link.getAttribute("href") === "/app/crash-course")
     ).toBe(true);
-    expect(screen.getByRole("link", { name: "Learn a feature" })).toHaveAttribute(
-      "href",
-      "/app/home#learn-a-feature"
-    );
-    expect(screen.getByRole("link", { name: "Learn a feature" })).toHaveAttribute(
-      "aria-describedby",
-      "learn-a-feature-heading"
-    );
+    expect(
+      screen.queryByRole("link", { name: "Learn a feature" })
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Card library" })).toHaveAttribute(
       "href",
       "/app/library"
@@ -269,6 +278,8 @@ describe("protected app UI", () => {
   });
 
   it("renders settings inside the app shell with household and persona state", () => {
+    pathname.mockReturnValue("/app/settings");
+
     renderProtectedUi(
       <SettingsPanel
         household={household}
@@ -278,6 +289,14 @@ describe("protected app UI", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Household settings" })).toBeVisible();
+    expect(screen.getByTestId("page-shell")).toHaveAttribute(
+      "data-page-background-id",
+      "settings"
+    );
+    expect(screen.getByTestId("page-shell-background-settings")).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/settings-preferences.png')"
+    });
     expect(screen.getAllByText("River Home").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Alex").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Switch persona" })).toBeVisible();

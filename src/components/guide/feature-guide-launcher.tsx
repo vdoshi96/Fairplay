@@ -28,10 +28,15 @@ export function FeatureGuideLauncher({
         {showDescription ? (
           <p className="text-[14px] leading-5 text-fp-muted-ink">{guide.description}</p>
         ) : null}
-        <Button className="justify-self-start" onClick={() => setIsOpen(true)}>
-          <PlayCircle aria-hidden className="h-4 w-4 shrink-0" />
-          <span>Learn this feature</span>
-        </Button>
+        <div
+          data-feature-guide-action="primary"
+          data-testid={`feature-guide-action-${guide.id}`}
+        >
+          <Button className="w-full sm:w-auto" onClick={() => setIsOpen(true)}>
+            <PlayCircle aria-hidden className="h-4 w-4 shrink-0" />
+            <span>Learn this feature</span>
+          </Button>
+        </div>
       </div>
 
       {isOpen ? (
