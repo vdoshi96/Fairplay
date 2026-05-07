@@ -18,6 +18,7 @@ const viewports = [
   { height: 844, name: "mobile", width: 390 },
   { height: 760, name: "small-tablet", width: 768 },
   { height: 900, name: "desktop", width: 1280 },
+  { height: 768, name: "laptop", width: 1366 },
   { height: 620, name: "short-desktop", width: 1024 }
 ] as const;
 
@@ -425,18 +426,25 @@ async function expectLoadMapLaneScrollerWorks(page: Page, label: string) {
   expect(before.scrollWidth, `${label} lane rail should be wider than viewport`)
     .toBeGreaterThan(before.clientWidth);
 
+  await expectLaneFullyVisibleInScroller(page, "Cards of Concern", label);
+
   await page.getByRole("button", { name: "Scroll lanes right" }).click();
   await expect
     .poll(() => scroller.evaluate((element) => element.scrollLeft))
     .toBeGreaterThan(before.scrollLeft);
 
   await scroller.evaluate((element) => {
-    const previousScrollBehavior = element.style.scrollBehavior;
-
+    element.classList.remove("scroll-smooth");
     element.style.scrollBehavior = "auto";
-    element.scrollTo({ left: element.scrollWidth });
-    element.style.scrollBehavior = previousScrollBehavior;
+    element.scrollLeft = element.scrollWidth - element.clientWidth;
   });
+  await expect
+    .poll(() =>
+      scroller.evaluate(
+        (element) => element.scrollWidth - element.clientWidth - element.scrollLeft
+      )
+    )
+    .toBeLessThanOrEqual(20);
 
   const trimmedVisibleInScroller = await page
     .getByRole("region", { name: "Trimmed" })
@@ -462,13 +470,46 @@ async function expectLoadMapLaneScrollerWorks(page: Page, label: string) {
     .toBe(true);
 }
 
+async function expectLaneFullyVisibleInScroller(
+  page: Page,
+  laneName: string,
+  label: string
+) {
+  const laneVisibleInScroller = await page
+    .getByRole("region", { name: laneName })
+    .evaluate((element) => {
+      const scrollerElement = element.closest<HTMLElement>(
+        '[data-testid="load-map-board-scroller"]'
+      );
+
+      if (!scrollerElement) {
+        return false;
+      }
+
+      const laneRect = element.getBoundingClientRect();
+      const scrollerRect = scrollerElement.getBoundingClientRect();
+
+      return (
+        laneRect.left >= scrollerRect.left - 1 &&
+        laneRect.right <= scrollerRect.right + 1
+      );
+    });
+
+  expect(laneVisibleInScroller, `${label} should show ${laneName} initially`)
+    .toBe(true);
+}
+
 test.describe("corrective responsive visual QA", () => {
   test.describe.configure({ mode: "serial" });
   test.setTimeout(90_000);
 
+  test.beforeAll(async () => {
+    await rm(screenshotDir, { force: true, recursive: true });
+    await mkdir(screenshotDir, { recursive: true });
+  });
+
   test.beforeEach(async ({ context }) => {
     await context.clearCookies();
-    await rm(screenshotDir, { force: true, recursive: true });
     await mkdir(screenshotDir, { recursive: true });
   });
 
@@ -563,6 +604,12 @@ test.describe("corrective responsive visual QA", () => {
         page,
         `${viewport.name} populated load-map`
       );
+
+      await page.screenshot({
+        fullPage: true,
+        path: `${screenshotDir}/populated-${viewport.name}-load-map-initial.png`
+      });
+
       await expectLoadMapLaneScrollerWorks(
         page,
         `${viewport.name} populated load-map`
@@ -570,8 +617,9 @@ test.describe("corrective responsive visual QA", () => {
       const scroller = page.getByTestId("load-map-board-scroller");
 
       await scroller.evaluate((element) => {
+        element.classList.remove("scroll-smooth");
         element.style.scrollBehavior = "auto";
-        element.scrollTo({ left: element.scrollWidth });
+        element.scrollLeft = element.scrollWidth - element.clientWidth;
       });
       await expect
         .poll(() =>
@@ -581,9 +629,8 @@ test.describe("corrective responsive visual QA", () => {
         )
         .toBeLessThanOrEqual(20);
 
-      await page.screenshot({
-        fullPage: true,
-        path: `${screenshotDir}/populated-${viewport.name}-load-map.png`
+      await page.getByTestId("load-map-board").screenshot({
+        path: `${screenshotDir}/populated-${viewport.name}-load-map-board-scrolled.png`
       });
     }
   });

@@ -245,7 +245,7 @@ export function ResponsibilityLoadMap({
   };
 
   const scrollLanes = useCallback((left: number) => {
-    boardScrollerRef.current?.scrollBy({ behavior: "smooth", left });
+    boardScrollerRef.current?.scrollBy({ left });
   }, []);
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -552,7 +552,7 @@ export function ResponsibilityLoadMap({
             </div>
             <div
               aria-label="Responsibility lanes"
-              className="max-w-full overflow-x-auto overscroll-x-contain pb-3 scroll-smooth touch-pan-x [scrollbar-gutter:stable]"
+              className="max-w-full overflow-x-auto overscroll-x-contain pb-3 touch-pan-x [scrollbar-gutter:stable]"
               data-testid="load-map-board-scroller"
               ref={boardScrollerRef}
               tabIndex={0}
@@ -624,7 +624,7 @@ function BoardLaneColumn({
     <section
       aria-labelledby={headingId}
       className={[
-        "flex max-h-[min(64vh,40rem)] w-[min(17.5rem,calc(100vw-2rem))] shrink-0 flex-col rounded-[8px] border p-2.5 transition sm:p-3",
+        "flex max-h-[min(64vh,40rem)] w-[min(15.5rem,calc(100vw-2rem))] shrink-0 flex-col rounded-[8px] border p-2.5 transition sm:p-3 2xl:w-[17.5rem]",
         laneToneClasses[lane.tone],
         isOver ? "ring-2 ring-fp-ink/25" : ""
       ]

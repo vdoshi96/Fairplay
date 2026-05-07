@@ -15,12 +15,18 @@
 - Added a real-app Playwright regression that creates a household, creates a responsibility, opens populated `/app/load-map`, verifies document-level overflow stays at zero, verifies the lane rail is wider than its viewport, verifies scroll buttons change `scrollLeft`, and verifies the `Trimmed` lane can be revealed at mobile, small tablet, desktop, and short desktop sizes.
 - Made the corrective responsive visual spec serial because both tests share the same screenshot directory.
 - Captured populated Load Map screenshots for mobile, small tablet, desktop, and short desktop after the lane rail is scrolled.
+- Followed up on a laptop stale-render report: confirmed the fixed branch was checked out, confirmed `localhost:3000` was not serving a process, restarted the dev server, reloaded the in-app browser, and verified the fixed DOM was present.
+- Added a `1366x768` laptop viewport to the corrective visual matrix.
+- Changed populated Load Map visual evidence to capture both initial and scrolled lane board states, so review can distinguish the unclipped starting position from the reachable final lane.
+- Tuned lane card width below `2xl` so common laptop widths start with three complete lanes visible instead of clipping the third lane by a few pixels.
+- Removed smooth programmatic scroll from the lane buttons so arrow clicks land immediately and visual regression screenshots are deterministic.
 
 ## Coordination Notes
 
 - Subagents were redirected to read-only mode after branch refs appeared shared with the parent checkout.
 - Browser plugin DOM validation worked on `http://localhost:3000/app/load-map`; screenshot capture through the in-app Browser runtime timed out, so Playwright provided screenshot evidence.
 - A temporary dev-server `.next` ENOENT occurred while `next dev` and Playwright were both touching generated output. The server recovered, was stopped, and `npm run build` later passed cleanly.
+- Follow-up desktop Playwright probe at `1024x640`, `1366x768`, and `2048x1280` reported document horizontal overflow `0` for all three sizes.
 
 ## Rollback
 

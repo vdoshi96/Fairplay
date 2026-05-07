@@ -43,6 +43,15 @@ Full verification passed:
 - Lint.
 - Production build.
 
+## Follow-Up Laptop Check
+
+- The stale laptop screenshot matched the pre-fix DOM: it did not include `Lane board` or the scroll buttons.
+- At follow-up, nothing was listening on `localhost:3000`; after restarting the dev server and reloading, the in-app browser rendered the fixed DOM.
+- Added a `1366x768` laptop viewport to the corrective visual matrix.
+- Added initial and scrolled populated Load Map screenshots so visual QA can distinguish "starts unclipped" from "can scroll to the final lane."
+- Adjusted lane card width for common laptop sizes so the starting board view shows three complete lanes before horizontal scrolling.
+- Made the arrow-button scroll immediate, which is easier to verify and avoids stale intermediate scroll positions.
+
 ## Unresolved Issues
 
 - No unresolved Load Map overflow issues found.

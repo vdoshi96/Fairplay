@@ -219,13 +219,13 @@ describe("ResponsibilityLoadMap", () => {
       screen.getByRole("button", { name: "Scroll lanes right" })
     );
 
-    expect(scrollBy).toHaveBeenCalledWith({ behavior: "smooth", left: 320 });
+    expect(scrollBy).toHaveBeenCalledWith({ left: 320 });
 
     await userEvent.click(
       screen.getByRole("button", { name: "Scroll lanes left" })
     );
 
-    expect(scrollBy).toHaveBeenCalledWith({ behavior: "smooth", left: -320 });
+    expect(scrollBy).toHaveBeenCalledWith({ left: -320 });
   });
 
   it("wraps long diagnostic values inside compact signal tiles", () => {
