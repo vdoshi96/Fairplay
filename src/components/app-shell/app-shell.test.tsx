@@ -103,6 +103,10 @@ describe("protected app UI", () => {
     expect(
       screen.getByRole("heading", { name: "Learn Fairplay in layers" })
     ).toBeVisible();
+    expect(screen.getByTestId("page-shell")).toHaveAttribute(
+      "data-page-shell",
+      "foreground"
+    );
     const homeBackground = container.querySelector("[data-home-background]");
     expect(homeBackground).not.toBeNull();
     expect(homeBackground).toHaveStyle({
@@ -152,7 +156,7 @@ describe("protected app UI", () => {
       "data-layout",
       "standard"
     );
-    expect(screen.getByTestId("app-main")).toHaveStyle({
+    expect(screen.getByTestId("app-main")).not.toHaveStyle({
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png')"
     });
