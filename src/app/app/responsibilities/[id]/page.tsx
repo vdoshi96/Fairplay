@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { NextRequest } from "next/server";
 
@@ -43,6 +44,20 @@ export default async function ResponsibilityDetailPage({
 
     return (
       <div className="grid gap-6">
+        <nav aria-label="Responsibility navigation" className="flex flex-wrap gap-2">
+          <Link
+            className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 py-3 text-[14px] font-bold text-fp-ink"
+            href="/app/library"
+          >
+            Back to library
+          </Link>
+          <Link
+            className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 py-3 text-[14px] font-bold text-fp-ink"
+            href="/app/load-map"
+          >
+            Back to Load Map
+          </Link>
+        </nav>
         <CardDetailSheet card={detailCardFor(responsibility)} />
         <ResponsibilityEditor
           initialResponsibility={responsibility}
