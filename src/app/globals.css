@@ -151,6 +151,34 @@ html[data-theme="dark"] {
     background-color: var(--fp-surface-muted) !important;
   }
 
+  html[data-theme="dark"]
+    :is(
+      .bg-amber-50\/80,
+      .bg-sky-50\/80,
+      .bg-rose-50\/80,
+      .bg-violet-50\/80,
+      .bg-emerald-50\/80
+    ) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-muted) 82%,
+      var(--fp-ink) 18%
+    ) !important;
+  }
+
+  html[data-theme="dark"]
+    :is(
+      .border-amber-200,
+      .border-sky-200,
+      .border-rose-200,
+      .border-violet-200,
+      .border-emerald-200,
+      .border-white\/70,
+      .border-white\/80
+    ) {
+    border-color: var(--fp-line) !important;
+  }
+
   html[data-theme="dark"] :is(.text-stone-950) {
     color: var(--fp-ink) !important;
   }

@@ -443,7 +443,7 @@ export function ResponsibilityLoadMap({
             }
             data-testid="load-map-board"
           >
-            <div className="-mx-4 overflow-x-auto px-4 pb-3">
+            <div className="-mx-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0">
               <div
                 className="flex min-w-max gap-3"
                 data-guide-id={
@@ -510,7 +510,7 @@ function BoardLaneColumn({
     <section
       aria-labelledby={headingId}
       className={[
-        "flex max-h-[72vh] w-[19rem] shrink-0 flex-col rounded-[8px] border p-3 transition",
+        "flex max-h-[72vh] w-[min(19rem,calc(100vw-2rem))] shrink-0 flex-col rounded-[8px] border p-3 transition",
         laneToneClasses[lane.tone],
         isOver ? "ring-2 ring-fp-ink/25" : ""
       ]

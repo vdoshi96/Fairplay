@@ -76,6 +76,11 @@ describe("CheckInFlow", () => {
     expect(
       within(actions).getByRole("button", { name: "Start check-in" })
     ).toBeVisible();
+    expect(
+      actions.querySelector('[data-guide-id="check-in-complete-action"]')
+    ).toContainElement(
+      within(actions).getByRole("button", { name: "Start check-in" })
+    );
 
     const agenda = screen.getByTestId("check-in-agenda-preview-list");
     expect(agenda).toHaveAttribute("data-guide-id", "check-in-agenda");

@@ -93,18 +93,22 @@ export function PersistentWelcome({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          <div
+            aria-label="Welcome resources"
+            className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end"
+            data-testid="welcome-compact-actions"
+          >
             {welcomeLinks.map((item) => {
               const Icon = item.icon;
 
               return (
                 <Link
-                  className="flex min-h-9 items-center justify-center gap-1.5 rounded-[8px] border border-fp-line bg-fp-surface px-2.5 text-[12px] font-bold text-fp-ink outline-none transition hover:bg-fp-soft focus:ring-2 focus:ring-fp-ink/25"
+                  className="flex min-h-9 min-w-0 flex-1 basis-[9rem] items-center justify-center gap-1.5 rounded-[8px] border border-fp-line bg-fp-surface px-2.5 text-[12px] font-bold text-fp-ink outline-none transition hover:bg-fp-soft focus:ring-2 focus:ring-fp-ink/25 sm:flex-none"
                   href={item.href}
                   key={item.href}
                 >
                   <Icon aria-hidden className="h-3.5 w-3.5 shrink-0" />
-                  <span>{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                 </Link>
               );
             })}
