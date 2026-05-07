@@ -256,32 +256,63 @@ async function expectLittleAlexSpritesLoaded(
     )
     .toEqual([]);
 
-  await expect(page.getByTestId("little-alex-sprite")).toHaveCount(0);
+  await expect(page.getByTestId("little-alex-sprite")).toHaveCount(
+    littleAlexSpriteParts.length
+  );
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        Array.from(
-          document.querySelectorAll<HTMLElement>(
-            '[data-testid="little-alex-body-part"]'
-          )
-        ).flatMap((bodyPart) => {
+      page.evaluate(({ basePath, parts, presentation }) => {
+        return parts.flatMap((part) => {
+          const bodyPart = document.querySelector<HTMLElement>(
+            `[data-testid="little-alex-body-part"][data-part="${part}"]`
+          );
           const failures: string[] = [];
 
-          if (bodyPart.querySelector("img")) {
-            failures.push(
-              `${bodyPart.dataset.part ?? "unknown"} still renders an image child`
-            );
+          if (!bodyPart) {
+            return [`${part} body part is missing`];
+          }
+
+          const sprite = bodyPart.querySelector<HTMLImageElement>(
+            '[data-testid="little-alex-sprite"]'
+          );
+          const expectedPath = `${basePath}/${presentation}-${part}.png`;
+          const expectedUrl = new URL(expectedPath, window.location.origin).href;
+
+          if (!sprite) {
+            failures.push(`${part} ragdoll sprite is missing`);
+          } else {
+            if (
+              sprite.currentSrc !== expectedUrl &&
+              sprite.src !== expectedUrl &&
+              sprite.getAttribute("src") !== expectedPath
+            ) {
+              failures.push(
+                `${part} ragdoll sprite path mismatch: ${sprite.currentSrc}`
+              );
+            }
+
+            if (
+              !sprite.complete ||
+              sprite.naturalHeight <= 0 ||
+              sprite.naturalWidth <= 0
+            ) {
+              failures.push(`${part} ragdoll sprite image did not load`);
+            }
           }
 
           if (Number.parseFloat(getComputedStyle(bodyPart).opacity) !== 0) {
             failures.push(
-              `${bodyPart.dataset.part ?? "unknown"} physics part is visible`
+              `${bodyPart.dataset.part ?? "unknown"} physics part is visible while settled`
             );
           }
 
           return failures;
-        })
-      )
+        });
+      }, {
+        basePath: littleAlexSpriteBasePath,
+        parts: littleAlexSpriteParts,
+        presentation
+      })
     )
     .toEqual([]);
 }

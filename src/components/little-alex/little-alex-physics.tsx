@@ -221,6 +221,21 @@ function littleAlexFullBodySpritePath(
   return `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`;
 }
 
+function littleAlexPartSpritePath(
+  genderPresentation: LittleAlexGenderPresentation,
+  part: PartKey
+) {
+  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${part}.png`;
+}
+
+function isRagdollPartVisible(state: RagdollVisualState) {
+  return state === "flinging" || state === "recovering";
+}
+
+function fullBodyOpacity(state: RagdollVisualState) {
+  return state === "flinging" ? 0 : 1;
+}
+
 const characterBounds = partConfigs.reduce(
   (bounds, part) => ({
     maxX: Math.max(bounds.maxX, part.offset.x + part.width / 2),
@@ -355,12 +370,14 @@ function clampFullBodyAnchor(
 
 function fullBodySpriteStyle(
   anchor: Point,
-  angle = 0
+  angle = 0,
+  ragdollState: RagdollVisualState = "settled"
 ): CSSProperties {
   const clampedAnchor = clampFullBodyAnchor(anchor, angle);
 
   return {
     height: FULL_BODY_DISPLAY_HEIGHT,
+    opacity: fullBodyOpacity(ragdollState),
     transform: `translate3d(${clampedAnchor.x - FULL_BODY_DISPLAY_WIDTH / 2}px, ${
       clampedAnchor.y + characterBounds.minY
     }px, 0) rotate(${angle}rad)`,
@@ -543,9 +560,14 @@ function createRagdoll(anchor: Point, width: number, height: number): PhysicsWor
   };
 }
 
-function syncBodyToElement(body: Matter.Body, element: HTMLElement, part: PartConfig) {
+function syncBodyToElement(
+  body: Matter.Body,
+  element: HTMLElement,
+  part: PartConfig,
+  ragdollState: RagdollVisualState
+) {
   element.style.height = `${part.height}px`;
-  element.style.opacity = "0";
+  element.style.opacity = isRagdollPartVisible(ragdollState) ? "1" : "0";
   element.style.transform = `translate3d(${body.position.x - part.width / 2}px, ${
     body.position.y - part.height / 2
   }px, 0) rotate(${body.angle}rad)`;
@@ -575,14 +597,16 @@ function syncChatBubble(element: HTMLElement | null, anchor: Point) {
 function syncFullBodySprite(
   element: HTMLElement | null,
   anchor: Point,
-  angle = 0
+  angle = 0,
+  ragdollState: RagdollVisualState = "settled"
 ) {
   if (!element) {
     return;
   }
 
-  const style = fullBodySpriteStyle(anchor, angle);
+  const style = fullBodySpriteStyle(anchor, angle, ragdollState);
   element.style.height = `${style.height}px`;
+  element.style.opacity = `${style.opacity}`;
   element.style.transform = style.transform as string;
   element.style.width = `${style.width}px`;
 }
@@ -889,6 +913,28 @@ export function LittleAlexPhysics({
     ragdollRecoveryTimeoutRef.current = null;
   }, []);
 
+  const syncRagdollVisibility = useCallback((state: RagdollVisualState) => {
+    partConfigs.forEach((part) => {
+      const element = bodyRefs.current[part.key];
+
+      if (element) {
+        element.style.opacity = isRagdollPartVisible(state) ? "1" : "0";
+      }
+    });
+    if (fullBodySpriteRef.current) {
+      fullBodySpriteRef.current.style.opacity = `${fullBodyOpacity(state)}`;
+    }
+  }, []);
+
+  const setRagdollVisualStateNow = useCallback(
+    (next: RagdollVisualState) => {
+      ragdollVisualStateRef.current = next;
+      syncRagdollVisibility(next);
+      setRagdollVisualState(next);
+    },
+    [syncRagdollVisibility]
+  );
+
   const updateGaze = useCallback(
     (target: Point) => {
       if (!Number.isFinite(target.x) || !Number.isFinite(target.y)) {
@@ -926,17 +972,19 @@ export function LittleAlexPhysics({
       }
     }
     containBodiesInPlayArea(physics.bodies);
+    const ragdollState = ragdollVisualStateRef.current;
     partConfigs.forEach((part) => {
       const element = bodyRefs.current[part.key];
 
       if (element) {
-        syncBodyToElement(physics.bodies[part.key], element, part);
+        syncBodyToElement(physics.bodies[part.key], element, part, ragdollState);
       }
     });
     syncFullBodySprite(
       fullBodySpriteRef.current,
       physics.bodies.torso.position,
-      physics.bodies.torso.angle
+      physics.bodies.torso.angle,
+      ragdollState
     );
     syncGrabTarget(grabTargetRef.current, physics.bodies.torso.position);
     syncChatBubble(bubbleRef.current, physics.bodies.head.position);
@@ -1049,15 +1097,19 @@ export function LittleAlexPhysics({
       return undefined;
     }
 
-    setRagdollVisualState("recovering");
+    setRagdollVisualStateNow("recovering");
     clearRagdollRecoveryTimeout();
     ragdollRecoveryTimeoutRef.current = window.setTimeout(() => {
-      setRagdollVisualState("settled");
+      setRagdollVisualStateNow("settled");
       ragdollRecoveryTimeoutRef.current = null;
     }, RAGDOLL_RECOVERY_TRANSITION_MS);
 
     return undefined;
-  }, [clearRagdollRecoveryTimeout, idleState]);
+  }, [clearRagdollRecoveryTimeout, idleState, setRagdollVisualStateNow]);
+
+  useEffect(() => {
+    syncPhysicsDom();
+  }, [ragdollVisualState, syncPhysicsDom]);
 
   useEffect(() => {
     if (!motionPreferenceReady) {
@@ -1179,7 +1231,7 @@ export function LittleAlexPhysics({
 
       event.currentTarget.setPointerCapture(event.pointerId);
       clearRagdollRecoveryTimeout();
-      setRagdollVisualState(reducedMotion ? "settled" : "dragging");
+      setRagdollVisualStateNow(reducedMotion ? "settled" : "dragging");
       setIdleState("active");
       setIdleStandDelayMs(IDLE_STAND_DELAY_MS);
       setActivityVersion((current) => current + 1);
@@ -1203,7 +1255,13 @@ export function LittleAlexPhysics({
         velocity: { x: 0, y: 0 }
       };
     },
-    [clearRagdollRecoveryTimeout, reducedAnchor, reducedMotion, updateGaze]
+    [
+      clearRagdollRecoveryTimeout,
+      reducedAnchor,
+      reducedMotion,
+      setRagdollVisualStateNow,
+      updateGaze
+    ]
   );
 
   const moveDrag = useCallback(
@@ -1306,7 +1364,7 @@ export function LittleAlexPhysics({
           y: point.y - drag.offset.y
         });
 
-        setRagdollVisualState("settled");
+        setRagdollVisualStateNow("settled");
         setReducedAnchor(releaseAnchor);
         idleWalkTurnRef.current = initialIdleWalkTurn(releaseAnchor.x);
         if (shouldShowBubble) {
@@ -1318,11 +1376,11 @@ export function LittleAlexPhysics({
       const physics = physicsRef.current;
 
       if (!physics) {
-        setRagdollVisualState("settled");
+        setRagdollVisualStateNow("settled");
         return;
       }
 
-      setRagdollVisualState(shouldShowBubble ? "flinging" : "settled");
+      setRagdollVisualStateNow(shouldShowBubble ? "flinging" : "settled");
       Object.entries(physics.bodies).forEach(([key, body]) => {
         const weight = key === "torso" ? 1 : 0.82;
 
@@ -1336,12 +1394,13 @@ export function LittleAlexPhysics({
             (key === "head" ? 0.006 : 0.004)
         );
       });
+      syncPhysicsDom();
       idleWalkTurnRef.current = initialIdleWalkTurn(physics.bodies.torso.position.x);
       if (shouldShowBubble) {
         showChatBubble();
       }
     },
-    [reducedMotion, showChatBubble, updateGaze]
+    [reducedMotion, setRagdollVisualStateNow, showChatBubble, syncPhysicsDom, updateGaze]
   );
 
   useEffect(() => {
@@ -1428,7 +1487,7 @@ export function LittleAlexPhysics({
         draggable={false}
         ref={fullBodySpriteRef}
         src={littleAlexFullBodySpritePath(genderPresentation)}
-        style={fullBodySpriteStyle(reducedAnchor)}
+        style={fullBodySpriteStyle(reducedAnchor, 0, ragdollVisualState)}
       />
       {partConfigs.map((part) => (
         <div
@@ -1444,7 +1503,17 @@ export function LittleAlexPhysics({
             }
           }}
           style={reducedPartStyle(part, reducedAnchor)}
-        />
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- Limb sprites are tightly coupled to the Matter.js rig. */}
+          <img
+            alt=""
+            className="fp-little-alex-sprite"
+            data-part={part.key}
+            data-testid="little-alex-sprite"
+            draggable={false}
+            src={littleAlexPartSpritePath(genderPresentation, part.key)}
+          />
+        </div>
       ))}
       <div
         className="fp-little-alex-grab-target"
