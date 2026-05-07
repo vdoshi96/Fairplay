@@ -52,4 +52,25 @@ describe("FeatureGuideLauncher", () => {
 
     expect(screen.getByRole("dialog", { name: "Library guide" })).toBeVisible();
   });
+
+  it("starts the Settings guide from the settings query without opening Load Map", () => {
+    queryValue.value = "guide=settings";
+
+    render(
+      <>
+        <FeatureGuideLauncher guide={FEATURE_GUIDES.loadMap} />
+        <FeatureGuideLauncher guide={FEATURE_GUIDES.settings} />
+      </>
+    );
+
+    const settingsGuide = screen.getByRole("dialog", { name: "Settings guide" });
+    expect(settingsGuide).toBeVisible();
+    expect(
+      screen.queryByRole("dialog", { name: "Load Map guide" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "About this feature" })
+    ).toBeVisible();
+    expect(settingsGuide).toHaveTextContent(/settings/i);
+  });
 });

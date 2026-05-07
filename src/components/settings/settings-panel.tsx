@@ -274,6 +274,7 @@ export function SettingsPanel({
       <section className="grid gap-5" ref={contentRef}>
         <div
           className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
+          data-guide-id="settings-overview"
           data-testid="settings-preferences-visual"
         >
           <DecorativeBackgroundLayer

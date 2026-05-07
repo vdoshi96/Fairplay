@@ -83,6 +83,10 @@ describe("CheckInFlow", () => {
     const agenda = screen.getByTestId("check-in-agenda-preview-list");
     expect(agenda).toHaveAttribute("data-guide-id", "check-in-agenda");
     expect(within(agenda).getByText("Morning handoff")).toBeVisible();
+    expect(screen.getByTestId("check-in-new-visual")).toHaveAttribute(
+      "data-guide-id",
+      "check-in-overview"
+    );
   });
 
   it("lets users remove suggested agenda items before starting", async () => {
@@ -267,6 +271,10 @@ describe("CheckInFlow", () => {
     expect(
       screen.getByRole("button", { name: "Learn this feature" })
     ).toBeVisible();
+    expect(screen.getByTestId("check-in-active-visual")).toHaveAttribute(
+      "data-guide-id",
+      "check-in-overview"
+    );
     expect(screen.getByRole("region", { name: "Current item" })).toHaveAttribute(
       "data-guide-id",
       "check-in-agenda"
@@ -469,6 +477,7 @@ describe("CheckInFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("button", { name: "Done" })).toBeDisabled();
 
     fireEvent.click(
@@ -478,6 +487,10 @@ describe("CheckInFlow", () => {
       name: "Dummy Check-in practice"
     });
     expect(practiceRegion).toBeVisible();
+    expect(practiceRegion).toHaveTextContent(/temporary/i);
+    expect(practiceRegion).toHaveTextContent(/first/i);
+    expect(practiceRegion).toHaveTextContent(/Preview dummy agenda/i);
+    expect(practiceRegion).toHaveTextContent(/nothing is saved/i);
     expect(practiceRegion).toHaveClass(
       "z-[60]",
       "bg-[var(--fp-surface-strong)]"
