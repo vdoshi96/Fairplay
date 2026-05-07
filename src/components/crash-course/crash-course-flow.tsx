@@ -60,9 +60,17 @@ export function CrashCourseFlow({
         scene={lesson.scene}
       />
 
-      <div className="relative z-10 flex min-h-[calc(100svh_-_3rem)] items-center py-4 sm:py-8">
+      <div
+        className="relative z-10 grid min-h-[calc(100svh_-_3rem)] w-full max-w-6xl items-end gap-4 py-3 sm:py-6 lg:grid-cols-[minmax(0,0.82fr)_minmax(24rem,0.62fr)] lg:items-center"
+        data-testid="crash-course-lesson-shell"
+      >
         <div
-          className="z-10 grid w-full max-w-2xl gap-5 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 shadow-2xl backdrop-blur-md sm:p-7"
+          aria-hidden="true"
+          className="hidden min-h-[56svh] lg:block"
+          data-testid="crash-course-scene-anchor"
+        />
+        <div
+          className="z-10 grid max-h-[calc(100svh_-_3rem)] w-full gap-5 overflow-y-auto rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 shadow-2xl backdrop-blur-md sm:p-7 lg:translate-y-0"
           data-testid="crash-course-lesson-panel"
         >
           {completed ? (
