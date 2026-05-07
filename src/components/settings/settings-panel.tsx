@@ -12,10 +12,14 @@ import { useRouter } from "next/navigation";
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
-import type {
-  LittleAlexGenderPresentation,
-  LittleAlexPreferences,
-  LittleAlexSkinTone
+import {
+  LITTLE_ALEX_SKIN_TONES,
+  LITTLE_ALEX_SKIN_TONE_COLORS
+} from "@/contracts/little-alex";
+import {
+  type LittleAlexGenderPresentation,
+  type LittleAlexPreferences,
+  type LittleAlexSkinTone
 } from "@/contracts/preferences";
 import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import { FEATURE_GUIDES } from "@/components/guide/guide-content";
@@ -50,13 +54,11 @@ const littleAlexSkinOptions: Array<{
   label: string;
   swatch: string;
   value: LittleAlexSkinTone;
-}> = [
-  { label: "Tone 1", swatch: "#f3c7a6", value: "tone_1" },
-  { label: "Tone 2", swatch: "#d8a078", value: "tone_2" },
-  { label: "Tone 3", swatch: "#c18463", value: "tone_3" },
-  { label: "Tone 4", swatch: "#b7795f", value: "tone_4" },
-  { label: "Tone 5", swatch: "#8f5f45", value: "tone_5" }
-];
+}> = LITTLE_ALEX_SKIN_TONES.map((value, index) => ({
+  label: `Tone ${index + 1}`,
+  swatch: LITTLE_ALEX_SKIN_TONE_COLORS[value],
+  value
+}));
 
 const settingsPreferencesBackground =
   "url('/assets/fairplay/generated-ui/backgrounds/settings-preferences.png')";

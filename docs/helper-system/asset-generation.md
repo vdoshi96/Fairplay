@@ -15,7 +15,7 @@ The generator uses approved model `qwen-image-2.0-pro` and crops 1536x1024 sourc
 
 ## Skin Tone Variant Workflow
 
-Preferred route for this task:
+Implemented route for this task:
 
 1. Use existing approved Qwen assets as source art.
 2. Detect skin-colored pixels in full-body and part sprites.
@@ -23,7 +23,15 @@ Preferred route for this task:
 4. Write deterministic tone-aware assets into `public/assets/fairplay/little-alex-sprites/`.
 5. Record generation details in the manifest or a companion manifest.
 
-This avoids full Qwen regeneration when only tone changes are needed.
+This avoids full Qwen regeneration when only tone changes are needed. The command is:
+
+```bash
+npm run assets:generate-little-alex-skin-tones
+```
+
+The generator is `scripts/generate-little-alex-skin-tones.mjs`. It writes 105 PNGs: 3 presentations x 5 skin tones x 7 rendered assets (`full` plus six ragdoll parts). It also writes `public/assets/fairplay/little-alex-sprites/skin-tone-manifest.json`.
+
+For this fix, Qwen was not called. The current Qwen-approved presentation assets were used as the source images.
 
 ## When To Use Qwen Again
 

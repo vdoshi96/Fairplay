@@ -16,6 +16,7 @@
     "test:watch": "vitest --watch",
     "assets:generate": "node --experimental-strip-types scripts/generate-visible-assets.mjs",
     "assets:generate-little-alex": "node --experimental-strip-types scripts/generate-little-alex-sprites.mjs",
+    "assets:generate-little-alex-skin-tones": "node scripts/generate-little-alex-skin-tones.mjs",
     "assets:generate-ui": "node --experimental-strip-types scripts/generate-ui-assets.mjs",
     "test:e2e": "playwright test",
     "prisma:generate": "DATABASE_URL=${DATABASE_URL:-postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public} prisma generate",

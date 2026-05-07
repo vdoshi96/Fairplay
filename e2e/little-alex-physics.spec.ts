@@ -23,11 +23,13 @@ const littleAlexSpritePresentations = [
 ] as const;
 
 type LittleAlexSpritePresentation = (typeof littleAlexSpritePresentations)[number];
+type LittleAlexSkinTone = "tone_1" | "tone_2" | "tone_3" | "tone_4" | "tone_5";
 
 function expectedLittleAlexFullSpritePath(
-  presentation: LittleAlexSpritePresentation
+  presentation: LittleAlexSpritePresentation,
+  skinTone: LittleAlexSkinTone = "tone_2"
 ) {
-  return `${littleAlexSpriteBasePath}/${presentation}-full.png`;
+  return `${littleAlexSpriteBasePath}/${presentation}-${skinTone}-full.png`;
 }
 
 function uniqueHouseholdSlug() {
@@ -204,7 +206,8 @@ async function expectLittleAlexInViewport(
 
 async function expectLittleAlexSpritesLoaded(
   page: Page,
-  presentation: LittleAlexSpritePresentation
+  presentation: LittleAlexSpritePresentation,
+  skinTone: LittleAlexSkinTone = "tone_2"
 ) {
   await expect(page.getByTestId("little-alex-body-part")).toHaveCount(
     littleAlexSpriteParts.length
@@ -251,7 +254,7 @@ async function expectLittleAlexSpritesLoaded(
           }
 
           return failures;
-        }, expectedLittleAlexFullSpritePath(presentation)),
+        }, expectedLittleAlexFullSpritePath(presentation, skinTone)),
       { timeout: 5_000 }
     )
     .toEqual([]);
@@ -261,7 +264,7 @@ async function expectLittleAlexSpritesLoaded(
   );
   await expect
     .poll(() =>
-      page.evaluate(({ basePath, parts, presentation }) => {
+      page.evaluate(({ basePath, parts, presentation, skinTone }) => {
         return parts.flatMap((part) => {
           const bodyPart = document.querySelector<HTMLElement>(
             `[data-testid="little-alex-body-part"][data-part="${part}"]`
@@ -275,7 +278,7 @@ async function expectLittleAlexSpritesLoaded(
           const sprite = bodyPart.querySelector<HTMLImageElement>(
             '[data-testid="little-alex-sprite"]'
           );
-          const expectedPath = `${basePath}/${presentation}-${part}.png`;
+          const expectedPath = `${basePath}/${presentation}-${skinTone}-${part}.png`;
           const expectedUrl = new URL(expectedPath, window.location.origin).href;
 
           if (!sprite) {
@@ -311,7 +314,8 @@ async function expectLittleAlexSpritesLoaded(
       }, {
         basePath: littleAlexSpriteBasePath,
         parts: littleAlexSpriteParts,
-        presentation
+        presentation,
+        skinTone
       })
     )
     .toEqual([]);
@@ -333,12 +337,13 @@ type PixelBounds = {
 };
 
 async function littleAlexFullBodyPixelFailures(
-  presentation: LittleAlexSpritePresentation
+  presentation: LittleAlexSpritePresentation,
+  skinTone: LittleAlexSkinTone = "tone_2"
 ) {
   const assetPath = path.join(
     process.cwd(),
     "public/assets/fairplay/little-alex-sprites",
-    `${presentation}-full.png`
+    `${presentation}-${skinTone}-full.png`
   );
   const { data, info } = await sharp(await readFile(assetPath))
     .ensureAlpha()
@@ -1052,6 +1057,7 @@ test.describe("Little Alex physics", () => {
       "data-chat-phrase",
       "well done everyone"
     );
+    await expectLittleAlexSpritesLoaded(page, "feminine", "tone_4");
     await dragLittleAlex(page, -180, 120);
     await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
       "well done everyone"
@@ -1192,7 +1198,7 @@ test.describe("Little Alex physics", () => {
         )
       );
       fullBodyPixelFailures.push(
-        ...(await littleAlexFullBodyPixelFailures(presentation))
+        ...(await littleAlexFullBodyPixelFailures(presentation, "tone_2"))
       );
 
       await dragLittleAlex(page, -220, 120);

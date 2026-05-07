@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -16,6 +18,8 @@ import {
   buildLittleAlexSpritePrompt,
   littleAlexSpriteNegativePrompt
 } from "./little-alex-sprite-assets";
+
+const littleAlexSkinTones = ["tone_1", "tone_2", "tone_3", "tone_4", "tone_5"];
 
 describe("Little Alex sprite asset specs", () => {
   it("defines three source sheets and one cropped transparent PNG spec for each body part", () => {
@@ -142,5 +146,27 @@ describe("Little Alex sprite asset specs", () => {
     expect(littleAlexSpriteNegativePrompt).toMatch(/real-person likeness/);
     expect(littleAlexSpriteNegativePrompt).toMatch(/internet image reference/);
     expect(littleAlexSpriteNegativePrompt).toMatch(/unequal left and right limbs/);
+  });
+
+  it("has generated tone-aware full-body and ragdoll part assets", () => {
+    for (const presentation of LITTLE_ALEX_SPRITE_PRESENTATIONS) {
+      for (const skinTone of littleAlexSkinTones) {
+        expect(
+          existsSync(
+            `${LITTLE_ALEX_SPRITE_OUTPUT_DIR}/${presentation}-${skinTone}-full.png`
+          ),
+          `${presentation} ${skinTone} full-body sprite is missing`
+        ).toBe(true);
+
+        for (const part of LITTLE_ALEX_SPRITE_PARTS) {
+          expect(
+            existsSync(
+              `${LITTLE_ALEX_SPRITE_OUTPUT_DIR}/${presentation}-${skinTone}-${part}.png`
+            ),
+            `${presentation} ${skinTone} ${part} sprite is missing`
+          ).toBe(true);
+        }
+      }
+    }
   });
 });

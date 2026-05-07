@@ -1,0 +1,960 @@
+{
+  "generatedAt": "2026-05-07T00:34:48.547Z",
+  "mode": "generate",
+  "outputDir": "public/assets/fairplay/little-alex-sprites",
+  "source": "deterministic-sharp-skin-recolor",
+  "skinToneColors": {
+    "tone_1": "#f3c7a6",
+    "tone_2": "#d8a078",
+    "tone_3": "#c18463",
+    "tone_4": "#b7795f",
+    "tone_5": "#8f5f45"
+  },
+  "outputs": [
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_1-full.png",
+      "presentation": "neutral",
+      "skinPixels": 44386,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_1-head.png",
+      "presentation": "neutral",
+      "skinPixels": 58550,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_1-torso.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_1-leftArm.png",
+      "presentation": "neutral",
+      "skinPixels": 5450,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_1-rightArm.png",
+      "presentation": "neutral",
+      "skinPixels": 3923,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_1-leftLeg.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_1-rightLeg.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-full.png",
+      "presentation": "neutral",
+      "skinPixels": 44386,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-head.png",
+      "presentation": "neutral",
+      "skinPixels": 58550,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-torso.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-leftArm.png",
+      "presentation": "neutral",
+      "skinPixels": 5450,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-rightArm.png",
+      "presentation": "neutral",
+      "skinPixels": 3923,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-leftLeg.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-rightLeg.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_3-full.png",
+      "presentation": "neutral",
+      "skinPixels": 44386,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_3-head.png",
+      "presentation": "neutral",
+      "skinPixels": 58550,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_3-torso.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_3-leftArm.png",
+      "presentation": "neutral",
+      "skinPixels": 5450,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_3-rightArm.png",
+      "presentation": "neutral",
+      "skinPixels": 3923,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_3-leftLeg.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_3-rightLeg.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_4-full.png",
+      "presentation": "neutral",
+      "skinPixels": 44386,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_4-head.png",
+      "presentation": "neutral",
+      "skinPixels": 58550,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_4-torso.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_4-leftArm.png",
+      "presentation": "neutral",
+      "skinPixels": 5450,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_4-rightArm.png",
+      "presentation": "neutral",
+      "skinPixels": 3923,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_4-leftLeg.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_4-rightLeg.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_5-full.png",
+      "presentation": "neutral",
+      "skinPixels": 44386,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_5-head.png",
+      "presentation": "neutral",
+      "skinPixels": 58550,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_5-torso.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_5-leftArm.png",
+      "presentation": "neutral",
+      "skinPixels": 5450,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_5-rightArm.png",
+      "presentation": "neutral",
+      "skinPixels": 3923,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_5-leftLeg.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-tone_5-rightLeg.png",
+      "presentation": "neutral",
+      "skinPixels": 0,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_1-full.png",
+      "presentation": "masculine",
+      "skinPixels": 32349,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_1-head.png",
+      "presentation": "masculine",
+      "skinPixels": 43317,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_1-torso.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_1-leftArm.png",
+      "presentation": "masculine",
+      "skinPixels": 6866,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_1-rightArm.png",
+      "presentation": "masculine",
+      "skinPixels": 4407,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_1-leftLeg.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_1-rightLeg.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-full.png",
+      "presentation": "masculine",
+      "skinPixels": 32349,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-head.png",
+      "presentation": "masculine",
+      "skinPixels": 43317,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-torso.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-leftArm.png",
+      "presentation": "masculine",
+      "skinPixels": 6866,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-rightArm.png",
+      "presentation": "masculine",
+      "skinPixels": 4407,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-leftLeg.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-rightLeg.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_3-full.png",
+      "presentation": "masculine",
+      "skinPixels": 32349,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_3-head.png",
+      "presentation": "masculine",
+      "skinPixels": 43317,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_3-torso.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_3-leftArm.png",
+      "presentation": "masculine",
+      "skinPixels": 6866,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_3-rightArm.png",
+      "presentation": "masculine",
+      "skinPixels": 4407,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_3-leftLeg.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_3-rightLeg.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_4-full.png",
+      "presentation": "masculine",
+      "skinPixels": 32349,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_4-head.png",
+      "presentation": "masculine",
+      "skinPixels": 43317,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_4-torso.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_4-leftArm.png",
+      "presentation": "masculine",
+      "skinPixels": 6866,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_4-rightArm.png",
+      "presentation": "masculine",
+      "skinPixels": 4407,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_4-leftLeg.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_4-rightLeg.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_5-full.png",
+      "presentation": "masculine",
+      "skinPixels": 32349,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_5-head.png",
+      "presentation": "masculine",
+      "skinPixels": 43317,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_5-torso.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_5-leftArm.png",
+      "presentation": "masculine",
+      "skinPixels": 6866,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_5-rightArm.png",
+      "presentation": "masculine",
+      "skinPixels": 4407,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_5-leftLeg.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-tone_5-rightLeg.png",
+      "presentation": "masculine",
+      "skinPixels": 0,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_1-full.png",
+      "presentation": "feminine",
+      "skinPixels": 26145,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_1-head.png",
+      "presentation": "feminine",
+      "skinPixels": 26300,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_1-torso.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_1-leftArm.png",
+      "presentation": "feminine",
+      "skinPixels": 946,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_1-rightArm.png",
+      "presentation": "feminine",
+      "skinPixels": 2583,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_1-leftLeg.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_1-rightLeg.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_1",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-full.png",
+      "presentation": "feminine",
+      "skinPixels": 26145,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-head.png",
+      "presentation": "feminine",
+      "skinPixels": 26300,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-torso.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-leftArm.png",
+      "presentation": "feminine",
+      "skinPixels": 946,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-rightArm.png",
+      "presentation": "feminine",
+      "skinPixels": 2583,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-leftLeg.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-rightLeg.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_2",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_3-full.png",
+      "presentation": "feminine",
+      "skinPixels": 26145,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_3-head.png",
+      "presentation": "feminine",
+      "skinPixels": 26300,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_3-torso.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_3-leftArm.png",
+      "presentation": "feminine",
+      "skinPixels": 946,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_3-rightArm.png",
+      "presentation": "feminine",
+      "skinPixels": 2583,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_3-leftLeg.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_3-rightLeg.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_3",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_4-full.png",
+      "presentation": "feminine",
+      "skinPixels": 26145,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_4-head.png",
+      "presentation": "feminine",
+      "skinPixels": 26300,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_4-torso.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_4-leftArm.png",
+      "presentation": "feminine",
+      "skinPixels": 946,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_4-rightArm.png",
+      "presentation": "feminine",
+      "skinPixels": 2583,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_4-leftLeg.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_4-rightLeg.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_4",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-rightLeg.png"
+    },
+    {
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_5-full.png",
+      "presentation": "feminine",
+      "skinPixels": 26145,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-full.png"
+    },
+    {
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_5-head.png",
+      "presentation": "feminine",
+      "skinPixels": 26300,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-head.png"
+    },
+    {
+      "kind": "torso",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_5-torso.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-torso.png"
+    },
+    {
+      "kind": "leftArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_5-leftArm.png",
+      "presentation": "feminine",
+      "skinPixels": 946,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-leftArm.png"
+    },
+    {
+      "kind": "rightArm",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_5-rightArm.png",
+      "presentation": "feminine",
+      "skinPixels": 2583,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-rightArm.png"
+    },
+    {
+      "kind": "leftLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_5-leftLeg.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-leftLeg.png"
+    },
+    {
+      "kind": "rightLeg",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-tone_5-rightLeg.png",
+      "presentation": "feminine",
+      "skinPixels": 0,
+      "skinTone": "tone_5",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-rightLeg.png"
+    }
+  ]
+}

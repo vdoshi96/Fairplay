@@ -181,6 +181,10 @@ describe("protected app UI", () => {
     expect(littleAlex).toHaveAttribute("data-chat-phrase", "hello from alex");
     expect(littleAlex).toHaveAttribute("data-gender-presentation", "masculine");
     expect(littleAlex).toHaveStyle({ "--little-alex-skin": "#8f5f45" });
+    expect(screen.getByTestId("little-alex-full-sprite")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/little-alex-sprites/masculine-tone_5-full.png"
+    );
     expect(littleAlex).toHaveStyle({ pointerEvents: "none" });
     expect(screen.queryByRole("button", { name: /little alex/i })).not.toBeInTheDocument();
     expect(screen.getAllByTestId("little-alex-body-part")).toHaveLength(6);

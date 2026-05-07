@@ -12,7 +12,7 @@ Steps 1 through 4 work. Step 5 no longer affects the visible helper because the 
 
 ## Required Rendering Contract
 
-The visible asset path must include both presentation and skin tone:
+The visible asset path includes both presentation and skin tone:
 
 ```text
 /assets/fairplay/little-alex-sprites/{presentation}-{skinTone}-full.png
@@ -35,7 +35,7 @@ The existing UI swatches are the source of truth:
 
 ## Generation Strategy
 
-Prefer deterministic derivation from the current Qwen-approved base assets when possible. The current assets already have the desired style, outlines, proportions, and pose. Recoloring only skin-colored pixel clusters preserves style better than regenerating all combinations from scratch.
+Deterministic derivation from the current Qwen-approved base assets is the implemented approach. The current assets already have the desired style, outlines, proportions, and pose. Recoloring only skin-colored pixel clusters preserves style better than regenerating all combinations from scratch.
 
 If deterministic recoloring cannot produce consistent tone results, use the configured Qwen workflow in `scripts/generate-little-alex-sprites.mjs` and `src/server/ai/little-alex-sprite-assets.ts` to request tone-specific assets. Any Qwen generation must preserve:
 
