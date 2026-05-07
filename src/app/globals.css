@@ -21,6 +21,16 @@
   --fp-focus: #315d64;
   --fp-shadow-soft: 0 10px 26px rgba(32, 33, 36, 0.08);
   --fp-shadow-elevated: 0 18px 46px rgba(32, 33, 36, 0.14);
+  --fp-app-sidebar-width: 16rem;
+  --fp-app-bottom-nav-height: 4.5rem;
+  --fp-app-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --fp-app-content-bottom-padding: calc(
+    var(--fp-app-bottom-nav-height) + var(--fp-app-safe-area-bottom) + 1.5rem
+  );
+  --fp-little-alex-bottom-reserve: calc(
+    var(--fp-app-bottom-nav-height) + var(--fp-app-safe-area-bottom) + 0.75rem
+  );
+  --fp-little-alex-inline-reserve: 3.25rem;
   --fp-home: #47746c;
   --fp-out: #506fa8;
   --fp-caregiving: #a45b63;
@@ -80,6 +90,15 @@ html[data-theme="dark"] {
   --fp-success: #8cc991;
   --fp-caution: #d3a35e;
   --fp-danger: #e0929b;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --fp-app-bottom-nav-height: 0px;
+    --fp-app-content-bottom-padding: 2.5rem;
+    --fp-little-alex-bottom-reserve: 0.75rem;
+    --fp-little-alex-inline-reserve: 11rem;
+  }
 }
 
 @layer utilities {
@@ -386,7 +405,7 @@ a {
 
 .fp-little-alex-shell {
   contain: layout paint;
-  inset: 0;
+  inset: 0 0 var(--fp-little-alex-bottom-reserve) 0;
   position: fixed;
   user-select: none;
   --little-alex-head-radius: 999px;

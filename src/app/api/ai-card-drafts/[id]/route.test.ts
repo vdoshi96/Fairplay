@@ -5,7 +5,6 @@ const getCurrentSession = vi.fn();
 const get = vi.fn();
 const update = vi.fn();
 const retry = vi.fn();
-const regenerateImage = vi.fn();
 const putInPlay = vi.fn();
 const cancel = vi.fn();
 
@@ -25,7 +24,6 @@ vi.mock("@/server/ai-card-drafts/service", () => ({
     get,
     update,
     retry,
-    regenerateImage,
     putInPlay,
     cancel
   }
@@ -64,7 +62,6 @@ describe("/api/ai-card-drafts/[id]", () => {
     get.mockResolvedValue({ id, title: "Laundry cards", status: "ready" });
     update.mockResolvedValue({ id, title: "Laundry reset", status: "ready" });
     retry.mockResolvedValue({ id, status: "ready" });
-    regenerateImage.mockResolvedValue({ id, status: "ready" });
     putInPlay.mockResolvedValue({
       id: "550e8400-e29b-41d4-a716-446655440050",
       title: "Laundry reset"
@@ -101,7 +98,6 @@ describe("/api/ai-card-drafts/[id]", () => {
 
   it.each([
     ["retry", "./retry/route", retry, 200],
-    ["regenerate image", "./regenerate-image/route", regenerateImage, 200],
     ["put in play", "./put-in-play/route", putInPlay, 201],
     ["cancel", "./cancel/route", cancel, 200]
   ])(
@@ -112,7 +108,7 @@ describe("/api/ai-card-drafts/[id]", () => {
       const response = await POST(request(), context);
 
       expect(response.status).toBe(expectedStatus);
-      if (_label === "retry" || _label === "regenerate image") {
+      if (_label === "retry") {
         expect(serviceMethod).toHaveBeenCalledWith(
           session,
           id,
@@ -126,7 +122,6 @@ describe("/api/ai-card-drafts/[id]", () => {
 
   it.each([
     ["retry", "./retry/route", retry],
-    ["regenerate image", "./regenerate-image/route", regenerateImage],
     ["put in play", "./put-in-play/route", putInPlay],
     ["cancel", "./cancel/route", cancel]
   ])("returns 401 for unauthenticated %s mutations", async (_label, routePath) => {
@@ -142,7 +137,6 @@ describe("/api/ai-card-drafts/[id]", () => {
 
   it.each([
     ["retry", "./retry/route", retry],
-    ["regenerate image", "./regenerate-image/route", regenerateImage],
     ["put in play", "./put-in-play/route", putInPlay],
     ["cancel", "./cancel/route", cancel]
   ])("returns 400 for invalid %s ids", async (_label, routePath, serviceMethod) => {
@@ -158,7 +152,6 @@ describe("/api/ai-card-drafts/[id]", () => {
 
   it.each([
     ["retry", "./retry/route", retry],
-    ["regenerate image", "./regenerate-image/route", regenerateImage],
     ["put in play", "./put-in-play/route", putInPlay],
     ["cancel", "./cancel/route", cancel]
   ])(
@@ -177,7 +170,6 @@ describe("/api/ai-card-drafts/[id]", () => {
 
   it.each([
     ["retry", "./retry/route", retry],
-    ["regenerate image", "./regenerate-image/route", regenerateImage],
     ["put in play", "./put-in-play/route", putInPlay],
     ["cancel", "./cancel/route", cancel]
   ])(
@@ -195,8 +187,7 @@ describe("/api/ai-card-drafts/[id]", () => {
   );
 
   it.each([
-    ["retry", "./retry/route", retry],
-    ["regenerate image", "./regenerate-image/route", regenerateImage]
+    ["retry", "./retry/route", retry]
   ])(
     "maps generation failures to safe JSON for %s",
     async (_label, routePath, serviceMethod) => {
@@ -220,4 +211,16 @@ describe("/api/ai-card-drafts/[id]", () => {
       });
     }
   );
+
+  it("returns 410 for deprecated image regeneration", async () => {
+    const { POST } = await import("./regenerate-image/route");
+
+    const response = await POST(request(), context);
+    const body = await response.json();
+
+    expect(response.status).toBe(410);
+    expect(body).toEqual({
+      error: "Image regeneration is unavailable for text-only card generation."
+    });
+  });
 });

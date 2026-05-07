@@ -7,7 +7,7 @@ import {
 } from "./ai-card-drafts";
 
 describe("AiCardDraft contracts", () => {
-  it("accepts text capture input and rejects missing text/audio", () => {
+  it("accepts text capture input and rejects missing text", () => {
     const create = AiCardDraftCreateSchema.parse({
       inputText: "Remember the dog's heartworm meds."
     });
@@ -16,7 +16,7 @@ describe("AiCardDraft contracts", () => {
     expect(() => AiCardDraftCreateSchema.parse({})).toThrow();
   });
 
-  it("accepts tracker-ready summaries with generated cover API paths", () => {
+  it("accepts tracker-ready summaries as text-only results without cover API paths", () => {
     const summary = AiCardDraftSummarySchema.parse({
       id: "550e8400-e29b-41d4-a716-446655440090",
       title: "Pet medication rhythm",
@@ -28,7 +28,6 @@ describe("AiCardDraft contracts", () => {
       areaKeys: ["Home"],
       hiddenEffortKeys: ["noticing", "planning", "follow_through"],
       cadence: "monthly",
-      coverUrl: "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440090/cover",
       failureMessage: null,
       acceptedResponsibilityId: null,
       createdAt: "2026-05-05T12:00:00.000Z",
@@ -36,33 +35,32 @@ describe("AiCardDraft contracts", () => {
     });
 
     expect(summary.status).toBe("ready");
-    expect(summary.coverUrl).toBe(
-      "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440090/cover"
-    );
+    expect("coverUrl" in summary).toBe(false);
     expect(() =>
       AiCardDraftSummarySchema.parse({
         ...summary,
-        coverUrl: "/api/ai-card-drafts/not-a-draft-cover"
+        generationStage: "generating_image"
       })
     ).toThrow();
   });
 
-  it("accepts generated field updates before put-in-play", () => {
+  it("accepts generated text field updates before put-in-play", () => {
     const update = AiCardDraftUpdateSchema.parse({
       title: "Pet meds",
       hiddenEffortKeys: ["follow_through"],
-      cadence: "monthly",
-      imagePrompt: "A tidy pet medication calendar with a small pill organizer.",
-      imageNegativePrompt: "No brand names, no cluttered countertop."
+      cadence: "monthly"
     });
 
     expect(update).toEqual({
       title: "Pet meds",
       hiddenEffortKeys: ["follow_through"],
-      cadence: "monthly",
-      imagePrompt: "A tidy pet medication calendar with a small pill organizer.",
-      imageNegativePrompt: "No brand names, no cluttered countertop."
+      cadence: "monthly"
     });
+    expect(() =>
+      AiCardDraftUpdateSchema.parse({
+        imagePrompt: "A tidy pet medication calendar with a small pill organizer."
+      })
+    ).toThrow();
     expect(() =>
       AiCardDraftUpdateSchema.parse({
         cadence: null

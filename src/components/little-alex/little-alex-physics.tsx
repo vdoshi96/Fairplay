@@ -4,6 +4,7 @@ import Matter from "matter-js";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { APP_LAYOUT_METRICS } from "@/components/app-shell/layout-tokens";
 import { LITTLE_ALEX_SKIN_TONE_COLORS } from "@/contracts/little-alex";
 import {
   type LittleAlexGenderPresentation,
@@ -21,8 +22,6 @@ const IDLE_STANDING_PAUSE_MS = 4_000;
 const IDLE_WALK_STEP_PX = 0.36;
 const MIN_IDLE_WALK_TURN_FRACTION = 0.05;
 const MIN_IDLE_TURNS_BEFORE_DIRECTION_CHANGE = 3;
-const DESKTOP_PLAY_AREA_BREAKPOINT = 1024;
-const DESKTOP_SIDEBAR_WIDTH = 16 * 16;
 const BUBBLE_DRAG_DISTANCE_THRESHOLD = 14;
 const BUBBLE_RELEASE_SPEED_THRESHOLD = 6;
 const WALL_THICKNESS = 96;
@@ -244,6 +243,78 @@ const FULL_BODY_DISPLAY_HEIGHT = characterBounds.maxY - characterBounds.minY;
 const FULL_BODY_DISPLAY_WIDTH = 86;
 const FULL_BODY_CENTER_OFFSET_Y =
   characterBounds.minY + FULL_BODY_DISPLAY_HEIGHT / 2;
+const MOBILE_FULL_BODY_VISUAL_SCALE = 0.32;
+const MOBILE_FULL_BODY_VISUAL_INLINE_NUDGE = 31;
+
+function cssLengthToPx(value: string | undefined, rootFontSizePx = 16) {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return undefined;
+  }
+
+  const numeric = Number.parseFloat(trimmed);
+
+  if (!Number.isFinite(numeric)) {
+    return undefined;
+  }
+
+  if (trimmed.endsWith("rem")) {
+    return numeric * rootFontSizePx;
+  }
+
+  return numeric;
+}
+
+function rootFontSizePx() {
+  if (typeof window === "undefined") {
+    return 16;
+  }
+
+  return (
+    cssLengthToPx(window.getComputedStyle(document.documentElement).fontSize) ?? 16
+  );
+}
+
+function computedCssVariablePx(name: string) {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  const rootStyle = window.getComputedStyle(document.documentElement);
+  return cssLengthToPx(rootStyle.getPropertyValue(name), rootFontSizePx());
+}
+
+function computedShellBottomReservePx() {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  const shell = document.querySelector<HTMLElement>(".fp-little-alex-shell");
+  if (!shell) {
+    return undefined;
+  }
+
+  const bottom = cssLengthToPx(window.getComputedStyle(shell).bottom);
+  return bottom === undefined ? undefined : Math.max(bottom, 0);
+}
+
+function littleAlexBottomReservePx(isDesktop: boolean) {
+  return (
+    computedShellBottomReservePx() ??
+    computedCssVariablePx("--fp-little-alex-bottom-reserve") ??
+    (isDesktop
+      ? APP_LAYOUT_METRICS.littleAlexDesktopBottomReservePx
+      : APP_LAYOUT_METRICS.littleAlexMobileBottomReservePx)
+  );
+}
+
+function sidebarWidthPx() {
+  return (
+    computedCssVariablePx("--fp-app-sidebar-width") ??
+    APP_LAYOUT_METRICS.sidebarWidthPx
+  );
+}
 
 function viewportSize() {
   if (typeof window === "undefined") {
@@ -275,13 +346,17 @@ function firstFiniteCoordinate(
 }
 
 export function playAreaBounds(viewport = viewportSize()): PlayAreaBounds {
-  const minX =
-    viewport.width >= DESKTOP_PLAY_AREA_BREAKPOINT ? DESKTOP_SIDEBAR_WIDTH : 0;
+  const isDesktop = viewport.width >= APP_LAYOUT_METRICS.desktopBreakpointPx;
+  const minX = isDesktop ? sidebarWidthPx() : 0;
+  const maxY = Math.max(
+    viewport.height - littleAlexBottomReservePx(isDesktop),
+    0
+  );
 
   return {
-    height: viewport.height,
+    height: maxY,
     maxX: viewport.width,
-    maxY: viewport.height,
+    maxY,
     minX,
     minY: 0,
     width: Math.max(viewport.width - minX, 0)
@@ -308,11 +383,13 @@ function clampAnchor(anchor: Point, bounds = playAreaBounds()) {
 
 function initialAnchor() {
   const viewport = viewportSize();
+  const bounds = playAreaBounds(viewport);
+  const range = anchorRange(bounds);
 
   return clampAnchor({
-    x: viewport.width - 118,
-    y: Math.min(218, viewport.height - 140)
-  }, playAreaBounds(viewport));
+    x: range.maxX,
+    y: range.maxY
+  }, bounds);
 }
 
 function partStyle(part: PartConfig, center: Point, angle = 0): CSSProperties {
@@ -342,6 +419,18 @@ function fullBodyVisualHalfExtents(angle: number) {
   };
 }
 
+function fullBodyVisualScale(viewport = viewportSize()) {
+  return viewport.width < APP_LAYOUT_METRICS.desktopBreakpointPx
+    ? MOBILE_FULL_BODY_VISUAL_SCALE
+    : 1;
+}
+
+function fullBodyVisualInlineNudge(viewport = viewportSize()) {
+  return viewport.width < APP_LAYOUT_METRICS.desktopBreakpointPx
+    ? MOBILE_FULL_BODY_VISUAL_INLINE_NUDGE
+    : 0;
+}
+
 function clampFullBodyAnchor(
   anchor: Point,
   angle = 0,
@@ -366,16 +455,20 @@ function clampFullBodyAnchor(
 function fullBodySpriteStyle(
   anchor: Point,
   angle = 0,
-  ragdollState: RagdollVisualState = "settled"
+  ragdollState: RagdollVisualState = "settled",
+  viewport = viewportSize()
 ): CSSProperties {
-  const clampedAnchor = clampFullBodyAnchor(anchor, angle);
+  const clampedAnchor = clampFullBodyAnchor(anchor, angle, playAreaBounds(viewport));
+  const scale = fullBodyVisualScale(viewport);
+  const inlineNudge = fullBodyVisualInlineNudge(viewport);
 
   return {
     height: FULL_BODY_DISPLAY_HEIGHT,
     opacity: fullBodyOpacity(ragdollState),
-    transform: `translate3d(${clampedAnchor.x - FULL_BODY_DISPLAY_WIDTH / 2}px, ${
+    transform: `translate3d(${clampedAnchor.x - FULL_BODY_DISPLAY_WIDTH / 2 + inlineNudge}px, ${
       clampedAnchor.y + characterBounds.minY
-    }px, 0) rotate(${angle}rad)`,
+    }px, 0) rotate(${angle}rad) scale(${scale})`,
+    transformOrigin: scale === 1 ? "center center" : "center bottom",
     width: FULL_BODY_DISPLAY_WIDTH
   };
 }
@@ -603,6 +696,7 @@ function syncFullBodySprite(
   element.style.height = `${style.height}px`;
   element.style.opacity = `${style.opacity}`;
   element.style.transform = style.transform as string;
+  element.style.transformOrigin = style.transformOrigin as string;
   element.style.width = `${style.width}px`;
 }
 
@@ -873,6 +967,12 @@ export function LittleAlexPhysics({
   const [gaze, setGaze] = useState<GazeState>(DEFAULT_GAZE_STATE);
   const [ragdollVisualState, setRagdollVisualState] =
     useState<RagdollVisualState>("settled");
+  const fullBodyStyle = fullBodySpriteStyle(
+    reducedAnchor,
+    0,
+    ragdollVisualState,
+    motionPreferenceReady ? viewportSize() : { height: 768, width: 1024 }
+  );
   const bodyRefs = useRef<Partial<Record<PartKey, HTMLDivElement>>>({});
   const bubbleRef = useRef<HTMLDivElement | null>(null);
   const bubbleTimeoutRef = useRef<number | null>(null);
@@ -1498,7 +1598,7 @@ export function LittleAlexPhysics({
         draggable={false}
         ref={fullBodySpriteRef}
         src={littleAlexFullBodySpritePath(genderPresentation, skinTone)}
-        style={fullBodySpriteStyle(reducedAnchor, 0, ragdollVisualState)}
+        style={fullBodyStyle}
       />
       {partConfigs.map((part) => (
         <div

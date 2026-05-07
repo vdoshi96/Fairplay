@@ -5,18 +5,13 @@ import { CRASH_COURSE_LESSONS } from "./crash-course-content";
 import { CrashCourseFlow } from "./crash-course-flow";
 
 describe("crash course flow", () => {
-  it("contains the ten approved course lessons", () => {
+  it("contains five tight source-safe conceptual sections", () => {
     expect(CRASH_COURSE_LESSONS.map((lesson) => lesson.title)).toEqual([
-      "Why this is not a chore app",
-      "Owner vs. helper",
-      "CPE: Conception, Planning, Execution",
-      "Minimum standards and done well enough",
-      "The board lanes",
-      "Build your active deck",
-      "Handoffs and re-deals",
-      "Radar and check-ins",
-      "Fair is dynamic",
-      "Repair and resistance"
+      "See the hidden load",
+      "Own the outcome",
+      "Define done well enough",
+      "Move work with the context",
+      "Keep a repair loop"
     ]);
   });
 
@@ -26,7 +21,10 @@ describe("crash course flow", () => {
     )
       .join(" ")
       .toLowerCase();
+    const wordCount = lessonText.split(/\s+/).filter(Boolean).length;
 
+    expect(wordCount).toBeGreaterThanOrEqual(650);
+    expect(wordCount).toBeLessThanOrEqual(1200);
     expect(lessonText).toContain("visible work");
     expect(lessonText).toContain("hidden work");
     expect(lessonText).toContain("owner");
@@ -46,6 +44,25 @@ describe("crash course flow", () => {
     expect(lessonText).toContain("repair");
     expect(lessonText).toContain("deferral");
     expect(lessonText).toContain("safety");
+    expect(lessonText).not.toContain("minimum standard of care");
+    expect(lessonText).not.toContain("share meeting");
+  });
+
+  it("keeps feature-learning recommendations in the final section only", () => {
+    const lessonsWithFeaturePath = CRASH_COURSE_LESSONS.filter(
+      (lesson) => "featurePath" in lesson
+    );
+    const finalLesson = CRASH_COURSE_LESSONS.at(-1) as (typeof CRASH_COURSE_LESSONS)[number] & {
+      featurePath?: Array<{ href: string; label: string }>;
+    };
+
+    expect(lessonsWithFeaturePath).toHaveLength(1);
+    expect(finalLesson.featurePath?.map((item) => item.label)).toEqual([
+      "Browse the Library",
+      "Open the Load Map",
+      "Add a Radar item",
+      "Run a Check-in"
+    ]);
   });
 
   it("renders lessons inside a full-viewport immersive stage", () => {
@@ -62,9 +79,13 @@ describe("crash course flow", () => {
     expect(stage.className).toContain("overflow-hidden");
     expect(stage.className).toContain("relative");
     expect(stage.className).toContain("bg-fp-paper");
-    expect(shell.className).toContain("lg:grid-cols-[minmax(0,0.82fr)_minmax(24rem,0.62fr)]");
-    expect(shell.className).toContain("items-end");
-    expect(panel.className).toContain("lg:translate-y-0");
+    expect(stage.className).toContain("pb-32");
+    expect(stage.className).toContain("lg:pr-44");
+    expect(shell.className).toContain("mx-auto");
+    expect(shell.className).toContain("lg:grid-cols-[minmax(0,1fr)_minmax(22rem,30rem)]");
+    expect(shell.className).toContain("items-center");
+    expect(screen.queryByTestId("crash-course-scene-anchor")).not.toBeInTheDocument();
+    expect(panel.className).toContain("max-h-[calc(100svh_-_9rem)]");
     expect(panel.className).toContain("z-10");
     expect(panel.className).toContain("bg-[var(--fp-surface-strong)]");
     expect(panel.className).not.toContain("bg-white/");
@@ -122,9 +143,15 @@ describe("crash course flow", () => {
     ).toBeVisible();
     expect(
       screen.getByText(
-        "You now know how Fairplay treats ownership, planning, standards, handoffs, radar, and repair."
+        "You now know how Fairplay treats hidden load, ownership, planning, standards, handoffs, radar, check-ins, repair, and safety."
       )
     ).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Recommended learning path" }))
+      .toBeVisible();
+    expect(screen.getByRole("link", { name: "Browse the Library" })).toHaveAttribute(
+      "href",
+      "/app/library"
+    );
     expect(screen.getByTestId("crash-course-completion-celebration")).toHaveAttribute(
       "src",
       "/assets/fairplay/generated-ui/crash-course/completion-celebration.png"
@@ -140,8 +167,8 @@ describe("crash course flow", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("includes an interactive standard rewrite prompt in lesson 4", () => {
-    render(<CrashCourseFlow currentStep={3} />);
+  it("includes an interactive standard rewrite prompt in the standards lesson", () => {
+    render(<CrashCourseFlow currentStep={2} />);
 
     const prompt = screen.getByLabelText(
       "Rewrite a household minimum standard in your own words"

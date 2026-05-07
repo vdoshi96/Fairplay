@@ -105,7 +105,7 @@ export function CardLibrary({
 
       <div
         aria-label="Source labels"
-        className="flex gap-2 overflow-x-auto pb-1"
+        className="flex flex-wrap gap-2 pb-1"
         data-guide-id="library-labels"
       >
         <button

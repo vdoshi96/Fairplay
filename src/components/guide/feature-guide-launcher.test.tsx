@@ -34,6 +34,17 @@ describe("FeatureGuideLauncher", () => {
     expect(screen.queryByRole("dialog", { name: "Library guide" })).not.toBeInTheDocument();
   });
 
+  it("keeps the guide action in a stable placement wrapper", () => {
+    render(<FeatureGuideLauncher guide={FEATURE_GUIDES.library} />);
+
+    const action = screen.getByTestId("feature-guide-action-library");
+
+    expect(action).toHaveAttribute("data-feature-guide-action", "primary");
+    expect(action).toContainElement(
+      screen.getByRole("button", { name: "Learn this feature" })
+    );
+  });
+
   it("starts from a guide query only when the user arrived from a guide link", () => {
     queryValue.value = "guide=library";
 

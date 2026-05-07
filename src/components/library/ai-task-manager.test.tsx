@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -40,7 +40,6 @@ function draft(
     areaKeys: overrides.areaKeys ?? [],
     hiddenEffortKeys: overrides.hiddenEffortKeys ?? [],
     cadence: overrides.cadence ?? null,
-    coverUrl: overrides.coverUrl ?? null,
     failureMessage: overrides.failureMessage ?? null,
     acceptedResponsibilityId: overrides.acceptedResponsibilityId ?? null,
     createdAt: overrides.createdAt ?? now,
@@ -58,20 +57,14 @@ function detail(overrides: Partial<AiCardDraftDetail> = {}): AiCardDraftDetail {
       summary: overrides.summary ?? "Keep laundry moving from hamper to folded.",
       areaKeys: overrides.areaKeys ?? ["home"],
       hiddenEffortKeys: overrides.hiddenEffortKeys ?? ["planning"],
-      cadence: overrides.cadence ?? "weekly",
-      coverUrl:
-        overrides.coverUrl ??
-        `/api/ai-card-drafts/${draftIds.ready}/cover`
+      cadence: overrides.cadence ?? "weekly"
     }),
     inputText: overrides.inputText ?? "Laundry is piling up.",
-    audioTranscript: overrides.audioTranscript ?? null,
     definition: overrides.definition ?? "Own the laundry flow.",
     conception: overrides.conception ?? "Notice hampers before they overflow.",
     planning: overrides.planning ?? "Start loads when there is enough time.",
     execution: overrides.execution ?? "Wash, dry, fold, and put away.",
-    minimumStandard: overrides.minimumStandard ?? "Laundry is folded by Sunday.",
-    imagePrompt: overrides.imagePrompt ?? "A tidy laundry room",
-    imageNegativePrompt: overrides.imageNegativePrompt ?? null
+    minimumStandard: overrides.minimumStandard ?? "Laundry is folded by Sunday."
   };
 }
 
@@ -86,7 +79,7 @@ describe("AiTaskManager", () => {
     vi.restoreAllMocks();
   });
 
-  it("opens capture controls for text and voice from the Greg button", async () => {
+  it("opens text-only capture controls from the Greg button", async () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
@@ -106,7 +99,7 @@ describe("AiTaskManager", () => {
     expect(screen.queryByText("hi im little alex horne")).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Capture AI card draft" })).toBeVisible();
     expect(screen.getByLabelText("Describe the card")).toBeVisible();
-    expect(screen.getByRole("button", { name: "Start recording" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Start recording" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create draft" })).toBeDisabled();
   });
 
@@ -117,7 +110,7 @@ describe("AiTaskManager", () => {
           draft({
             id: draftIds.processing,
             status: "processing",
-            generationStage: "generating_image",
+            generationStage: "structuring",
             title: "Lunch packing"
           }),
           draft({
@@ -145,9 +138,9 @@ describe("AiTaskManager", () => {
     );
 
     expect(screen.getByRole("region", { name: "AI-created cards" })).toBeVisible();
-    expect(screen.getByText("Processing")).toBeVisible();
-    expect(screen.getByText("Failed")).toBeVisible();
-    expect(screen.getByText("Ready")).toBeVisible();
+    expect(screen.getAllByText("Generating").length).toBeGreaterThan(0);
+    expect(screen.getByText("Generation failed")).toBeVisible();
+    expect(screen.getAllByText("Completed").length).toBeGreaterThan(0);
     expect(screen.getByText("Accepted")).toBeVisible();
 
     const failedDraft = screen.getByRole("article", { name: /failed draft/i });
@@ -190,6 +183,56 @@ describe("AiTaskManager", () => {
     expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
+  it("clears the prompt and shows an independent queued request while create is pending", async () => {
+    let resolveCreate: (response: Response) => void = () => {};
+    const fetchMock = vi.fn(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveCreate = resolve;
+        })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AiTaskManager drafts={[]} />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+    );
+    await userEvent.type(
+      screen.getByLabelText("Describe the card"),
+      "Make a card for packing lunches."
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Create draft" }));
+
+    expect(screen.getByLabelText("Describe the card")).toHaveValue("");
+    expect(screen.getByRole("button", { name: "Create draft" })).toBeDisabled();
+    const queuedDraft = screen.getByRole("article", {
+      name: /make a card for packing lunches/i
+    });
+    expect(within(queuedDraft).getByText("Queued")).toBeVisible();
+
+    await userEvent.type(
+      screen.getByLabelText("Describe the card"),
+      "Make a card for backpack papers."
+    );
+    expect(screen.getByRole("button", { name: "Create draft" })).toBeEnabled();
+
+    resolveCreate(
+      new Response(
+        JSON.stringify(
+          detail({
+            id: draftIds.ready,
+            title: "Lunch packing",
+            inputText: "Make a card for packing lunches."
+          })
+        ),
+        { status: 201, headers: { "content-type": "application/json" } }
+      )
+    );
+
+    expect(await screen.findByText("Lunch packing")).toBeVisible();
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
   it("shows safe generation failure JSON and refreshes so failed drafts can appear", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
@@ -213,155 +256,13 @@ describe("AiTaskManager", () => {
     await userEvent.click(screen.getByRole("button", { name: "Create draft" }));
 
     expect(
-      await screen.findByText("AI card draft generation failed. Reference fp_ai_test.")
-    ).toBeVisible();
+      (await screen.findAllByText("AI card draft generation failed. Reference fp_ai_test."))
+        .length
+    ).toBeGreaterThan(0);
     expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it("records audio into a Blob and submits multipart form data", async () => {
-    const stream = { getTracks: () => [{ stop: vi.fn() }] };
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ id: draftIds.processing })
-    });
-
-    class MockMediaRecorder extends EventTarget {
-      state = "inactive";
-
-      constructor() {
-        super();
-      }
-
-      start() {
-        this.state = "recording";
-      }
-
-      stop() {
-        this.state = "inactive";
-        const event = new Event("dataavailable");
-        Object.defineProperty(event, "data", {
-          value: new Blob(["audio-bytes"], { type: "audio/webm" })
-        });
-        this.dispatchEvent(event);
-        this.dispatchEvent(new Event("stop"));
-      }
-    }
-
-    vi.stubGlobal("fetch", fetchMock);
-    vi.stubGlobal("MediaRecorder", MockMediaRecorder);
-    Object.defineProperty(navigator, "mediaDevices", {
-      configurable: true,
-      value: {
-        getUserMedia: vi.fn().mockResolvedValue(stream)
-      }
-    });
-
-    render(<AiTaskManager drafts={[]} />);
-
-    await userEvent.click(
-      screen.getByRole("button", { name: "Greg - The Taskmaster" })
-    );
-    await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
-    expect(screen.getByRole("button", { name: "Stop recording" })).toBeVisible();
-
-    fireEvent.click(screen.getByRole("button", { name: "Stop recording" }));
-    await waitFor(() => expect(screen.getByText("Audio captured")).toBeVisible());
-
-    await userEvent.click(screen.getByRole("button", { name: "Create draft" }));
-
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/ai-card-drafts",
-      expect.objectContaining({
-        method: "POST",
-        body: expect.any(FormData)
-      })
-    );
-    const body = fetchMock.mock.calls[0][1].body as FormData;
-    expect(body.get("audio")).toBeInstanceOf(Blob);
-    expect(routerRefresh).toHaveBeenCalledTimes(1);
-  });
-
-  it("stops the recording stream when capture closes while recording", async () => {
-    const stopTrack = vi.fn();
-    const stream = { getTracks: () => [{ stop: stopTrack }] };
-
-    class MockMediaRecorder extends EventTarget {
-      state = "inactive";
-
-      start() {
-        this.state = "recording";
-      }
-
-      stop() {
-        this.state = "inactive";
-        this.dispatchEvent(new Event("stop"));
-      }
-    }
-
-    vi.stubGlobal("MediaRecorder", MockMediaRecorder);
-    Object.defineProperty(navigator, "mediaDevices", {
-      configurable: true,
-      value: {
-        getUserMedia: vi.fn().mockResolvedValue(stream)
-      }
-    });
-
-    render(<AiTaskManager drafts={[]} />);
-
-    await userEvent.click(
-      screen.getByRole("button", { name: "Greg - The Taskmaster" })
-    );
-    await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
-    fireEvent.click(screen.getByRole("button", { name: "Close capture" }));
-
-    await waitFor(() => expect(stopTrack).toHaveBeenCalledTimes(1));
-  });
-
-  it("stops a late recording stream when capture closes before permission resolves", async () => {
-    const stopTrack = vi.fn();
-    const stream = { getTracks: () => [{ stop: stopTrack }] };
-    let resolveUserMedia: (mediaStream: typeof stream) => void = () => {};
-    const getUserMedia = vi.fn(
-      () =>
-        new Promise<typeof stream>((resolve) => {
-          resolveUserMedia = resolve;
-        })
-    );
-
-    class MockMediaRecorder extends EventTarget {
-      state = "inactive";
-
-      start() {
-        this.state = "recording";
-      }
-
-      stop() {
-        this.state = "inactive";
-        this.dispatchEvent(new Event("stop"));
-      }
-    }
-
-    vi.stubGlobal("MediaRecorder", MockMediaRecorder);
-    Object.defineProperty(navigator, "mediaDevices", {
-      configurable: true,
-      value: { getUserMedia }
-    });
-
-    render(<AiTaskManager drafts={[]} />);
-
-    await userEvent.click(
-      screen.getByRole("button", { name: "Greg - The Taskmaster" })
-    );
-    await userEvent.click(screen.getByRole("button", { name: "Start recording" }));
-    fireEvent.click(screen.getByRole("button", { name: "Close capture" }));
-    resolveUserMedia(stream);
-
-    await waitFor(() => expect(stopTrack).toHaveBeenCalledTimes(1));
-    expect(screen.queryByRole("button", { name: "Stop recording" })).not.toBeInTheDocument();
-  });
-
-  it("fetches review detail, saves edits, and regenerates the image", async () => {
+  it("fetches text detail, saves edits, and exposes text-only actions", async () => {
     const draftDetail = detail();
     const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
       if (url === `/api/ai-card-drafts/${draftIds.ready}` && !init) {
@@ -378,16 +279,6 @@ describe("AiTaskManager", () => {
             ...draftDetail,
             title: "Laundry command center"
           })
-        };
-      }
-
-      if (
-        url === `/api/ai-card-drafts/${draftIds.ready}/regenerate-image` &&
-        init?.method === "POST"
-      ) {
-        return {
-          ok: true,
-          json: async () => draftDetail
         };
       }
 
@@ -410,13 +301,9 @@ describe("AiTaskManager", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Review" }));
 
-    const artPanel = await screen.findByTestId("ai-draft-review-art-panel");
-    expect(artPanel).toHaveClass("min-h-[420px]");
-    expect(artPanel).toHaveClass("lg:min-h-[560px]");
-    expect(screen.getByRole("img", { name: /laundry reset cover/i })).toHaveClass(
-      "object-cover"
-    );
     expect(await screen.findByLabelText("Draft title")).toHaveValue("Laundry reset");
+    expect(screen.getByText("Original prompt")).toBeVisible();
+    expect(screen.getByText("Laundry is piling up.")).toBeVisible();
     expect(screen.getByLabelText("Definition")).toHaveValue("Own the laundry flow.");
     expect(screen.getByLabelText("Conception")).toHaveValue(
       "Notice hampers before they overflow."
@@ -462,15 +349,7 @@ describe("AiTaskManager", () => {
       cadence: "daily"
     });
     expect(routerRefresh).toHaveBeenCalledTimes(1);
-
-    await userEvent.click(screen.getByRole("button", { name: "Regenerate image" }));
-
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith(
-        `/api/ai-card-drafts/${draftIds.ready}/regenerate-image`,
-        { method: "POST" }
-      )
-    );
-    expect(routerRefresh).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("button", { name: "Regenerate image" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Track for later" })).toBeDisabled();
   });
 });

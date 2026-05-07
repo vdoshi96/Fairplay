@@ -202,7 +202,54 @@ describe("LittleAlexPhysics", () => {
     expect(runSpy).not.toHaveBeenCalled();
   });
 
-  it("uses the actual small viewport dimensions for physics walls", () => {
+  it("reserves mobile bottom navigation space from the play area", () => {
+    expect(playAreaBounds({ width: 390, height: 720 })).toEqual({
+      height: 636,
+      maxX: 390,
+      maxY: 636,
+      minX: 0,
+      minY: 0,
+      width: 390
+    });
+  });
+
+  it("honors the computed Little Alex shell bottom reserve including safe-area padding", () => {
+    const shell = document.createElement("div");
+    shell.className = "fp-little-alex-shell";
+    document.body.append(shell);
+    vi.spyOn(window, "getComputedStyle").mockImplementation((element) => {
+      if (element === shell) {
+        return { bottom: "112px" } as CSSStyleDeclaration;
+      }
+
+      return {
+        fontSize: "16px",
+        getPropertyValue: () => ""
+      } as unknown as CSSStyleDeclaration;
+    });
+
+    expect(playAreaBounds({ width: 390, height: 720 })).toEqual({
+      height: 608,
+      maxX: 390,
+      maxY: 608,
+      minX: 0,
+      minY: 0,
+      width: 390
+    });
+  });
+
+  it("reserves desktop sidebar space and a small bottom safety margin", () => {
+    expect(playAreaBounds({ width: 1280, height: 800 })).toEqual({
+      height: 788,
+      maxX: 1280,
+      maxY: 788,
+      minX: 256,
+      minY: 0,
+      width: 1024
+    });
+  });
+
+  it("uses the actual small viewport dimensions minus reserved navigation space for physics walls", () => {
     stubReducedMotion(false);
     stubViewport(300, 260);
     vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
@@ -216,9 +263,9 @@ describe("LittleAlexPhysics", () => {
 
     expect(wallCalls).toEqual([
       [150, -48, 492, 96, { isStatic: true }],
-      [150, 308, 492, 96, { isStatic: true }],
-      [-48, 130, 96, 452, { isStatic: true }],
-      [348, 130, 96, 452, { isStatic: true }]
+      [150, 224, 492, 96, { isStatic: true }],
+      [-48, 88, 96, 368, { isStatic: true }],
+      [348, 88, 96, 368, { isStatic: true }]
     ]);
   });
 
@@ -257,7 +304,7 @@ describe("LittleAlexPhysics", () => {
 
     dispatchPointer(window, "pointermove", {
       clientX: 1000,
-      clientY: 220,
+      clientY: 600,
       pointerId: 1
     });
 
@@ -276,8 +323,8 @@ describe("LittleAlexPhysics", () => {
     const littleAlex = screen.getByTestId("little-alex-horne");
 
     fireEvent.touchStart(window, {
-      changedTouches: [{ clientX: 24, clientY: 420 }],
-      touches: [{ clientX: 24, clientY: 420 }]
+      changedTouches: [{ clientX: 24, clientY: 500 }],
+      touches: [{ clientX: 24, clientY: 500 }]
     });
 
     expect(littleAlex).toHaveAttribute("data-gaze-direction", "left");
@@ -286,10 +333,10 @@ describe("LittleAlexPhysics", () => {
     );
 
     fireEvent.touchMove(window, {
-      changedTouches: [{ clientX: 370, clientY: 120 }],
+      changedTouches: [{ clientX: 370, clientY: 500 }],
       touches: [
-        { clientX: 24, clientY: 420 },
-        { clientX: 370, clientY: 120 }
+        { clientX: 24, clientY: 500 },
+        { clientX: 370, clientY: 500 }
       ]
     });
 
