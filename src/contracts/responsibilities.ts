@@ -6,16 +6,11 @@ import {
   CadenceSchema,
   HiddenEffortKeySchema,
   PersonaKeySchema,
-  RadarStateSchema,
   ResponsibilityBoardLaneSchema,
   ResponsibilityStatusSchema,
   VisibilitySchema
 } from "../domain/enums";
-import {
-  PersonaIdSchema,
-  RadarItemIdSchema,
-  ResponsibilityIdSchema
-} from "../domain/ids";
+import { PersonaIdSchema, ResponsibilityIdSchema } from "../domain/ids";
 import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from "../domain/time";
 import { assertVisibilityTransition } from "../domain/visibility";
 
@@ -43,13 +38,6 @@ export const ResponsibilityAssignmentSummarySchema = z
   })
   .strict();
 
-export const ResponsibilityLinkedRadarItemSchema = z
-  .object({
-    id: RadarItemIdSchema,
-    state: RadarStateSchema
-  })
-  .strict();
-
 export const ResponsibilitySummarySchema = z
   .object({
     id: ResponsibilityIdSchema,
@@ -62,7 +50,6 @@ export const ResponsibilitySummarySchema = z
     visibility: VisibilitySchema,
     boardLane: ResponsibilityBoardLaneSchema,
     boardSortOrder: z.number().int().nonnegative(),
-    linkedRadarItems: z.array(ResponsibilityLinkedRadarItemSchema).default([]),
     currentAssignments: z.array(ResponsibilityAssignmentSummarySchema),
     nextReviewAt: NullableIsoDateTimeSchema
   })
@@ -211,7 +198,6 @@ export const LoadSnapshotSummarySchema = z
     areaDistribution: z.record(z.string(), z.number().int().nonnegative()),
     cadenceDistribution: z.record(z.string(), z.number().int().nonnegative()),
     reviewDueCount: z.number().int().nonnegative(),
-    radarOpenCount: z.number().int().nonnegative(),
     pausedOrNotRelevantCount: z.number().int().nonnegative(),
     hiddenEffortMix: z.record(z.string(), z.number().int().nonnegative())
   })

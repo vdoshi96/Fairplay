@@ -22,7 +22,6 @@ function toLoadSnapshotSummary(snapshot: LoadSnapshot): LoadSnapshotSummary {
     areaDistribution: asDistribution(snapshot.areaDistribution),
     cadenceDistribution: asDistribution(snapshot.cadenceDistribution),
     reviewDueCount: snapshot.reviewDueCount,
-    radarOpenCount: snapshot.radarOpenCount,
     pausedOrNotRelevantCount: snapshot.pausedOrNotRelevantCount,
     hiddenEffortMix: asDistribution(snapshot.hiddenEffortMix)
   };
@@ -34,21 +33,9 @@ export async function computeAndStoreLoadSnapshot(input: {
   periodEnd: string | Date;
   asOf?: string | Date;
 }): Promise<LoadSnapshotSummary> {
-  const [responsibilities, radarItems] = await Promise.all([
-    listResponsibilitiesForHousehold(input.householdId),
-    prisma.radarItem.findMany({
-      where: {
-        householdId: input.householdId
-      },
-      select: {
-        id: true,
-        state: true
-      }
-    })
-  ]);
+  const responsibilities = await listResponsibilitiesForHousehold(input.householdId);
   const signals = computeLoadSignals({
     responsibilities,
-    radarItems,
     asOf: input.asOf
   });
   const computedAt = input.asOf ? new Date(input.asOf) : new Date();
@@ -65,7 +52,6 @@ export async function computeAndStoreLoadSnapshot(input: {
       areaDistribution: signals.areaMix,
       cadenceDistribution: signals.cadenceDistribution,
       reviewDueCount: signals.dueForReviewCount,
-      radarOpenCount: signals.openRadarCount,
       pausedOrNotRelevantCount: signals.pausedOrNotRelevantCount,
       hiddenEffortMix: signals.hiddenEffortMix
     }

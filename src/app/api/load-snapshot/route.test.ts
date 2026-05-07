@@ -32,7 +32,6 @@ describe("GET /api/load-snapshot", () => {
         areaDistribution: {},
         cadenceDistribution: {},
         reviewDueCount: 0,
-        radarOpenCount: 0,
         pausedOrNotRelevantCount: 0,
         hiddenEffortMix: {},
         periodStart: "2026-05-04T12:00:00.000Z",

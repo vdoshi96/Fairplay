@@ -48,7 +48,6 @@ describe("/api/responsibilities", () => {
         areaDistribution: {},
         cadenceDistribution: {},
         reviewDueCount: 0,
-        radarOpenCount: 0,
         pausedOrNotRelevantCount: 0,
         hiddenEffortMix: {}
       }

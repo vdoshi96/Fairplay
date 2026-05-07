@@ -165,9 +165,6 @@ describe("protected app UI", () => {
       screen.getByRole("link", { name: "Learn this feature: Library" })
     ).toHaveAttribute("href", "/app/library?guide=library");
     expect(
-      screen.queryByRole("link", { name: "Learn this feature: Radar" })
-    ).not.toBeInTheDocument();
-    expect(
       screen.getByRole("link", { name: "Learn this feature: Check-ins" })
     ).toHaveAttribute("href", "/app/check-ins/new?guide=checkIns");
     expect(
@@ -195,7 +192,6 @@ describe("protected app UI", () => {
       "href",
       "/app/crash-course"
     );
-    expect(screen.queryByRole("link", { name: /^Radar$/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /Load map/i })[0]).toHaveAttribute(
       "aria-current",
       "page"

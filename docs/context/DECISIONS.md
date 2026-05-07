@@ -9,7 +9,7 @@ Last updated: 2026-05-07
 | 2026-05-07 | Add standard repo memory and wiki files without reorganizing source files. | The repo organization is haphazard, and future agents need a reliable index before feature work or cleanup. | Accepted |
 | 2026-05-07 | Treat this as repo-level project memory, not global memory. | The facts are specific to Fairplay's product, codebase, source policy, and current architecture. | Accepted |
 | 2026-05-07 | Mark unclear/dead/suspicious areas as `needs verification`. | The user explicitly asked not to guess, and several legacy pieces may be compatibility code. | Accepted |
-| 2026-05-07 | Keep Radar backend references documented instead of deleting them. | Recent product cleanup retired the Radar UI, but code still supports check-ins, responsibilities, APIs, and schema references. | Needs verification |
+| 2026-05-07 | Retire Radar as an active product/backend area. | The cleanup branch removed Radar API routes, server services, contracts, model links, and generated assets after the UI had already been retired. | Accepted; local DB-backed verification passed |
 | 2026-05-07 | Treat device theme persistence in `localStorage` as allowed non-sensitive UI state. | Later interaction-upgrade docs explicitly permit theme mode in `localStorage`; older release scans are stale. | Accepted, but audit sensitive storage separately |
 | 2026-05-07 | Keep generated cover art in AI card draft success path. | Latest AI card image generation handoff says ready drafts require generated text and cover bytes. | Accepted |
 | 2026-05-07 | Use Qwen as primary AI generation provider with optional OpenAI fallback. | README and env example define Qwen primary variables and fallback gated by `AI_PROVIDER_FALLBACK_ENABLED`. | Accepted |
@@ -21,5 +21,4 @@ Last updated: 2026-05-07
 ## Naming And Compatibility Notes
 
 - Database and contract enums include legacy/product-specific names such as `cards_of_concern`, `player_1`, `player_2`, and `kid_split`: needs verification before rename because migrations and persisted records may depend on them.
-- Radar models and routes remain after UI retirement: needs verification before removal because check-ins and responsibility flags still reference radar items.
 - Deprecated AI routes and media fields may be compatibility scaffolding: needs verification before removal.

@@ -16,7 +16,6 @@ import type {
   CheckInItemId,
   HouseholdId,
   PersonaId,
-  RadarItemId,
   ResponsibilityId
 } from "../../domain/ids";
 import { RepositoryError } from "../db/errors";
@@ -48,7 +47,6 @@ function toAgendaItem(item: CheckInItem): CheckInAgendaItem {
     itemType: item.itemType,
     state: item.state,
     promptKey: item.promptKey,
-    radarItemId: item.radarItemId,
     responsibilityId: item.responsibilityId,
     sortOrder: item.sortOrder
   };
@@ -65,13 +63,8 @@ function toAgenda(checkIn: CheckInWithItems): CheckInAgenda {
 }
 
 function promptKeyForItem(input: {
-  radarItemId?: RadarItemId | null;
   responsibilityId?: ResponsibilityId | null;
 }) {
-  if (input.radarItemId) {
-    return "radar_discussion";
-  }
-
   if (input.responsibilityId) {
     return "responsibility_review";
   }
@@ -83,12 +76,10 @@ export async function createCheckIn(input: {
   householdId: HouseholdId;
   facilitatorPersonaId?: PersonaId | null;
   scheduledFor?: string | Date | null;
-  radarItemIds: RadarItemId[];
   responsibilityIds: ResponsibilityId[];
 }): Promise<CheckInAgenda> {
-  const uniqueRadarItemIds = [...new Set(input.radarItemIds)];
   const uniqueResponsibilityIds = [...new Set(input.responsibilityIds)];
-  const [facilitatorCount, radarItemCount, responsibilityCount] = await Promise.all([
+  const [facilitatorCount, responsibilityCount] = await Promise.all([
     input.facilitatorPersonaId
       ? prisma.persona.count({
           where: {
@@ -97,16 +88,6 @@ export async function createCheckIn(input: {
           }
         })
       : Promise.resolve(1),
-    uniqueRadarItemIds.length > 0
-      ? prisma.radarItem.count({
-          where: {
-            householdId: input.householdId,
-            id: {
-              in: uniqueRadarItemIds
-            }
-          }
-        })
-      : Promise.resolve(0),
     uniqueResponsibilityIds.length > 0
       ? prisma.responsibility.count({
           where: {
@@ -123,10 +104,6 @@ export async function createCheckIn(input: {
     throw new RepositoryError("INVALID_INPUT", "Facilitator persona does not belong to household.");
   }
 
-  if (radarItemCount !== uniqueRadarItemIds.length) {
-    throw new RepositoryError("INVALID_INPUT", "Check-in radar items must belong to household.");
-  }
-
   if (responsibilityCount !== uniqueResponsibilityIds.length) {
     throw new RepositoryError(
       "INVALID_INPUT",
@@ -134,16 +111,9 @@ export async function createCheckIn(input: {
     );
   }
 
-  const items = [
-    ...input.radarItemIds.map((radarItemId) => ({
-      radarItemId,
-      responsibilityId: null
-    })),
-    ...input.responsibilityIds.map((responsibilityId) => ({
-      radarItemId: null,
-      responsibilityId
-    }))
-  ];
+  const items = input.responsibilityIds.map((responsibilityId) => ({
+    responsibilityId
+  }));
   const checkIn = await prisma.checkIn.create({
     data: {
       householdId: input.householdId,
@@ -152,8 +122,7 @@ export async function createCheckIn(input: {
       state: input.scheduledFor ? "scheduled" : "draft",
       items: {
         create: items.map((item, index) => ({
-          itemType: item.radarItemId ? "radar" : "responsibility",
-          radarItemId: item.radarItemId,
+          itemType: "responsibility",
           responsibilityId: item.responsibilityId,
           state: "queued",
           promptKey: promptKeyForItem(item),
@@ -214,7 +183,6 @@ export async function recordCheckInItemDecision(input: {
       },
       select: {
         id: true,
-        radarItemId: true,
         responsibilityId: true
       }
     });
@@ -222,16 +190,8 @@ export async function recordCheckInItemDecision(input: {
       throw new RepositoryError("NOT_FOUND", "Check-in item not found for household check-in.");
     }
 
-    const [itemRadarCount, itemResponsibilityCount, decisionResponsibilityCount] =
+    const [itemResponsibilityCount, decisionResponsibilityCount] =
       await Promise.all([
-        checkInItem.radarItemId
-          ? tx.radarItem.count({
-              where: {
-                id: checkInItem.radarItemId,
-                householdId: input.householdId
-              }
-            })
-          : Promise.resolve(1),
         checkInItem.responsibilityId
           ? tx.responsibility.count({
               where: {
@@ -249,7 +209,7 @@ export async function recordCheckInItemDecision(input: {
             })
           : Promise.resolve(1)
       ]);
-    if (itemRadarCount !== 1 || itemResponsibilityCount !== 1) {
+    if (itemResponsibilityCount !== 1) {
       throw new RepositoryError(
         "INVALID_INPUT",
         "Check-in item references must belong to household."

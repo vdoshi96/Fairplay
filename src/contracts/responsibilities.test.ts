@@ -145,7 +145,6 @@ describe("responsibility JSON contracts", () => {
         areaDistribution: { home_base: 1 },
         cadenceDistribution: { daily: 1 },
         reviewDueCount: 1,
-        radarOpenCount: 1,
         pausedOrNotRelevantCount: 0,
         hiddenEffortMix: { doing: 1 }
       })
@@ -319,7 +318,6 @@ describe("Responsibility board contracts", () => {
       visibility: "shared_household",
       boardLane: "not_in_play",
       boardSortOrder: 12,
-      linkedRadarItems: [],
       currentAssignments: [],
       nextReviewAt: null
     });

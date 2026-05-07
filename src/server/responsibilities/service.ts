@@ -11,14 +11,10 @@ import type {
   ResponsibilityVisibilityMutation
 } from "@/contracts/responsibilities";
 import type {
-  RadarReasonKey,
-  RadarState,
   ResponsibilityStatus,
-  Urgency,
   Visibility
 } from "@/domain/enums";
 import type { HouseholdId, PersonaId, ResponsibilityId } from "@/domain/ids";
-import type { LoadSignalRadarItem } from "@/domain/load-signals";
 import { assertVisibilityTransition } from "@/domain/visibility";
 import type { CurrentSession } from "@/server/auth/current-session";
 import { prisma } from "@/server/db/prisma";
@@ -28,7 +24,6 @@ import {
   getResponsibilityDetail,
   listResponsibilitiesForHousehold
 } from "@/server/repositories/responsibilities";
-import { createRadarItem, listRadarItemsForPersona } from "@/server/repositories/radar";
 import { listPersonasForHousehold } from "@/server/repositories/personas";
 import { buildLoadSnapshot } from "./load-snapshot";
 
@@ -85,19 +80,6 @@ export type ResponsibilityEventInput = {
   occurredAt: string;
 };
 
-export type RadarFlagInput = {
-  reasonKey: Extract<RadarReasonKey, "review_due" | "unclear_expectation">;
-  visibility: Visibility;
-  topic?: string;
-  notes?: string | null;
-  urgency?: Urgency;
-  confirmPublish?: boolean;
-};
-
-export type ResponsibilityOverviewRadarItem = LoadSignalRadarItem & {
-  responsibilityId: ResponsibilityId | null;
-};
-
 export type ResponsibilityServiceDeps = {
   listPersonasForHousehold: (
     householdId: HouseholdId
@@ -121,13 +103,6 @@ export type ResponsibilityServiceDeps = {
   createResponsibilityEvent: (
     input: ResponsibilityEventInput
   ) => Promise<void>;
-  listRadarItems: (
-    input: {
-      householdId: HouseholdId;
-      selectedPersonaId: PersonaId;
-    }
-  ) => Promise<ResponsibilityOverviewRadarItem[]>;
-  createRadarItem: typeof createRadarItem;
 };
 
 export type AssignmentMutationInput = {
@@ -242,38 +217,6 @@ function publicCreateInput(input: ResponsibilityCreate): CreateResponsibilityRec
   };
 }
 
-function isLinkedRadarActive(state: RadarState) {
-  return state !== "resolved";
-}
-
-function withLinkedRadarItems(
-  responsibilities: ResponsibilitySummary[],
-  radarItems: readonly ResponsibilityOverviewRadarItem[]
-): ResponsibilitySummary[] {
-  const linkedItemsByResponsibility = new Map<
-    ResponsibilityId,
-    ResponsibilitySummary["linkedRadarItems"]
-  >();
-
-  for (const item of radarItems) {
-    if (!item.responsibilityId || !isLinkedRadarActive(item.state)) {
-      continue;
-    }
-
-    const current = linkedItemsByResponsibility.get(item.responsibilityId) ?? [];
-    current.push({
-      id: item.id,
-      state: item.state
-    });
-    linkedItemsByResponsibility.set(item.responsibilityId, current);
-  }
-
-  return responsibilities.map((responsibility) => ({
-    ...responsibility,
-    linkedRadarItems: linkedItemsByResponsibility.get(responsibility.id) ?? []
-  }));
-}
-
 export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
   return {
     async listOverview(
@@ -283,24 +226,13 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
       responsibilities: ResponsibilitySummary[];
       loadSnapshot: LoadSnapshotSummary;
     }> {
-      const selectedPersonaId = requireSelectedPersona(session);
-      const [responsibilities, radarItems] = await Promise.all([
-        deps.listResponsibilities(session.householdId),
-        deps.listRadarItems({
-          householdId: session.householdId,
-          selectedPersonaId
-        })
-      ]);
-      const responsibilitiesWithRadar = withLinkedRadarItems(
-        responsibilities,
-        radarItems
-      );
+      requireSelectedPersona(session);
+      const responsibilities = await deps.listResponsibilities(session.householdId);
 
       return {
-        responsibilities: responsibilitiesWithRadar,
+        responsibilities,
         loadSnapshot: buildLoadSnapshot({
-          responsibilities: responsibilitiesWithRadar,
-          radarItems,
+          responsibilities,
           asOf: options.asOf
         })
       };
@@ -513,40 +445,6 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
       });
 
       return updated;
-    },
-
-    async flagForRadar(
-      session: CurrentSession,
-      responsibilityId: ResponsibilityId,
-      input: RadarFlagInput
-    ) {
-      const actorPersonaId = requireSelectedPersona(session);
-      const responsibility = await getRequiredResponsibility(
-        deps,
-        session.householdId,
-        responsibilityId
-      );
-
-      if (
-        input.visibility !== "private" &&
-        input.confirmPublish !== true
-      ) {
-        throw new ResponsibilityServiceError(
-          "INVALID_INPUT",
-          "Sharing a radar flag needs explicit confirmation."
-        );
-      }
-
-      return deps.createRadarItem({
-        householdId: session.householdId,
-        createdByPersonaId: actorPersonaId,
-        responsibilityId,
-        topic: input.topic ?? `Review ${responsibility.title}`,
-        notes: input.notes ?? null,
-        reasonKey: input.reasonKey,
-        urgency: input.urgency ?? "normal",
-        visibility: input.visibility
-      });
     }
   };
 }
@@ -630,17 +528,4 @@ export const responsibilityService = createResponsibilityService({
       }
     });
   },
-  async listRadarItems(input) {
-    const items = await listRadarItemsForPersona({
-      householdId: input.householdId,
-      selectedPersonaId: input.selectedPersonaId
-    });
-
-    return items.map((item) => ({
-      id: item.id,
-      responsibilityId: item.responsibilityId,
-      state: item.state
-    }));
-  },
-  createRadarItem
 });

@@ -1,15 +1,10 @@
 import type {
   Cadence,
   HiddenEffortKey,
-  RadarState,
   ResponsibilityStatus,
   Visibility
 } from "../../domain/enums";
-import type {
-  LoadSignalAssignment,
-  LoadSignalRadarItem,
-  LoadSignalResponsibility
-} from "../../domain/load-signals";
+import type { LoadSignalAssignment, LoadSignalResponsibility } from "../../domain/load-signals";
 
 export function makeLoadSignalAssignment(
   overrides: Partial<LoadSignalAssignment> = {}
@@ -37,20 +32,9 @@ export function makeLoadSignalResponsibility(
   };
 }
 
-export function makeLoadSignalRadarItem(
-  overrides: Partial<LoadSignalRadarItem> = {}
-): LoadSignalRadarItem {
-  return {
-    id: "550e8400-e29b-41d4-a716-446655440020",
-    state: "open",
-    ...overrides
-  };
-}
-
 export type DomainFactoryOptions = {
   cadence?: Cadence;
   hiddenEffortKeys?: readonly HiddenEffortKey[];
-  radarState?: RadarState;
   status?: ResponsibilityStatus;
   visibility?: Visibility;
 };

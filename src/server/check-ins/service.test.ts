@@ -14,7 +14,6 @@ const alexId = "550e8400-e29b-41d4-a716-446655440001";
 const checkInId = "550e8400-e29b-41d4-a716-446655440080";
 const itemId = "550e8400-e29b-41d4-a716-446655440081";
 const otherHouseholdItemId = "550e8400-e29b-41d4-a716-446655440089";
-const radarId = "550e8400-e29b-41d4-a716-446655440090";
 const responsibilityId = "550e8400-e29b-41d4-a716-446655440070";
 const otherResponsibilityId = "550e8400-e29b-41d4-a716-446655440071";
 
@@ -42,14 +41,13 @@ function checkIn(overrides: Record<string, unknown> = {}) {
     items: [
       {
         id: itemId,
-        itemType: "radar",
+        itemType: "responsibility",
         state: "queued",
-        promptKey: "radar_discussion",
-        radarItemId: radarId,
-        responsibilityId: null,
+        promptKey: "responsibility_review",
+        responsibilityId,
         sortOrder: 0,
-        title: "Clarify morning handoff",
-        description: "Shared household",
+        title: "Weekly meal outline",
+        description: "Review due",
         visibility: "shared_household",
         response: null,
         decisionId: null
@@ -66,32 +64,6 @@ function makeDeps(overrides: Partial<CheckInServiceDeps> = {}): CheckInServiceDe
     getActiveCheckIn: vi.fn().mockResolvedValue(null),
     getCheckIn: vi.fn().mockResolvedValue(checkIn()),
     listAgendaSources: vi.fn().mockResolvedValue({
-      radarItems: [
-        {
-          id: radarId,
-          topic: "Clarify morning handoff",
-          reasonKey: "unclear_expectation",
-          visibility: "shared_household",
-          state: "open",
-          responsibilityId: null
-        },
-        {
-          id: "550e8400-e29b-41d4-a716-446655440091",
-          topic: "Blocked pickup plan",
-          reasonKey: "blocked",
-          visibility: "check_in_only",
-          state: "scheduled",
-          responsibilityId: null
-        },
-        {
-          id: "550e8400-e29b-41d4-a716-446655440092",
-          topic: "Restock expectation",
-          reasonKey: "review_due",
-          visibility: "partner_visible",
-          state: "open",
-          responsibilityId: null
-        }
-      ],
       responsibilities: [
         {
           id: responsibilityId,
@@ -113,6 +85,20 @@ function makeDeps(overrides: Partial<CheckInServiceDeps> = {}): CheckInServiceDe
           status: "active",
           cadence: "monthly",
           nextReviewAt: "2026-05-03T12:00:00.000Z"
+        },
+        {
+          id: "550e8400-e29b-41d4-a716-446655440073",
+          title: "School form review",
+          status: "active",
+          cadence: "weekly",
+          nextReviewAt: "2026-05-04T12:00:00.000Z"
+        },
+        {
+          id: "550e8400-e29b-41d4-a716-446655440074",
+          title: "Laundry reset",
+          status: "needs_review",
+          cadence: "weekly",
+          nextReviewAt: "2026-05-05T12:00:00.000Z"
         }
       ]
     }),
@@ -131,7 +117,6 @@ function makeDeps(overrides: Partial<CheckInServiceDeps> = {}): CheckInServiceDe
       responsibilityId
     }),
     applyResponsibilityDecision: vi.fn().mockResolvedValue(undefined),
-    applyRadarDecision: vi.fn().mockResolvedValue(undefined),
     completeCheckIn: vi.fn().mockImplementation(async (input) => ({
       ...checkIn(),
       state: "completed",
@@ -166,7 +151,7 @@ function responsibilityDecisionInput(
 }
 
 describe("check-in service", () => {
-  it("creates a short agenda from open radar and due reviews capped at five", async () => {
+  it("creates a short agenda from due reviews capped at five", async () => {
     const deps = makeDeps();
     const service = createCheckInService(deps);
 
@@ -178,7 +163,6 @@ describe("check-in service", () => {
         facilitatorPersonaId: alexId,
         state: "active",
         items: expect.arrayContaining([
-          expect.objectContaining({ radarItemId: radarId }),
           expect.objectContaining({ responsibilityId })
         ])
       })
@@ -203,14 +187,6 @@ describe("check-in service", () => {
   it("normalizes negative agenda size for direct create and preview calls", async () => {
     const deps = makeDeps({
       listAgendaSources: vi.fn().mockResolvedValue({
-        radarItems: Array.from({ length: 5 }, (_, index) => ({
-          id: `550e8400-e29b-41d4-a716-44665544009${index}` as const,
-          topic: `Radar topic ${index + 1}`,
-          reasonKey: "unclear_expectation",
-          visibility: "shared_household",
-          state: "open",
-          responsibilityId: null
-        })),
         responsibilities: Array.from({ length: 5 }, (_, index) => ({
           id: `550e8400-e29b-41d4-a716-44665544007${index}` as const,
           title: `Responsibility ${index + 1}`,
@@ -252,8 +228,8 @@ describe("check-in service", () => {
     expect(preview.items[0]).toEqual(
       expect.objectContaining({
         state: "queued",
-        radarItemId: radarId,
-        title: "Clarify morning handoff"
+        responsibilityId,
+        title: "Weekly meal outline"
       })
     );
   });
@@ -292,13 +268,7 @@ describe("check-in service", () => {
   });
 
   it("applies responsibility changes only through the explicit decision path", async () => {
-    const deps = makeDeps({
-      getCheckIn: vi.fn().mockResolvedValue(
-        checkIn({
-          items: [{ ...checkIn().items[0], responsibilityId }]
-        })
-      )
-    });
+    const deps = makeDeps();
     const service = createCheckInService(deps);
 
     await service.updateItem(session, checkInId, itemId, {
@@ -336,49 +306,7 @@ describe("check-in service", () => {
   });
 
   it("allows responsibility effects for a responsibility agenda item", async () => {
-    const deps = makeDeps({
-      getCheckIn: vi.fn().mockResolvedValue(
-        checkIn({
-          items: [
-            {
-              ...checkIn().items[0],
-              itemType: "responsibility",
-              radarItemId: null,
-              responsibilityId
-            }
-          ]
-        })
-      )
-    });
-    const service = createCheckInService(deps);
-
-    await service.recordDecision(
-      session,
-      checkInId,
-      itemId,
-      responsibilityDecisionInput()
-    );
-
-    expect(deps.applyResponsibilityDecision).toHaveBeenCalledWith(
-      expect.objectContaining({ responsibilityId })
-    );
-  });
-
-  it("allows responsibility effects for a radar item linked to that responsibility", async () => {
-    const deps = makeDeps({
-      getCheckIn: vi.fn().mockResolvedValue(
-        checkIn({
-          items: [
-            {
-              ...checkIn().items[0],
-              itemType: "radar",
-              radarItemId: radarId,
-              responsibilityId
-            }
-          ]
-        })
-      )
-    });
+    const deps = makeDeps();
     const service = createCheckInService(deps);
 
     await service.recordDecision(
@@ -401,7 +329,6 @@ describe("check-in service", () => {
             {
               ...checkIn().items[0],
               itemType: "custom",
-              radarItemId: null,
               responsibilityId: null
             }
           ]
@@ -430,7 +357,6 @@ describe("check-in service", () => {
             {
               ...checkIn().items[0],
               itemType: "responsibility",
-              radarItemId: null,
               responsibilityId
             }
           ]
@@ -503,7 +429,7 @@ describe("check-in service", () => {
             {
               ...checkIn().items[0],
               state: "deferred",
-              title: "Clarify morning handoff"
+              title: "Weekly meal outline"
             }
           ],
           decisions: [
@@ -557,7 +483,7 @@ describe("check-in service", () => {
           reviewOn: "2026-06-04T12:00:00.000Z"
         }
       ],
-      deferredItems: ["Clarify morning handoff"],
+      deferredItems: ["Weekly meal outline"],
       skippedItems: []
     });
 

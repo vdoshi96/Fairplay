@@ -11,7 +11,6 @@ import {
   getResponsibilityDetail,
   updateResponsibilityBoardPlacement
 } from "./responsibilities";
-import { createRadarItem, listRadarItemsForPersona, updateRadarState } from "./radar";
 import {
   completeCheckIn,
   createCheckIn,
@@ -290,144 +289,30 @@ describe("responsibility repository", () => {
   });
 });
 
-describe("radar repository", () => {
-  test("filters private drafts to the selected persona", async () => {
-    const { household, personas } = await createTestHousehold("radar");
-    const [alex, max] = personas;
-
-    const privateDraft = await createRadarItem({
-      householdId: household.id,
-      createdByPersonaId: alex.id,
-      topic: "Clarify morning handoff",
-      notes: "Keep this draft private for now.",
-      reasonKey: "unclear_expectation",
-      urgency: "normal",
-      visibility: "private"
-    });
-    await createRadarItem({
-      householdId: household.id,
-      createdByPersonaId: max.id,
-      topic: "Shared calendar snag",
-      notes: null,
-      reasonKey: "blocked",
-      urgency: "soon",
-      visibility: "shared_household"
-    });
-
-    const alexRadar = await listRadarItemsForPersona({
-      householdId: household.id,
-      selectedPersonaId: alex.id
-    });
-    const maxRadar = await listRadarItemsForPersona({
-      householdId: household.id,
-      selectedPersonaId: max.id
-    });
-
-    expect(alexRadar.map((item) => item.id)).toContain(privateDraft.id);
-    expect(maxRadar.map((item) => item.id)).not.toContain(privateDraft.id);
-    expect(maxRadar.every((item) => item.visibility !== "private")).toBe(true);
-  });
-
-  test("persists desired timing and deferred revisit dates", async () => {
-    const { household, personas } = await createTestHousehold("radar-timing");
-    const [alex] = personas;
-
-    const privateDraft = await createRadarItem({
-      householdId: household.id,
-      createdByPersonaId: alex.id,
-      topic: "Clarify morning handoff",
-      notes: "Keep this draft private for now.",
-      desiredTiming: "Before the next school week",
-      reasonKey: "unclear_expectation",
-      urgency: "normal",
-      visibility: "private"
-    });
-
-    expect(privateDraft).toMatchObject({
-      desiredTiming: "Before the next school week",
-      deferredUntil: null
-    });
-
-    const deferred = await updateRadarState({
-      householdId: household.id,
-      selectedPersonaId: alex.id,
-      id: privateDraft.id,
-      state: "deferred",
-      deferredUntil: "2026-05-11T12:00:00.000Z"
-    });
-
-    expect(deferred).toMatchObject({
-      state: "deferred",
-      desiredTiming: "Before the next school week",
-      deferredUntil: "2026-05-11T12:00:00.000Z"
-    });
-
-    const listed = await listRadarItemsForPersona({
-      householdId: household.id,
-      selectedPersonaId: alex.id
-    });
-
-    expect(listed).toContainEqual(
-      expect.objectContaining({
-        id: privateDraft.id,
-        desiredTiming: "Before the next school week",
-        deferredUntil: "2026-05-11T12:00:00.000Z"
-      })
-    );
-  });
-
-  test("does not expose or mutate another household's private radar draft", async () => {
-    const first = await createTestHousehold("radar-scope-a");
-    const second = await createTestHousehold("radar-scope-b");
-    const [firstAlex] = first.personas;
-    const [secondAlex] = second.personas;
-    const privateDraft = await createRadarItem({
-      householdId: first.household.id,
-      createdByPersonaId: firstAlex.id,
-      topic: "Private first household draft",
-      notes: null,
-      reasonKey: "other",
-      urgency: "low",
-      visibility: "private"
-    });
-
-    const secondRadar = await listRadarItemsForPersona({
-      householdId: second.household.id,
-      selectedPersonaId: secondAlex.id
-    });
-
-    expect(secondRadar.map((item) => item.id)).not.toContain(privateDraft.id);
-    await expect(
-      updateRadarState({
-        householdId: second.household.id,
-        selectedPersonaId: secondAlex.id,
-        id: privateDraft.id,
-        state: "open"
-      })
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
-  });
-});
-
 describe("check-in repository", () => {
   test("creates a check-in, records an item decision, and returns a completed summary", async () => {
     const { household, personas } = await createTestHousehold("check-in");
     const [alex] = personas;
-    const radarItem = await createRadarItem({
+    const responsibility = await createResponsibility({
       householdId: household.id,
       createdByPersonaId: alex.id,
-      topic: "Review supply restock",
+      title: "Review supply restock",
+      summary: null,
+      areaKeys: ["food_flow"],
+      hiddenEffortKeys: ["noticing"],
+      cadence: "weekly",
+      status: "needs_review",
+      visibility: "shared_household",
+      householdStandard: null,
       notes: null,
-      reasonKey: "review_due",
-      urgency: "normal",
-      visibility: "check_in_only"
+      nextReviewAt: "2026-05-12T00:00:00.000Z"
     });
 
     const agenda = await createCheckIn({
       householdId: household.id,
       facilitatorPersonaId: alex.id,
       scheduledFor: "2026-05-12T15:00:00.000Z",
-      radarItemIds: [radarItem.id],
-      responsibilityIds: []
+      responsibilityIds: [responsibility.id]
     });
 
     const updatedItem = await recordCheckInItemDecision({
@@ -442,7 +327,7 @@ describe("check-in repository", () => {
         summary: "Restock review moved to Friday routine.",
         effectiveAt: "2026-05-12T16:00:00.000Z",
         reviewOn: null,
-        responsibilityId: null
+        responsibilityId: responsibility.id
       }
     });
 
@@ -470,14 +355,19 @@ describe("check-in repository", () => {
     const second = await createTestHousehold("check-in-scope-b");
     const [firstAlex] = first.personas;
     const [secondAlex] = second.personas;
-    const secondRadarItem = await createRadarItem({
+    const secondResponsibility = await createResponsibility({
       householdId: second.household.id,
       createdByPersonaId: secondAlex.id,
-      topic: "Second household radar",
+      title: "Second household card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      householdStandard: null,
       notes: null,
-      reasonKey: "blocked",
-      urgency: "normal",
-      visibility: "shared_household"
+      nextReviewAt: null
     });
 
     await expect(
@@ -485,8 +375,7 @@ describe("check-in repository", () => {
         householdId: first.household.id,
         facilitatorPersonaId: firstAlex.id,
         scheduledFor: null,
-        radarItemIds: [secondRadarItem.id],
-        responsibilityIds: []
+        responsibilityIds: [secondResponsibility.id]
       })
     ).rejects.toMatchObject({ code: "INVALID_INPUT" });
 
@@ -494,7 +383,6 @@ describe("check-in repository", () => {
       householdId: first.household.id,
       facilitatorPersonaId: firstAlex.id,
       scheduledFor: null,
-      radarItemIds: [],
       responsibilityIds: []
     });
 
@@ -652,16 +540,6 @@ describe("load snapshot repository", () => {
         }
       ]
     });
-    await createRadarItem({
-      householdId: household.id,
-      createdByPersonaId: alex.id,
-      topic: "Restock blocker",
-      notes: null,
-      reasonKey: "blocked",
-      urgency: "soon",
-      visibility: "shared_household"
-    });
-
     const snapshot = await computeAndStoreLoadSnapshot({
       householdId: household.id,
       periodStart: "2026-05-01T00:00:00.000Z",
@@ -671,7 +549,6 @@ describe("load snapshot repository", () => {
     const serialized = JSON.stringify(snapshot);
 
     expect(snapshot.ownerDistribution).toMatchObject({ alex: 1 });
-    expect(snapshot.radarOpenCount).toBe(1);
     expect(snapshot.reviewDueCount).toBe(1);
     expect(serialized).not.toMatch(/score|winner|loser/i);
   });

@@ -81,7 +81,8 @@ npm run prisma:seed
 Migrations currently live under:
 
 - `prisma/migrations/20260504000000_init/`
-- `prisma/migrations/20260504130000_add_radar_timing_fields/`
+- `prisma/migrations/20260504130000_add_radar_timing_fields/` (legacy migration history)
+- `prisma/migrations/20260507120000_remove_radar/`
 
 ## Run The App
 

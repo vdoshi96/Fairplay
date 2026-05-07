@@ -17,7 +17,6 @@ function responsibility(
     visibility: "shared_household",
     boardLane: "not_in_play",
     boardSortOrder: 0,
-    linkedRadarItems: [],
     currentAssignments: [],
     nextReviewAt: null,
     summary: "AI-generated auto-ish responsibility.",

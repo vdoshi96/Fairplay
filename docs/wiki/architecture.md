@@ -14,7 +14,7 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 
 - Auth pages: `/login`, `/create-household`, `/choose-persona`.
 - App pages: `/app/home`, `/app/load-map`, `/app/library`, `/app/check-ins`, `/app/check-ins/new`, `/app/check-ins/[id]`, `/app/crash-course`, `/app/onboarding`, `/app/responsibilities/new`, `/app/responsibilities/[id]`, `/app/settings`.
-- API routes: auth, personas, preferences, responsibilities, load snapshot, card templates, AI card drafts, check-ins, and radar.
+- API routes: auth, personas, preferences, responsibilities, load snapshot, card templates, AI card drafts, and check-ins.
 
 ### UI Components
 
@@ -38,15 +38,15 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 
 - `auth`: cookies, current session, password hashing, session token handling, throttling.
 - `repositories`: Prisma read/write functions by aggregate.
-- `responsibilities`, `check-ins`, `radar`, `ai-card-drafts`: service-level behavior and tests.
+- `responsibilities`, `check-ins`, `ai-card-drafts`: service-level behavior and tests.
 - `ai`: provider selection, Qwen/OpenAI adapters, diagnostics, generated asset metadata.
 - `db`: Prisma client and repository error helpers.
 
 ### Persistence
 
-`prisma/schema.prisma` models households, credentials, personas, onboarding/Little Alex preferences, sessions, responsibilities, assignments, lifecycle notes, templates, AI card drafts, radar items, check-ins, check-in items, decisions, responsibility events, load snapshots, and auth throttling.
+`prisma/schema.prisma` models households, credentials, personas, onboarding/Little Alex preferences, sessions, responsibilities, assignments, lifecycle notes, templates, AI card drafts, check-ins, check-in items, decisions, responsibility events, load snapshots, and auth throttling.
 
-Migrations currently include initial schema, radar timing, personal-use redesign, cascade behavior, AI card drafts, and Little Alex preferences.
+Migrations currently include initial schema, legacy Radar timing/removal history, personal-use redesign, cascade behavior, AI card drafts, and Little Alex preferences.
 
 ## Data Flow
 
@@ -69,8 +69,7 @@ Migrations currently include initial schema, radar timing, personal-use redesign
 
 ## Architecture Risks
 
-- Radar backend/API/schema remains after Radar UI retirement: needs verification.
 - Legacy board lane enum names may not match current user-facing labels: needs verification.
-- Some generated assets/prompts reference retired surfaces: needs verification.
+- Some generated assets/prompts may reference retired surfaces: needs verification.
 - `docs/agents/tasks/` is useful history but very large and not a concise onboarding layer.
-- Full DB-backed behavior must be verified with Postgres before production claims.
+- Full DB-backed behavior was verified locally after the Radar removal migration; production deployment should still run normal migration verification.

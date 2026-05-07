@@ -47,19 +47,18 @@ The current v1 product centers on a two-person household using shared credential
 - Use only paraphrased, cleared project docs unless the user explicitly authorizes source-specific review.
 - Do not copy source text, proprietary taxonomies, source-like deck/workbook structures, public app UI, or distinctive reference visuals.
 - Keep private/shared/partner-visible/check-in-only states explicit anywhere sensitive notes can exist.
-- Do not store household data, private drafts, sensitive notes, concern details, or session secrets in browser storage.
-- A device theme preference may use `localStorage`; this is confirmed by later interaction-upgrade docs, but older release docs saying there were no `localStorage` matches are stale and need verification before reuse.
+- Browser storage is prohibited for household data, private drafts, sensitive notes, concern details, session secrets, API keys, credentials, plaintext passwords, or other private records.
+- Theme-only `localStorage` is allowed for non-sensitive device UI preference. Treat any other `localStorage`, `sessionStorage`, or `indexedDB` use as security/privacy-sensitive until reviewed.
 
 ## Non-Goals
 
 - No therapy, diagnosis, crisis support, partner scoring, blame ledgers, moral grades, or winner/loser framing.
 - No email auth, social auth, magic links, billing, subscriptions, public sharing, exports, deletion workflows, household exit, or revocation in current v1.
 - No full starter deck, source-like card library, copied assessment, copied source flow, copied template catalog, or private reference ingestion.
+- No active Radar product area, API, model, or generated asset set after the 2026-05-07 cleanup pass.
 - No broad file reorganization until the repo has a verified map and cleanup plan.
 
 ## Open Questions
 
-- Whether retired Radar UI should lead to deletion, archiving, or continued backend support for check-in agenda compatibility: needs verification.
 - Whether board lane names such as `cards_of_concern`, `player_1`, `player_2`, and `kid_split` should be renamed in schema/contracts after UI cleanup: needs verification.
-- Whether generated Radar-related assets are still intentionally used after Radar page retirement: needs verification.
 - Whether DB-backed integration tests have recently run against live Postgres after the latest merged changes: needs verification.

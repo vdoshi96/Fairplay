@@ -43,24 +43,6 @@ export const HIDDEN_EFFORT_KEYS = [
   "follow_through",
   "emotional_attention"
 ] as const;
-export const RADAR_REASON_KEYS = [
-  "unclear_expectation",
-  "blocked",
-  "too_much",
-  "handoff_needed",
-  "review_due",
-  "other"
-] as const;
-export const URGENCIES = ["low", "normal", "soon"] as const;
-export const RADAR_STATES = [
-  "draft",
-  "open",
-  "scheduled",
-  "discussed",
-  "resolved",
-  "dismissed",
-  "deferred"
-] as const;
 export const CHECK_IN_STATES = [
   "draft",
   "scheduled",
@@ -107,9 +89,6 @@ export const AssignmentScopeSchema = z.enum(ASSIGNMENT_SCOPES);
 export const VisibilitySchema = z.enum(VISIBILITIES);
 export const CadenceSchema = z.enum(CADENCES);
 export const HiddenEffortKeySchema = z.enum(HIDDEN_EFFORT_KEYS);
-export const RadarReasonKeySchema = z.enum(RADAR_REASON_KEYS);
-export const UrgencySchema = z.enum(URGENCIES);
-export const RadarStateSchema = z.enum(RADAR_STATES);
 export const CheckInStateSchema = z.enum(CHECK_IN_STATES);
 export const CheckInItemStateSchema = z.enum(CHECK_IN_ITEM_STATES);
 export const DecisionTypeSchema = z.enum(DECISION_TYPES);
@@ -123,9 +102,6 @@ export type AssignmentScope = z.infer<typeof AssignmentScopeSchema>;
 export type Visibility = z.infer<typeof VisibilitySchema>;
 export type Cadence = z.infer<typeof CadenceSchema>;
 export type HiddenEffortKey = z.infer<typeof HiddenEffortKeySchema>;
-export type RadarReasonKey = z.infer<typeof RadarReasonKeySchema>;
-export type Urgency = z.infer<typeof UrgencySchema>;
-export type RadarState = z.infer<typeof RadarStateSchema>;
 export type CheckInState = z.infer<typeof CheckInStateSchema>;
 export type CheckInItemState = z.infer<typeof CheckInItemStateSchema>;
 export type DecisionType = z.infer<typeof DecisionTypeSchema>;

@@ -34,7 +34,6 @@ describe("generated UI asset specs", () => {
         "max-avatar",
         "helper-mascot",
         "fairplay-mark",
-        "radar-illustration",
         "check-in-spark",
         "ai-task-helper",
         "greg-taskmaster-avatar",
@@ -43,7 +42,6 @@ describe("generated UI asset specs", () => {
         "crash-course-completion-celebration",
         "feature-guide-load-map",
         "feature-guide-library",
-        "feature-guide-radar",
         "feature-guide-check-ins",
         "feature-guide-settings",
         "auth-warm-threshold-background",
@@ -52,7 +50,6 @@ describe("generated UI asset specs", () => {
         "onboarding-rhythm-path-background",
         "load-map-workbench-background",
         "library-shelf-background",
-        "radar-signal-room-background",
         "check-in-table-background",
         "settings-preferences-background"
       ])

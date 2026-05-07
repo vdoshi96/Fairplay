@@ -6,7 +6,6 @@ import {
   type Cadence,
   type HiddenEffortKey,
   type PersonaKey,
-  type RadarState,
   type ResponsibilityStatus
 } from "./enums";
 
@@ -26,14 +25,8 @@ export type LoadSignalResponsibility = {
   nextReviewAt?: string | null;
 };
 
-export type LoadSignalRadarItem = {
-  id: string;
-  state: RadarState;
-};
-
 export type ComputeLoadSignalsInput = {
   responsibilities: readonly LoadSignalResponsibility[];
-  radarItems: readonly LoadSignalRadarItem[];
   asOf?: string | Date;
 };
 
@@ -42,7 +35,6 @@ export type LoadSignals = {
   ownerDistribution: Record<PersonaKey | "unassigned", number>;
   sharedResponsibilityCount: number;
   highFrequencyCount: number;
-  openRadarCount: number;
   dueForReviewCount: number;
   pausedOrNotRelevantCount: number;
   hiddenEffortMix: Record<HiddenEffortKey, number>;
@@ -58,11 +50,6 @@ const OWNER_ROLES: ReadonlySet<AssignmentRole> = new Set([
 const HIGH_FREQUENCY_CADENCES: ReadonlySet<Cadence> = new Set([
   "daily",
   "weekly"
-]);
-
-const OPEN_RADAR_STATES: ReadonlySet<RadarState> = new Set([
-  "open",
-  "scheduled"
 ]);
 
 export function computeLoadSignals(input: ComputeLoadSignalsInput): LoadSignals {
@@ -140,9 +127,6 @@ export function computeLoadSignals(input: ComputeLoadSignalsInput): LoadSignals 
     ownerDistribution,
     sharedResponsibilityCount,
     highFrequencyCount,
-    openRadarCount: input.radarItems.filter((item) =>
-      OPEN_RADAR_STATES.has(item.state)
-    ).length,
     dueForReviewCount,
     pausedOrNotRelevantCount,
     hiddenEffortMix,

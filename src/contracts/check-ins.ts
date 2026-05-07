@@ -9,7 +9,6 @@ import {
 import {
   CheckInIdSchema,
   CheckInItemIdSchema,
-  RadarItemIdSchema,
   ResponsibilityIdSchema
 } from "../domain/ids";
 import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from "../domain/time";
@@ -18,7 +17,6 @@ export const CheckInCreateSchema = z
   .object({
     scheduledFor: NullableIsoDateTimeSchema.optional(),
     facilitatorPersonaKey: PersonaKeySchema.nullable().optional(),
-    radarItemIds: z.array(RadarItemIdSchema).default([]),
     responsibilityIds: z.array(ResponsibilityIdSchema).default([])
   })
   .strict();
@@ -26,10 +24,9 @@ export const CheckInCreateSchema = z
 export const CheckInAgendaItemSchema = z
   .object({
     id: CheckInItemIdSchema,
-    itemType: z.enum(["responsibility", "radar", "custom"]),
+    itemType: z.enum(["responsibility", "custom"]),
     state: CheckInItemStateSchema,
     promptKey: z.string().trim().min(1).max(100),
-    radarItemId: RadarItemIdSchema.nullable(),
     responsibilityId: ResponsibilityIdSchema.nullable(),
     sortOrder: z.number().int().nonnegative()
   })

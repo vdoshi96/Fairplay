@@ -12,9 +12,7 @@ import type {
   DecisionType,
   ResponsibilityStatus,
   Visibility,
-  Cadence,
-  RadarReasonKey,
-  RadarState
+  Cadence
 } from "@/domain/enums";
 import {
   CheckInIdSchema,
@@ -24,13 +22,11 @@ import {
   type CheckInItemId,
   type HouseholdId,
   type PersonaId,
-  type RadarItemId,
   type ResponsibilityId
 } from "@/domain/ids";
 import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from "@/domain/time";
 import type { CurrentSession } from "@/server/auth/current-session";
 import { prisma } from "@/server/db/prisma";
-import { radarService } from "@/server/radar/service";
 import { responsibilityService } from "@/server/responsibilities/service";
 import {
   buildSuggestedAgenda,
@@ -38,15 +34,6 @@ import {
   type AgendaSources
 } from "./agenda";
 import { buildCheckInSummary, containsUnsafeSummaryLanguage } from "./summary";
-
-type RadarAgendaRow = {
-  id: string;
-  topic: string;
-  reasonKey: RadarReasonKey;
-  visibility: Visibility;
-  state: RadarState;
-  responsibilityId: ResponsibilityId | null;
-};
 
 type ResponsibilityAgendaRow = {
   id: ResponsibilityId;
@@ -156,7 +143,6 @@ export type GuidedDecisionInput = Omit<
 
 export type CreateCheckInInput = {
   maxItems?: number;
-  radarItemIds?: RadarItemId[];
   responsibilityIds?: ResponsibilityId[];
   includeAcknowledgement?: boolean;
 };
@@ -202,12 +188,6 @@ export type CheckInServiceDeps = {
     session: CurrentSession;
     responsibilityId: ResponsibilityId;
     decision: GuidedDecisionInput;
-  }) => Promise<void>;
-  applyRadarDecision: (input: {
-    session: CurrentSession;
-    radarItemId: RadarItemId;
-    decisionType: DecisionType;
-    effectiveAt: string;
   }) => Promise<void>;
   completeCheckIn: (input: {
     householdId: HouseholdId;
@@ -308,7 +288,6 @@ function toCheckInDecision(input: GuidedDecisionInput): CheckInDecision {
 
 function previewItemId(item: AgendaDraftItem, index: number): CheckInItemId {
   return (
-    item.radarItemId ??
     item.responsibilityId ??
     `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`
   );
@@ -320,7 +299,6 @@ function toGuidedPreviewItems(items: AgendaDraftItem[]): GuidedCheckInItem[] {
     itemType: item.itemType,
     state: "queued",
     promptKey: item.promptKey,
-    radarItemId: item.radarItemId,
     responsibilityId: item.responsibilityId,
     sortOrder: index,
     title: item.title,
@@ -468,15 +446,6 @@ export function createCheckInService(deps: CheckInServiceDeps) {
         });
       }
 
-      if (item.radarItemId) {
-        await deps.applyRadarDecision({
-          session,
-          radarItemId: item.radarItemId,
-          decisionType: input.decisionType,
-          effectiveAt: input.effectiveAt
-        });
-      }
-
       return decision;
     },
 
@@ -525,17 +494,6 @@ function nullableIso(date: Date | null): string | null {
   return date ? date.toISOString() : null;
 }
 
-function visibilityLabel(value: Visibility | null) {
-  if (!value) {
-    return null;
-  }
-
-  return value
-    .split("_")
-    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
 function toGuidedCheckIn(record: {
   id: string;
   householdId: string;
@@ -547,15 +505,13 @@ function toGuidedCheckIn(record: {
   facilitatorPersona: { key: "alex" | "max" } | null;
   items: Array<{
     id: string;
-    itemType: "radar" | "responsibility" | "custom";
+    itemType: "responsibility" | "custom";
     state: CheckInItemState;
     promptKey: string;
-    radarItemId: string | null;
     responsibilityId: string | null;
     sortOrder: number;
     response: string | null;
     decisionId: string | null;
-    radarItem: { topic: string; visibility: Visibility } | null;
     responsibility: { title: string; status: string; nextReviewAt: Date | null } | null;
   }>;
   decisions: Array<{
@@ -580,27 +536,23 @@ function toGuidedCheckIn(record: {
       .sort((left, right) => left.sortOrder - right.sortOrder)
       .map((item) => {
         const title =
-          item.radarItem?.topic ??
           item.responsibility?.title ??
           (item.promptKey === "acknowledgement"
             ? "Name one thing that helped this week"
             : "Check-in topic");
-        const visibility = item.radarItem?.visibility ?? "shared_household";
+        const visibility = item.responsibility ? "shared_household" : null;
 
         return {
           id: item.id,
           itemType: item.itemType,
           state: item.state,
           promptKey: item.promptKey,
-          radarItemId: item.radarItemId,
           responsibilityId: item.responsibilityId,
           sortOrder: item.sortOrder,
           title,
-          description: item.radarItem
-            ? visibilityLabel(item.radarItem.visibility)
-            : item.responsibility?.nextReviewAt
-              ? "Review due"
-              : "Check-in topic",
+          description: item.responsibility?.nextReviewAt
+            ? "Review due"
+            : "Check-in topic",
           visibility,
           response: item.response,
           decisionId: item.decisionId
@@ -621,7 +573,6 @@ const checkInInclude = {
   facilitatorPersona: { select: { key: true } },
   items: {
     include: {
-      radarItem: { select: { topic: true, visibility: true } },
       responsibility: { select: { title: true, status: true, nextReviewAt: true } }
     },
     orderBy: { sortOrder: "asc" as const }
@@ -665,39 +616,17 @@ export const checkInService = createCheckInService({
   },
   async listAgendaSources(input) {
     const dueAt = input.asOf;
-    const [radarItems, responsibilities] = await Promise.all([
-      prisma.radarItem.findMany({
-        where: {
-          householdId: input.householdId,
-          state: { in: ["open", "scheduled"] },
-          OR: [
-            { visibility: { not: "private" } },
-            { visibility: "private", createdByPersonaId: input.selectedPersonaId }
-          ]
-        },
-        orderBy: [{ urgency: "desc" }, { createdAt: "asc" }],
-        take: 5
-      }),
-      prisma.responsibility.findMany({
-        where: {
-          householdId: input.householdId,
-          status: { in: ["active", "needs_review", "unassigned"] },
-          nextReviewAt: { lte: dueAt }
-        },
-        orderBy: { nextReviewAt: "asc" },
-        take: 5
-      })
-    ]);
+    const responsibilities = await prisma.responsibility.findMany({
+      where: {
+        householdId: input.householdId,
+        status: { in: ["active", "needs_review", "unassigned"] },
+        nextReviewAt: { lte: dueAt }
+      },
+      orderBy: { nextReviewAt: "asc" },
+      take: 5
+    });
 
     return {
-      radarItems: radarItems.map((item: RadarAgendaRow) => ({
-        id: item.id,
-        topic: item.topic,
-        reasonKey: item.reasonKey,
-        visibility: item.visibility,
-        state: item.state,
-        responsibilityId: item.responsibilityId
-      })),
       responsibilities: responsibilities.map((item: ResponsibilityAgendaRow) => ({
         id: item.id,
         title: item.title,
@@ -717,7 +646,6 @@ export const checkInService = createCheckInService({
         items: {
           create: input.items.map((item, index) => ({
             itemType: item.itemType,
-            radarItemId: item.radarItemId,
             responsibilityId: item.responsibilityId,
             promptKey: item.promptKey,
             state: "queued",
@@ -759,7 +687,6 @@ export const checkInService = createCheckInService({
         checkInId: input.checkInId
       },
       include: {
-        radarItem: { select: { topic: true, visibility: true } },
         responsibility: { select: { title: true, status: true, nextReviewAt: true } }
       }
     });
@@ -777,7 +704,7 @@ export const checkInService = createCheckInService({
       decisions: []
     }).items[0];
   },
-    async recordDecisionForItem(input) {
+  async recordDecisionForItem(input) {
     const decision = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const checkIn = await tx.checkIn.findFirst({
         where: {
@@ -892,16 +819,6 @@ export const checkInService = createCheckInService({
         "reviewOn" in effect ? effect.reviewOn ?? input.decision.reviewOn ?? null : null,
       confirmedArchive: effect.kind === "archive" ? true : undefined,
       note: input.decision.summary
-    });
-  },
-  async applyRadarDecision(input) {
-    if (input.decisionType === "custom_note") {
-      return;
-    }
-
-    await radarService.resolve(input.session, input.radarItemId, {
-      id: input.radarItemId,
-      resolvedAt: input.effectiveAt
     });
   },
   async completeCheckIn(input) {

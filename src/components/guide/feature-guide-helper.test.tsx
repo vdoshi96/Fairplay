@@ -59,6 +59,5 @@ describe("FeatureGuideHelper", () => {
     });
 
     expect(new Set(renderedScenes).size).toBe(helperExpectations.length);
-    expect(screen.queryByRole("img", { name: /radar/i })).not.toBeInTheDocument();
   });
 });

@@ -56,10 +56,6 @@ describe("computeLoadSignals", () => {
           nextReviewAt: "2026-06-01T00:00:00.000Z"
         }
       ],
-      radarItems: [
-        { id: "radar_1", state: "open" },
-        { id: "radar_2", state: "resolved" }
-      ],
       asOf: "2026-05-04T00:00:00.000Z"
     });
 
@@ -68,7 +64,6 @@ describe("computeLoadSignals", () => {
       ownerDistribution: { alex: 1, max: 1, unassigned: 0 },
       sharedResponsibilityCount: 1,
       highFrequencyCount: 1,
-      openRadarCount: 1,
       dueForReviewCount: 1,
       pausedOrNotRelevantCount: 1,
       hiddenEffortMix: {

@@ -29,7 +29,7 @@ This is a practical index, not a reorganization plan.
 - `src/app/app/onboarding/page.tsx`: onboarding page.
 - `src/app/app/responsibilities/`: responsibility create/detail pages.
 - `src/app/app/settings/page.tsx`: settings page.
-- `src/app/api/`: JSON route handlers for auth, personas, preferences, responsibilities, load snapshot, card templates, AI drafts, check-ins, and radar.
+- `src/app/api/`: JSON route handlers for auth, personas, preferences, responsibilities, load snapshot, card templates, AI drafts, and check-ins.
 - `src/app/globals.css`: global CSS variables, theme tokens, layout variables, animation classes, and Little Alex styling.
 - `src/app/icon.tsx`, `src/app/apple-icon.tsx`, `src/app/manifest.ts`: PWA metadata/assets.
 
@@ -54,7 +54,7 @@ This is a practical index, not a reorganization plan.
 
 ## Domain, Contracts, Server
 
-- `src/contracts/`: Zod contracts for auth, personas, preferences, responsibilities, radar, check-ins, card templates, AI drafts, and Little Alex.
+- `src/contracts/`: Zod contracts for auth, personas, preferences, responsibilities, check-ins, card templates, AI drafts, and Little Alex.
 - `src/domain/`: ids, enums, visibility helpers, load signals, and time helpers.
 - `src/lib/`: formatting and safety copy.
 - `src/seed/`: demo content and source-card seed data. Name/source policy needs verification before expanding.
@@ -63,7 +63,6 @@ This is a practical index, not a reorganization plan.
 - `src/server/repositories/`: Prisma repository functions.
 - `src/server/responsibilities/`: responsibility service and load snapshot.
 - `src/server/check-ins/`: agenda, service, and summary logic.
-- `src/server/radar/`: radar service. Current retention needs verification.
 - `src/server/ai-card-drafts/`: AI draft service.
 - `src/server/ai/`: AI provider adapters, diagnostics, generated asset metadata.
 - `src/test/`: shared test setup and factories.
@@ -96,7 +95,7 @@ This is a practical index, not a reorganization plan.
 ## Assets And Scripts
 
 - `public/assets/fairplay/cards/`: card cover assets.
-- `public/assets/fairplay/generated-ui/`: generated backgrounds, crash-course art, feature-guide art, and illustrations.
+- `public/assets/fairplay/generated-ui/`: generated backgrounds, crash-course art, feature-guide art, and illustrations. Retired Radar generated entries/assets have been removed.
 - `public/assets/fairplay/little-alex-sprites/`: Little Alex generated sprites and manifests.
 - `scripts/db/wait-for-db.mjs`: local DB wait helper.
 - `scripts/generate-*.mjs`: asset generation scripts.
@@ -114,10 +113,8 @@ This is a practical index, not a reorganization plan.
 
 ## Needs Verification
 
-- `src/server/radar`, `src/contracts/radar.ts`, `/api/radar/**`, and radar generated assets after Radar UI retirement.
 - `src/components/responsibilities/board-lanes.ts` and `ResponsibilityBoardLane` enum names before any rename or migration.
-- `src/server/ai/generated-ui-assets.ts` entries for Radar-related assets.
 - Deprecated `/api/ai-card-drafts/[id]/regenerate-image` route and AI media columns.
 - `src/seed/fairplay-source-cards.ts` naming and content provenance before expanding templates.
-- Older release docs that claim no `localStorage` usage.
+- Browser storage audit beyond theme-only `localStorage`; household/private/secrets storage remains prohibited.
 - Local ignored `.DS_Store` files and `tsconfig.tsbuildinfo` cleanup.

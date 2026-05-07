@@ -74,31 +74,6 @@ enum HiddenEffortKey {
   emotional_attention
 }
 
-enum RadarReasonKey {
-  unclear_expectation
-  blocked
-  too_much
-  handoff_needed
-  review_due
-  other
-}
-
-enum Urgency {
-  low
-  normal
-  soon
-}
-
-enum RadarState {
-  draft
-  open
-  scheduled
-  discussed
-  resolved
-  dismissed
-  deferred
-}
-
 enum CheckInState {
   draft
   scheduled
@@ -116,7 +91,6 @@ enum CheckInItemState {
 
 enum CheckInItemType {
   responsibility
-  radar
   custom
 }
 
@@ -182,7 +156,6 @@ model Household {
   personas           Persona[]
   sessions           Session[]
   responsibilities   Responsibility[]
-  radarItems         RadarItem[]
   checkIns           CheckIn[]
   decisions          Decision[]
   events             ResponsibilityEvent[]
@@ -215,7 +188,6 @@ model Persona {
   createdResponsibilities          Responsibility[]               @relation("CreatedResponsibilities")
   createdAssignments               ResponsibilityAssignment[]     @relation("CreatedAssignments")
   assignments                      ResponsibilityAssignment[]     @relation("PersonaAssignments")
-  createdRadarItems                RadarItem[]                    @relation("CreatedRadarItems")
   facilitatedCheckIns              CheckIn[]                      @relation("FacilitatedCheckIns")
   createdDecisions                 Decision[]                     @relation("CreatedDecisions")
   actedResponsibilityEvents        ResponsibilityEvent[]          @relation("ActedResponsibilityEvents")
@@ -301,7 +273,6 @@ model Responsibility {
   template              ResponsibilityTemplate?        @relation(fields: [templateId], references: [id], onDelete: SetNull)
   assignments           ResponsibilityAssignment[]
   lifecycleNotes        ResponsibilityLifecycleNotes?
-  radarItems            RadarItem[]
   checkInItems          CheckInItem[]
   decisions             Decision[]
   events                ResponsibilityEvent[]
@@ -414,33 +385,6 @@ model ResponsibilityTemplate {
   responsibilities   Responsibility[]
 }
 
-model RadarItem {
-  id                 String          @id @default(uuid())
-  householdId        String
-  responsibilityId   String?
-  createdByPersonaId String
-  topic              String
-  notes              String?
-  desiredTiming      String?
-  reasonKey          RadarReasonKey
-  urgency            Urgency
-  visibility         Visibility
-  state              RadarState
-  targetCheckInId    String?
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-  resolvedAt         DateTime?
-  deferredUntil      DateTime?
-  household          Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  responsibility     Responsibility? @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
-  createdByPersona   Persona         @relation("CreatedRadarItems", fields: [createdByPersonaId], references: [id], onDelete: Cascade)
-  targetCheckIn      CheckIn?        @relation("TargetCheckInRadarItems", fields: [targetCheckInId], references: [id], onDelete: SetNull)
-  checkInItems       CheckInItem[]
-
-  @@index([householdId, state])
-  @@index([createdByPersonaId, visibility])
-}
-
 model CheckIn {
   id                    String        @id @default(uuid())
   householdId           String
@@ -456,7 +400,6 @@ model CheckIn {
   facilitatorPersona    Persona?      @relation("FacilitatedCheckIns", fields: [facilitatorPersonaId], references: [id], onDelete: SetNull)
   items                 CheckInItem[]
   decisions             Decision[]
-  targetedRadarItems    RadarItem[]    @relation("TargetCheckInRadarItems")
 
   @@index([householdId, state])
 }
@@ -465,7 +408,6 @@ model CheckInItem {
   id                 String             @id @default(uuid())
   checkInId          String
   responsibilityId   String?
-  radarItemId        String?
   itemType           CheckInItemType
   state              CheckInItemState
   promptKey          String
@@ -476,7 +418,6 @@ model CheckInItem {
   updatedAt          DateTime           @updatedAt
   checkIn            CheckIn            @relation(fields: [checkInId], references: [id], onDelete: Cascade)
   responsibility     Responsibility?    @relation(fields: [responsibilityId], references: [id], onDelete: SetNull)
-  radarItem          RadarItem?         @relation(fields: [radarItemId], references: [id], onDelete: SetNull)
   decision           Decision?          @relation(fields: [decisionId], references: [id], onDelete: SetNull)
 
   @@index([checkInId, sortOrder])
@@ -531,7 +472,6 @@ model LoadSnapshot {
   areaDistribution           Json
   cadenceDistribution        Json
   reviewDueCount             Int
-  radarOpenCount             Int
   pausedOrNotRelevantCount   Int
   hiddenEffortMix            Json
   createdAt                  DateTime  @default(now())

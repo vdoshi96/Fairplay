@@ -19,7 +19,6 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 - Library: template cards, AI draft tracker, generated cover retrieval, put-in-play flow.
 - Check-ins: agenda preview, create/resume/complete, item updates, decisions, summaries.
 - Settings: theme mode, persona/Little Alex settings, logout, welcome replay, crash-course restart.
-- Radar: no current app page, but backend/schema/API/check-in references remain: needs verification.
 
 ## Important Context Links
 
@@ -34,8 +33,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 
 ## Current Cleanup Priority
 
-1. Verify Radar retention/removal boundaries.
-2. Verify legacy board lane names and migration impact.
-3. Inventory generated assets for live usage.
-4. Separate current docs from historical agent logs.
-5. Refresh release docs after DB-backed verification.
+1. Verify legacy board lane names and migration impact.
+2. Inventory generated assets for live usage after the Radar asset removal.
+3. Separate current docs from historical agent logs.
+4. Complete live persisted browser-flow verification before production release.

@@ -49,7 +49,6 @@ function detail(
     visibility: "shared_household",
     boardLane: "cards_of_concern",
     boardSortOrder: 0,
-    linkedRadarItems: [],
     currentAssignments: [],
     nextReviewAt: null,
     householdStandard: null,
@@ -85,7 +84,6 @@ function summary(
     visibility: full.visibility,
     boardLane: full.boardLane,
     boardSortOrder: full.boardSortOrder,
-    linkedRadarItems: full.linkedRadarItems,
     currentAssignments: full.currentAssignments,
     nextReviewAt: full.nextReviewAt
   };
@@ -119,21 +117,6 @@ function makeDeps(
       })
     ),
     createResponsibilityEvent: vi.fn().mockResolvedValue(undefined),
-    listRadarItems: vi.fn().mockResolvedValue([]),
-    createRadarItem: vi.fn().mockResolvedValue({
-      id: "550e8400-e29b-41d4-a716-446655440050",
-      topic: "Review Weekly meal outline",
-      responsibilityId,
-      reasonKey: "review_due",
-      urgency: "normal",
-      visibility: "private",
-      state: "draft",
-      notes: null,
-      targetCheckInId: null,
-      createdAt: "2026-05-04T12:00:00.000Z",
-      updatedAt: "2026-05-04T12:00:00.000Z",
-      resolvedAt: null
-    }),
     ...overrides
   };
 }
@@ -339,13 +322,6 @@ describe("responsibility service", () => {
             ],
             status: "paused"
           })
-        ]),
-        listRadarItems: vi.fn().mockResolvedValue([
-          {
-            id: "550e8400-e29b-41d4-a716-446655440060",
-            responsibilityId,
-            state: "open"
-          }
         ])
       })
     );
@@ -359,45 +335,13 @@ describe("responsibility service", () => {
       alex: 1,
       max: 1
     });
-    expect(overview.loadSnapshot.radarOpenCount).toBe(1);
     expect(overview.loadSnapshot.reviewDueCount).toBe(1);
-    expect(overview.responsibilities[0].linkedRadarItems).toEqual([
-      {
-        id: "550e8400-e29b-41d4-a716-446655440060",
-        state: "open"
-      }
-    ]);
     expect(serialized).not.toMatch(/score|winner|loser|grade|diagnosis/i);
   });
 
-  it("requires a selected persona and uses persona-scoped radar links in load overview", async () => {
-    const alexPrivateRadarId = "550e8400-e29b-41d4-a716-446655440060";
-    const maxPrivateRadarId = "550e8400-e29b-41d4-a716-446655440061";
-    const sharedRadarId = "550e8400-e29b-41d4-a716-446655440062";
-    const listRadarItems = vi
-      .fn()
-      .mockImplementation(
-        async (input: Parameters<ResponsibilityServiceDeps["listRadarItems"]>[0]) => [
-          {
-            id: sharedRadarId,
-            responsibilityId,
-            state: "open"
-          },
-          {
-            id:
-              input.selectedPersonaId === alexId
-                ? alexPrivateRadarId
-                : maxPrivateRadarId,
-            responsibilityId,
-            state: "draft"
-          }
-        ]
-      );
-    const service = createResponsibilityService(
-      makeDeps({
-        listRadarItems
-      })
-    );
+  it("requires a selected persona before returning the load overview", async () => {
+    const deps = makeDeps();
+    const service = createResponsibilityService(deps);
 
     await expect(
       service.listOverview({
@@ -407,38 +351,7 @@ describe("responsibility service", () => {
     ).rejects.toMatchObject({
       code: "AUTH_REQUIRED"
     });
-    expect(listRadarItems).not.toHaveBeenCalled();
-
-    const alexOverview = await service.listOverview(session);
-    const maxOverview = await service.listOverview({
-      ...session,
-      selectedPersonaId: maxId
-    });
-
-    expect(listRadarItems).toHaveBeenCalledWith({
-      householdId,
-      selectedPersonaId: alexId
-    });
-    expect(alexOverview.responsibilities[0].linkedRadarItems).toEqual([
-      {
-        id: sharedRadarId,
-        state: "open"
-      },
-      {
-        id: alexPrivateRadarId,
-        state: "draft"
-      }
-    ]);
-    expect(maxOverview.responsibilities[0].linkedRadarItems).toEqual([
-      {
-        id: sharedRadarId,
-        state: "open"
-      },
-      {
-        id: maxPrivateRadarId,
-        state: "draft"
-      }
-    ]);
+    expect(deps.listResponsibilities).not.toHaveBeenCalled();
   });
 
   it("records neutral status events through the dedicated status path", async () => {
@@ -544,17 +457,4 @@ describe("responsibility service", () => {
     });
   });
 
-  it("requires confirmation when flagging a responsibility into shared radar", async () => {
-    const service = createResponsibilityService(makeDeps());
-
-    await expect(
-      service.flagForRadar(session, responsibilityId, {
-        reasonKey: "review_due",
-        visibility: "shared_household",
-        topic: "Review Weekly meal outline"
-      })
-    ).rejects.toMatchObject({
-      code: "INVALID_INPUT"
-    });
-  });
 });

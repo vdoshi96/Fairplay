@@ -21,7 +21,7 @@ Status: APPROVED_WITH_BLOCKERS.
 | Playwright e2e | Pass | `npm run test:e2e` passed on clean sequential rerun, 10 tests. |
 | Production build | Pass | `rm -rf .next && npm run build` passed on clean sequential rerun. |
 | Browser verification | Pass with limitation | `/login` rendered at `390x844` and `1440x1000`; protected `/app/home` redirected to `/login`; storage/cookies were empty; no console errors. Authenticated persisted flow not verified because DB unavailable. |
-| Browser storage scan | Pass | `rg -n "localStorage|sessionStorage|indexedDB|document\\.cookie" src` found no matches. |
+| Browser storage scan | Pass with expected theme-only storage | `localStorage` is allowed only for non-sensitive device theme preference. Household data, private drafts, sensitive notes, concern details, session secrets, API keys, and credentials must not be stored in `localStorage`, `sessionStorage`, or `indexedDB`; cookies should remain server-managed/session scoped. |
 | Restricted terms | Pass with expected matches | Required scan found legitimate matches in tests, safety/disclaimer copy, product docs, and agent artifacts. |
 | Security/privacy source review | Pass with DB limitation | Password hashing, session token hashing, cookie flags, and no-secret response tests are present. DB-backed repository security tests are blocked by Postgres. |
 | IP/safety source review | Pass | No full starter catalog, copied source labels, partner score/morality/diagnosis/confrontation prompt, or unsafe check-in framing found in reviewed production surfaces. |
@@ -33,7 +33,7 @@ Status: APPROVED_WITH_BLOCKERS.
 - Run `npm run prisma:migrate -- --name verify` or the production-equivalent migration command.
 - Run `npm run prisma:seed` against a disposable verification database.
 - Rerun `npm test -- --run` and require `src/server/repositories/persistence.integration.test.ts` to pass.
-- Complete a live persisted browser flow: create household, choose persona, complete onboarding, create/update at least one responsibility/radar/check-in record, verify persisted reload behavior, and inspect cookies/storage.
+- Complete a live persisted browser flow: create household, choose persona, complete onboarding, create/update at least one responsibility/check-in record, verify persisted reload behavior, and inspect cookies/storage. Confirm browser storage contains only non-sensitive theme preference and no household data, private drafts, sensitive notes, concern details, session secrets, API keys, credentials, or plaintext passwords.
 
 ## Residual Risks
 
@@ -41,6 +41,11 @@ Status: APPROVED_WITH_BLOCKERS.
 - Live persisted auth/session behavior is unproven in this workspace.
 - Route-mocked e2e coverage is useful but does not prove DB persistence or repository scoping.
 - Cookie `secure` is production-only by source review; this was not validated over HTTPS in a deployed production environment.
+
+## 2026-05-07 Local Radar Removal Verification
+
+- Applied `20260507120000_remove_radar` to the local Postgres database.
+- Reran `npm run test -- --run`; all 85 test files and 475 tests passed, including DB-backed repository integration tests.
 
 ## Exact Blocker Output
 

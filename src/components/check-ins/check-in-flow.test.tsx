@@ -18,14 +18,13 @@ const checkIn: GuidedCheckIn = {
   items: [
     {
       id: "550e8400-e29b-41d4-a716-446655440081",
-      itemType: "radar",
+      itemType: "responsibility",
       state: "queued",
-      promptKey: "radar_discussion",
-      radarItemId: "550e8400-e29b-41d4-a716-446655440090",
-      responsibilityId: null,
+      promptKey: "responsibility_review",
+      responsibilityId: "550e8400-e29b-41d4-a716-446655440071",
       sortOrder: 0,
-      title: "Clarify morning handoff",
-      description: "Shared household",
+      title: "Morning handoff",
+      description: "Review due",
       visibility: "shared_household",
       response: null,
       decisionId: null
@@ -35,7 +34,6 @@ const checkIn: GuidedCheckIn = {
       itemType: "responsibility",
       state: "queued",
       promptKey: "responsibility_review",
-      radarItemId: null,
       responsibilityId: "550e8400-e29b-41d4-a716-446655440070",
       sortOrder: 1,
       title: "Weekly meal outline",
@@ -84,7 +82,7 @@ describe("CheckInFlow", () => {
 
     const agenda = screen.getByTestId("check-in-agenda-preview-list");
     expect(agenda).toHaveAttribute("data-guide-id", "check-in-agenda");
-    expect(within(agenda).getByText("Clarify morning handoff")).toBeVisible();
+    expect(within(agenda).getByText("Morning handoff")).toBeVisible();
   });
 
   it("lets users remove suggested agenda items before starting", async () => {
@@ -114,7 +112,7 @@ describe("CheckInFlow", () => {
     ).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: "Preview agenda" }));
-    await screen.findByText("Clarify morning handoff");
+    await screen.findByText("Morning handoff");
     expect(fetch).toHaveBeenCalledWith(
       "/api/check-ins/preview",
       expect.objectContaining({ method: "POST" })
@@ -131,7 +129,7 @@ describe("CheckInFlow", () => {
         "/api/check-ins",
         expect.objectContaining({
           method: "POST",
-          body: expect.stringContaining("550e8400-e29b-41d4-a716-446655440090")
+          body: expect.stringContaining("550e8400-e29b-41d4-a716-446655440071")
         })
       );
     });
@@ -157,7 +155,6 @@ describe("CheckInFlow", () => {
     expect(dialog).toBeVisible();
     expect(within(dialog).getByText(/Review-due cards and saved agenda items/i))
       .toBeVisible();
-    expect(within(dialog).queryByText(/radar/i)).not.toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: "Close" })).toBeVisible();
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
@@ -165,7 +162,7 @@ describe("CheckInFlow", () => {
       .not.toBeInTheDocument();
   });
 
-  it("starts with selected preview item ids without expanding linked responsibilities", async () => {
+  it("starts with selected responsibility ids and omits custom items", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -175,8 +172,12 @@ describe("CheckInFlow", () => {
           items: [
             {
               ...checkIn.items[0],
-              responsibilityId: "550e8400-e29b-41d4-a716-446655440070"
-            }
+              itemType: "custom",
+              promptKey: "acknowledgement",
+              responsibilityId: null,
+              title: "Name one thing that helped this week"
+            },
+            checkIn.items[1]
           ]
         })
       })
@@ -184,7 +185,7 @@ describe("CheckInFlow", () => {
     render(<NewCheckInLauncher />);
 
     fireEvent.click(screen.getByRole("button", { name: "Preview agenda" }));
-    await screen.findByText("Clarify morning handoff");
+    await screen.findByText("Name one thing that helped this week");
     fireEvent.click(screen.getByRole("button", { name: "Start check-in" }));
 
     await waitFor(() => {
@@ -192,12 +193,12 @@ describe("CheckInFlow", () => {
         "/api/check-ins",
         expect.objectContaining({
           method: "POST",
-          body: expect.stringContaining("550e8400-e29b-41d4-a716-446655440090")
+          body: expect.stringContaining("550e8400-e29b-41d4-a716-446655440070")
         })
       );
     });
     expect((fetch as ReturnType<typeof vi.fn>).mock.calls.at(-1)?.[1]?.body)
-      .not.toContain("550e8400-e29b-41d4-a716-446655440070");
+      .not.toContain("550e8400-e29b-41d4-a716-446655440081");
   });
 
   it("sends owner and review date as a structured responsibility decision effect", async () => {
@@ -270,9 +271,9 @@ describe("CheckInFlow", () => {
       "data-guide-id",
       "check-in-agenda"
     );
-    expect(screen.getByRole("heading", { name: "Clarify morning handoff" }))
+    expect(screen.getByRole("heading", { name: "Morning handoff" }))
       .toBeVisible();
-    expect(screen.getByText("Shared household")).toBeVisible();
+    expect(screen.getByText("Shared Household")).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: "Skip" }));
     await waitFor(() => {
@@ -375,7 +376,7 @@ describe("CheckInFlow", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Unable to skip this item."
     );
-    expect(screen.getByRole("heading", { name: "Clarify morning handoff" }))
+    expect(screen.getByRole("heading", { name: "Morning handoff" }))
       .toBeVisible();
   });
 
@@ -386,7 +387,7 @@ describe("CheckInFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Defer" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Unable to defer.");
-    expect(screen.getByRole("heading", { name: "Clarify morning handoff" }))
+    expect(screen.getByRole("heading", { name: "Morning handoff" }))
       .toBeVisible();
   });
 

@@ -105,7 +105,6 @@ function toResponsibilitySummary(
     visibility: responsibility.visibility,
     boardLane: responsibility.boardLane,
     boardSortOrder: responsibility.boardSortOrder,
-    linkedRadarItems: [],
     currentAssignments: currentAssignments(responsibility.assignments),
     nextReviewAt: nullableIso(responsibility.nextReviewAt)
   };

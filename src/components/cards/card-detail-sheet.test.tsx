@@ -52,8 +52,6 @@ describe("CardDetailSheet", () => {
     await userEvent.click(screen.getByRole("button", { name: /move to Alex/i }));
 
     expect(onMove).toHaveBeenCalledWith("player_1");
-    expect(screen.queryByRole("button", { name: /flag for radar/i }))
-      .not.toBeInTheDocument();
   });
 
   it("renders accepted AI-generated cover art as a larger integrated panel", () => {

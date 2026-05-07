@@ -140,26 +140,9 @@ These are optional structured notes that make hidden coordination visible withou
 
 V1 should not ship a full starter library. This entity exists to support a tiny reviewed demo seed set and possible future templates. All template content must be original and IP-reviewed before entering code, tests, fixtures, screenshots, or production data.
 
-## Radar, Check-In, and History Entities
+## Check-In and History Entities
 
-### `RadarItem`
-
-- `id`
-- `householdId`
-- `responsibilityId` nullable
-- `createdByPersonaId`
-- `topic`
-- `notes` nullable
-- `reasonKey`
-- `urgency`
-- `visibility`
-- `state`
-- `targetCheckInId` nullable
-- `createdAt`
-- `updatedAt`
-- `resolvedAt` nullable
-
-Radar items represent concerns, blockers, unclear expectations, or review topics. They are not complaints, accusations, or proof artifacts.
+Radar was retired before this version of the active model. Check-ins now stand on responsibility-linked and custom agenda items rather than a separate Radar item model.
 
 ### `CheckIn`
 
@@ -179,7 +162,6 @@ Radar items represent concerns, blockers, unclear expectations, or review topics
 - `id`
 - `checkInId`
 - `responsibilityId` nullable
-- `radarItemId` nullable
 - `itemType`
 - `state`
 - `promptKey`
@@ -224,7 +206,6 @@ Events should support auditability and trust. Product views should summarize eve
 - `areaDistribution`
 - `cadenceDistribution`
 - `reviewDueCount`
-- `radarOpenCount`
 - `pausedOrNotRelevantCount`
 - `hiddenEffortMix`
 
@@ -239,9 +220,6 @@ Snapshots are aggregate household summaries. They must not produce a "bad partne
 - `Visibility`: `private`, `shared_household`, `partner_visible`, `check_in_only`
 - `Cadence`: `daily`, `weekly`, `monthly`, `seasonal`, `event_based`, `as_needed`, `one_time`
 - `HiddenEffortKey`: `noticing`, `planning`, `doing`, `follow_through`, `emotional_attention`
-- `RadarReasonKey`: `unclear_expectation`, `blocked`, `too_much`, `handoff_needed`, `review_due`, `other`
-- `Urgency`: `low`, `normal`, `soon`
-- `RadarState`: `draft`, `open`, `scheduled`, `discussed`, `resolved`, `dismissed`, `deferred`
 - `CheckInState`: `draft`, `scheduled`, `active`, `completed`, `skipped`
 - `CheckInItemState`: `queued`, `discussed`, `deferred`, `skipped`
 - `DecisionType`: `assign_owner`, `change_role`, `change_standard`, `change_cadence`, `pause`, `mark_not_relevant`, `archive`, `schedule_review`, `custom_note`
@@ -338,20 +316,6 @@ Response:
     { "personaKey": "alex", "role": "accountable_owner", "scope": "outcome" }
   ],
   "nextReviewAt": "2026-06-01T00:00:00.000Z"
-}
-```
-
-### Radar Item Summary
-
-```json
-{
-  "id": "uuid",
-  "topic": "Clarify weekend grocery timing",
-  "responsibilityId": "uuid",
-  "reasonKey": "unclear_expectation",
-  "urgency": "normal",
-  "visibility": "check_in_only",
-  "state": "open"
 }
 ```
 

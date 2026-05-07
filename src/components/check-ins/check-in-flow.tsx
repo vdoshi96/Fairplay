@@ -513,10 +513,6 @@ export function NewCheckInLauncher({
         method: "POST",
         body: JSON.stringify({
           maxItems: 5,
-          radarItemIds: suggestions
-            .filter((item) => item.itemType === "radar")
-            .map((item) => item.radarItemId)
-            .filter((id): id is string => Boolean(id)),
           responsibilityIds: suggestions
             .filter((item) => item.itemType === "responsibility")
             .map((item) => item.responsibilityId)

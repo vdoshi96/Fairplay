@@ -21,7 +21,6 @@ describe("onboarding guide", () => {
     });
     expect(screen.getByText("Map responsibilities")).toBeVisible();
     expect(screen.getByText("Assign ownership")).toBeVisible();
-    expect(screen.queryByText(/radar/i)).not.toBeInTheDocument();
     expect(screen.getByText("Schedule a check-in")).toBeVisible();
     expect(screen.getByText(SAFETY_COPY.unsafeRelationshipCaution)).toBeVisible();
     expect(screen.queryByText(/therapy/i)).not.toBeInTheDocument();

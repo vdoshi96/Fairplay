@@ -39,14 +39,13 @@ describe("/api/check-ins/preview", () => {
       items: [
         {
           id: "550e8400-e29b-41d4-a716-446655440090",
-          itemType: "radar",
+          itemType: "responsibility",
           state: "queued",
-          promptKey: "radar_discussion",
-          radarItemId: "550e8400-e29b-41d4-a716-446655440090",
-          responsibilityId: null,
+          promptKey: "responsibility_review",
+          responsibilityId: "550e8400-e29b-41d4-a716-446655440070",
           sortOrder: 0,
-          title: "Clarify morning handoff",
-          description: "Shared household",
+          title: "Weekly meal outline",
+          description: "Review due",
           visibility: "shared_household",
           response: null,
           decisionId: null

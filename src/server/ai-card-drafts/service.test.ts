@@ -97,7 +97,6 @@ function responsibility(
     visibility: "shared_household",
     boardLane: "not_in_play",
     boardSortOrder: 0,
-    linkedRadarItems: [],
     currentAssignments: [],
     nextReviewAt: null,
     householdStandard: generatedCard.minimumStandard,

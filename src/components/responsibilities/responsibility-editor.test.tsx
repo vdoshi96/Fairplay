@@ -28,7 +28,6 @@ const responsibility: ResponsibilityDetail = {
   relevantDays: ["monday", "thursday"],
   status: "active",
   visibility: "shared_household",
-  linkedRadarItems: [],
   currentAssignments: [
     { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
   ],
@@ -254,14 +253,4 @@ describe("ResponsibilityEditor", () => {
     });
   });
 
-  it("does not expose radar flagging from the responsibility editor", () => {
-    render(
-      <ResponsibilityEditor
-        initialResponsibility={responsibility}
-        personas={personas}
-      />
-    );
-
-    expect(screen.queryByRole("button", { name: /radar/i })).not.toBeInTheDocument();
-  });
 });

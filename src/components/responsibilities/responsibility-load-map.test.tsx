@@ -26,7 +26,6 @@ function responsibility(
     visibility: "shared_household",
     boardLane: "cards_of_concern",
     boardSortOrder: 0,
-    linkedRadarItems: [],
     currentAssignments: [
       { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
     ],
@@ -44,7 +43,6 @@ const loadSnapshot: LoadSnapshotSummary = {
   areaDistribution: { food_flow: 1, home_base: 1 },
   cadenceDistribution: { weekly: 1, monthly: 1 },
   reviewDueCount: 1,
-  radarOpenCount: 1,
   pausedOrNotRelevantCount: 1,
   hiddenEffortMix: { planning: 1, doing: 1 }
 };
@@ -112,13 +110,7 @@ describe("ResponsibilityLoadMap", () => {
             currentAssignments: [
               { personaKey: "max", role: "shared_owner", scope: "part" }
             ],
-            nextReviewAt: "2026-06-01T00:00:00.000Z",
-            linkedRadarItems: [
-              {
-                id: "550e8400-e29b-41d4-a716-446655440030",
-                state: "open"
-              }
-            ]
+            nextReviewAt: "2026-06-01T00:00:00.000Z"
           })
         ]}
       />
@@ -166,8 +158,6 @@ describe("ResponsibilityLoadMap", () => {
     expect(details).toContainElement(screen.getByLabelText("Cadence"));
     expect(details).toContainElement(screen.getByLabelText("Area"));
     expect(attention).toContainElement(screen.getByLabelText("Review timing"));
-    expect(screen.queryByLabelText("Radar")).not.toBeInTheDocument();
-    expect(screen.queryByText("Open radar")).not.toBeInTheDocument();
     expect(screen.getByTestId("load-map-diagnostics")).toContainElement(
       screen.getByText("Hidden effort mix")
     );
@@ -249,28 +239,6 @@ describe("ResponsibilityLoadMap", () => {
     expect(screen.getByTestId("load-map-signal-effort-value")).toHaveClass(
       "[overflow-wrap:anywhere]"
     );
-  });
-
-  it("does not expose linked radar filters or labels on the Load Map", () => {
-    render(
-      <ResponsibilityLoadMap
-        loadSnapshot={loadSnapshot}
-        responsibilities={[
-          responsibility({
-            linkedRadarItems: [
-              {
-                id: "550e8400-e29b-41d4-a716-446655440031",
-                state: "resolved"
-              }
-            ]
-          })
-        ]}
-      />
-    );
-
-    expect(screen.getByText("Weekly meal outline")).toBeVisible();
-    expect(screen.queryByLabelText("Radar")).not.toBeInTheDocument();
-    expect(screen.queryByText(/radar/i)).not.toBeInTheDocument();
   });
 
   it("shows area and hidden effort summary signals from the snapshot", () => {

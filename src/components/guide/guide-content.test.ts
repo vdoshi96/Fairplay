@@ -69,12 +69,6 @@ describe("feature guide content", () => {
     expect(FEATURE_GUIDES.loadMap.steps[0].title).toBe("About this feature");
     expect(FEATURE_GUIDES.loadMap.steps[0].body).toMatch(/practice/i);
     expect(FEATURE_GUIDES.loadMap.steps[0].body).toMatch(/why/i);
-    expect(FEATURE_GUIDES.loadMap.steps[0].body).not.toMatch(/radar/i);
-  });
-
-  it("does not expose Radar as a guided feature", () => {
-    expect(Object.keys(FEATURE_GUIDES)).not.toContain("radar");
-    expect(JSON.stringify(FEATURE_GUIDES)).not.toMatch(/radar/i);
   });
 
   it("uses precise guide targets for completion and movement actions", () => {

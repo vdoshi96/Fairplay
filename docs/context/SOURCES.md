@@ -36,5 +36,4 @@ Last updated: 2026-05-07
 ## Needs Verification
 
 - Whether any remaining `source*` field names, `fairplay-source-cards`, or card-library wording should be renamed to reduce confusion with private-source policy.
-- Whether generated assets or prompts containing Radar concepts remain part of the current product after Radar UI retirement.
 - Whether deprecated AI media fields and endpoints are still needed for migration/backward compatibility.

@@ -122,14 +122,6 @@ const crashCourseSceneSpecs = [
     slug: "crash-course-handoff"
   },
   {
-    alt: "Radar check-in background",
-    composition:
-      "quiet radar rings, topic bubbles, a check-in table shape, and two balanced persona dots moving toward a shared decision path",
-    promptSubject:
-      "noticing household signals before they become stressful",
-    slug: "crash-course-radar-check-in"
-  },
-  {
     alt: "Dynamic fairness background",
     composition:
       "a balanced scale, soft capacity meter, rest symbol, and shared support path with no scores or blame",
@@ -215,17 +207,6 @@ const professionalPageBackgroundSpecs = [
     slug: "library-shelf-background"
   },
   {
-    alt: "Radar signal room background",
-    composition:
-      "a calm signal room with soft radar rings, topic bubbles, abstract trays made only of blank color blocks, a shared decision path, and paired persona dots; no paper notes, no clipped documents, no writing marks",
-    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/backgrounds/radar-signal-room.png`,
-    promptSubject:
-      "professional website background for capturing household concern signals",
-    ratio: "3:2",
-    size: "1536*1024",
-    slug: "radar-signal-room-background"
-  },
-  {
     alt: "Check-in table background",
     composition:
       "a quiet meeting table with blank agenda tiles, decision loop, shared calendar shape, two balanced color dots, and a completion spark",
@@ -302,16 +283,6 @@ export const GENERATED_UI_ASSETS: GeneratedUiAssetSpec[] = [
     slug: "fairplay-mark"
   },
   {
-    alt: "Shared radar illustration",
-    composition:
-      "calm circular pulse rings, two balanced persona dots, helper spark near the edge, and topic bubbles drifting toward a quiet decision path",
-    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/radar-illustration.png`,
-    promptSubject: "low-stress shared attention radar for household planning",
-    ratio: "3:2",
-    size: "1536*1024",
-    slug: "radar-illustration"
-  },
-  {
     alt: "Check-in spark",
     composition:
       "small completed review loop with restrained geometric confetti, two balanced dots, and a helper spark",
@@ -381,16 +352,6 @@ export const GENERATED_UI_ASSETS: GeneratedUiAssetSpec[] = [
     ratio: "4:3",
     size: "1024*768",
     slug: "feature-guide-library"
-  },
-  {
-    alt: "Radar guide thumbnail",
-    composition:
-      "calm circular pulse rings, topic bubbles, two balanced persona dots, and a quiet decision path",
-    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/feature-guide/radar.png`,
-    promptSubject: "shared attention radar helper thumbnail",
-    ratio: "4:3",
-    size: "1024*768",
-    slug: "feature-guide-radar"
   },
   {
     alt: "Check-ins guide thumbnail",

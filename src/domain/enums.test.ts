@@ -9,11 +9,8 @@ import {
   DECISION_TYPES,
   HIDDEN_EFFORT_KEYS,
   PERSONA_KEYS,
-  RADAR_REASON_KEYS,
-  RADAR_STATES,
   RESPONSIBILITY_STATUSES,
   SOURCE_REVIEW_STATUSES,
-  URGENCIES,
   VISIBILITIES,
   AssignmentRoleSchema,
   AssignmentScopeSchema,
@@ -23,11 +20,8 @@ import {
   DecisionTypeSchema,
   HiddenEffortKeySchema,
   PersonaKeySchema,
-  RadarReasonKeySchema,
-  RadarStateSchema,
   ResponsibilityStatusSchema,
   SourceReviewStatusSchema,
-  UrgencySchema,
   VisibilitySchema,
   RESPONSIBILITY_BOARD_LANES,
   ResponsibilityBoardLaneSchema,
@@ -79,24 +73,6 @@ describe("domain enum contracts", () => {
       "follow_through",
       "emotional_attention"
     ]);
-    expect(RADAR_REASON_KEYS).toEqual([
-      "unclear_expectation",
-      "blocked",
-      "too_much",
-      "handoff_needed",
-      "review_due",
-      "other"
-    ]);
-    expect(URGENCIES).toEqual(["low", "normal", "soon"]);
-    expect(RADAR_STATES).toEqual([
-      "draft",
-      "open",
-      "scheduled",
-      "discussed",
-      "resolved",
-      "dismissed",
-      "deferred"
-    ]);
     expect(CHECK_IN_STATES).toEqual([
       "draft",
       "scheduled",
@@ -145,9 +121,6 @@ describe("domain enum contracts", () => {
     expect(VisibilitySchema.parse("check_in_only")).toBe("check_in_only");
     expect(CadenceSchema.parse("daily")).toBe("daily");
     expect(HiddenEffortKeySchema.parse("follow_through")).toBe("follow_through");
-    expect(RadarReasonKeySchema.parse("unclear_expectation")).toBe("unclear_expectation");
-    expect(UrgencySchema.parse("normal")).toBe("normal");
-    expect(RadarStateSchema.parse("open")).toBe("open");
     expect(CheckInStateSchema.parse("scheduled")).toBe("scheduled");
     expect(CheckInItemStateSchema.parse("queued")).toBe("queued");
     expect(DecisionTypeSchema.parse("schedule_review")).toBe("schedule_review");

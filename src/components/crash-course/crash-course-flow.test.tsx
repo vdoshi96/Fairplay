@@ -37,7 +37,6 @@ describe("crash course flow", () => {
     expect(lessonText).toContain("treadmill");
     expect(lessonText).toContain("finite");
     expect(lessonText).toContain("training");
-    expect(lessonText).not.toContain("radar");
     expect(lessonText).toContain("check-in");
     expect(lessonText).toContain("dynamic");
     expect(lessonText).toContain("appreciation");
@@ -158,8 +157,6 @@ describe("crash course flow", () => {
     expect(
       screen.getByRole("link", { name: "Open the Load Map" })
     ).toHaveAttribute("href", "/app/load-map");
-    expect(screen.queryByRole("link", { name: "Add a Radar item" }))
-      .not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Finish course" })
     ).not.toBeInTheDocument();
