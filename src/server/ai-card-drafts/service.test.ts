@@ -231,6 +231,50 @@ describe("AI card draft service", () => {
     expect(deps.acceptDraftAsResponsibility).not.toHaveBeenCalled();
   });
 
+  it("wraps onboarding preview structuring failures without persisting anything sensitive", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const deps = makeDeps({
+      structureTaskAsCard: vi.fn().mockRejectedValue(
+        Object.assign(new Error("preview provider down with sk-secret"), {
+          code: "QWEN_GENERATION_FAILED",
+          provider: "qwen",
+          model: "qwen3.6-max-preview",
+          status: 500,
+          providerRequestId: "qwen_preview_req_123"
+        })
+      )
+    });
+    const service = createAiCardDraftService(deps);
+
+    await expect(
+      service.createOnboardingPreview(
+        session,
+        { inputText: "Weekly backpack reset before school." },
+        { requestId: "fp_ai_preview_test", route: "/api/ai-card-drafts/onboarding-preview" }
+      )
+    ).rejects.toMatchObject({
+      code: "GENERATION_FAILED",
+      message: "AI card draft generation failed."
+    });
+
+    expect(deps.createDraft).not.toHaveBeenCalled();
+    expect(deps.markStage).not.toHaveBeenCalled();
+    expect(deps.saveGeneration).not.toHaveBeenCalled();
+    expect(deps.generateCardCover).not.toHaveBeenCalled();
+    expect(deps.saveCover).not.toHaveBeenCalled();
+    expect(deps.saveFailure).not.toHaveBeenCalled();
+    expect(deps.acceptDraftAsResponsibility).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(
+      "[fairplay-ai-diagnostics]",
+      expect.stringContaining("\"event\":\"generation_failed\"")
+    );
+    expect(warn.mock.calls[0].join(" ")).toContain("fp_ai_preview_test");
+    expect(warn.mock.calls[0].join(" ")).not.toMatch(
+      /Weekly backpack reset|sk-secret|prompt/i
+    );
+    warn.mockRestore();
+  });
+
   it("records a failed draft when text structuring fails", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const deps = makeDeps({

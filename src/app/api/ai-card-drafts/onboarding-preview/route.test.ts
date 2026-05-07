@@ -21,6 +21,14 @@ vi.mock("@/server/ai-card-drafts/service", () => ({
   }
 }));
 
+class PreviewGenerationError extends Error {
+  readonly code = "GENERATION_FAILED";
+
+  constructor() {
+    super("AI card draft generation failed.");
+  }
+}
+
 const session = {
   id: "550e8400-e29b-41d4-a716-446655440030",
   householdId: "550e8400-e29b-41d4-a716-446655440000",
@@ -99,5 +107,22 @@ describe("/api/ai-card-drafts/onboarding-preview", () => {
 
     expect(response.status).toBe(400);
     expect(createOnboardingPreview).not.toHaveBeenCalled();
+  });
+
+  it("returns safe generation failure JSON when preview generation fails", async () => {
+    createOnboardingPreview.mockRejectedValue(new PreviewGenerationError());
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      request({ inputText: "Make a card for the weekly backpack reset." })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(502);
+    expect(body).toEqual({
+      error: "AI card draft generation failed.",
+      code: "GENERATION_FAILED",
+      requestId: "fp_ai_preview_test"
+    });
   });
 });
