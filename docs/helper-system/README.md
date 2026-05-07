@@ -7,8 +7,8 @@ This directory documents Little Alex, the floating Fairplay helper/avatar.
 - `src/components/app-shell/app-shell.tsx` renders `LittleAlexPhysics` on protected app routes and passes `chatPhrase`, `genderPresentation`, and `skinTone` from persona-scoped preferences.
 - `src/components/little-alex/little-alex-physics.tsx` owns rendering, Matter.js bodies, pointer drag/release, idle standing/walking, chat bubble display, viewport clamping, and reduced-motion behavior.
 - `src/components/settings/settings-panel.tsx` owns the Little Alex settings UI and saves the selected presentation, phrase, and skin tone through `/api/preferences/little-alex`.
-- `src/contracts/preferences.ts` defines the persisted preference schema. The current skin tones are `tone_1` through `tone_5`; the default is `tone_2`.
-- `public/assets/fairplay/little-alex-sprites/` contains Qwen-generated presentation assets. It currently has full-body sprites for `neutral`, `masculine`, and `feminine`, plus legacy part sprites.
+- `src/contracts/preferences.ts` defines the persisted preference schema. `src/contracts/little-alex.ts` exposes the client-safe Little Alex constants used by settings and rendering.
+- `public/assets/fairplay/little-alex-sprites/` contains the approved Qwen source sprites plus deterministic tone-aware full-body and part variants for all three presentations and five skin tones.
 
 ## Root Causes
 
@@ -18,7 +18,7 @@ The physics world already creates separate Matter.js bodies for head, torso, arm
 
 ### Skin Tone
 
-The settings and preference pipeline passes `skinTone` correctly into `LittleAlexPhysics`, but rendering applies it only as `--little-alex-skin`. That CSS variable affects the old CSS-rendered head. The visible full-body PNG uses `/assets/fairplay/little-alex-sprites/{presentation}-full.png`, which has a fixed embedded skin tone. As a result, the selector changes state but not the visible character.
+The original bug was in the final render layer: settings and preferences passed `skinTone` correctly, but the visible sprite still used presentation-only PNG paths. The fixed pipeline now resolves full-body and limb sprite paths as `/assets/fairplay/little-alex-sprites/{presentation}-{tone}-{part}.png`, so face, arms, and the settled full-body sprite change together.
 
 ## Implementation Direction
 

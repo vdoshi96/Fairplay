@@ -930,6 +930,15 @@ export function LittleAlexPhysics({
     [syncRagdollVisibility]
   );
 
+  const beginRagdollRecovery = useCallback(() => {
+    setRagdollVisualStateNow("recovering");
+    clearRagdollRecoveryTimeout();
+    ragdollRecoveryTimeoutRef.current = window.setTimeout(() => {
+      setRagdollVisualStateNow("settled");
+      ragdollRecoveryTimeoutRef.current = null;
+    }, RAGDOLL_RECOVERY_TRANSITION_MS);
+  }, [clearRagdollRecoveryTimeout, setRagdollVisualStateNow]);
+
   const updateGaze = useCallback(
     (target: Point) => {
       if (!Number.isFinite(target.x) || !Number.isFinite(target.y)) {
@@ -1044,13 +1053,22 @@ export function LittleAlexPhysics({
     }
 
     const timeout = window.setTimeout(() => {
+      if (ragdollVisualStateRef.current === "flinging") {
+        beginRagdollRecovery();
+      }
       setIdleState("standing");
     }, idleStandDelayMs);
 
     return () => {
       window.clearTimeout(timeout);
     };
-  }, [activityVersion, idleStandDelayMs, motionPreferenceReady, reducedMotion]);
+  }, [
+    activityVersion,
+    beginRagdollRecovery,
+    idleStandDelayMs,
+    motionPreferenceReady,
+    reducedMotion
+  ]);
 
   useEffect(() => {
     if (!motionPreferenceReady || reducedMotion) {
@@ -1092,15 +1110,10 @@ export function LittleAlexPhysics({
       return undefined;
     }
 
-    setRagdollVisualStateNow("recovering");
-    clearRagdollRecoveryTimeout();
-    ragdollRecoveryTimeoutRef.current = window.setTimeout(() => {
-      setRagdollVisualStateNow("settled");
-      ragdollRecoveryTimeoutRef.current = null;
-    }, RAGDOLL_RECOVERY_TRANSITION_MS);
+    beginRagdollRecovery();
 
     return undefined;
-  }, [clearRagdollRecoveryTimeout, idleState, setRagdollVisualStateNow]);
+  }, [beginRagdollRecovery, idleState]);
 
   useEffect(() => {
     syncPhysicsDom();

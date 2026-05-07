@@ -513,6 +513,14 @@ describe("LittleAlexPhysics", () => {
     });
 
     expect(fullSprite).toHaveStyle({ opacity: "1" });
+    expect(screen.getByTestId("little-alex-horne")).toHaveAttribute(
+      "data-idle-state",
+      "standing"
+    );
+    expect(screen.getByTestId("little-alex-horne")).toHaveAttribute(
+      "data-ragdoll-state",
+      "recovering"
+    );
     screen.getAllByTestId("little-alex-body-part").forEach((part) => {
       expect(part).toHaveStyle({ opacity: "1" });
     });
@@ -932,7 +940,9 @@ describe("LittleAlexPhysics", () => {
     const { container } = render(<LittleAlexPhysics />);
     const littleAlex = screen.getByTestId("little-alex-horne");
     const grabTarget = screen.getByTestId("little-alex-grab-target");
-    const torso = container.querySelector<HTMLElement>('[data-part="torso"]');
+    const torso = container.querySelector<HTMLElement>(
+      '[data-testid="little-alex-body-part"][data-part="torso"]'
+    );
 
     expect(torso).not.toBeNull();
     const initialTransform = torso?.style.transform;

@@ -843,6 +843,134 @@ async function littleAlexRigProportionFailures(page: Page) {
   }, littleAlexSpriteParts);
 }
 
+async function littleAlexVisibleRagdollFailures(
+  page: Page,
+  expectedState: "flinging" | "recovering"
+) {
+  return page.evaluate(
+    ({ expectedState, parts }) => {
+      type RectSnapshot = {
+        bottom: number;
+        height: number;
+        left: number;
+        right: number;
+        top: number;
+        width: number;
+      };
+
+      const rectDistance = (a: RectSnapshot, b: RectSnapshot) => {
+        const dx = Math.max(0, a.left - b.right, b.left - a.right);
+        const dy = Math.max(0, a.top - b.bottom, b.top - a.bottom);
+
+        return Math.hypot(dx, dy);
+      };
+      const horizontalOverlap = (a: RectSnapshot, b: RectSnapshot) =>
+        Math.min(a.right, b.right) - Math.max(a.left, b.left);
+
+      const failures: string[] = [];
+      const littleAlex = document.querySelector<HTMLElement>(
+        '[data-testid="little-alex-horne"]'
+      );
+      const fullSprite = document.querySelector<HTMLElement>(
+        '[data-testid="little-alex-full-sprite"]'
+      );
+      const state = littleAlex?.getAttribute("data-ragdoll-state");
+
+      if (state !== expectedState) {
+        failures.push(`expected ragdoll state ${expectedState}, got ${state ?? "none"}`);
+      }
+
+      if (!fullSprite) {
+        failures.push("full-body sprite is missing");
+      } else if (
+        expectedState === "flinging" &&
+        Number.parseFloat(getComputedStyle(fullSprite).opacity) > 0.25
+      ) {
+        failures.push("full-body sprite is still visible during fling");
+      }
+
+      const snapshots = Object.fromEntries(
+        parts.map((part) => {
+          const bodyPart = document.querySelector<HTMLElement>(
+            `[data-testid="little-alex-body-part"][data-part="${part}"]`
+          );
+          const rect = bodyPart?.getBoundingClientRect();
+
+          if (!bodyPart || !rect) {
+            return [part, null];
+          }
+
+          const opacity = Number.parseFloat(getComputedStyle(bodyPart).opacity);
+          if (opacity < 0.75) {
+            failures.push(`${part} opacity ${opacity.toFixed(2)} is not visible`);
+          }
+
+          return [
+            part,
+            {
+              bottom: rect.bottom,
+              height: rect.height,
+              left: rect.left,
+              right: rect.right,
+              top: rect.top,
+              width: rect.width
+            }
+          ];
+        })
+      ) as Record<string, RectSnapshot | null>;
+
+      const head = snapshots.head;
+      const torso = snapshots.torso;
+      const leftArm = snapshots.leftArm;
+      const rightArm = snapshots.rightArm;
+      const leftLeg = snapshots.leftLeg;
+      const rightLeg = snapshots.rightLeg;
+
+      if (!head || !torso || !leftArm || !rightArm || !leftLeg || !rightLeg) {
+        failures.push("one or more visible ragdoll parts are missing");
+        return failures;
+      }
+
+      if (rectDistance(head, torso) > 18) {
+        failures.push(`head/torso gap ${rectDistance(head, torso).toFixed(1)} > 18`);
+      }
+
+      for (const [name, limb, maxGap] of [
+        ["leftArm", leftArm, 24],
+        ["rightArm", rightArm, 24],
+        ["leftLeg", leftLeg, 20],
+        ["rightLeg", rightLeg, 20]
+      ] as const) {
+        const gap = rectDistance(torso, limb);
+
+        if (gap > maxGap) {
+          failures.push(`torso/${name} gap ${gap.toFixed(1)} > ${maxGap}`);
+        }
+      }
+
+      if (horizontalOverlap(head, torso) < Math.min(head.width, torso.width) * 0.18) {
+        failures.push("head/torso horizontal overlap is too small");
+      }
+
+      return failures;
+    },
+    { expectedState, parts: littleAlexSpriteParts }
+  );
+}
+
+async function expectVisibleRagdollConnected(
+  page: Page,
+  expectedState: "flinging" | "recovering",
+  timeout = 3_000
+) {
+  await expect
+    .poll(() => littleAlexVisibleRagdollFailures(page, expectedState), {
+      intervals: [25],
+      timeout
+    })
+    .toEqual([]);
+}
+
 async function littleAlexScreenshotPixelFailures(
   page: Page,
   presentation: LittleAlexSpritePresentation,
@@ -992,7 +1120,9 @@ test.describe("Little Alex physics", () => {
     );
     await expect(page.getByTestId("little-alex-chat-bubble")).toHaveCount(0);
 
-    const torso = page.locator('[data-part="torso"]');
+    const torso = page.locator(
+      '[data-testid="little-alex-body-part"][data-part="torso"]'
+    );
     const before = await torso.boundingBox();
 
     await dragLittleAlex(page, -240, 180);
@@ -1012,6 +1142,21 @@ test.describe("Little Alex physics", () => {
     }
 
     await expectLittleAlexInViewport(page);
+  });
+
+  test("reveals connected limb sprites during fling and recovery", async ({ page }) => {
+    await createHouseholdAndChooseAlex(page);
+    await page.goto("/app/home");
+
+    const littleAlex = page.getByTestId("little-alex-horne");
+
+    await expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
+    await dragLittleAlex(page, -260, 150);
+    await expectVisibleRagdollConnected(page, "flinging");
+    await expectVisibleRagdollConnected(page, "recovering", 8_000);
+    await expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled", {
+      timeout: 1_500
+    });
   });
 
   test("stays to the right of the desktop sidebar after a leftward fling", async ({
@@ -1146,7 +1291,9 @@ test.describe("Little Alex physics", () => {
     await expect(littleAlex).toHaveAttribute("data-motion-mode", "reduced");
     await expect(littleAlex).toHaveAttribute("data-idle-state", "static");
 
-    const torso = page.locator('[data-part="torso"]');
+    const torso = page.locator(
+      '[data-testid="little-alex-body-part"][data-part="torso"]'
+    );
     const before = await torso.boundingBox();
     await dragLittleAlex(page, -180, 80);
     const after = await torso.boundingBox();

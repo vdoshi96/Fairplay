@@ -8,7 +8,7 @@
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
-- `npm run test:e2e -- little-alex-physics.spec.ts`
+- `npm run test:e2e -- little-alex-physics.spec.ts` verifies settled sprite loading, visible fling/recovery limb attachment, viewport containment, saved tone propagation, reduced-motion behavior, and presentation screenshots.
 
 ## Manual Browser QA
 

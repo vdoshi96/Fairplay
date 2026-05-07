@@ -30,3 +30,10 @@
 - TDD green: focused tests passed after path changes and generated assets.
 - Checks: `npm run assets:generate-little-alex-skin-tones -- --dry-run`, `npm run assets:generate-little-alex-skin-tones`, focused Vitest coverage, `npm run lint`, `npm run typecheck`, and `npm run build` passed.
 - Asset note: Qwen was not called on this branch. The script used existing approved Qwen assets as source images and Sharp for deterministic skin-pixel recoloring.
+
+## helper-polish-and-qa
+
+- Scope: tightened the recovery transition so the visible limb layer enters `recovering` before idle pose sync writes neutral transforms.
+- QA hardening: added e2e coverage for visible, connected limb sprites during both `flinging` and `recovering`, including full-body fade-out and body-part opacity checks.
+- Checks: focused Vitest coverage, `npm run lint`, `npm run typecheck`, `npm run build`, and `npm run test:e2e -- little-alex-physics.spec.ts` passed.
+- Documentation: refreshed the README skin-tone root cause text and QA checklist to reflect the implemented tone-aware sprite pipeline.
