@@ -20,4 +20,3 @@
 - Stayed inside `/Users/vishal/Developer/Fairplay/.worktrees/home-loadmap-refresh`.
 - Did not edit shared worktrees after correcting an accidental patch-tool target before implementation.
 - User-facing Load Map lane labels now use `Alex` and `Max`; seeded source-card titles and unrelated card sheet copy remain outside this branch scope.
-

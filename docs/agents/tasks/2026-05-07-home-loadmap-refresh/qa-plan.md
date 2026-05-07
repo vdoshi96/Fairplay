@@ -19,4 +19,3 @@
 ## Playwright
 
 - Full Playwright was intentionally not run because the branch brief says not to run it concurrently with other agents.
-

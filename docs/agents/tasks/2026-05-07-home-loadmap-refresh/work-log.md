@@ -13,4 +13,3 @@
 
 - Revert this branch commit to restore the prior welcome actions, homepage card-only background, flat Load Map filters, and Player lane labels.
 - If only lane copy causes merge friction, `src/components/responsibilities/board-lanes.ts` and the practice-board strings in `responsibility-load-map.tsx` are the narrow rollback area.
-
