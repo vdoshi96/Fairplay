@@ -48,6 +48,7 @@ const aiDrafts: AiCardDraftSummary[] = [
     areaKeys: [],
     hiddenEffortKeys: [],
     cadence: null,
+    coverAssetPath: null,
     failureMessage: null,
     acceptedResponsibilityId: null,
     createdAt: "2026-05-05T12:00:00.000Z",

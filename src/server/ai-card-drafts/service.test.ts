@@ -4,7 +4,7 @@ vi.mock("server-only", () => ({}));
 
 import type { AiCardDraftDetail, AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import type { ResponsibilityDetail } from "@/contracts/responsibilities";
-import type { StructuredAiCard } from "@/server/ai/card-generator";
+import type { GeneratedCoverImage, StructuredAiCard } from "@/server/ai/card-generator";
 import type { CurrentSession } from "@/server/auth/current-session";
 import { RepositoryError } from "@/server/db/errors";
 import {
@@ -41,6 +41,11 @@ const generatedCard: StructuredAiCard = {
   minimumStandard: "Medicine is given by the due date."
 };
 
+const generatedCover: GeneratedCoverImage = {
+  bytes: new Uint8Array([137, 80, 78, 71]),
+  mimeType: "image/png"
+};
+
 function draft(overrides: Partial<AiCardDraftDetail> = {}): AiCardDraftDetail {
   return {
     id: draftId,
@@ -53,6 +58,7 @@ function draft(overrides: Partial<AiCardDraftDetail> = {}): AiCardDraftDetail {
     areaKeys: [],
     hiddenEffortKeys: [],
     cadence: null,
+    coverAssetPath: null,
     failureMessage: null,
     acceptedResponsibilityId: null,
     createdAt: "2026-05-04T12:00:00.000Z",
@@ -127,6 +133,12 @@ function makeDeps(overrides: Partial<AiCardDraftServiceDeps> = {}): AiCardDraftS
         ...("card" in _input && _input.card ? _input.card : {}),
       })
     ),
+    generateCardCover: vi.fn().mockResolvedValue(generatedCover),
+    saveCover: vi.fn().mockImplementation(async (_input) =>
+      readyDraft({
+        coverAssetPath: `/api/ai-card-drafts/${_input.draftId}/cover`
+      })
+    ),
     saveFailure: vi.fn().mockImplementation(async (_input) =>
       draft({
         status: "failed",
@@ -170,6 +182,8 @@ describe("AI card draft service", () => {
     });
     expect(vi.mocked(deps.markStage).mock.calls.map(([input]) => input.stage)).toEqual([
       "structuring",
+      "generating_image",
+      "saving_image",
       "ready"
     ]);
     expect(deps.structureTaskAsCard).toHaveBeenCalledWith({
@@ -179,6 +193,19 @@ describe("AI card draft service", () => {
       householdId,
       draftId,
       card: generatedCard
+    });
+    expect(deps.generateCardCover).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: generatedCard.title,
+        imagePrompt: expect.stringContaining(generatedCard.summary),
+        negativePrompt: expect.stringContaining("logos")
+      })
+    );
+    expect(deps.saveCover).toHaveBeenCalledWith({
+      householdId,
+      draftId,
+      bytes: generatedCover.bytes,
+      mimeType: generatedCover.mimeType
     });
   });
 
@@ -210,6 +237,8 @@ describe("AI card draft service", () => {
     });
 
     expect(deps.saveGeneration).not.toHaveBeenCalled();
+    expect(deps.generateCardCover).not.toHaveBeenCalled();
+    expect(deps.saveCover).not.toHaveBeenCalled();
     expect(deps.saveFailure).toHaveBeenCalledWith({
       householdId,
       draftId,
@@ -223,6 +252,33 @@ describe("AI card draft service", () => {
     expect(warn.mock.calls[0].join(" ")).toContain("fp_ai_test");
     expect(warn.mock.calls[0].join(" ")).not.toMatch(/Dog medicine|sk-secret|prompt/i);
     warn.mockRestore();
+  });
+
+  it("keeps structured text and marks the draft failed when cover generation fails", async () => {
+    const deps = makeDeps({
+      generateCardCover: vi.fn().mockRejectedValue(new Error("image provider down"))
+    });
+    const service = createAiCardDraftService(deps);
+
+    await expect(
+      service.createFromText(session, { inputText: "Dog medicine" })
+    ).rejects.toMatchObject({
+      code: "GENERATION_FAILED",
+      draftId
+    });
+
+    expect(deps.saveGeneration).toHaveBeenCalledWith({
+      householdId,
+      draftId,
+      card: generatedCard
+    });
+    expect(deps.saveCover).not.toHaveBeenCalled();
+    expect(deps.saveFailure).toHaveBeenCalledWith({
+      householdId,
+      draftId,
+      failureCode: "GENERATION_FAILED",
+      failureMessage: "AI card draft generation failed."
+    });
   });
 
   it("passes diagnostics context into generation dependencies", async () => {
@@ -276,12 +332,13 @@ describe("AI card draft service", () => {
     }
   );
 
-  it("marks failed drafts with existing generated text ready on retry without rewriting generation", async () => {
+  it("generates the missing cover when retrying failed drafts with existing generated text", async () => {
     const deps = makeDeps({
       getDraft: vi.fn().mockResolvedValue(
         readyDraft({
           status: "failed",
           generationStage: "failed",
+          coverAssetPath: null,
           failureMessage: "Previous ready transition failed."
         })
       ),
@@ -309,11 +366,23 @@ describe("AI card draft service", () => {
 
     expect(deps.structureTaskAsCard).not.toHaveBeenCalled();
     expect(deps.saveGeneration).not.toHaveBeenCalled();
-    expect(deps.markStage).toHaveBeenCalledWith({
+    expect(deps.generateCardCover).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: generatedCard.title,
+        imagePrompt: expect.stringContaining(generatedCard.summary)
+      })
+    );
+    expect(deps.saveCover).toHaveBeenCalledWith({
       householdId,
       draftId,
-      stage: "ready"
+      bytes: generatedCover.bytes,
+      mimeType: generatedCover.mimeType
     });
+    expect(vi.mocked(deps.markStage).mock.calls.map(([input]) => input.stage)).toEqual([
+      "generating_image",
+      "saving_image",
+      "ready"
+    ]);
   });
 
   it.each(["accepted", "canceled"] as const)(

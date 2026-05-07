@@ -31,7 +31,7 @@ Required variables:
 - `AUTH_COOKIE_NAME`: defaults to `fairplay_session`.
 - `APP_BASE_URL`: local app URL, usually `http://localhost:3000`.
 
-AI Task Manager card generation is text-only. It needs the Qwen card key/model/base URL values and does not require ASR, OCR, audio, or image-generation variables. When `AI_PROVIDER_FALLBACK_ENABLED=true`, the Library generation path uses only the OpenAI text fallback variables.
+AI Task Manager card generation uses Qwen for structured text and generated cover images styled after the current local Library cards. It needs the Qwen card key/model/base URL values plus `QWEN_IMAGE_API_KEY`, `QWEN_IMAGE_MODEL`, and `QWEN_IMAGE_BASE_URL`; it does not require ASR, OCR, audio, or upload variables. When `AI_PROVIDER_FALLBACK_ENABLED=true`, the Library generation path may use OpenAI text and image fallback variables.
 
 Do not commit local env files, managed database credentials, plaintext passwords, seed real household records, or private reference materials.
 

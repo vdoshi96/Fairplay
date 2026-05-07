@@ -38,8 +38,8 @@ Required variables:
 - `SESSION_SECRET`: long random secret for server-managed sessions. Use a different value per environment.
 - `AUTH_COOKIE_NAME`: defaults to `fairplay_session`.
 - `APP_BASE_URL`: app origin, such as `http://localhost:3000` locally.
-- AI Task Manager card generation is text-only. Qwen text structuring requires `QWEN_CARD_API_KEY`, `QWEN_CARD_MODEL`, and `QWEN_OPENAI_BASE_URL`; it does not require ASR, OCR, audio, or image-generation variables.
-- Optional OpenAI fallback is enabled only when `AI_PROVIDER_FALLBACK_ENABLED=true`. The Library card-generation path uses only the text fallback variables: `OPENAI_BASE_URL`, `OPENAI_TEXT_MODEL`, and `OPENAI_TEXT_API_KEY`.
+- AI Task Manager card generation uses Qwen for text structuring and generated cover images styled after the current local Library cards. Configure `QWEN_CARD_API_KEY`, `QWEN_CARD_MODEL`, `QWEN_OPENAI_BASE_URL`, `QWEN_IMAGE_API_KEY`, `QWEN_IMAGE_MODEL`, and `QWEN_IMAGE_BASE_URL`; it does not require ASR, OCR, audio, or upload variables.
+- Optional OpenAI fallback is enabled only when `AI_PROVIDER_FALLBACK_ENABLED=true`. The Library card-generation path can use `OPENAI_BASE_URL`, `OPENAI_TEXT_MODEL`, `OPENAI_TEXT_API_KEY`, `OPENAI_IMAGE_MODEL`, and `OPENAI_IMAGE_API_KEY`.
 
 Environment variables must be configured outside source. Do not commit `.env`, `.env.local`, managed database credentials, real session secrets, plaintext passwords, seed real household records, or private reference materials.
 

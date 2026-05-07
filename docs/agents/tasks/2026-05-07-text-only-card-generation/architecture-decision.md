@@ -1,5 +1,9 @@
 # Architecture Decision
 
+## Superseded
+
+This decision was superseded on 2026-05-07 by `docs/agents/tasks/2026-05-07-ai-card-image-generation/architecture-decision.md`. AI draft input remains text-only, but a successful draft now requires generated cover art again.
+
 ## Decision
 
 AI card generation for the Library product flow is text-only.

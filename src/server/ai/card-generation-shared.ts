@@ -39,7 +39,7 @@ export type GeneratedCoverImage = {
   mimeType: string;
 };
 
-export const MAX_IMAGE_PROMPT_CHARS = 800;
+export const MAX_IMAGE_PROMPT_CHARS = 1600;
 export const MAX_IMAGE_NEGATIVE_PROMPT_CHARS = 500;
 export const MAX_GENERATED_IMAGE_BYTES = 5 * 1024 * 1024;
 
@@ -71,17 +71,27 @@ export const cardSystemPrompt = [
 ].join("\n");
 
 const imageStylePrompt = [
-  "Create an original textless app illustration for Fairplay in a 5:7 portrait composition.",
-  "Make it feel like a Duolingo-style integrated app illustration: one large central silhouette, generous whitespace, soft Fairplay teal/coral/yellow/dark-ink accents, and artwork blended into the app composition.",
-  "Use household-object shapes and friendly abstract forms, with no fake card frame, no border, no readable words, no captions, no labels, no logos, no watermarks, and no standalone thumbnail layout.",
-  "Do not copy public source decks, workbook/Trello/card layouts, proprietary labels, people, partner blame, or gendered chore stereotypes."
+  "Create a flat 5:7 portrait PNG cover matching the current Fairplay Library card asset style.",
+  "Use a full-bleed pale blush/pink background, no outer border, no white inner panel, no rounded card corners, no shadow, no perspective, and no photographed tabletop.",
+  "Place a small uppercase black serif/typewriter title near the top right, orange all-caps vertical category labels near the upper left and lower right, and a small flat orange mug marker near the lower left.",
+  "Use one centered rough hand-drawn household-object illustration with black ink outlines and limited orange or yellow fill accents.",
+  "Do not copy an existing card image; create an original object drawing in the same local Library asset style. No public source deck replica, no workbook/Trello/card screenshots, no copyrighted logos, no watermarks, no people, no partner blame, and no gendered chore stereotypes."
 ].join(" ");
 
 const imageNegativePrompt = [
   "copied public source deck style",
+  "exact replica",
+  "rounded card",
+  "white page margin",
+  "white inner panel",
+  "drop shadow",
+  "photorealistic card",
+  "tabletop photo",
   "workbook layout",
   "Trello layout",
+  "card screenshot",
   "readable proprietary labels",
+  "copyrighted logos",
   "logos",
   "watermarks",
   "people",
