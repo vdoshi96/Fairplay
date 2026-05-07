@@ -16,6 +16,21 @@ export type QwenConfig = {
   imageBaseUrl: string;
 };
 
+export type QwenTextConfig = Pick<
+  QwenConfig,
+  "cardApiKey" | "cardModel" | "openAiBaseUrl"
+>;
+
+export type QwenAsrConfig = Pick<
+  QwenConfig,
+  "cardApiKey" | "asrModel" | "openAiBaseUrl"
+>;
+
+export type QwenImageConfig = Pick<
+  QwenConfig,
+  "imageApiKey" | "imageModel" | "imageBaseUrl"
+>;
+
 export class QwenConfigError extends Error {
   readonly code = "QWEN_CONFIG_MISSING";
 
@@ -49,18 +64,9 @@ const envMapping = {
 export function getQwenConfig(
   env: Record<string, string | undefined> = process.env
 ): QwenConfig {
-  const missingNames = Object.values(envMapping).filter(
-    (name) => !unsafeValueLooksPresent(env[name])
-  );
-
-  if (missingNames.length > 0) {
-    throw new QwenConfigError(missingNames);
-  }
-
+  assertQwenEnvPresent(Object.keys(envMapping) as Array<keyof QwenConfig>, env);
   const imageModel = env.QWEN_IMAGE_MODEL as string;
-  if (!isApprovedQwenImageModel(imageModel)) {
-    throw new QwenImageModelConfigError();
-  }
+  assertApprovedQwenImageModel(imageModel);
 
   return {
     cardApiKey: env.QWEN_CARD_API_KEY as string,
@@ -71,4 +77,61 @@ export function getQwenConfig(
     imageModel,
     imageBaseUrl: env.QWEN_IMAGE_BASE_URL as string
   };
+}
+
+export function getQwenTextConfig(
+  env: Record<string, string | undefined> = process.env
+): QwenTextConfig {
+  assertQwenEnvPresent(["cardApiKey", "cardModel", "openAiBaseUrl"], env);
+
+  return {
+    cardApiKey: env.QWEN_CARD_API_KEY as string,
+    cardModel: env.QWEN_CARD_MODEL as string,
+    openAiBaseUrl: env.QWEN_OPENAI_BASE_URL as string
+  };
+}
+
+export function getQwenAsrConfig(
+  env: Record<string, string | undefined> = process.env
+): QwenAsrConfig {
+  assertQwenEnvPresent(["cardApiKey", "asrModel", "openAiBaseUrl"], env);
+
+  return {
+    cardApiKey: env.QWEN_CARD_API_KEY as string,
+    asrModel: env.QWEN_ASR_MODEL as string,
+    openAiBaseUrl: env.QWEN_OPENAI_BASE_URL as string
+  };
+}
+
+export function getQwenImageConfig(
+  env: Record<string, string | undefined> = process.env
+): QwenImageConfig {
+  assertQwenEnvPresent(["imageApiKey", "imageModel", "imageBaseUrl"], env);
+  const imageModel = env.QWEN_IMAGE_MODEL as string;
+  assertApprovedQwenImageModel(imageModel);
+
+  return {
+    imageApiKey: env.QWEN_IMAGE_API_KEY as string,
+    imageModel,
+    imageBaseUrl: env.QWEN_IMAGE_BASE_URL as string
+  };
+}
+
+function assertQwenEnvPresent(
+  keys: Array<keyof QwenConfig>,
+  env: Record<string, string | undefined>
+) {
+  const missingNames = keys
+    .map((key) => envMapping[key])
+    .filter((name) => !unsafeValueLooksPresent(env[name]));
+
+  if (missingNames.length > 0) {
+    throw new QwenConfigError(missingNames);
+  }
+}
+
+function assertApprovedQwenImageModel(imageModel: string) {
+  if (!isApprovedQwenImageModel(imageModel)) {
+    throw new QwenImageModelConfigError();
+  }
 }

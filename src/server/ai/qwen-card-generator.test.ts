@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -25,6 +25,10 @@ const config: QwenConfig = {
   imageModel: "qwen-image-2.0-pro",
   imageBaseUrl: "https://qwen.example/api/v1"
 };
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 function jsonResponse(body: unknown, init: ResponseInit = {}) {
   return new Response(JSON.stringify(body), {
@@ -132,6 +136,120 @@ describe("Qwen card generator", () => {
         QWEN_IMAGE_BASE_URL: "https://qwen.example/api/v1"
       })
     ).toThrow(/QWEN_CARD_API_KEY, QWEN_ASR_MODEL/);
+  });
+
+  it("structures text cards without requiring unrelated Qwen ASR or image env", async () => {
+    vi.stubEnv("QWEN_CARD_API_KEY", "card-secret");
+    vi.stubEnv("QWEN_CARD_MODEL", "qwen3.6-max-preview");
+    vi.stubEnv("QWEN_OPENAI_BASE_URL", "https://qwen.example/compatible-mode/v1");
+    vi.stubEnv("QWEN_ASR_MODEL", "");
+    vi.stubEnv("QWEN_IMAGE_API_KEY", "");
+    vi.stubEnv("QWEN_IMAGE_MODEL", "");
+    vi.stubEnv("QWEN_IMAGE_BASE_URL", "");
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                title: "Library Book Returns",
+                summary: "Keep borrowed books moving back on time.",
+                areaKeys: ["home_admin"],
+                hiddenEffortKeys: ["noticing", "planning", "doing"],
+                cadence: "weekly",
+                definition: "Track checked-out books and due dates.",
+                conception: "Notice when books enter the house.",
+                planning: "Check due dates and renew when useful.",
+                execution: "Return books before fees or replacement stress.",
+                minimumStandard: "Books are returned or renewed by due date.",
+                imagePrompt: "A library book stack with a due-date slip.",
+                imageNegativePrompt: "logos, people, readable labels"
+              })
+            }
+          }
+        ]
+      })
+    );
+
+    await expect(
+      structureTaskAsCard(
+        { taskText: "make a card for library book returns" },
+        { fetch: fetchMock }
+      )
+    ).resolves.toMatchObject({ title: "Library Book Returns" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    vi.unstubAllEnvs();
+  });
+
+  it("transcribes audio without requiring unrelated Qwen image env", async () => {
+    vi.stubEnv("QWEN_CARD_API_KEY", "card-secret");
+    vi.stubEnv("QWEN_ASR_MODEL", "qwen3-asr-flash");
+    vi.stubEnv("QWEN_OPENAI_BASE_URL", "https://qwen.example/compatible-mode/v1");
+    vi.stubEnv("QWEN_CARD_MODEL", "");
+    vi.stubEnv("QWEN_IMAGE_API_KEY", "");
+    vi.stubEnv("QWEN_IMAGE_MODEL", "");
+    vi.stubEnv("QWEN_IMAGE_BASE_URL", "");
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        choices: [{ message: { content: "Dog meds every first Monday." } }]
+      })
+    );
+
+    await expect(
+      transcribeAudio(
+        { bytes: new Uint8Array([104, 105]), mimeType: "audio/webm" },
+        { fetch: fetchMock }
+      )
+    ).resolves.toBe("Dog meds every first Monday.");
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    vi.unstubAllEnvs();
+  });
+
+  it("generates images without requiring unrelated Qwen text or ASR env", async () => {
+    vi.stubEnv("QWEN_IMAGE_API_KEY", "image-secret");
+    vi.stubEnv("QWEN_IMAGE_MODEL", "qwen-image-2.0-pro");
+    vi.stubEnv("QWEN_IMAGE_BASE_URL", "https://qwen.example/api/v1");
+    vi.stubEnv("QWEN_CARD_API_KEY", "");
+    vi.stubEnv("QWEN_CARD_MODEL", "");
+    vi.stubEnv("QWEN_ASR_MODEL", "");
+    vi.stubEnv("QWEN_OPENAI_BASE_URL", "");
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          output: {
+            choices: [
+              {
+                message: {
+                  content: [{ image: "https://cdn.example/cover.png" }]
+                }
+              }
+            ]
+          }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(pngBytes(5, 7), {
+          status: 200,
+          headers: { "content-type": "image/png" }
+        })
+      );
+
+    await expect(
+      generateCardCover(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock }
+      )
+    ).resolves.toMatchObject({ mimeType: "image/png" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    vi.unstubAllEnvs();
   });
 
   it("structures a task as strict Fairplay card JSON", async () => {

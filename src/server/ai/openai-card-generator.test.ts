@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -20,6 +20,10 @@ const config: OpenAiEnabledFallbackConfig = {
   imageApiKey: "image-secret",
   imageModel: "gpt-image-1-mini"
 };
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 function jsonResponse(body: unknown, init: ResponseInit = {}) {
   return new Response(JSON.stringify(body), {
@@ -165,6 +169,94 @@ describe("OpenAI fallback card generator", () => {
       status: 429,
       providerRequestId: "openai_req_123"
     });
+  });
+
+  it("structures text cards without requiring unrelated OpenAI ASR or image fallback env", async () => {
+    vi.stubEnv("AI_PROVIDER_FALLBACK_ENABLED", "true");
+    vi.stubEnv("OPENAI_BASE_URL", "https://api.openai.example/v1");
+    vi.stubEnv("OPENAI_TEXT_API_KEY", "text-secret");
+    vi.stubEnv("OPENAI_TEXT_MODEL", "gpt-5-nano");
+    vi.stubEnv("OPENAI_ASR_API_KEY", "");
+    vi.stubEnv("OPENAI_ASR_MODEL", "");
+    vi.stubEnv("OPENAI_IMAGE_API_KEY", "");
+    vi.stubEnv("OPENAI_IMAGE_MODEL", "");
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        output_text: JSON.stringify(validCard)
+      })
+    );
+
+    await expect(
+      structureTaskAsCardWithOpenAi(
+        { taskText: "make a card for library book returns" },
+        { fetch: fetchMock }
+      )
+    ).resolves.toMatchObject({ title: "Library Book Returns" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    vi.unstubAllEnvs();
+  });
+
+  it("transcribes audio without requiring unrelated OpenAI text or image fallback env", async () => {
+    vi.stubEnv("AI_PROVIDER_FALLBACK_ENABLED", "true");
+    vi.stubEnv("OPENAI_BASE_URL", "https://api.openai.example/v1");
+    vi.stubEnv("OPENAI_ASR_API_KEY", "asr-secret");
+    vi.stubEnv("OPENAI_ASR_MODEL", "gpt-4o-mini-transcribe");
+    vi.stubEnv("OPENAI_TEXT_API_KEY", "");
+    vi.stubEnv("OPENAI_TEXT_MODEL", "");
+    vi.stubEnv("OPENAI_IMAGE_API_KEY", "");
+    vi.stubEnv("OPENAI_IMAGE_MODEL", "");
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        text: "Dog medicine every month."
+      })
+    );
+
+    await expect(
+      transcribeAudioWithOpenAi(
+        { bytes: new Uint8Array([1, 2, 3]), mimeType: "audio/webm" },
+        { fetch: fetchMock }
+      )
+    ).resolves.toBe("Dog medicine every month.");
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    vi.unstubAllEnvs();
+  });
+
+  it("generates images without requiring unrelated OpenAI text or ASR fallback env", async () => {
+    vi.stubEnv("AI_PROVIDER_FALLBACK_ENABLED", "true");
+    vi.stubEnv("OPENAI_BASE_URL", "https://api.openai.example/v1");
+    vi.stubEnv("OPENAI_IMAGE_API_KEY", "image-secret");
+    vi.stubEnv("OPENAI_IMAGE_MODEL", "gpt-image-1-mini");
+    vi.stubEnv("OPENAI_TEXT_API_KEY", "");
+    vi.stubEnv("OPENAI_TEXT_MODEL", "");
+    vi.stubEnv("OPENAI_ASR_API_KEY", "");
+    vi.stubEnv("OPENAI_ASR_MODEL", "");
+    const imageBytes = pngBytes(1024, 1536);
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        data: [
+          {
+            b64_json: Buffer.from(imageBytes).toString("base64")
+          }
+        ],
+        output_format: "png"
+      })
+    );
+
+    await expect(
+      generateCardCoverWithOpenAi(
+        {
+          title: "Dog Meds",
+          imagePrompt: "heartworm medicine calendar card",
+          negativePrompt: "people, logos"
+        },
+        { fetch: fetchMock }
+      )
+    ).resolves.toMatchObject({ mimeType: "image/png" });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    vi.unstubAllEnvs();
   });
 
   it("structures a task through the Responses API with strict JSON schema output", async () => {

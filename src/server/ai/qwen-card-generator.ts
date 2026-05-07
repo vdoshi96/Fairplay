@@ -16,7 +16,16 @@ import {
 } from "./card-generation-shared";
 import { approvedImageModelSummary, isApprovedQwenImageModel } from "./approved-image-models";
 import { providerRequestIdFromHeaders } from "./diagnostics";
-import { getQwenConfig, type QwenConfig } from "./qwen-config";
+import {
+  getQwenAsrConfig,
+  getQwenImageConfig,
+  getQwenTextConfig,
+  QwenConfigError,
+  type QwenAsrConfig,
+  type QwenConfig,
+  type QwenImageConfig,
+  type QwenTextConfig
+} from "./qwen-config";
 
 export type { GeneratedCoverImage, StructuredAiCard } from "./card-generation-shared";
 
@@ -72,7 +81,7 @@ export async function transcribeAudio(
   input: { bytes: Uint8Array; mimeType: string; contextText?: string },
   deps: QwenGeneratorDeps = {}
 ): Promise<string> {
-  const config = resolveConfig(deps);
+  const config = resolveAsrConfig(deps);
   const fetchImpl = resolveFetch(deps);
   const messages: Array<Record<string, unknown>> = [];
 
@@ -127,7 +136,7 @@ export async function structureTaskAsCard(
   input: { taskText: string; existingDraft?: Partial<StructuredAiCard> },
   deps: QwenGeneratorDeps = {}
 ): Promise<StructuredAiCard> {
-  const config = resolveConfig(deps);
+  const config = resolveTextConfig(deps);
   const fetchImpl = resolveFetch(deps);
   const userPrompt = buildCardStructuringUserPrompt(input);
 
@@ -162,7 +171,7 @@ export async function generateCardCover(
   input: { title: string; imagePrompt: string; negativePrompt: string },
   deps: QwenGeneratorDeps = {}
 ): Promise<GeneratedCoverImage> {
-  const config = resolveConfig(deps);
+  const config = resolveImageConfig(deps);
   const fetchImpl = resolveFetch(deps);
   const prompt = buildImagePrompt(input.title, input.imagePrompt);
   const negativePrompt = buildImageNegativePrompt(input.negativePrompt);
@@ -254,8 +263,34 @@ export async function generateCardCover(
   };
 }
 
-function resolveConfig(deps: QwenGeneratorDeps): QwenConfig {
-  const config = deps.config ?? getQwenConfig();
+function resolveTextConfig(deps: QwenGeneratorDeps): QwenTextConfig {
+  return deps.config
+    ? requireInjectedConfigFields(deps.config, [
+        "cardApiKey",
+        "cardModel",
+        "openAiBaseUrl"
+      ])
+    : getQwenTextConfig();
+}
+
+function resolveAsrConfig(deps: QwenGeneratorDeps): QwenAsrConfig {
+  return deps.config
+    ? requireInjectedConfigFields(deps.config, [
+        "cardApiKey",
+        "asrModel",
+        "openAiBaseUrl"
+      ])
+    : getQwenAsrConfig();
+}
+
+function resolveImageConfig(deps: QwenGeneratorDeps): QwenImageConfig {
+  const config = deps.config
+    ? requireInjectedConfigFields(deps.config, [
+        "imageApiKey",
+        "imageModel",
+        "imageBaseUrl"
+      ])
+    : getQwenImageConfig();
   if (!isApprovedQwenImageModel(config.imageModel)) {
     throw new QwenGenerationError(
       `Unsupported Qwen image model configured in QWEN_IMAGE_MODEL. Approved image models: ${approvedImageModelSummary()}.`
@@ -263,6 +298,18 @@ function resolveConfig(deps: QwenGeneratorDeps): QwenConfig {
   }
 
   return config;
+}
+
+function requireInjectedConfigFields<T extends keyof QwenConfig>(
+  config: Partial<QwenConfig>,
+  keys: T[]
+): Pick<QwenConfig, T> {
+  const missingKeys = keys.filter((key) => !config[key]);
+  if (missingKeys.length > 0) {
+    throw new QwenConfigError(missingKeys);
+  }
+
+  return config as Pick<QwenConfig, T>;
 }
 
 function resolveFetch(deps: QwenGeneratorDeps): typeof fetch {

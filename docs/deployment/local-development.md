@@ -31,6 +31,8 @@ Required variables:
 - `AUTH_COOKIE_NAME`: defaults to `fairplay_session`.
 - `APP_BASE_URL`: local app URL, usually `http://localhost:3000`.
 
+AI Task Manager provider variables are operation-scoped. Text card structuring needs the Qwen card key/model/base URL values. Audio transcription additionally needs `QWEN_ASR_MODEL`. Card-front generation needs the Qwen image key/model/base URL values. When `AI_PROVIDER_FALLBACK_ENABLED=true`, OpenAI text, ASR, and image fallback variables follow the same per-operation contract.
+
 Do not commit local env files, managed database credentials, plaintext passwords, seed real household records, or private reference materials.
 
 ## Local Postgres

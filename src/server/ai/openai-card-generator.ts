@@ -18,14 +18,20 @@ import {
   isApprovedOpenAiImageModel
 } from "./approved-image-models";
 import {
-  getOpenAiFallbackConfig,
-  type OpenAiEnabledFallbackConfig
+  getOpenAiAsrFallbackConfig,
+  getOpenAiImageFallbackConfig,
+  getOpenAiTextFallbackConfig,
+  OpenAiFallbackConfigError,
+  type OpenAiAsrFallbackConfig,
+  type OpenAiEnabledFallbackConfig,
+  type OpenAiImageFallbackConfig,
+  type OpenAiTextFallbackConfig
 } from "./openai-config";
 import { providerRequestIdFromHeaders } from "./diagnostics";
 
 export type OpenAiGeneratorDeps = {
   fetch?: typeof fetch;
-  config?: OpenAiEnabledFallbackConfig;
+  config?: Partial<OpenAiEnabledFallbackConfig>;
 };
 
 type ResponsesApiResponse = {
@@ -76,7 +82,7 @@ export async function transcribeAudioWithOpenAi(
   input: { bytes: Uint8Array; mimeType: string; contextText?: string },
   deps: OpenAiGeneratorDeps = {}
 ): Promise<string> {
-  const config = resolveConfig(deps);
+  const config = resolveAsrConfig(deps);
   const fetchImpl = resolveFetch(deps);
   const formData = new FormData();
   formData.append("file", audioBlob(input.bytes, input.mimeType), audioFileName(input.mimeType));
@@ -112,7 +118,7 @@ export async function structureTaskAsCardWithOpenAi(
   input: { taskText: string; existingDraft?: Partial<StructuredAiCard> },
   deps: OpenAiGeneratorDeps = {}
 ): Promise<StructuredAiCard> {
-  const config = resolveConfig(deps);
+  const config = resolveTextConfig(deps);
   const fetchImpl = resolveFetch(deps);
   const response = await fetchImpl(`${trimSlash(config.baseUrl)}/responses`, {
     method: "POST",
@@ -159,7 +165,7 @@ export async function generateCardCoverWithOpenAi(
   input: { title: string; imagePrompt: string; negativePrompt: string },
   deps: OpenAiGeneratorDeps = {}
 ): Promise<GeneratedCoverImage> {
-  const config = resolveConfig(deps);
+  const config = resolveImageConfig(deps);
   const fetchImpl = resolveFetch(deps);
   const prompt = [
     buildImagePrompt(input.title, input.imagePrompt),
@@ -212,14 +218,43 @@ export async function generateCardCoverWithOpenAi(
   );
 }
 
-function resolveConfig(deps: OpenAiGeneratorDeps): OpenAiEnabledFallbackConfig {
-  const config = deps.config ?? getEnabledOpenAiFallbackConfig();
+function resolveTextConfig(deps: OpenAiGeneratorDeps): OpenAiTextFallbackConfig {
+  return deps.config
+    ? requireInjectedConfigFields(deps.config, [
+        "enabled",
+        "baseUrl",
+        "textApiKey",
+        "textModel"
+      ])
+    : getEnabledOpenAiTextFallbackConfig();
+}
+
+function resolveAsrConfig(deps: OpenAiGeneratorDeps): OpenAiAsrFallbackConfig {
+  return deps.config
+    ? requireInjectedConfigFields(deps.config, [
+        "enabled",
+        "baseUrl",
+        "asrApiKey",
+        "asrModel"
+      ])
+    : getEnabledOpenAiAsrFallbackConfig();
+}
+
+function resolveImageConfig(deps: OpenAiGeneratorDeps): OpenAiImageFallbackConfig {
+  const config = deps.config
+    ? requireInjectedConfigFields(deps.config, [
+        "enabled",
+        "baseUrl",
+        "imageApiKey",
+        "imageModel"
+      ])
+    : getEnabledOpenAiImageFallbackConfig();
   assertApprovedConfig(config);
   return config;
 }
 
-function getEnabledOpenAiFallbackConfig(): OpenAiEnabledFallbackConfig {
-  const config = getOpenAiFallbackConfig();
+function getEnabledOpenAiTextFallbackConfig(): OpenAiTextFallbackConfig {
+  const config = getOpenAiTextFallbackConfig();
   if (!config.enabled) {
     throw new OpenAiGenerationError("OpenAI fallback is disabled.");
   }
@@ -227,13 +262,43 @@ function getEnabledOpenAiFallbackConfig(): OpenAiEnabledFallbackConfig {
   return config;
 }
 
-function assertApprovedConfig(config: OpenAiEnabledFallbackConfig): void {
+function getEnabledOpenAiAsrFallbackConfig(): OpenAiAsrFallbackConfig {
+  const config = getOpenAiAsrFallbackConfig();
+  if (!config.enabled) {
+    throw new OpenAiGenerationError("OpenAI fallback is disabled.");
+  }
+
+  return config;
+}
+
+function getEnabledOpenAiImageFallbackConfig(): OpenAiImageFallbackConfig {
+  const config = getOpenAiImageFallbackConfig();
+  if (!config.enabled) {
+    throw new OpenAiGenerationError("OpenAI fallback is disabled.");
+  }
+
+  return config;
+}
+
+function assertApprovedConfig(config: OpenAiImageFallbackConfig): void {
   if (!isApprovedOpenAiImageModel(config.imageModel)) {
     throw new OpenAiGenerationError(
       `Unsupported OpenAI image model configured in OPENAI_IMAGE_MODEL. Approved image models: ${approvedImageModelSummary()}.`,
       { model: config.imageModel }
     );
   }
+}
+
+function requireInjectedConfigFields<T extends keyof OpenAiEnabledFallbackConfig>(
+  config: Partial<OpenAiEnabledFallbackConfig>,
+  keys: T[]
+): Pick<OpenAiEnabledFallbackConfig, T> {
+  const missingKeys = keys.filter((key) => config[key] === undefined || config[key] === "");
+  if (missingKeys.length > 0) {
+    throw new OpenAiFallbackConfigError(missingKeys);
+  }
+
+  return config as Pick<OpenAiEnabledFallbackConfig, T>;
 }
 
 function resolveFetch(deps: OpenAiGeneratorDeps): typeof fetch {
