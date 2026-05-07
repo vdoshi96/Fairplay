@@ -5,6 +5,13 @@ type VisualImageProps = {
   decorative?: boolean;
 };
 
+type DecorativeBackgroundLayerProps = {
+  className?: string;
+  src: string;
+  testId?: string;
+  washClassName?: string;
+};
+
 type PersonaAvatarProps = VisualImageProps & {
   persona: "alex" | "max";
 };
@@ -26,6 +33,33 @@ const personaAssets = {
 
 function visualClass(className?: string) {
   return ["block h-auto max-w-full select-none", className].filter(Boolean).join(" ");
+}
+
+function classNames(...classes: Array<string | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+export function DecorativeBackgroundLayer({
+  className,
+  src,
+  testId,
+  washClassName
+}: DecorativeBackgroundLayerProps) {
+  return (
+    <div
+      aria-hidden="true"
+      className={classNames(
+        "pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat [mask-image:linear-gradient(115deg,black_0%,rgba(0,0,0,0.8)_55%,rgba(0,0,0,0.2)_100%)]",
+        className
+      )}
+      data-testid={testId}
+      style={{ backgroundImage: `url('${src}')` }}
+    >
+      {washClassName ? (
+        <div className={classNames("absolute inset-0", washClassName)} />
+      ) : null}
+    </div>
+  );
 }
 
 function VisualImage({

@@ -25,6 +25,7 @@ import {
 } from "@/components/guide/guide-practice";
 import { useTheme, type ResolvedTheme } from "@/components/theme/theme-provider";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { DecorativeBackgroundLayer } from "@/components/visuals/fairplay-visuals";
 
 type SettingsPanelProps = {
   household: HouseholdSummary;
@@ -59,7 +60,7 @@ const littleAlexSkinOptions: Array<{
 ];
 
 const settingsPreferencesBackground =
-  "url('/assets/fairplay/generated-ui/backgrounds/settings-preferences.png')";
+  "/assets/fairplay/generated-ui/backgrounds/settings-preferences.png";
 
 export function SettingsPanel({
   household,
@@ -270,11 +271,16 @@ export function SettingsPanel({
     <>
       <section className="grid gap-5" ref={contentRef}>
         <div
-          className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+          className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
           data-testid="settings-preferences-visual"
-          style={{ backgroundImage: settingsPreferencesBackground }}
         >
-          <div className="fp-generated-surface-wash grid gap-2 p-4">
+          <DecorativeBackgroundLayer
+            className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.5)_48%,rgba(0,0,0,0.08)_100%)]"
+            src={settingsPreferencesBackground}
+            testId="settings-preferences-background"
+            washClassName="bg-white/80"
+          />
+          <div className="fp-generated-surface-wash relative z-10 grid gap-2 p-4 backdrop-blur-[1px]">
             <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
               Settings
             </p>

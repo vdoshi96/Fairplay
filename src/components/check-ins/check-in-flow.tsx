@@ -16,7 +16,10 @@ import {
   useGuidePracticeRequest
 } from "@/components/guide/guide-practice";
 import { MotionPanel, MotionSpark } from "@/components/motion/fairplay-motion";
-import { CheckInVisual } from "@/components/visuals/fairplay-visuals";
+import {
+  CheckInVisual,
+  DecorativeBackgroundLayer
+} from "@/components/visuals/fairplay-visuals";
 
 type ItemMutation = {
   state: CheckInItemState;
@@ -51,7 +54,7 @@ const decisionTypes: DecisionType[] = [
 ];
 
 const checkInTableBackground =
-  "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')";
+  "/assets/fairplay/generated-ui/backgrounds/check-in-table.png";
 
 function label(value: string) {
   return value
@@ -263,11 +266,16 @@ export function CheckInFlow({
         data-guide-id="check-in-complete-summary"
       >
         <div
-          className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+          className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
           data-testid="check-in-complete-visual"
-          style={{ backgroundImage: checkInTableBackground }}
         >
-          <div className="fp-generated-surface-wash grid gap-3 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+          <DecorativeBackgroundLayer
+            className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.5)_48%,rgba(0,0,0,0.12)_100%)]"
+            src={checkInTableBackground}
+            testId="check-in-complete-background"
+            washClassName="bg-white/80"
+          />
+          <div className="fp-generated-surface-wash relative z-10 grid gap-3 p-4 backdrop-blur-[1px] sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="flex items-center gap-3">
               <MotionSpark decorative />
               <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
@@ -290,11 +298,16 @@ export function CheckInFlow({
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 py-6">
       <div
-        className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
         data-testid="check-in-active-visual"
-        style={{ backgroundImage: checkInTableBackground }}
       >
-        <div className="fp-generated-surface-wash flex items-center justify-between gap-3 p-4">
+        <DecorativeBackgroundLayer
+          className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.5)_48%,rgba(0,0,0,0.12)_100%)]"
+          src={checkInTableBackground}
+          testId="check-in-active-background"
+          washClassName="bg-white/80"
+        />
+        <div className="fp-generated-surface-wash relative z-10 flex items-center justify-between gap-3 p-4 backdrop-blur-[1px]">
           <h1 className="text-2xl font-semibold text-stone-950">Guided check-in</h1>
           <div className="grid gap-2 justify-items-end">
             <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />
@@ -522,11 +535,16 @@ export function NewCheckInLauncher({
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 py-6">
       <div
-        className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
         data-testid="check-in-new-visual"
-        style={{ backgroundImage: checkInTableBackground }}
       >
-        <div className="fp-generated-surface-wash grid gap-3 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+        <DecorativeBackgroundLayer
+          className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.5)_48%,rgba(0,0,0,0.12)_100%)]"
+          src={checkInTableBackground}
+          testId="check-in-new-background"
+          washClassName="bg-white/80"
+        />
+        <div className="fp-generated-surface-wash relative z-10 grid gap-3 p-4 backdrop-blur-[1px] sm:grid-cols-[1fr_auto] sm:items-center">
           <h1 className="text-2xl font-semibold text-stone-950">New check-in</h1>
           <div className="grid gap-3 justify-self-start sm:justify-self-end sm:justify-items-end">
             <FeatureGuideLauncher guide={FEATURE_GUIDES.checkIns} showDescription={false} />

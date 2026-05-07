@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   CheckInVisual,
+  DecorativeBackgroundLayer,
   FairplayMark,
   HelperMascot,
   PersonaAvatar,
@@ -62,5 +63,35 @@ describe("Fairplay visual components", () => {
     expect(
       screen.getByRole("img", { name: "Check-in completion spark" })
     ).toHaveAttribute("src", "/assets/fairplay/generated-ui/check-in-spark.png");
+  });
+
+  it("renders generated artwork as a decorative background layer", () => {
+    render(
+      <div className="relative">
+        <DecorativeBackgroundLayer
+          className="opacity-35"
+          src="/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png"
+          testId="home-learning-studio-background"
+          washClassName="bg-white/80"
+        />
+      </div>
+    );
+
+    const layer = screen.getByTestId("home-learning-studio-background");
+    expect(layer).toHaveAttribute("aria-hidden", "true");
+    expect(layer).toHaveClass(
+      "pointer-events-none",
+      "absolute",
+      "inset-0",
+      "bg-cover",
+      "bg-center",
+      "bg-no-repeat",
+      "opacity-35"
+    );
+    expect(layer).toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
+    });
+    expect(layer.querySelector(".bg-white\\/80")).not.toBeNull();
   });
 });

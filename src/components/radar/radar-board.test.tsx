@@ -66,7 +66,15 @@ describe("RadarBoard", () => {
       />
     );
 
-    expect(screen.getByTestId("radar-signal-room-visual")).toHaveStyle({
+    expect(screen.getByTestId("radar-signal-room-visual")).not.toHaveStyle({
+      backgroundImage:
+        "url('/assets/fairplay/generated-ui/backgrounds/radar-signal-room.png')"
+    });
+    expect(screen.getByTestId("radar-signal-room-background")).toHaveAttribute(
+      "aria-hidden",
+      "true"
+    );
+    expect(screen.getByTestId("radar-signal-room-background")).toHaveStyle({
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/radar-signal-room.png')"
     });

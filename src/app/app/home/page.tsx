@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { FeatureGuideHelper } from "@/components/guide/feature-guide-helper";
 import type { FeatureGuideId } from "@/components/guide/guide-content";
+import { DecorativeBackgroundLayer } from "@/components/visuals/fairplay-visuals";
 
 const primaryActions = [
   {
@@ -63,15 +64,16 @@ export default function AppHomePage() {
   return (
     <section className="grid gap-6">
       <div
-        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-white bg-cover bg-center p-5 shadow-[var(--fp-shadow-soft)] sm:p-6"
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-white p-5 shadow-[var(--fp-shadow-soft)] sm:p-6"
         data-home-background
-        style={{ backgroundImage: `url('${HOME_BACKGROUND}')` }}
       >
-        <div
-          aria-hidden="true"
-          className="fp-generated-surface-wash absolute inset-0"
+        <DecorativeBackgroundLayer
+          className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.55)_45%,rgba(0,0,0,0.08)_100%)]"
+          src={HOME_BACKGROUND}
+          testId="home-learning-studio-background"
+          washClassName="bg-white/75"
         />
-        <div className="relative grid gap-5">
+        <div className="relative z-10 grid gap-5">
           <div className="grid max-w-2xl gap-2">
             <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
               Learning hub

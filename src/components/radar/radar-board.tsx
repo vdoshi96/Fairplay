@@ -20,7 +20,10 @@ import {
   useGuidePracticeRequest
 } from "@/components/guide/guide-practice";
 import { MotionPanel } from "@/components/motion/fairplay-motion";
-import { RadarVisual } from "@/components/visuals/fairplay-visuals";
+import {
+  DecorativeBackgroundLayer,
+  RadarVisual
+} from "@/components/visuals/fairplay-visuals";
 
 type RadarBoardItem = RadarSummary;
 
@@ -92,7 +95,7 @@ const stateLabels: Record<RadarState, string> = {
 };
 
 const radarSignalRoomBackground =
-  "url('/assets/fairplay/generated-ui/backgrounds/radar-signal-room.png')";
+  "/assets/fairplay/generated-ui/backgrounds/radar-signal-room.png";
 
 function label(value: string) {
   return value
@@ -499,11 +502,16 @@ export function RadarBoard({
     <>
       <section className="grid gap-5" ref={contentRef}>
         <div
-          className="overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink bg-cover bg-center shadow-[var(--fp-shadow-soft)]"
+          className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
           data-testid="radar-signal-room-visual"
-          style={{ backgroundImage: radarSignalRoomBackground }}
         >
-          <div className="fp-generated-surface-wash grid gap-4 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+          <DecorativeBackgroundLayer
+            className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.48)_48%,rgba(0,0,0,0.08)_100%)]"
+            src={radarSignalRoomBackground}
+            testId="radar-signal-room-background"
+            washClassName="bg-white/80"
+          />
+          <div className="fp-generated-surface-wash relative z-10 grid gap-4 p-4 backdrop-blur-[1px] sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="grid gap-1">
               <p className="text-[13px] font-semibold text-fp-muted-ink">Radar</p>
               <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
