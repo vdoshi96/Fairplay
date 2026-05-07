@@ -22,14 +22,14 @@ export const BOARD_LANES: readonly {
   },
   {
     key: "player_1",
-    label: "Player 1",
-    shortHelp: "Owned by the first household persona.",
+    label: "Alex",
+    shortHelp: "Owned by Alex, with context visible to the household.",
     tone: "playerOne"
   },
   {
     key: "player_2",
-    label: "Player 2",
-    shortHelp: "Owned by the second household persona.",
+    label: "Max",
+    shortHelp: "Owned by Max, with context visible to the household.",
     tone: "playerTwo"
   },
   {
