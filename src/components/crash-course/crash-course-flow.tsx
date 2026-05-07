@@ -129,7 +129,7 @@ export function CrashCourseFlow({
             />
 
             <div
-              className="relative z-10 grid max-h-[72svh] gap-4 overflow-y-auto border-t border-white/70 bg-[var(--fp-surface-strong)]/95 p-4 shadow-2xl backdrop-blur-md sm:p-5 lg:absolute lg:bottom-4 lg:left-4 lg:right-4 lg:max-h-[48svh] lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:rounded-[8px] lg:border lg:border-fp-line"
+              className="relative z-10 grid max-h-[72svh] gap-4 overflow-y-auto border-t border-white/70 bg-[var(--fp-surface-strong)] p-4 shadow-2xl backdrop-blur-md sm:p-5 lg:absolute lg:bottom-4 lg:left-4 lg:right-4 lg:max-h-[48svh] lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:rounded-[8px] lg:border lg:border-fp-line"
               data-testid="crash-course-subtitle-panel"
             >
               <div className="grid gap-3">
