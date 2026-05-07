@@ -8,7 +8,7 @@ export const FAIRPLAY_SOURCE_CARDS = [
     "id": "tpl_adult-friendships-player-1",
     "sourceCardId": "69f82d290f1cabd66e0fad3a",
     "slug": "adult-friendships-player-1",
-    "title": "Adult Friendships (Player 1)",
+    "title": "Adult Friendships (Alex)",
     "labels": [
       "Happiness Trio",
       "Magic"
@@ -36,7 +36,7 @@ export const FAIRPLAY_SOURCE_CARDS = [
     "id": "tpl_adult-friendships-player-2",
     "sourceCardId": "69f82d290f1cabd66e0fad3d",
     "slug": "adult-friendships-player-2",
-    "title": "Adult Friendships (Player 2)",
+    "title": "Adult Friendships (Max)",
     "labels": [
       "Happiness Trio",
       "Magic"
@@ -1006,13 +1006,13 @@ export const FAIRPLAY_SOURCE_CARDS = [
     "id": "tpl_grooming-and-wardrobe-player-1",
     "sourceCardId": "69f82d2a0f1cabd66e0fada9",
     "slug": "grooming-and-wardrobe-player-1",
-    "title": "Grooming & Wardrobe (Player 1)",
+    "title": "Grooming & Wardrobe (Alex)",
     "labels": [
       "Caregiving"
     ],
     "summary": "Looking and feeling good, especially after children, doesn’t come easy.",
     "definition": "Looking and feeling good, especially after children, doesn’t come easy. (There’s a reason that beauty is a $445 billion industry.) Even if you’re a DIY kind of woman, it still takes time to slather on moisturizer, pluck your eyebrows, style your hair, and put on lipstick. Kick it up a notch and you may add mani/pedis, eyelash extensions, and waxing to your beauty regimen. Add in shopping for clothes (in various sizes for pre-pregnancy, post-pregnancy, nursing, and every other reason your weight fluctuates) and you’ve got a potentially expensive and time-consuming card in your hands.",
-    "conception": "BEAUTY & WARDROBE (PLAYER ONE)",
+    "conception": "BEAUTY & WARDROBE (ALEX)",
     "planning": "INSOURCED- Purchasing all necessary beauty products and tools, including makeup (lipstick, powder, mascara, eye liner/shadow, foundation, eyebrow liner) tweezers, deodorant, moisturizers/lotions/anti-aging creams, makeup removers, hairspray, gel, mousse, etc., hair accessories, nail polish, nail kit (nail files, cuticle scissors, buffers, etc.), hair dye",
     "execution": "INSOURCED- Applying/using all necessary beauty products and toolsOUTSOURCED- Hair removal appointments- Haircut/blow-dry/color/highlights/straightening/extensions (hair, lashes)- Nail appointments- Facials/injection appointments- Tattoos- Piercings",
     "minimumStandard": "Are you in charge of your own clothes and do you have appropriate clothes for all occasions? Do you feel good about yourself based on your expectations? Can you handle this yourself and not ask your partner to do it for you?",
@@ -1033,13 +1033,13 @@ export const FAIRPLAY_SOURCE_CARDS = [
     "id": "tpl_grooming-and-wardrobe-player-2",
     "sourceCardId": "69f82d2a0f1cabd66e0fadac",
     "slug": "grooming-and-wardrobe-player-2",
-    "title": "Grooming & Wardrobe (Player 2)",
+    "title": "Grooming & Wardrobe (Max)",
     "labels": [
       "Caregiving"
     ],
     "summary": "Imagine a conversation that starts innocently enough with a husband asking his wife, “Babe, where’s my black suit?” Then comes, “Never mind.",
     "definition": "Imagine a conversation that starts innocently enough with a husband asking his wife, “Babe, where’s my black suit?” Then comes, “Never mind. Found it.” (Pause.) “Shoot, it doesn’t fit anymore.” And the coup de grâce is that their best friends’ wedding begins in one hour and the clock is ticking while he blames his wife for failing to buy or rent him a new one. This scenario is all too common as many women in hetero cis gender relationships CPE this card for their husbands. That’s right, grown men told me they rely on their wives not only to help them get dressed for special events but also to schedule haircuts, hem their pants, and replace their underwear with holes. If that truly works for you both, God bless. Otherwise, please consider taking this card for yourself, mister. You can do it.",
-    "conception": "GROOMING & WARDROBE (PLAYER TWO)",
+    "conception": "GROOMING & WARDROBE (MAX)",
     "planning": "- Looking through own current wardrobe- Determining which clothes still fit and which might be outdated or worn out- Creating a list of clothing needs whether it be seasonal or by occasion- Evaluating underwear, socks, shoes, belts, and other accessories",
     "execution": "- Donating wrong size, outdated, worn out items- Shopping for necessary items",
     "minimumStandard": "Are you in charge of your own clothes and do you have appropriate clothes for all occasions? Do you feel good about yourself based on your expectations? Can you handle this yourself and not ask your partner to do it for you?",
@@ -2159,14 +2159,14 @@ export const FAIRPLAY_SOURCE_CARDS = [
     "id": "tpl_self-care-player-1",
     "sourceCardId": "69f82d2a0f1cabd66e0fae2a",
     "slug": "self-care-player-1",
-    "title": "Self-Care (Player 1)",
+    "title": "Self-Care (Alex)",
     "labels": [
       "Caregiving",
       "Happiness Trio"
     ],
     "summary": "Each of you gets a self-care card regardless of how many children and other responsibilities you have.",
     "definition": "Each of you gets a self-care card regardless of how many children and other responsibilities you have. For some, a daily multivitamin, a good book, and a hot bath fit the bill. Others may have weekly therapy or wellness appointments, and also set aside regular time to exercise. No guilt or shame allowed. Take this important time for you and allow your partner to do the same.",
-    "conception": "SELF-CARE (PLAYER ONE)",
+    "conception": "SELF-CARE (ALEX)",
     "planning": "- Determining self-care plan, possibly including the following: - Nutrition/supplements - Exercise routine - Doctor and dental appointments (annual physical and mammogram, bloodwork, dental exam/cleaning, ophthalmology, GI, other specialists) - Medications - Massage/acupuncture - Meditation/quiet time/relaxing (TV)/reading - Baths",
     "execution": "- Showing up for and fulfilling your commitments",
     "minimumStandard": "Do each of you feel reasonably well?",
@@ -2187,14 +2187,14 @@ export const FAIRPLAY_SOURCE_CARDS = [
     "id": "tpl_self-care-player-2",
     "sourceCardId": "69f82d2a0f1cabd66e0fae2d",
     "slug": "self-care-player-2",
-    "title": "Self-Care (Player 2)",
+    "title": "Self-Care (Max)",
     "labels": [
       "Caregiving",
       "Happiness Trio"
     ],
     "summary": "Each of you gets a self-care card regardless of how many children and other responsibilities you have.",
     "definition": "Each of you gets a self-care card regardless of how many children and other responsibilities you have. For some, a daily multivitamin, a good book, and a hot bath fit the bill. Others may have weekly therapy or wellness appointments, and also set aside regular time to exercise. No guilt or shame allowed. Take this important time for you and allow your partner to do the same.",
-    "conception": "SELF-CARE (PLAYER TWO)",
+    "conception": "SELF-CARE (MAX)",
     "planning": "- Determining self-care plan, possibly including: - Nutrition/supplements - Exercise routine - Doctor and dental appointments (annual physical, bloodwork, dental exam/cleaning, ophthalmology, GI, prostate, other specialists) - Medications - Massage/acupuncture - Meditation/quiet time/relaxing (TV)/reading - Baths",
     "execution": "- Showing up for and fulfilling your commitments",
     "minimumStandard": "Do each of you feel reasonably well?",
@@ -2536,7 +2536,7 @@ export const FAIRPLAY_SOURCE_CARDS = [
     "id": "tpl_unicorn-space-player-1",
     "sourceCardId": "69f82d2a0f1cabd66e0fae54",
     "slug": "unicorn-space-player-1",
-    "title": "Unicorn Space (Player 1)",
+    "title": "Unicorn Space (Alex)",
     "labels": [
       "Happiness Trio"
     ],
@@ -2563,7 +2563,7 @@ export const FAIRPLAY_SOURCE_CARDS = [
     "id": "tpl_unicorn-space-player-2",
     "sourceCardId": "69f82d2a0f1cabd66e0fae57",
     "slug": "unicorn-space-player-2",
-    "title": "Unicorn Space (Player 2)",
+    "title": "Unicorn Space (Max)",
     "labels": [
       "Happiness Trio"
     ],

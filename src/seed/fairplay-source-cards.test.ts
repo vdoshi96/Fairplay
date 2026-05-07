@@ -42,6 +42,41 @@ describe("FAIRPLAY_SOURCE_CARDS", () => {
   it("does not expose remote Trello attachment URLs in runtime seed data", () => {
     expect(JSON.stringify(FAIRPLAY_SOURCE_CARDS)).not.toMatch(/https?:|trello\.com/i);
   });
+
+  it("uses Alex and Max in user-facing duplicate-card display fields while preserving stable slugs and asset paths", () => {
+    const displayText = FAIRPLAY_SOURCE_CARDS.map((card) =>
+      [
+        card.title,
+        card.summary,
+        card.definition,
+        card.conception,
+        card.planning,
+        card.execution,
+        card.minimumStandard
+      ].join(" ")
+    ).join(" ");
+
+    expect(displayText).not.toMatch(/Player 1|Player 2|PLAYER ONE|PLAYER TWO/);
+    expect(displayText).toContain("Adult Friendships (Alex)");
+    expect(displayText).toContain("Adult Friendships (Max)");
+    expect(displayText).toContain("BEAUTY & WARDROBE (ALEX)");
+    expect(displayText).toContain("GROOMING & WARDROBE (MAX)");
+
+    expect(
+      FAIRPLAY_SOURCE_CARDS.find((card) => card.slug === "adult-friendships-player-1")
+    ).toMatchObject({
+      coverAssetPath: "/assets/fairplay/cards/adult-friendships-player-1.png",
+      id: "tpl_adult-friendships-player-1",
+      title: "Adult Friendships (Alex)"
+    });
+    expect(
+      FAIRPLAY_SOURCE_CARDS.find((card) => card.slug === "adult-friendships-player-2")
+    ).toMatchObject({
+      coverAssetPath: "/assets/fairplay/cards/adult-friendships-player-2.png",
+      id: "tpl_adult-friendships-player-2",
+      title: "Adult Friendships (Max)"
+    });
+  });
 });
 
 function pngDimensions(bytes: Buffer) {

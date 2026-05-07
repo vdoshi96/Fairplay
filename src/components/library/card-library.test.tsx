@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import type { CardTemplateSummary } from "@/contracts/card-templates";
+import { FAIRPLAY_SOURCE_CARDS } from "@/seed/fairplay-source-cards";
 import { CardLibrary } from "./card-library";
 
 vi.mock("next/navigation", () => ({
@@ -150,6 +151,42 @@ describe("CardLibrary", () => {
     expect(screen.getByText("Laundry reset")).toBeVisible();
     expect(screen.getByRole("article", { name: /homework/i })).toHaveClass(
       "min-h-[420px]"
+    );
+  });
+
+  it("renders duplicate personal seed cards with Alex and Max display labels", () => {
+    const duplicatePersonalCards: CardTemplateSummary[] = FAIRPLAY_SOURCE_CARDS.filter(
+      (card) =>
+        card.slug === "adult-friendships-player-1" ||
+        card.slug === "adult-friendships-player-2"
+    ).map((card) => ({
+      defaultLane: card.defaultLane,
+      coverAssetPath: card.coverAssetPath,
+      id: card.id,
+      labels: card.labels,
+      slug: card.slug,
+      summary: card.summary,
+      title: card.title
+    }));
+
+    render(<CardLibrary templates={duplicatePersonalCards} />);
+
+    expect(screen.getByRole("article", { name: "Adult Friendships (Alex)" }))
+      .toBeVisible();
+    expect(screen.getByRole("article", { name: "Adult Friendships (Max)" }))
+      .toBeVisible();
+    expect(screen.queryByText(/Player 1|Player 2/)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "Adult Friendships (Alex) cover" })
+    ).toHaveAttribute(
+      "src",
+      "/assets/fairplay/cards/adult-friendships-player-1.png"
+    );
+    expect(
+      screen.getByRole("img", { name: "Adult Friendships (Max) cover" })
+    ).toHaveAttribute(
+      "src",
+      "/assets/fairplay/cards/adult-friendships-player-2.png"
     );
   });
 
