@@ -14,4 +14,3 @@
 
 - One test patch initially landed in the parent checkout. It was immediately reverted from that checkout before implementation continued in the assigned worktree.
 - Existing generated assets were reused. No Qwen or image-generation calls were made.
-

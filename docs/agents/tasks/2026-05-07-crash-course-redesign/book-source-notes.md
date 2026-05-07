@@ -21,4 +21,3 @@ The redesign uses `docs/research/fair-play-book-report.md` and `docs/research/a-
 - Avoided branded source acronyms and book-specific scripts.
 - Avoided labels that diagnose or shame either partner.
 - Used "good enough" rather than source-specific standard names in UI copy.
-

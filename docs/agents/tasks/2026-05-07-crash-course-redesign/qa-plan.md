@@ -21,4 +21,3 @@
 - Revert `src/components/crash-course/crash-course-content.ts` to restore previous lesson copy.
 - Revert `src/components/crash-course/crash-course-flow.tsx` to restore the prior centered panel layout.
 - Revert `src/components/crash-course/crash-course-flow.test.tsx` to remove the added coverage/layout expectations.
-

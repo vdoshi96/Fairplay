@@ -21,4 +21,3 @@ Branch Manager D owns the crash-course learning surface for this repair pass.
 - No image generation. Existing Qwen-generated assets remain in use.
 - No changes to shared app shell, data models, onboarding persistence, or non-crash-course routes.
 - No source prompt/script copying from book reports or references.
-
