@@ -466,6 +466,66 @@ describe("LittleAlexPhysics", () => {
     expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
   });
 
+  it("reveals limb sprites during fling and hides them again after recovery", () => {
+    vi.useFakeTimers();
+    stubReducedMotion(false);
+    stubPointerCapture();
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics />);
+    const fullSprite = screen.getByTestId("little-alex-full-sprite");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    expect(screen.getAllByTestId("little-alex-sprite")).toHaveLength(6);
+    expect(fullSprite).toHaveStyle({ opacity: "1" });
+    screen.getAllByTestId("little-alex-body-part").forEach((part) => {
+      expect(part).toHaveStyle({ opacity: "0" });
+    });
+
+    dispatchPointer(grabTarget, "pointerdown", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+    dispatchPointer(grabTarget, "pointermove", {
+      clientX: 790,
+      clientY: 245,
+      pointerId: 1,
+      timeStamp: 64
+    });
+    dispatchPointer(grabTarget, "pointerup", {
+      clientX: 790,
+      clientY: 245,
+      pointerId: 1,
+      timeStamp: 80
+    });
+
+    expect(fullSprite).toHaveStyle({ opacity: "0" });
+    screen.getAllByTestId("little-alex-body-part").forEach((part) => {
+      expect(part).toHaveStyle({ opacity: "1" });
+      expect(part.querySelector("img")).not.toBeNull();
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(6_500);
+    });
+
+    expect(fullSprite).toHaveStyle({ opacity: "1" });
+    screen.getAllByTestId("little-alex-body-part").forEach((part) => {
+      expect(part).toHaveStyle({ opacity: "1" });
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(360);
+    });
+
+    expect(fullSprite).toHaveStyle({ opacity: "1" });
+    screen.getAllByTestId("little-alex-body-part").forEach((part) => {
+      expect(part).toHaveStyle({ opacity: "0" });
+    });
+  });
+
   it("stands mostly still before starting slow idle walking after five seconds untouched", () => {
     vi.useFakeTimers();
     stubReducedMotion(false);
@@ -715,7 +775,7 @@ describe("LittleAlexPhysics", () => {
     expect(new Set(detailSets).size).toBe(genderPresentations.length);
   });
 
-  it("renders one coherent full-body sprite and no legacy body-part sprite images", () => {
+  it("renders one coherent full-body sprite with hidden body-part sprite images while settled", () => {
     stubReducedMotion(true);
 
     genderPresentations.forEach((genderPresentation) => {
@@ -725,14 +785,30 @@ describe("LittleAlexPhysics", () => {
 
       const fullSprite = screen.getByTestId("little-alex-full-sprite");
 
-      expect(screen.queryAllByTestId("little-alex-sprite")).toHaveLength(0);
+      expect(screen.getAllByTestId("little-alex-sprite")).toHaveLength(6);
+      expect(
+        screen
+          .getAllByTestId("little-alex-sprite")
+          .map((sprite) => sprite.getAttribute("src"))
+      ).toEqual([
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-head.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-torso.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-leftArm.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-rightArm.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-leftLeg.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-rightLeg.png`
+      ]);
       expect(fullSprite).toHaveAttribute(
         "src",
         `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`
       );
+      expect(fullSprite).toHaveStyle({ opacity: "1" });
       expect(fullSprite).toHaveStyle({
         height: "176px",
         width: "86px"
+      });
+      screen.getAllByTestId("little-alex-body-part").forEach((part) => {
+        expect(part).toHaveStyle({ opacity: "0" });
       });
 
       unmount();
@@ -816,7 +892,7 @@ describe("LittleAlexPhysics", () => {
         "src",
         `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`
       );
-      expect(screen.queryAllByTestId("little-alex-sprite")).toHaveLength(0);
+      expect(screen.getAllByTestId("little-alex-sprite")).toHaveLength(6);
 
       unmount();
     });
