@@ -25,6 +25,11 @@ type ResponsibilityEditorProps = {
   }) => void;
 };
 
+type Feedback = {
+  tone: "success" | "error";
+  message: string;
+};
+
 const roleOptions = [
   "none",
   "accountable_owner",
@@ -93,6 +98,41 @@ function listInput(value: string) {
   return values.length > 0 ? values : null;
 }
 
+function errorMessage(error: unknown, fallback: string) {
+  return error instanceof Error && error.message.length > 0
+    ? error.message
+    : fallback;
+}
+
+async function checkedFetch(
+  input: RequestInfo | URL,
+  init: RequestInit,
+  fallbackMessage: string
+) {
+  const response = await fetch(input, init);
+
+  if (response.ok) {
+    return response;
+  }
+
+  let responseMessage: string | null = null;
+
+  try {
+    const body = (await response.json()) as { error?: unknown };
+    if (typeof body.error === "string" && body.error.length > 0) {
+      responseMessage = body.error;
+    }
+  } catch {
+    responseMessage = null;
+  }
+
+  if (responseMessage) {
+    throw new Error(responseMessage);
+  }
+
+  throw new Error(fallbackMessage);
+}
+
 export function ResponsibilityEditor({
   personas,
   initialResponsibility = null,
@@ -144,6 +184,10 @@ export function ResponsibilityEditor({
   const [handoffNotes, setHandoffNotes] = useState("");
   const [revisitAt, setRevisitAt] = useState("");
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    "save" | "status" | "radar" | null
+  >(null);
 
   const assignmentList = useMemo(
     () =>
@@ -196,6 +240,9 @@ export function ResponsibilityEditor({
   }
 
   async function save() {
+    setFeedback(null);
+    setPendingAction("save");
+
     const editBody = {
       title,
       summary: summary || null,
@@ -220,44 +267,153 @@ export function ResponsibilityEditor({
       ? `/api/responsibilities/${initialResponsibility.id}`
       : "/api/responsibilities";
 
-    await fetch(url, {
-      method: initialResponsibility ? "PATCH" : "POST",
-      headers: {
-        "content-type": "application/json"
-      },
-      body: JSON.stringify(initialResponsibility ? editBody : createBody)
-    });
-
-    if (initialResponsibility) {
-      await fetch(`/api/responsibilities/${initialResponsibility.id}/assignments`, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json"
+    try {
+      await checkedFetch(
+        url,
+        {
+          method: initialResponsibility ? "PATCH" : "POST",
+          headers: {
+            "content-type": "application/json"
+          },
+          body: JSON.stringify(initialResponsibility ? editBody : createBody)
         },
-        body: JSON.stringify({
-          effectiveAt: new Date().toISOString(),
-          assignments: assignmentList,
-          handoffNotes: handoffNotes || undefined,
-          revisitAt: revisitAt ? `${revisitAt}T12:00:00.000Z` : undefined
-        })
-      });
+        "Unable to save this responsibility."
+      );
 
-      if (visibility !== initialResponsibility.visibility) {
-        await fetch(`/api/responsibilities/${initialResponsibility.id}/visibility`, {
+      if (initialResponsibility) {
+        await checkedFetch(
+          `/api/responsibilities/${initialResponsibility.id}/assignments`,
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json"
+            },
+            body: JSON.stringify({
+              effectiveAt: new Date().toISOString(),
+              assignments: assignmentList,
+              handoffNotes: handoffNotes || undefined,
+              revisitAt: revisitAt ? `${revisitAt}T12:00:00.000Z` : undefined
+            })
+          },
+          "Unable to save assignment changes."
+        );
+
+        if (visibility !== initialResponsibility.visibility) {
+          await checkedFetch(
+            `/api/responsibilities/${initialResponsibility.id}/visibility`,
+            {
+              method: "POST",
+              headers: {
+                "content-type": "application/json"
+              },
+              body: JSON.stringify({
+                responsibilityId: initialResponsibility.id,
+                fromVisibility: initialResponsibility.visibility,
+                toVisibility: visibility,
+                confirmedVisibilityChange: true
+              })
+            },
+            "Unable to save visibility changes."
+          );
+        }
+      }
+
+      setFeedback({ tone: "success", message: "Saved." });
+    } catch (error) {
+      setFeedback({
+        tone: "error",
+        message: errorMessage(error, "Unable to save this responsibility.")
+      });
+    } finally {
+      setPendingAction(null);
+    }
+  }
+
+  async function updateStatus(
+    nextStatus: "archived" | "paused" | "not_relevant" | "active" | "needs_review",
+    confirmedArchive?: boolean
+  ) {
+    setFeedback(null);
+
+    try {
+      if (onStatusChange) {
+        onStatusChange({ status: nextStatus, confirmedArchive });
+      } else if (initialResponsibility) {
+        setPendingAction("status");
+        await checkedFetch(
+          `/api/responsibilities/${initialResponsibility.id}/status`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ status: nextStatus, confirmedArchive })
+          },
+          "Unable to update this responsibility."
+        );
+      }
+
+      if (nextStatus !== "archived") {
+        setStatus(nextStatus);
+      }
+
+      setFeedback({
+        tone: "success",
+        message:
+          nextStatus === "paused"
+            ? "Paused."
+            : nextStatus === "not_relevant"
+              ? "Marked not relevant."
+              : nextStatus === "archived"
+                ? "Archived."
+                : nextStatus === "needs_review"
+                  ? "Marked for review."
+                  : "Set active."
+      });
+    } catch (error) {
+      setFeedback({
+        tone: "error",
+        message: errorMessage(error, "Unable to update this responsibility.")
+      });
+    } finally {
+      setPendingAction(null);
+    }
+  }
+
+  async function flagForRadar() {
+    if (!initialResponsibility) {
+      return;
+    }
+
+    setFeedback(null);
+    setPendingAction("radar");
+
+    try {
+      await checkedFetch(
+        `/api/responsibilities/${initialResponsibility.id}/radar-flag`,
+        {
           method: "POST",
           headers: {
             "content-type": "application/json"
           },
           body: JSON.stringify({
-            responsibilityId: initialResponsibility.id,
-            fromVisibility: initialResponsibility.visibility,
-            toVisibility: visibility,
-            confirmedVisibilityChange: true
+            reasonKey: "review_due",
+            visibility: "private"
           })
-        });
-      }
+        },
+        "Unable to flag this responsibility for radar."
+      );
+
+      setFeedback({ tone: "success", message: "Flagged for radar." });
+    } catch (error) {
+      setFeedback({
+        tone: "error",
+        message: errorMessage(error, "Unable to flag this responsibility for radar.")
+      });
+    } finally {
+      setPendingAction(null);
     }
   }
+
+  const actionDisabled = pendingAction !== null;
 
   return (
     <section className="grid gap-5">
@@ -269,6 +425,20 @@ export function ResponsibilityEditor({
           {initialResponsibility ? "Edit responsibility" : "New responsibility"}
         </h1>
       </div>
+
+      {feedback ? (
+        <p
+          className={[
+            "rounded-[8px] border px-3 py-2 text-[14px] font-semibold",
+            feedback.tone === "error"
+              ? "border-fp-danger bg-white text-fp-danger"
+              : "border-fp-line bg-white text-fp-ink"
+          ].join(" ")}
+          role={feedback.tone === "error" ? "alert" : "status"}
+        >
+          {feedback.message}
+        </p>
+      ) : null}
 
       <div className="grid gap-4 rounded-[8px] border border-fp-line bg-white p-4">
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
@@ -473,67 +643,41 @@ export function ResponsibilityEditor({
       <div className="flex flex-wrap gap-2">
         <button
           className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary"
-          onClick={save}
+          disabled={actionDisabled}
+          onClick={() => void save()}
           type="button"
         >
-          Save
+          {pendingAction === "save" ? "Saving..." : "Save"}
         </button>
         {initialResponsibility ? (
           <>
             <button
               className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold"
-              onClick={() => {
-                if (onStatusChange) {
-                  onStatusChange({ status: "paused" });
-                  return;
-                }
-
-                fetch(`/api/responsibilities/${initialResponsibility.id}/status`, {
-                  method: "POST",
-                  headers: { "content-type": "application/json" },
-                  body: JSON.stringify({ status: "paused" })
-                });
-              }}
+              disabled={actionDisabled}
+              onClick={() => void updateStatus("paused")}
               type="button"
             >
               Pause
             </button>
             <button
               className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold"
-              onClick={() => {
-                if (onStatusChange) {
-                  onStatusChange({ status: "not_relevant" });
-                  return;
-                }
-
-                fetch(`/api/responsibilities/${initialResponsibility.id}/status`, {
-                  method: "POST",
-                  headers: { "content-type": "application/json" },
-                  body: JSON.stringify({ status: "not_relevant" })
-                });
-              }}
+              disabled={actionDisabled}
+              onClick={() => void updateStatus("not_relevant")}
               type="button"
             >
               Mark not relevant
             </button>
             <button
               className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold"
-              onClick={() =>
-                fetch(`/api/responsibilities/${initialResponsibility.id}/radar-flag`, {
-                  method: "POST",
-                  headers: { "content-type": "application/json" },
-                  body: JSON.stringify({
-                    reasonKey: "review_due",
-                    visibility: "private"
-                  })
-                })
-              }
+              disabled={actionDisabled}
+              onClick={() => void flagForRadar()}
               type="button"
             >
               Flag for radar
             </button>
             <button
               className="min-h-11 rounded-[8px] border border-fp-danger bg-white px-4 text-[14px] font-bold text-fp-danger"
+              disabled={actionDisabled}
               onClick={() => setArchiveOpen(true)}
               type="button"
             >
@@ -567,25 +711,7 @@ export function ResponsibilityEditor({
                 className="min-h-11 rounded-[8px] bg-fp-danger px-4 text-[14px] font-bold text-white"
                 onClick={() => {
                   setArchiveOpen(false);
-                  if (onStatusChange) {
-                    onStatusChange({
-                      status: "archived",
-                      confirmedArchive: true
-                    });
-                    return;
-                  }
-
-                  fetch(
-                    `/api/responsibilities/${initialResponsibility?.id}/status`,
-                    {
-                      method: "POST",
-                      headers: { "content-type": "application/json" },
-                      body: JSON.stringify({
-                        status: "archived",
-                        confirmedArchive: true
-                      })
-                    }
-                  );
+                  void updateStatus("archived", true);
                 }}
                 type="button"
               >

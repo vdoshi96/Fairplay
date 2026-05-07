@@ -157,6 +157,7 @@ describe("ResponsibilityEditor", () => {
       toVisibility: "partner_visible",
       confirmedVisibilityChange: true
     });
+    expect(await screen.findByRole("status")).toHaveTextContent("Saved.");
   });
 
   it("includes relevant days and non-private visibility when creating", async () => {
@@ -190,6 +191,101 @@ describe("ResponsibilityEditor", () => {
       title: "Morning launch",
       relevantDays: ["weekday"],
       visibility: "check_in_only"
+    });
+    expect(await screen.findByRole("status")).toHaveTextContent("Saved.");
+  });
+
+  it("reports save failures and stops follow-up writes", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: "Unable to save this responsibility." })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ResponsibilityEditor
+        initialResponsibility={responsibility}
+        personas={personas}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to save this responsibility."
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports status update success and failure", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: "Unable to pause this responsibility." })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({})
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ResponsibilityEditor
+        initialResponsibility={responsibility}
+        personas={personas}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Pause" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to pause this responsibility."
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Mark not relevant" }));
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Marked not relevant."
+    );
+    expect(fetchMock.mock.calls[1][0]).toBe(
+      `/api/responsibilities/${responsibility.id}/status`
+    );
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({
+      status: "not_relevant"
+    });
+  });
+
+  it("reports radar flag success and failure", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ error: "Unable to flag this responsibility." })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({})
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ResponsibilityEditor
+        initialResponsibility={responsibility}
+        personas={personas}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Flag for radar" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Unable to flag this responsibility."
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Flag for radar" }));
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Flagged for radar."
+    );
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({
+      reasonKey: "review_due",
+      visibility: "private"
     });
   });
 });
