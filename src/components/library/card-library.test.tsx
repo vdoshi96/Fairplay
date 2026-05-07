@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -190,9 +190,15 @@ describe("CardLibrary", () => {
     );
   });
 
-  it("walks through dummy Library practice without creating a real card", async () => {
+  it("generates a temporary dummy Library preview from the user request without creating a real card", async () => {
     const onCreateFromTemplate = vi.fn();
-    const fetchMock = vi.fn();
+    let resolvePreview: (response: Response) => void = () => undefined;
+    const fetchMock = vi.fn(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolvePreview = resolve;
+        })
+    );
     vi.stubGlobal("fetch", fetchMock);
     render(
       <CardLibrary
@@ -225,22 +231,65 @@ describe("CardLibrary", () => {
 
     await userEvent.type(
       screen.getByLabelText("Dummy card request"),
-      "Make a card for lunch packing handoffs."
+      "Make a card for the weekly backpack reset before school."
     );
     await userEvent.click(screen.getByRole("button", { name: "Create dummy draft" }));
-    expect(screen.getByText("Dummy draft created from Greg capture.")).toBeVisible();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/ai-card-drafts/onboarding-preview",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          inputText: "Make a card for the weekly backpack reset before school."
+        })
+      })
+    );
+    expect(
+      screen.getByText("Generating a dummy card preview. This can take a moment.")
+    ).toBeVisible();
+
+    resolvePreview(
+      new Response(
+        JSON.stringify({
+          title: "Weekly backpack reset",
+          summary: "Keep backpacks cleared, signed forms handled, and school items ready.",
+          definition: "Reset each backpack before the next school day.",
+          conception: "Notice forms, supplies, and items that need attention.",
+          planning: "Pick a reset window and place needed items nearby.",
+          execution: "Empty the bag, handle papers, and repack essentials.",
+          minimumStandard: "Backpacks are ready before school starts."
+        }),
+        {
+          headers: {
+            "content-type": "application/json"
+          },
+          status: 200
+        }
+      )
+    );
+
+    expect(await screen.findByText("Dummy draft created from Greg capture."))
+      .toBeVisible();
     expect(screen.getByRole("region", { name: "Temporary Library workspace" }))
       .toBeVisible();
     expect(screen.getByText(/temporary workspace keeps mock artifacts/i))
       .toBeVisible();
+    expect(screen.getByText("Weekly backpack reset")).toBeVisible();
+    expect(
+      screen.getByText("Keep backpacks cleared, signed forms handled, and school items ready.")
+    ).toBeVisible();
+    expect(screen.queryByText(/Lunch packing handoff/i)).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Review dummy draft" }));
     expect(screen.getByLabelText("Dummy draft title")).toHaveValue(
-      "Lunch packing handoff"
+      "Weekly backpack reset"
+    );
+    expect(screen.getByLabelText("Dummy summary")).toHaveValue(
+      "Keep backpacks cleared, signed forms handled, and school items ready."
     );
 
     await userEvent.clear(screen.getByLabelText("Dummy draft title"));
-    await userEvent.type(screen.getByLabelText("Dummy draft title"), "Lunch kit reset");
+    await userEvent.type(screen.getByLabelText("Dummy draft title"), "Backpack launch");
     await userEvent.click(screen.getByRole("button", { name: "Save dummy edits" }));
     expect(screen.getByText("Dummy draft edits saved.")).toBeVisible();
 
@@ -252,7 +301,13 @@ describe("CardLibrary", () => {
     expect(screen.getByText("Dummy Library workflow complete.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
     expect(onCreateFromTemplate).not.toHaveBeenCalled();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(fetchMock).not.toHaveBeenCalledWith(
+        expect.stringMatching(/put-in-play|card-templates/),
+        expect.anything()
+      );
+    });
 
     await userEvent.click(screen.getByRole("button", { name: "Clean up dummy workspace" }));
     expect(screen.queryByRole("region", { name: "Temporary Library workspace" }))

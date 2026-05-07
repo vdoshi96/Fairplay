@@ -46,6 +46,16 @@ type TrackedAiCardDraft = AiCardDraftSummary & {
   localInputText?: string;
 };
 
+type OnboardingPreviewCard = {
+  title: string;
+  summary: string;
+  definition?: string;
+  conception?: string;
+  planning?: string;
+  execution?: string;
+  minimumStandard?: string;
+};
+
 const statusLabels: Record<AiCardDraftSummary["status"], string> = {
   accepted: "Accepted",
   canceled: "Canceled",
@@ -409,11 +419,11 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
 function LibraryPracticeWorkflow() {
   const [request, setRequest] = useState("");
   const [draftCreated, setDraftCreated] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
-  const [title, setTitle] = useState("Lunch packing handoff");
-  const [summary, setSummary] = useState(
-    "Keep lunch kits reset, packed, and ready before school mornings."
-  );
+  const [title, setTitle] = useState("");
+  const [summary, setSummary] = useState("");
+  const [preview, setPreview] = useState<OnboardingPreviewCard | null>(null);
   const [putInPlayPreviewed, setPutInPlayPreviewed] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -425,12 +435,65 @@ function LibraryPracticeWorkflow() {
   function cleanUpWorkspace() {
     setRequest("");
     setDraftCreated(false);
+    setIsGenerating(false);
     setReviewOpen(false);
-    setTitle("Lunch packing handoff");
-    setSummary("Keep lunch kits reset, packed, and ready before school mornings.");
+    setTitle("");
+    setSummary("");
+    setPreview(null);
     setPutInPlayPreviewed(false);
     setStatus("Dummy Library workspace cleaned up.");
   }
+
+  async function createDummyDraft() {
+    const inputText = request.trim();
+    if (!inputText || isGenerating) {
+      return;
+    }
+
+    setIsGenerating(true);
+    setStatus("Generating a dummy card preview. This can take a moment.");
+    setDraftCreated(false);
+    setReviewOpen(false);
+    setPutInPlayPreviewed(false);
+
+    try {
+      const response = await fetch("/api/ai-card-drafts/onboarding-preview", {
+        body: JSON.stringify({ inputText }),
+        headers: {
+          "content-type": "application/json"
+        },
+        method: "POST"
+      });
+
+      if (!response.ok) {
+        throw new Error("The dummy card preview could not be generated.");
+      }
+
+      const generated = await response.json() as OnboardingPreviewCard;
+      setPreview(generated);
+      setTitle(generated.title);
+      setSummary(generated.summary);
+      setDraftCreated(true);
+      mark("library-capture-filled", "Dummy draft created from Greg capture.");
+    } catch {
+      setPreview(null);
+      setTitle("");
+      setSummary("");
+      setStatus("Dummy draft preview could not be generated. Try a shorter request.");
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
+  const previewDetails = preview
+    ? [
+        ["Definition", preview.definition],
+        ["Conception", preview.conception],
+        ["Planning", preview.planning],
+        ["Execution", preview.execution],
+        ["Minimum standard", preview.minimumStandard]
+      ].filter((detail): detail is [string, string] => Boolean(detail[1]?.trim()))
+    : [];
 
   return (
     <section
@@ -465,14 +528,11 @@ function LibraryPracticeWorkflow() {
         </label>
         <button
           className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary disabled:opacity-60 sm:w-fit"
-          disabled={request.trim().length === 0}
-          onClick={() => {
-            setDraftCreated(true);
-            mark("library-capture-filled", "Dummy draft created from Greg capture.");
-          }}
+          disabled={request.trim().length === 0 || isGenerating}
+          onClick={createDummyDraft}
           type="button"
         >
-          Create dummy draft
+          {isGenerating ? "Creating dummy draft" : "Create dummy draft"}
         </button>
       </div>
 
@@ -542,6 +602,16 @@ function LibraryPracticeWorkflow() {
                   play.
                 </span>
               </label>
+              {previewDetails.length > 0 ? (
+                <dl className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px]">
+                  {previewDetails.map(([label, value]) => (
+                    <div className="grid gap-1" key={label}>
+                      <dt className="font-bold text-fp-ink">{label}</dt>
+                      <dd className="leading-5 text-fp-muted-ink">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : null}
             </div>
           </div>
           <div className="flex flex-wrap gap-2">

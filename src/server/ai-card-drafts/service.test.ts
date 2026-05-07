@@ -208,6 +208,29 @@ describe("AI card draft service", () => {
     });
   });
 
+  it("generates an onboarding preview without creating or accepting a draft", async () => {
+    const deps = makeDeps();
+    const service = createAiCardDraftService(deps);
+
+    const preview = await service.createOnboardingPreview(
+      session,
+      { inputText: "Weekly backpack reset before school." },
+      { requestId: "fp_ai_test", route: "/api/ai-card-drafts/onboarding-preview" }
+    );
+
+    expect(preview).toEqual(generatedCard);
+    expect(deps.structureTaskAsCard).toHaveBeenCalledWith(
+      { taskText: "Weekly backpack reset before school." },
+      { requestId: "fp_ai_test", route: "/api/ai-card-drafts/onboarding-preview" }
+    );
+    expect(deps.createDraft).not.toHaveBeenCalled();
+    expect(deps.markStage).not.toHaveBeenCalled();
+    expect(deps.saveGeneration).not.toHaveBeenCalled();
+    expect(deps.generateCardCover).not.toHaveBeenCalled();
+    expect(deps.saveCover).not.toHaveBeenCalled();
+    expect(deps.acceptDraftAsResponsibility).not.toHaveBeenCalled();
+  });
+
   it("records a failed draft when text structuring fails", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const deps = makeDeps({

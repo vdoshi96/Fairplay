@@ -445,6 +445,25 @@ export function createAiCardDraftService(
       }
     },
 
+    async createOnboardingPreview(
+      session: CurrentSession,
+      input: { inputText: string },
+      diagnostics?: AiDiagnosticsContext
+    ): Promise<StructuredAiCard> {
+      requireSelectedPersona(session);
+      if (!input.inputText.trim()) {
+        throw new AiCardDraftServiceError("INVALID_INPUT", "Text input is required.");
+      }
+
+      const structureInput = {
+        taskText: input.inputText
+      };
+
+      return diagnostics
+        ? deps.structureTaskAsCard(structureInput, diagnostics)
+        : deps.structureTaskAsCard(structureInput);
+    },
+
     async update(
       session: CurrentSession,
       draftId: AiCardDraftId,
