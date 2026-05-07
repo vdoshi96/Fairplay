@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BookOpen, GraduationCap, Sparkles, X } from "lucide-react";
 
@@ -31,6 +32,8 @@ export function PersistentWelcome({
   dismissed,
   onDismiss
 }: PersistentWelcomeProps) {
+  const pathname = usePathname();
+  const variant = pathname === "/app/home" ? "prominent" : "compact";
   const [hidden, setHidden] = useState(dismissed);
   const [closing, setClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,10 +72,72 @@ export function PersistentWelcome({
     return null;
   }
 
+  if (variant === "compact") {
+    return (
+      <aside
+        aria-label="Welcome to Fairplay"
+        className="mb-3 rounded-[8px] border border-fp-line bg-white px-3 py-2 shadow-soft"
+        data-welcome-variant="compact"
+        role="dialog"
+      >
+        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="min-w-0">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
+              Welcome
+            </p>
+            <h2 className="text-[16px] font-bold leading-5 text-fp-ink">
+              Welcome resources
+            </h2>
+            <p className="text-[13px] leading-5 text-fp-muted-ink">
+              Crash course, feature tips, and the card library are nearby.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            {welcomeLinks.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  className="flex min-h-9 items-center justify-center gap-1.5 rounded-[8px] border border-fp-line bg-fp-surface px-2.5 text-[12px] font-bold text-fp-ink outline-none transition hover:bg-fp-soft focus:ring-2 focus:ring-fp-ink/25"
+                  href={item.href}
+                  key={item.href}
+                >
+                  <Icon aria-hidden className="h-3.5 w-3.5 shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+
+            <button
+              aria-label="Close welcome"
+              className="min-h-9 min-w-9 rounded-[8px] border border-fp-line bg-white text-fp-muted-ink outline-none transition hover:bg-fp-soft hover:text-fp-ink focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={closing}
+              onClick={() => void closeWelcome()}
+              type="button"
+            >
+              <X aria-hidden className="mx-auto h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {error ? (
+          <p
+            className="mt-2 rounded-[8px] border border-fp-danger/40 bg-white px-3 py-2 text-[13px] leading-5 text-fp-danger"
+            role="alert"
+          >
+            {error}
+          </p>
+        ) : null}
+      </aside>
+    );
+  }
+
   return (
     <aside
       aria-label="Welcome to Fairplay"
-      className="mb-5 rounded-[8px] border border-fp-line bg-white p-4 shadow-soft"
+      className="mb-4 rounded-[8px] border border-fp-line bg-white p-3 shadow-soft sm:p-4"
+      data-welcome-variant="prominent"
       role="dialog"
     >
       <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">

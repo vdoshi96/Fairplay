@@ -3,14 +3,59 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PersistentWelcome } from "./persistent-welcome";
 
+const pathname = vi.hoisted(() => vi.fn(() => "/app/home"));
+
+vi.mock("next/navigation", () => ({
+  usePathname: pathname
+}));
+
 const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
 
 describe("PersistentWelcome", () => {
   afterEach(() => {
+    pathname.mockReturnValue("/app/home");
     vi.unstubAllGlobals();
   });
 
+  it("renders a prominent welcome on the app home route", () => {
+    pathname.mockReturnValue("/app/home");
+
+    render(<PersistentWelcome dismissed={false} />);
+
+    expect(
+      screen.getByRole("dialog", { name: "Welcome to Fairplay" })
+    ).toHaveAttribute("data-welcome-variant", "prominent");
+    expect(
+      screen.getByRole("heading", { name: "Welcome to Fairplay" })
+    ).toBeVisible();
+  });
+
+  it("renders a compact welcome on feature routes", () => {
+    pathname.mockReturnValue("/app/library");
+
+    render(<PersistentWelcome dismissed={false} />);
+
+    const welcome = screen.getByRole("dialog", { name: "Welcome to Fairplay" });
+    expect(welcome).toHaveAttribute("data-welcome-variant", "compact");
+    expect(
+      screen.getByText("Crash course, feature tips, and the card library are nearby.")
+    ).toBeVisible();
+    expect(screen.getByRole("link", { name: "Start crash course" })).toHaveAttribute(
+      "href",
+      "/app/crash-course"
+    );
+    expect(screen.getByRole("link", { name: "Learn a feature" })).toHaveAttribute(
+      "href",
+      "/app/home#learn-a-feature"
+    );
+    expect(screen.getByRole("link", { name: "Browse card library" })).toHaveAttribute(
+      "href",
+      "/app/library"
+    );
+  });
+
   it("stays visible until the user explicitly closes it", async () => {
+    pathname.mockReturnValue("/app/library");
     const onDismiss = vi.fn();
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -37,6 +82,7 @@ describe("PersistentWelcome", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/preferences/onboarding",
       expect.objectContaining({
+        body: expect.stringContaining("welcomeDismissedAt"),
         method: "PATCH"
       })
     );
@@ -65,8 +111,14 @@ describe("PersistentWelcome", () => {
   });
 
   it("does not render after it is dismissed", () => {
-    render(<PersistentWelcome dismissed />);
+    pathname.mockReturnValue("/app/library");
 
+    const { rerender } = render(<PersistentWelcome dismissed />);
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    pathname.mockReturnValue("/app/home");
+    rerender(<PersistentWelcome dismissed />);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
