@@ -282,7 +282,10 @@ export function ResponsibilityLoadMap({
   };
 
   return (
-    <section className="grid gap-5">
+    <section
+      className="grid min-w-0 gap-4 overflow-x-clip"
+      data-testid="load-map-dashboard-shell"
+    >
       <div
         className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
         data-testid="load-map-hero-visual"
@@ -293,21 +296,21 @@ export function ResponsibilityLoadMap({
           testId="load-map-hero-background"
           washClassName="bg-white/80"
         />
-        <div className="fp-generated-surface-wash relative z-10 flex flex-col gap-3 p-4 backdrop-blur-[1px] sm:flex-row sm:items-end sm:justify-between">
-          <div className="grid gap-1">
+        <div className="fp-generated-surface-wash relative z-10 flex flex-col gap-3 p-3 backdrop-blur-[1px] sm:flex-row sm:items-end sm:justify-between sm:p-4">
+          <div className="grid min-w-0 gap-1">
             <p className="text-[13px] font-semibold text-fp-muted-ink">Load map</p>
-            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+            <h1 className="text-[26px] font-bold leading-[32px] text-fp-ink sm:text-[28px] sm:leading-[34px]">
               Responsibility overview
             </h1>
           </div>
-          <div className="grid gap-3 sm:justify-items-end">
+          <div className="flex min-w-0 flex-wrap items-start gap-2 sm:justify-end">
             <FeatureGuideLauncher
               guide={FEATURE_GUIDES.loadMap}
               showDescription={false}
             />
             {responsibilities.length > 0 ? (
               <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/25"
+                className="inline-flex min-h-10 items-center justify-center rounded-[8px] bg-fp-primary px-3 text-[14px] font-bold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/25"
                 href="/app/responsibilities/new"
               >
                 Add responsibility
@@ -317,25 +320,33 @@ export function ResponsibilityLoadMap({
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink p-3 shadow-[var(--fp-shadow-soft)]">
+      <div
+        className="relative min-w-0 overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink p-2 shadow-[var(--fp-shadow-soft)] sm:p-3"
+        data-testid="load-map-dashboard"
+      >
         <DecorativeBackgroundLayer
-          className="opacity-25 [mask-image:linear-gradient(125deg,black_0%,rgba(0,0,0,0.62)_42%,rgba(0,0,0,0.14)_100%)]"
+          className="opacity-32 [mask-image:linear-gradient(125deg,black_0%,rgba(0,0,0,0.68)_42%,rgba(0,0,0,0.16)_100%)]"
           src={loadMapWorkbenchBackground}
-          testId="load-map-workbench-background"
+          testId="load-map-dashboard-background"
           washClassName="bg-white/82"
         />
-        <div className="relative z-10 grid gap-3">
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--fp-alex),var(--fp-shared),var(--fp-max),var(--fp-radar))]"
+        />
+        <div className="relative z-10 grid min-w-0 gap-2 sm:gap-3">
           <div
-            className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4"
+            className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8"
             data-testid="load-map-diagnostics"
           >
             <Signal
               label="Owner mix"
+              testId="load-map-signal-owner"
               tone="owner"
               value={ownerMix(loadSnapshot.ownerDistribution)}
             >
               <AssignmentShift
-                className="mt-2 w-fit"
+                className="mt-1 w-fit origin-left scale-90"
                 from="alex"
                 label="Owner mix visual"
                 to="max"
@@ -343,26 +354,31 @@ export function ResponsibilityLoadMap({
             </Signal>
             <Signal
               label="Shared"
+              testId="load-map-signal-shared"
               tone="shared"
               value={String(loadSnapshot.sharedDistribution.shared ?? 0)}
             />
             <Signal
               label="Open radar"
+              testId="load-map-signal-radar"
               tone="radar"
               value={String(loadSnapshot.radarOpenCount)}
             />
             <Signal
               label="Due review"
+              testId="load-map-signal-review"
               tone="review"
               value={String(loadSnapshot.reviewDueCount)}
             />
             <Signal
               label="Paused or out"
+              testId="load-map-signal-reserve"
               tone="reserve"
               value={String(loadSnapshot.pausedOrNotRelevantCount)}
             />
             <Signal
               label="High frequency"
+              testId="load-map-signal-cadence"
               tone="cadence"
               value={String(
                 (loadSnapshot.cadenceDistribution.daily ?? 0) +
@@ -371,18 +387,20 @@ export function ResponsibilityLoadMap({
             />
             <Signal
               label="Area mix"
+              testId="load-map-signal-area"
               tone="area"
               value={summaryMix(loadSnapshot.areaDistribution)}
             />
             <Signal
               label="Hidden effort mix"
+              testId="load-map-signal-effort"
               tone="effort"
               value={summaryMix(loadSnapshot.hiddenEffortMix)}
             />
           </div>
 
           <div
-            className="grid gap-3 rounded-[8px] border border-white/70 bg-white/88 p-3 backdrop-blur-[1px] lg:grid-cols-[1fr_1.5fr_1fr] xl:grid-cols-[1fr_1.5fr_1fr_1fr]"
+            className="grid min-w-0 gap-2 rounded-[8px] border border-white/70 bg-white/88 p-2 backdrop-blur-[1px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]"
             data-guide-id="load-map-filters"
           >
             <FilterGroup legend="Ownership">
@@ -399,7 +417,7 @@ export function ResponsibilityLoadMap({
                 value={hiddenEffort}
               />
             </FilterGroup>
-            <FilterGroup legend="Card details">
+            <FilterGroup columns="three" legend="Card details">
               <Select
                 label="Status"
                 onChange={setStatus}
@@ -434,11 +452,11 @@ export function ResponsibilityLoadMap({
               />
             </FilterGroup>
             <FilterGroup legend="Find">
-              <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+              <label className="grid min-w-0 gap-1 text-[13px] font-semibold text-fp-muted-ink">
                 Search
                 <input
                   aria-label="Search responsibilities"
-                  className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+                  className="min-h-10 w-full min-w-0 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
                   onChange={(event) => setSearchText(event.target.value)}
                   type="search"
                   value={searchText}
@@ -491,12 +509,16 @@ export function ResponsibilityLoadMap({
             }
             data-testid="load-map-board"
           >
-            <div className="-mx-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:px-0">
+            <div
+              className="-mx-3 overflow-x-auto px-3 pb-3 sm:mx-0 sm:px-0"
+              data-testid="load-map-board-scroller"
+            >
               <div
                 className="flex min-w-max gap-3"
                 data-guide-id={
                   filteredResponsibilities.length > 0 ? "load-map-lanes" : undefined
                 }
+                data-testid="load-map-lane-strip"
               >
                 {BOARD_LANES.map((lane) => {
                   const laneResponsibilities =
@@ -558,7 +580,7 @@ function BoardLaneColumn({
     <section
       aria-labelledby={headingId}
       className={[
-        "flex max-h-[72vh] w-[min(19rem,calc(100vw-2rem))] shrink-0 flex-col rounded-[8px] border p-3 transition",
+        "flex max-h-[min(64vh,40rem)] w-[min(17.5rem,calc(100vw-2rem))] shrink-0 flex-col rounded-[8px] border p-2.5 transition sm:p-3",
         laneToneClasses[lane.tone],
         isOver ? "ring-2 ring-fp-ink/25" : ""
       ]
@@ -578,7 +600,7 @@ function BoardLaneColumn({
                 ].join(" ")}
               />
               <h2
-                className="truncate text-[16px] font-bold leading-6 text-fp-ink"
+                className="break-words text-[16px] font-bold leading-6 text-fp-ink"
                 id={headingId}
               >
                 {lane.label}
@@ -615,7 +637,7 @@ function BoardLaneColumn({
             />
           ))}
           {responsibilities.length === 0 ? (
-            <p className="min-h-28 rounded-[8px] border border-dashed border-white/80 bg-white/55 p-3 text-[13px] leading-5 text-fp-muted-ink">
+            <p className="min-h-24 rounded-[8px] border border-dashed border-white/80 bg-white/55 p-3 text-[13px] leading-5 text-fp-muted-ink">
               Drop a card here when it matches this lane.
             </p>
           ) : null}
@@ -657,7 +679,7 @@ function LoadMapPracticeBoard({
         data-guide-id={useBoardGuideTarget ? "load-map-lanes" : undefined}
       >
         <div className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
-          <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
+          <p className="text-[12px] font-bold uppercase tracking-normal text-fp-muted-ink">
             Not in Play
           </p>
           {primaryLane === "not_in_play" ? (
@@ -720,7 +742,7 @@ function LoadMapPracticeBoard({
           )}
         </div>
         <div className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
-          <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
+          <p className="text-[12px] font-bold uppercase tracking-normal text-fp-muted-ink">
             Alex
           </p>
           {primaryLane === "player_1" ? (
@@ -754,7 +776,7 @@ function LoadMapPracticeBoard({
           )}
         </div>
         <div className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
-          <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
+          <p className="text-[12px] font-bold uppercase tracking-normal text-fp-muted-ink">
             Trimmed
           </p>
           {duplicateState === "deleted" ? (
@@ -828,7 +850,7 @@ function SortableResponsibilityCard({
     <MotionPanel>
       <article
         className={[
-          "relative grid gap-3 rounded-[8px] border border-fp-line bg-white p-3 shadow-sm outline-none transition focus-within:ring-2 focus-within:ring-fp-ink/20",
+          "relative grid min-w-0 gap-2.5 rounded-[8px] border border-fp-line bg-white p-2.5 shadow-sm outline-none transition focus-within:ring-2 focus-within:ring-fp-ink/20",
           isDragging ? "scale-[1.02] shadow-lg ring-2 ring-fp-ink/20" : ""
         ]
           .filter(Boolean)
@@ -838,33 +860,37 @@ function SortableResponsibilityCard({
         {...attributes}
         {...listeners}
       >
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start justify-between gap-2">
           <div className="min-w-0">
             <Link
               className="outline-none focus-visible:underline"
               href={`/app/responsibilities/${responsibility.id}`}
             >
-              <h3 className="truncate text-[15px] font-bold leading-6 text-fp-ink">
+              <h3 className="break-words text-[15px] font-bold leading-6 text-fp-ink">
                 {responsibility.title}
               </h3>
             </Link>
-            <p className="text-[13px] text-fp-muted-ink">
+            <p className="break-words text-[13px] text-fp-muted-ink">
               {ownerFor(responsibility)}
             </p>
           </div>
-          <span className="shrink-0 rounded-[8px] border border-fp-line px-2 py-1 text-[12px] font-semibold">
+          <span className="max-w-[9rem] shrink-0 break-words rounded-[8px] border border-fp-line px-2 py-1 text-[12px] font-semibold leading-4">
             {label(responsibility.status)}
           </span>
         </div>
-        <div className="flex flex-wrap gap-2 text-[12px] font-semibold text-fp-muted-ink">
-          <span>{label(responsibility.cadence)}</span>
+        <div className="flex min-w-0 flex-wrap gap-2 text-[12px] font-semibold text-fp-muted-ink">
+          <span className="break-words">{label(responsibility.cadence)}</span>
           {responsibility.areaKeys.map((key) => (
-            <span key={key}>{label(key)}</span>
+            <span className="break-words" key={key}>
+              {label(key)}
+            </span>
           ))}
           {responsibility.hiddenEffortKeys.map((key) => (
-            <span key={key}>{label(key)}</span>
+            <span className="break-words" key={key}>
+              {label(key)}
+            </span>
           ))}
-          <span>{label(reviewState(responsibility))}</span>
+          <span className="break-words">{label(reviewState(responsibility))}</span>
         </div>
         <div className="relative">
           <button
@@ -930,14 +956,26 @@ function summaryMix(distribution: Record<string, number>) {
 
 function FilterGroup({
   children,
+  columns = "two",
   legend
 }: {
   children: ReactNode;
+  columns?: "two" | "three";
   legend: string;
 }) {
+  const columnClass =
+    columns === "three"
+      ? "sm:grid-cols-3"
+      : "sm:grid-cols-2 xl:grid-cols-1";
+
   return (
-    <fieldset className="grid content-start gap-3 rounded-[8px] border border-fp-line bg-white/90 p-3">
-      <legend className="px-1 text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
+    <fieldset
+      className={[
+        "grid min-w-0 content-start gap-2 rounded-[8px] border border-fp-line bg-white/90 p-2.5",
+        columnClass
+      ].join(" ")}
+    >
+      <legend className="px-1 text-[12px] font-bold uppercase tracking-normal text-fp-muted-ink">
         {legend}
       </legend>
       {children}
@@ -956,26 +994,53 @@ const signalToneClasses = {
   shared: "border-teal-200 bg-teal-50/90"
 } as const;
 
+const signalAccentClasses: Record<keyof typeof signalToneClasses, string> = {
+  area: "bg-emerald-500",
+  cadence: "bg-indigo-500",
+  effort: "bg-violet-500",
+  owner: "bg-sky-500",
+  radar: "bg-amber-500",
+  reserve: "bg-stone-500",
+  review: "bg-rose-500",
+  shared: "bg-teal-500"
+};
+
 function Signal({
   children,
   label,
+  testId,
   tone,
   value
 }: {
   children?: ReactNode;
   label: string;
+  testId: string;
   tone: keyof typeof signalToneClasses;
   value: string;
 }) {
   return (
     <div
       className={[
-        "rounded-[8px] border p-3 shadow-sm",
+        "min-w-0 overflow-hidden rounded-[8px] border p-2.5 shadow-sm",
         signalToneClasses[tone]
       ].join(" ")}
+      data-testid={testId}
     >
-      <p className="text-[12px] font-semibold text-fp-muted-ink">{label}</p>
-      <p className="mt-1 text-[20px] font-bold text-fp-ink">{value}</p>
+      <div
+        aria-hidden="true"
+        className={["mb-2 h-1 w-10 rounded-full", signalAccentClasses[tone]].join(
+          " "
+        )}
+      />
+      <p className="text-[12px] font-semibold leading-4 text-fp-muted-ink">
+        {label}
+      </p>
+      <p
+        className="mt-0.5 break-words text-[18px] font-bold leading-[22px] text-fp-ink [overflow-wrap:anywhere]"
+        data-testid={`${testId}-value`}
+      >
+        {value}
+      </p>
       {children}
     </div>
   );
@@ -993,10 +1058,10 @@ function Select<T extends string>({
   value: T;
 }) {
   return (
-    <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+    <label className="grid min-w-0 gap-1 text-[13px] font-semibold text-fp-muted-ink">
       {labelText}
       <select
-        className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+        className="min-h-10 w-full min-w-0 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
         onChange={(event) => onChange(event.target.value as T)}
         value={value}
       >

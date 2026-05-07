@@ -175,6 +175,54 @@ describe("ResponsibilityLoadMap", () => {
     );
   });
 
+  it("constrains the dashboard overflow while keeping lane scrolling intentional", () => {
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        responsibilities={[responsibility()]}
+      />
+    );
+
+    expect(screen.getByTestId("load-map-dashboard-shell")).toHaveClass(
+      "overflow-x-clip"
+    );
+    expect(screen.getByTestId("load-map-dashboard")).toContainElement(
+      screen.getByTestId("load-map-dashboard-background")
+    );
+    expect(
+      document.querySelector('[data-guide-id="load-map-filters"]')
+    ).toHaveClass("min-w-0");
+    expect(screen.getByTestId("load-map-board-scroller")).toHaveClass(
+      "overflow-x-auto"
+    );
+    expect(screen.getByTestId("load-map-lane-strip")).toHaveClass("min-w-max");
+  });
+
+  it("wraps long diagnostic values inside compact signal tiles", () => {
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={{
+          ...loadSnapshot,
+          areaDistribution: {
+            school_transition_after_care_lunchbox_emotional_follow_through: 2
+          },
+          hiddenEffortMix: {
+            emotional_attention_follow_through_planning_backup: 3
+          }
+        }}
+        responsibilities={[responsibility()]}
+      />
+    );
+
+    expect(screen.getByTestId("load-map-signal-area")).toHaveClass("min-w-0");
+    expect(screen.getByTestId("load-map-signal-area-value")).toHaveClass(
+      "break-words"
+    );
+    expect(screen.getByTestId("load-map-signal-effort-value")).toHaveClass(
+      "[overflow-wrap:anywhere]"
+    );
+  });
+
   it("treats resolved linked radar items as clear", () => {
     render(
       <ResponsibilityLoadMap
