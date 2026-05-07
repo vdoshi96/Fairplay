@@ -170,7 +170,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       <section
         aria-label={`${featureName} guide`}
         aria-modal="true"
-        className="pointer-events-auto fixed bottom-5 left-1/2 z-[70] grid w-[min(92vw,28rem)] -translate-x-1/2 gap-4 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 text-fp-ink shadow-[var(--fp-shadow-elevated)] outline-none sm:bottom-8 sm:left-auto sm:right-8 sm:translate-x-0"
+        className="pointer-events-auto fixed left-1/2 top-1/2 z-[70] grid max-h-[calc(100dvh-2rem)] w-[min(92vw,30rem)] -translate-x-1/2 -translate-y-[44%] gap-4 overflow-y-auto rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 text-fp-ink shadow-[var(--fp-shadow-elevated)] outline-none"
         ref={dialogRef}
         role="dialog"
         tabIndex={-1}

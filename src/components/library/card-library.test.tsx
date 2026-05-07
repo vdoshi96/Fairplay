@@ -192,6 +192,10 @@ describe("CardLibrary", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: "Create dummy draft" }));
     expect(screen.getByText("Dummy draft created from Greg capture.")).toBeVisible();
+    expect(screen.getByRole("region", { name: "Temporary Library workspace" }))
+      .toBeVisible();
+    expect(screen.getByText(/temporary workspace keeps mock artifacts/i))
+      .toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: "Review dummy draft" }));
     expect(screen.getByLabelText("Dummy draft title")).toHaveValue(
@@ -212,9 +216,15 @@ describe("CardLibrary", () => {
     expect(
       screen.getByText("Dummy card is ready for the Load Map. No real card was created.")
     ).toBeVisible();
+    expect(screen.getByText("Mock Load Map artifact")).toBeVisible();
     expect(screen.getByText("Dummy Library workflow complete.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
     expect(onCreateFromTemplate).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole("button", { name: "Clean up dummy workspace" }));
+    expect(screen.queryByRole("region", { name: "Temporary Library workspace" }))
+      .not.toBeInTheDocument();
+    expect(screen.queryByText("Mock Load Map artifact")).not.toBeInTheDocument();
   });
 });

@@ -483,6 +483,7 @@ export function NewCheckInLauncher({
   const [startedCheckIn, setStartedCheckIn] = useState<GuidedCheckIn | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [practiceOpen, setPracticeOpen] = useState(false);
+  const [emptyAgendaOpen, setEmptyAgendaOpen] = useState(false);
   const openCheckInPractice = useCallback(() => {
     setPracticeOpen(true);
   }, []);
@@ -500,6 +501,7 @@ export function NewCheckInLauncher({
         }
       );
       setSuggestions(preview.items);
+      setEmptyAgendaOpen(preview.items.length === 0);
     } catch (previewError) {
       setError(previewError instanceof Error ? previewError.message : "Unable to preview.");
     }
@@ -634,6 +636,37 @@ export function NewCheckInLauncher({
 
         {practiceOpen ? <CheckInPracticeWorkflow /> : null}
       </section>
+
+      {emptyAgendaOpen ? (
+        <div className="fixed inset-0 z-[80] grid place-items-center bg-fp-ink/45 px-4 py-6">
+          <section
+            aria-labelledby="empty-agenda-title"
+            aria-modal="true"
+            className="grid max-h-[calc(100dvh-2rem)] w-full max-w-md gap-3 overflow-y-auto rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
+            role="dialog"
+          >
+            <div className="grid gap-1">
+              <h2
+                className="text-[20px] font-bold leading-6"
+                id="empty-agenda-title"
+              >
+                No agenda items yet
+              </h2>
+              <p className="text-[14px] leading-6 text-fp-muted-ink">
+                Radar topics and review-due cards will appear here when there is
+                something ready for a check-in. Nothing was created or changed.
+              </p>
+            </div>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
+              onClick={() => setEmptyAgendaOpen(false)}
+              type="button"
+            >
+              Close
+            </button>
+          </section>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -649,6 +682,13 @@ function CheckInPracticeWorkflow() {
     completeGuidePractice(eventId);
   }
 
+  function cleanUpWorkspace() {
+    setAgendaPreviewed(false);
+    setOwner("alex");
+    setDecisionSummary("");
+    setStatus("Dummy Check-in workspace cleaned up.");
+  }
+
   return (
     <section
       aria-label="Dummy Check-in practice"
@@ -659,7 +699,9 @@ function CheckInPracticeWorkflow() {
           Dummy Check-in practice
         </h2>
         <p className="text-[13px] leading-5 text-fp-muted-ink">
-          Practice the check-in flow locally without saving decisions or summaries.
+          About this feature: practice previewing an agenda, assigning a topic,
+          recording a decision, deferring an item, and completing a check-in
+          without saving decisions or summaries.
         </p>
       </div>
       <button
@@ -674,7 +716,19 @@ function CheckInPracticeWorkflow() {
       </button>
 
       {agendaPreviewed ? (
-        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
+        <section
+          aria-label="Temporary Check-in workspace"
+          className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3"
+        >
+          <div className="grid gap-1">
+            <h3 className="text-[15px] font-bold text-fp-ink">
+              Temporary Check-in workspace
+            </h3>
+            <p className="text-[13px] leading-5 text-fp-muted-ink">
+              This agenda and its outcomes persist only during onboarding.
+              Cleanup removes the mock state.
+            </p>
+          </div>
           <article className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
             <h3 className="text-[15px] font-bold text-fp-ink">
               Lunch kit reset
@@ -686,6 +740,7 @@ function CheckInPracticeWorkflow() {
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Dummy topic owner
             <select
+              aria-label="Dummy topic owner"
               className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
               onChange={(event) => setOwner(event.target.value as PersonaKey)}
               value={owner}
@@ -693,6 +748,9 @@ function CheckInPracticeWorkflow() {
               <option value="alex">Alex</option>
               <option value="max">Max</option>
             </select>
+            <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+              Pick who would own the next step in a real check-in.
+            </span>
           </label>
           <button
             className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
@@ -709,10 +767,14 @@ function CheckInPracticeWorkflow() {
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Dummy decision summary
             <textarea
+              aria-label="Dummy decision summary"
               className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
               onChange={(event) => setDecisionSummary(event.target.value)}
               value={decisionSummary}
             />
+            <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+              Capture the outcome, not the debate.
+            </span>
           </label>
           <div className="flex flex-wrap gap-2">
             <button
@@ -744,7 +806,17 @@ function CheckInPracticeWorkflow() {
               Complete dummy check-in
             </button>
           </div>
-        </div>
+        </section>
+      ) : null}
+
+      {agendaPreviewed ? (
+        <button
+          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
+          onClick={cleanUpWorkspace}
+          type="button"
+        >
+          Clean up dummy check-in workspace
+        </button>
       ) : null}
 
       {status ? (

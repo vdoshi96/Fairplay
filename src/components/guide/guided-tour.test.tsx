@@ -350,4 +350,21 @@ describe("GuidedTour", () => {
     expect(practiceButton).toHaveClass("bg-[var(--fp-surface-strong)]");
     expect(practiceButton.className).not.toContain("bg-white");
   });
+
+  it("keeps the guide dialog viewport safe with centered lower placement and internal scrolling", () => {
+    installVisibleTargetGeometry();
+    render(
+      <div>
+        <button data-guide-id="load-map-board">Board target</button>
+        <GuidedTour featureName="Load Map" onExit={vi.fn()} steps={steps} />
+      </div>
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Load Map guide" });
+
+    expect(dialog).toHaveClass("left-1/2", "top-1/2", "-translate-x-1/2");
+    expect(dialog).toHaveClass("max-h-[calc(100dvh-2rem)]", "overflow-y-auto");
+    expect(dialog.className).not.toContain("sm:right-8");
+    expect(dialog.className).not.toContain("bottom-5");
+  });
 });

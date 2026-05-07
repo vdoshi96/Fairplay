@@ -855,8 +855,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
   const [created, setCreated] = useState(false);
   const [topic, setTopic] = useState("");
   const [editTopic, setEditTopic] = useState("Clarify lunch packing ownership");
-  const [visibility, setVisibility] =
-    useState<Exclude<Visibility, "private">>("shared_household");
+  const [visibility, setVisibility] = useState<Visibility>("private");
   const [revisitDate, setRevisitDate] = useState("");
   const [state, setState] = useState<
     "draft" | "deferred" | "scheduled" | "resolved" | "dismissed"
@@ -867,6 +866,39 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
     setStatus(message);
     completeGuidePractice(eventId);
   }
+
+  function cleanUpWorkspace() {
+    setCreated(false);
+    setTopic("");
+    setEditTopic("Clarify lunch packing ownership");
+    setVisibility("private");
+    setRevisitDate("");
+    setState("draft");
+    setStatus("Dummy Radar workspace cleaned up.");
+  }
+
+  const sandboxItem = created ? (
+    <article className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
+      <h4 className="text-[14px] font-bold text-fp-ink">{editTopic}</h4>
+      <p className="text-[12px] font-semibold text-fp-muted-ink">
+        {visibilityLabels[visibility]} · {stateLabels[state]}
+        {revisitDate ? ` · Revisit ${revisitDate}` : ""}
+      </p>
+    </article>
+  ) : null;
+
+  const sandboxSectionName =
+    state === "deferred"
+      ? "Sandbox deferred"
+      : state === "resolved"
+        ? "Sandbox resolved"
+        : state === "dismissed"
+          ? "Sandbox dismissed"
+          : visibility === "private"
+            ? "Sandbox private drafts"
+            : visibility === "check_in_only" || state === "scheduled"
+              ? "Sandbox check-in topics"
+              : "Sandbox shared and open";
 
   return (
     <section
@@ -879,8 +911,10 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
           Dummy Radar practice
         </h2>
         <p className="text-[13px] leading-5 text-fp-muted-ink">
-          Use this local card to practice Radar decisions without touching the
-          household board.
+          About this feature: use this local card to practice Radar decisions
+          without touching the household board. Fields below teach what will
+          happen before a real Radar item is shared, scheduled, deferred, or
+          resolved.
         </p>
       </div>
 
@@ -888,10 +922,15 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
           Dummy radar topic
           <input
+            aria-label="Dummy radar topic"
             className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
             onChange={(event) => setTopic(event.target.value)}
             value={topic}
           />
+          <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+            Type the concern you would capture. Create keeps it in the sandbox
+            as a private draft.
+          </span>
         </label>
         <button
           className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary disabled:opacity-60 sm:self-end"
@@ -899,6 +938,7 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
           onClick={() => {
             setCreated(true);
             setEditTopic(topic.trim());
+            setVisibility("private");
             setState("draft");
             mark("radar-practice-create", "Dummy radar draft created.");
           }}
@@ -910,6 +950,26 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
 
       {created ? (
         <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
+          <section
+            aria-label="Temporary Radar workspace"
+            className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3"
+          >
+            <div className="grid gap-1">
+              <h3 className="text-[15px] font-bold text-fp-ink">
+                Temporary Radar workspace
+              </h3>
+              <p className="text-[13px] leading-5 text-fp-muted-ink">
+                The mock item persists during onboarding only. Clean it up after
+                the practice path.
+              </p>
+            </div>
+            <section aria-label={sandboxSectionName} className="grid gap-2">
+              <h4 className="text-[13px] font-bold text-fp-muted-ink">
+                {sandboxSectionName}
+              </h4>
+              {sandboxItem}
+            </section>
+          </section>
           <div className="flex flex-wrap gap-2 text-[12px] font-semibold">
             <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-fp-ink">
               {visibilityLabels[visibility]}
@@ -927,28 +987,34 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Edit dummy radar topic
             <input
+              aria-label="Edit dummy radar topic"
               className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
               onChange={(event) => setEditTopic(event.target.value)}
               value={editTopic}
             />
+            <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+              Editing updates the mock card title shown in the sandbox section.
+            </span>
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <Select
               label="Dummy visibility"
-              onChange={(value) =>
-                setVisibility(value as Exclude<Visibility, "private">)
-              }
-              options={publishOptions}
+              onChange={(value) => setVisibility(value as Visibility)}
+              options={visibilityOptions}
               value={visibility}
             />
             <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
               Dummy revisit date
               <input
+                aria-label="Dummy revisit date"
                 className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[15px] text-fp-ink"
                 onChange={(event) => setRevisitDate(event.target.value)}
                 type="date"
                 value={revisitDate}
               />
+              <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+                The date previews what would be sent when deferring an item.
+              </span>
             </label>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1015,6 +1081,16 @@ function RadarPracticeWorkflow({ dataGuideId }: { dataGuideId?: string }) {
             </button>
           </div>
         </div>
+      ) : null}
+
+      {created ? (
+        <button
+          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
+          onClick={cleanUpWorkspace}
+          type="button"
+        >
+          Clean up dummy radar workspace
+        </button>
       ) : null}
 
       {status ? (

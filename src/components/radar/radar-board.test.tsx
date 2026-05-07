@@ -571,6 +571,13 @@ describe("RadarBoard", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Create dummy radar draft" }));
     expect(screen.getByText("Dummy radar draft created.")).toBeVisible();
+    expect(screen.getByRole("region", { name: "Temporary Radar workspace" }))
+      .toBeVisible();
+    expect(screen.getByText(/fields below teach what will happen/i)).toBeVisible();
+    expect(
+      within(screen.getByRole("region", { name: "Sandbox private drafts" }))
+        .getByText("Clarify lunch packing ownership")
+    ).toBeVisible();
 
     fireEvent.change(screen.getByLabelText("Edit dummy radar topic"), {
       target: { value: "Clarify lunch kit reset" }
@@ -583,14 +590,34 @@ describe("RadarBoard", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Apply dummy visibility" }));
     expect(screen.getByText("Dummy visibility set to Check-in only.")).toBeVisible();
+    expect(
+      within(screen.getByRole("region", { name: "Sandbox check-in topics" }))
+        .getByText("Clarify lunch kit reset")
+    ).toBeVisible();
 
     fireEvent.change(screen.getByLabelText("Dummy revisit date"), {
       target: { value: "2026-05-11" }
     });
     fireEvent.click(screen.getByRole("button", { name: "Defer dummy item" }));
+    expect(
+      within(screen.getByRole("region", { name: "Sandbox deferred" }))
+        .getByText("Clarify lunch kit reset")
+    ).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Schedule dummy item" }));
+    expect(
+      within(screen.getByRole("region", { name: "Sandbox check-in topics" }))
+        .getByText("Clarify lunch kit reset")
+    ).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Resolve dummy item" }));
+    expect(
+      within(screen.getByRole("region", { name: "Sandbox resolved" }))
+        .getByText("Clarify lunch kit reset")
+    ).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Dismiss dummy item" }));
+    expect(
+      within(screen.getByRole("region", { name: "Sandbox dismissed" }))
+        .getByText("Clarify lunch kit reset")
+    ).toBeVisible();
 
     expect(screen.getByText("Dummy Radar workflow complete.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Done" })).toBeEnabled();
@@ -599,5 +626,9 @@ describe("RadarBoard", () => {
     expect(onPublish).not.toHaveBeenCalled();
     expect(onTransition).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clean up dummy radar workspace" }));
+    expect(screen.queryByRole("region", { name: "Temporary Radar workspace" }))
+      .not.toBeInTheDocument();
   });
 });
