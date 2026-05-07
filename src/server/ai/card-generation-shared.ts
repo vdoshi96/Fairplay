@@ -27,8 +27,6 @@ export type StructuredAiCard = {
   planning: string;
   execution: string;
   minimumStandard: string;
-  imagePrompt: string;
-  imageNegativePrompt: string;
 };
 
 export type GeneratedCoverImage = {
@@ -51,19 +49,16 @@ export const StructuredAiCardSchema = z
     conception: z.string().trim().min(1),
     planning: z.string().trim().min(1),
     execution: z.string().trim().min(1),
-    minimumStandard: z.string().trim().min(1),
-    imagePrompt: z.string().trim().min(1),
-    imageNegativePrompt: z.string().trim().min(1)
+    minimumStandard: z.string().trim().min(1)
   })
   .strict() satisfies z.ZodType<StructuredAiCard>;
 
 export const cardSystemPrompt = [
-  "You structure household responsibility tasks into original Fairplay card JSON.",
-  "Return only strict JSON with title, summary, areaKeys, hiddenEffortKeys, cadence, definition, conception, planning, execution, minimumStandard, imagePrompt, and imageNegativePrompt.",
+  "You structure household responsibility tasks into original Fairplay card JSON made of structured text only.",
+  "Return only strict JSON with title, summary, areaKeys, hiddenEffortKeys, cadence, definition, conception, planning, execution, and minimumStandard.",
   "Keep the tone practical, non-clinical, non-blaming, and safe for collaborative household planning.",
   "Do not diagnose relationships, score partners, assign blame, or write therapy-style advice.",
-  "Create original wording and source-style/IP guardrails: do not copy public decks, proprietary card language, workbook text, labels, logos, layouts, or distinctive source material.",
-  "Image prompts must describe an original textless app illustration with a large central silhouette, generous whitespace, app-native colors, no fake card frame, no readable words, and no people, stereotypes, brand marks, watermarks, or proprietary labels."
+  "Create original wording and source-style/IP guardrails: do not copy public decks, proprietary card language, workbook text, labels, logos, layouts, or distinctive source material."
 ].join("\n");
 
 const imageStylePrompt = [

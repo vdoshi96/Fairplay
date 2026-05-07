@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const getCurrentSession = vi.fn();
 const list = vi.fn();
 const createFromText = vi.fn();
-const createFromAudio = vi.fn();
 
 vi.mock("@/server/auth/current-session", () => ({
   getCurrentSession
@@ -20,8 +19,7 @@ vi.mock("@/server/ai/diagnostics", () => ({
 vi.mock("@/server/ai-card-drafts/service", () => ({
   aiCardDraftService: {
     list,
-    createFromText,
-    createFromAudio
+    createFromText
   }
 }));
 
@@ -102,10 +100,6 @@ describe("/api/ai-card-drafts", () => {
       id: "550e8400-e29b-41d4-a716-446655440011",
       sourceInputType: "text"
     });
-    createFromAudio.mockResolvedValue({
-      id: "550e8400-e29b-41d4-a716-446655440012",
-      sourceInputType: "audio"
-    });
   });
 
   it("requires authentication to list drafts", async () => {
@@ -153,7 +147,7 @@ describe("/api/ai-card-drafts", () => {
     );
   });
 
-  it("creates an AI card draft from multipart audio", async () => {
+  it("returns 400 for multipart audio because product capture is text-only", async () => {
     const { POST } = await import("./route");
 
     const response = await POST(
@@ -163,19 +157,8 @@ describe("/api/ai-card-drafts", () => {
       ])
     );
 
-    expect(response.status).toBe(201);
-    expect(createFromAudio).toHaveBeenCalledWith(
-      session,
-      {
-        audioBytes: expect.any(Buffer),
-        audioMimeType: "audio/webm",
-        contextText: "Use the Saturday reset context."
-      },
-      { requestId: "fp_ai_test", route: "/api/ai-card-drafts" }
-    );
-    expect(createFromAudio.mock.calls[0][1].audioBytes).toEqual(
-      Buffer.from("abc")
-    );
+    expect(response.status).toBe(400);
+    expect(createFromText).not.toHaveBeenCalled();
   });
 
   it("returns 400 for invalid JSON create requests", async () => {
@@ -189,7 +172,7 @@ describe("/api/ai-card-drafts", () => {
     expect(createFromText).not.toHaveBeenCalled();
   });
 
-  it("returns 400 for multipart requests without audio bytes", async () => {
+  it("returns 400 for multipart requests because only JSON text is supported", async () => {
     const { POST } = await import("./route");
 
     const response = await POST(
@@ -199,10 +182,10 @@ describe("/api/ai-card-drafts", () => {
     );
 
     expect(response.status).toBe(400);
-    expect(createFromAudio).not.toHaveBeenCalled();
+    expect(createFromText).not.toHaveBeenCalled();
   });
 
-  it("returns 400 before parsing multipart requests over the route size cap", async () => {
+  it("returns 400 before parsing unsupported multipart requests over the route size cap", async () => {
     const { POST } = await import("./route");
 
     const response = await POST(
@@ -213,10 +196,10 @@ describe("/api/ai-card-drafts", () => {
     );
 
     expect(response.status).toBe(400);
-    expect(createFromAudio).not.toHaveBeenCalled();
+    expect(createFromText).not.toHaveBeenCalled();
   });
 
-  it("returns 400 before buffering audio files over the route size cap", async () => {
+  it("returns 400 before buffering unsupported multipart files over the route size cap", async () => {
     const audio = {
       size: 10 * 1024 * 1024 + 1,
       type: "audio/webm",
@@ -237,7 +220,7 @@ describe("/api/ai-card-drafts", () => {
 
     expect(response.status).toBe(400);
     expect(audio.arrayBuffer).not.toHaveBeenCalled();
-    expect(createFromAudio).not.toHaveBeenCalled();
+    expect(createFromText).not.toHaveBeenCalled();
   });
 
   it("maps generation failures to safe JSON with request and draft ids", async () => {

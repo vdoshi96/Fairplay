@@ -24,7 +24,6 @@ describe("feature guide content", () => {
         "library-capture-filled",
         "library-draft-reviewed",
         "library-draft-edited",
-        "library-image-previewed",
         "library-put-in-play"
       ],
       radar: [

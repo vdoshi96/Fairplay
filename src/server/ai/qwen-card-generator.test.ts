@@ -75,10 +75,9 @@ describe("Qwen card generator", () => {
     expect(prompt).not.toContain("title text near the top");
   });
 
-  it("asks structured card generation for textless app-native illustration prompts", () => {
-    expect(cardSystemPrompt).toMatch(/textless app illustration/i);
-    expect(cardSystemPrompt).toMatch(/large central silhouette/i);
-    expect(cardSystemPrompt).not.toMatch(/card cover/i);
+  it("asks structured card generation for text-only card JSON", () => {
+    expect(cardSystemPrompt).toMatch(/structured text only/i);
+    expect(cardSystemPrompt).not.toMatch(/imagePrompt|imageNegativePrompt|textless app illustration/i);
   });
 
   it("throws a safe config error when required env vars are missing", async () => {
@@ -161,9 +160,7 @@ describe("Qwen card generator", () => {
                 conception: "Notice when books enter the house.",
                 planning: "Check due dates and renew when useful.",
                 execution: "Return books before fees or replacement stress.",
-                minimumStandard: "Books are returned or renewed by due date.",
-                imagePrompt: "A library book stack with a due-date slip.",
-                imageNegativePrompt: "logos, people, readable labels"
+                minimumStandard: "Books are returned or renewed by due date."
               })
             }
           }
@@ -268,9 +265,7 @@ describe("Qwen card generator", () => {
                 conception: "Notice when books enter the house.",
                 planning: "Check due dates and renew when useful.",
                 execution: "Return books before fees or replacement stress.",
-                minimumStandard: "Books are returned or renewed by due date.",
-                imagePrompt: "A library book stack with a due-date slip.",
-                imageNegativePrompt: "logos, people, readable labels"
+                minimumStandard: "Books are returned or renewed by due date."
               })
             }
           }

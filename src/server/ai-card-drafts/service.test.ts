@@ -38,9 +38,7 @@ const generatedCard: StructuredAiCard = {
   conception: "Notice refill and dose timing.",
   planning: "Put the next dose on the household calendar.",
   execution: "Give the medicine and record it.",
-  minimumStandard: "Medicine is given by the due date.",
-  imagePrompt: "dog medicine calendar still life",
-  imageNegativePrompt: "people, logos"
+  minimumStandard: "Medicine is given by the due date."
 };
 
 function draft(overrides: Partial<AiCardDraftDetail> = {}): AiCardDraftDetail {
@@ -55,20 +53,16 @@ function draft(overrides: Partial<AiCardDraftDetail> = {}): AiCardDraftDetail {
     areaKeys: [],
     hiddenEffortKeys: [],
     cadence: null,
-    coverUrl: null,
     failureMessage: null,
     acceptedResponsibilityId: null,
     createdAt: "2026-05-04T12:00:00.000Z",
     updatedAt: "2026-05-04T12:00:00.000Z",
     inputText: "Dog medicine",
-    audioTranscript: null,
     definition: null,
     conception: null,
     planning: null,
     execution: null,
     minimumStandard: null,
-    imagePrompt: null,
-    imageNegativePrompt: null,
     ...overrides
   };
 }
@@ -77,7 +71,6 @@ function readyDraft(overrides: Partial<AiCardDraftDetail> = {}): AiCardDraftDeta
   return draft({
     status: "ready",
     generationStage: "ready",
-    coverUrl: `/api/ai-card-drafts/${draftId}/cover`,
     ...generatedCard,
     ...overrides
   });
@@ -132,7 +125,6 @@ function makeDeps(overrides: Partial<AiCardDraftServiceDeps> = {}): AiCardDraftS
     saveGeneration: vi.fn().mockImplementation(async (_input) =>
       readyDraft({
         ...("card" in _input && _input.card ? _input.card : {}),
-        audioTranscript: _input.audioTranscript ?? null
       })
     ),
     saveFailure: vi.fn().mockImplementation(async (_input) =>
@@ -142,33 +134,12 @@ function makeDeps(overrides: Partial<AiCardDraftServiceDeps> = {}): AiCardDraftS
         failureMessage: _input.failureMessage
       })
     ),
-    saveCover: vi.fn().mockImplementation(async (_input) =>
-      readyDraft({
-        coverUrl: `/api/ai-card-drafts/${_input.draftId}/cover`
-      })
-    ),
-    deleteAudio: vi.fn().mockResolvedValue(draft()),
     cancelDraft: vi.fn().mockResolvedValue(draft({ status: "canceled" })),
-    markAccepted: vi.fn().mockResolvedValue(
-      readyDraft({
-        status: "accepted",
-        acceptedResponsibilityId: responsibilityId
-      })
-    ),
     getCover: vi.fn().mockResolvedValue({
       bytes: new Uint8Array([1, 2, 3]),
       mimeType: "image/png"
     }),
-    getDraftAudio: vi.fn().mockResolvedValue({
-      bytes: new Uint8Array([4, 5, 6]),
-      mimeType: "audio/webm"
-    }),
-    transcribeAudio: vi.fn().mockResolvedValue("Dog medicine every month."),
     structureTaskAsCard: vi.fn().mockResolvedValue(generatedCard),
-    generateCardCover: vi.fn().mockResolvedValue({
-      bytes: new Uint8Array([9, 8, 7]),
-      mimeType: "image/png"
-    }),
     acceptDraftAsResponsibility: vi.fn().mockResolvedValue(responsibility()),
     ...overrides
   };
@@ -198,8 +169,6 @@ describe("AI card draft service", () => {
     });
     expect(vi.mocked(deps.markStage).mock.calls.map(([input]) => input.stage)).toEqual([
       "structuring",
-      "generating_image",
-      "saving_image",
       "ready"
     ]);
     expect(deps.structureTaskAsCard).toHaveBeenCalledWith({
@@ -210,69 +179,16 @@ describe("AI card draft service", () => {
       draftId,
       card: generatedCard
     });
-    expect(deps.saveCover).toHaveBeenCalledWith({
-      householdId,
-      draftId,
-      bytes: new Uint8Array([9, 8, 7]),
-      mimeType: "image/png"
-    });
   });
 
-  it("creates an audio draft, caps uploads, transcribes, and then structures from the transcript", async () => {
-    const deps = makeDeps();
-    const service = createAiCardDraftService(deps);
-    const bytes = new Uint8Array([1, 2, 3]);
-
-    await service.createFromAudio(session, {
-      audioBytes: bytes,
-      audioMimeType: "audio/webm",
-      contextText: "Household capture"
-    });
-
-    expect(deps.createDraft).toHaveBeenCalledWith({
-      householdId,
-      createdByPersonaId: alexId,
-      sourceInputType: "audio",
-      audioBytes: bytes,
-      audioMimeType: "audio/webm"
-    });
-    expect(vi.mocked(deps.markStage).mock.calls.map(([input]) => input.stage)).toEqual([
-      "transcribing",
-      "structuring",
-      "generating_image",
-      "saving_image",
-      "ready"
-    ]);
-    expect(deps.transcribeAudio).toHaveBeenCalledWith({
-      bytes,
-      mimeType: "audio/webm",
-      contextText: "Household capture"
-    });
-    expect(deps.saveGeneration).toHaveBeenCalledWith({
-      householdId,
-      draftId,
-      audioTranscript: "Dog medicine every month."
-    });
-    expect(deps.structureTaskAsCard).toHaveBeenCalledWith({
-      taskText: "Dog medicine every month."
-    });
-
-    await expect(
-      service.createFromAudio(session, {
-        audioBytes: new Uint8Array(10 * 1024 * 1024 + 1),
-        audioMimeType: "audio/webm"
-      })
-    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
-  });
-
-  it("keeps structured fields and records a failed draft when image generation fails", async () => {
+  it("records a failed draft when text structuring fails", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const deps = makeDeps({
-      generateCardCover: vi.fn().mockRejectedValue(
-        Object.assign(new Error("image provider down with sk-secret"), {
+      structureTaskAsCard: vi.fn().mockRejectedValue(
+        Object.assign(new Error("text provider down with sk-secret"), {
           code: "QWEN_GENERATION_FAILED",
           provider: "qwen",
-          model: "qwen-image-2.0-pro",
+          model: "qwen3.6-max-preview",
           status: 500,
           providerRequestId: "qwen_req_123"
         })
@@ -292,11 +208,7 @@ describe("AI card draft service", () => {
       message: "AI card draft generation failed."
     });
 
-    expect(deps.saveGeneration).toHaveBeenCalledWith({
-      householdId,
-      draftId,
-      card: generatedCard
-    });
+    expect(deps.saveGeneration).not.toHaveBeenCalled();
     expect(deps.saveFailure).toHaveBeenCalledWith({
       householdId,
       draftId,
@@ -323,17 +235,9 @@ describe("AI card draft service", () => {
       { taskText: "Dog medicine" },
       diagnostics
     );
-    expect(deps.generateCardCover).toHaveBeenCalledWith(
-      {
-        title: generatedCard.title,
-        imagePrompt: generatedCard.imagePrompt,
-        negativePrompt: generatedCard.imageNegativePrompt
-      },
-      diagnostics
-    );
   });
 
-  it("validates household ownership through get/list/update/retry/regenerate/cover operations", async () => {
+  it("validates household ownership through get/list/update/retry/cover operations", async () => {
     const deps = makeDeps({
       getDraft: vi.fn().mockResolvedValue(null)
     });
@@ -346,9 +250,6 @@ describe("AI card draft service", () => {
       service.update(session, draftId, { title: "New title" })
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
     await expect(service.retry(session, draftId)).rejects.toMatchObject({
-      code: "NOT_FOUND"
-    });
-    await expect(service.regenerateImage(session, draftId)).rejects.toMatchObject({
       code: "NOT_FOUND"
     });
     await expect(service.getCover(session, draftId)).rejects.toMatchObject({
@@ -367,7 +268,6 @@ describe("AI card draft service", () => {
       await expect(service.retry(session, draftId)).rejects.toMatchObject({
         code: "INVALID_INPUT"
       });
-      expect(deps.generateCardCover).not.toHaveBeenCalled();
       expect(deps.structureTaskAsCard).not.toHaveBeenCalled();
     }
   );
@@ -387,42 +287,7 @@ describe("AI card draft service", () => {
     }
   );
 
-  it("regenerates images from existing structured fields", async () => {
-    const deps = makeDeps({
-      getDraft: vi.fn().mockResolvedValue(readyDraft())
-    });
-    const service = createAiCardDraftService(deps);
-
-    await service.regenerateImage(session, draftId);
-
-    expect(vi.mocked(deps.markStage).mock.calls.map(([input]) => input.stage)).toEqual([
-      "generating_image",
-      "saving_image",
-      "ready"
-    ]);
-    expect(deps.generateCardCover).toHaveBeenCalledWith({
-      title: generatedCard.title,
-      imagePrompt: generatedCard.imagePrompt,
-      negativePrompt: generatedCard.imageNegativePrompt
-    });
-  });
-
-  it.each(["accepted", "canceled"] as const)(
-    "rejects image regeneration for %s drafts",
-    async (status) => {
-      const deps = makeDeps({
-        getDraft: vi.fn().mockResolvedValue(readyDraft({ status }))
-      });
-      const service = createAiCardDraftService(deps);
-
-      await expect(service.regenerateImage(session, draftId)).rejects.toMatchObject({
-        code: "INVALID_INPUT"
-      });
-      expect(deps.generateCardCover).not.toHaveBeenCalled();
-    }
-  );
-
-  it("puts a ready draft in play with generated source fields and deletes audio", async () => {
+  it("puts a ready draft in play with generated source fields", async () => {
     const deps = makeDeps({
       getDraft: vi.fn().mockResolvedValue(readyDraft())
     });
@@ -436,8 +301,6 @@ describe("AI card draft service", () => {
       createdByPersonaId: alexId,
       draftId
     });
-    expect(deps.markAccepted).not.toHaveBeenCalled();
-    expect(deps.deleteAudio).not.toHaveBeenCalled();
   });
 
   it.each(["failed", "accepted", "canceled"] as const)(
@@ -451,8 +314,6 @@ describe("AI card draft service", () => {
       await expect(service.putInPlay(session, draftId)).rejects.toMatchObject({
         code: "INVALID_INPUT"
       });
-      expect(deps.markAccepted).not.toHaveBeenCalled();
-      expect(deps.deleteAudio).not.toHaveBeenCalled();
     }
   );
 
@@ -472,14 +333,13 @@ describe("AI card draft service", () => {
     });
   });
 
-  it("cancels drafts and deletes audio", async () => {
+  it("cancels drafts through the repository", async () => {
     const deps = makeDeps();
     const service = createAiCardDraftService(deps);
 
     await service.cancel(session, draftId);
 
     expect(deps.cancelDraft).toHaveBeenCalledWith({ householdId, draftId });
-    expect(deps.deleteAudio).toHaveBeenCalledWith({ householdId, draftId });
   });
 
   it.each(["accepted", "canceled"] as const)(
@@ -494,7 +354,6 @@ describe("AI card draft service", () => {
         code: "INVALID_INPUT"
       });
       expect(deps.cancelDraft).not.toHaveBeenCalled();
-      expect(deps.deleteAudio).not.toHaveBeenCalled();
     }
   );
 });
