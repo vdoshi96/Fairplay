@@ -122,6 +122,7 @@ describe("AI card draft repository", () => {
       promptPreview: "Restock the school snack bin every Sunday."
     });
     expect("audioBytes" in draft).toBe(false);
+    expect(draft.coverAssetPath).toBeNull();
     expect("coverUrl" in draft).toBe(false);
 
     await expect(
@@ -158,7 +159,7 @@ describe("AI card draft repository", () => {
     expect(stored.audioMimeType).toBe("audio/webm");
   });
 
-  it("lists text-only summaries without public cover URLs", async () => {
+  it("lists summaries with generated cover API paths when cover bytes exist", async () => {
     const { household, personas } = await createTestHousehold();
     const textDraft = await createAiCardDraft({
       householdId: household.id,
@@ -209,12 +210,14 @@ describe("AI card draft repository", () => {
         expect.objectContaining({
           id: textDraft.id,
           promptPreview: "Guest Towels",
-          sourceInputType: "text"
+          sourceInputType: "text",
+          coverAssetPath: `/api/ai-card-drafts/${textDraft.id}/cover`
         }),
         expect.objectContaining({
           id: audioDraft.id,
           promptPreview: "Change the air filter monthly.",
-          sourceInputType: "text"
+          sourceInputType: "text",
+          coverAssetPath: null
         })
       ])
     );
@@ -285,6 +288,7 @@ describe("AI card draft repository", () => {
     ).resolves.toMatchObject({
       title: "Backpack Papers",
       cadence: "weekly",
+      coverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`,
       generationStage: "structuring"
     });
     await expect(
@@ -423,7 +427,7 @@ describe("AI card draft repository", () => {
       visibility: "shared_household",
       boardLane: "not_in_play",
       householdStandard: generatedCard.minimumStandard,
-      sourceCoverAssetPath: null
+      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
     });
     await expect(
       prisma.responsibility.findUniqueOrThrow({
@@ -443,7 +447,7 @@ describe("AI card draft repository", () => {
       sourcePlanning: generatedCard.planning,
       sourceExecution: generatedCard.execution,
       sourceMinimumStandard: generatedCard.minimumStandard,
-      sourceCoverAssetPath: null
+      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
     });
 
     await expect(
@@ -509,7 +513,7 @@ describe("AI card draft repository", () => {
       sourcePlanning: "Generated auto planning.",
       sourceExecution: "Generated auto execution.",
       sourceMinimumStandard: "Generated auto minimum standard.",
-      sourceCoverAssetPath: null
+      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
     });
   });
 

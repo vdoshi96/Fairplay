@@ -41,6 +41,7 @@ function draft(
     areaKeys: overrides.areaKeys ?? [],
     hiddenEffortKeys: overrides.hiddenEffortKeys ?? [],
     cadence: overrides.cadence ?? null,
+    coverAssetPath: overrides.coverAssetPath ?? null,
     failureMessage: overrides.failureMessage ?? null,
     acceptedResponsibilityId: overrides.acceptedResponsibilityId ?? null,
     createdAt: overrides.createdAt ?? now,
@@ -125,6 +126,7 @@ describe("AiTaskManager", () => {
             status: "ready",
             generationStage: "ready",
             title: "Laundry reset",
+            coverAssetPath: `/api/ai-card-drafts/${draftIds.ready}/cover`,
             summary: "Keep the laundry moving from hamper to folded."
           }),
           draft({
@@ -151,6 +153,9 @@ describe("AiTaskManager", () => {
       .not.toBeInTheDocument();
 
     const readyDraft = screen.getByRole("article", { name: /laundry reset/i });
+    expect(
+      within(readyDraft).getByRole("img", { name: "Generated cover for Laundry reset" })
+    ).toHaveAttribute("src", `/api/ai-card-drafts/${draftIds.ready}/cover`);
     expect(within(readyDraft).getByRole("button", { name: "Review" })).toBeVisible();
     expect(within(readyDraft).getByRole("button", { name: "Put in play" })).toBeVisible();
   });
@@ -445,6 +450,7 @@ describe("AiTaskManager", () => {
             status: "ready",
             generationStage: "ready",
             title: "Laundry reset",
+            coverAssetPath: `/api/ai-card-drafts/${draftIds.ready}/cover`,
             summary: "Keep the laundry moving from hamper to folded."
           })
         ]}
@@ -454,6 +460,10 @@ describe("AiTaskManager", () => {
     await userEvent.click(screen.getByRole("button", { name: "Review" }));
 
     expect(await screen.findByLabelText("Draft title")).toHaveValue("Laundry reset");
+    const reviewPanel = screen.getByRole("region", { name: "Review AI card draft" });
+    expect(
+      within(reviewPanel).getByRole("img", { name: "Generated cover for Laundry reset" })
+    ).toHaveAttribute("src", `/api/ai-card-drafts/${draftIds.ready}/cover`);
     expect(screen.getByText("Original prompt")).toBeVisible();
     expect(screen.getByText("Laundry is piling up.")).toBeVisible();
     expect(screen.getByLabelText("Definition")).toHaveValue("Own the laundry flow.");

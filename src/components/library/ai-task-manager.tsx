@@ -656,6 +656,13 @@ export function AiCardTracker({
                 type="button"
               >
                 <div className="flex items-start justify-between gap-3">
+                  {draft.coverAssetPath ? (
+                    <GeneratedDraftCover
+                      alt={`Generated cover for ${draft.title ?? draft.promptPreview}`}
+                      className="w-20 shrink-0 sm:w-24"
+                      src={draft.coverAssetPath}
+                    />
+                  ) : null}
                   <div className="min-w-0">
                     <h3 className="truncate text-[16px] font-bold text-fp-ink">
                       {draft.title ?? draft.promptPreview}
@@ -933,6 +940,7 @@ export function AiCardReviewPanel({
   }
 
   const originalPrompt = detail?.inputText ?? draft.localInputText ?? draft.promptPreview;
+  const coverAssetPath = detail?.coverAssetPath ?? draft.coverAssetPath;
   const canEdit = draft.status === "ready";
 
   return (
@@ -952,6 +960,14 @@ export function AiCardReviewPanel({
             <X aria-hidden="true" size={16} />
           </Button>
         </div>
+
+        {coverAssetPath ? (
+          <GeneratedDraftCover
+            alt={`Generated cover for ${form.title || draft.title || draft.promptPreview}`}
+            className="w-32 sm:w-40"
+            src={coverAssetPath}
+          />
+        ) : null}
 
         <section className="grid gap-1 rounded border border-fp-line bg-fp-surface p-3">
           <p className="text-[12px] font-bold uppercase text-fp-muted-ink">
@@ -1194,6 +1210,7 @@ function createOptimisticDraft(id: string, inputText: string): TrackedAiCardDraf
     areaKeys: [],
     hiddenEffortKeys: [],
     cadence: null,
+    coverAssetPath: null,
     failureMessage: null,
     acceptedResponsibilityId: null,
     createdAt: now,
@@ -1262,6 +1279,7 @@ function summaryFromCreatedDraft(
     areaKeys: draft.areaKeys,
     hiddenEffortKeys: draft.hiddenEffortKeys,
     cadence: draft.cadence,
+    coverAssetPath: draft.coverAssetPath,
     failureMessage: draft.failureMessage,
     acceptedResponsibilityId: draft.acceptedResponsibilityId,
     createdAt: draft.createdAt,
@@ -1351,5 +1369,30 @@ function DraftStatusChip({ draft }: { draft: AiCardDraftSummary }) {
       {icon}
       {statusLabels[draft.status]}
     </Chip>
+  );
+}
+
+function GeneratedDraftCover({
+  alt,
+  className,
+  src
+}: {
+  alt: string;
+  className: string;
+  src: string;
+}) {
+  return (
+    <span
+      className={`block overflow-hidden rounded border border-fp-line bg-white shadow-[var(--fp-shadow-soft)] ${className}`}
+    >
+      <img
+        alt={alt}
+        className="aspect-[5/7] h-auto w-full object-cover"
+        draggable={false}
+        height={700}
+        src={src}
+        width={500}
+      />
+    </span>
   );
 }

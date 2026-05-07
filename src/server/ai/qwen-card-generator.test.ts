@@ -62,18 +62,20 @@ function asciiBytes(value: string) {
 }
 
 describe("Qwen card generator", () => {
-  it("builds textless integrated app illustration prompts without fake card framing", () => {
+  it("builds original card-front prompts for generated AI card covers", () => {
     const prompt = buildImagePrompt(
       "Dog Meds",
       "medicine calendar beside a leash"
     );
 
-    expect(prompt).toContain("textless app illustration");
-    expect(prompt).toContain("large central silhouette");
-    expect(prompt).toContain("blended into the app composition");
-    expect(prompt).toContain("no fake card frame");
+    expect(prompt).toContain("current Fairplay Library card asset style");
+    expect(prompt).toContain("full-bleed pale blush/pink background");
+    expect(prompt).toContain("uppercase black serif/typewriter title");
+    expect(prompt).toContain("orange all-caps vertical category labels");
+    expect(prompt).toContain("small flat orange mug marker");
+    expect(prompt).toContain("rough hand-drawn household-object illustration");
+    expect(prompt).toMatch(/do not copy|no exact replica/i);
     expect(prompt).not.toContain("Title:");
-    expect(prompt).not.toContain("title text near the top");
   });
 
   it("asks structured card generation for text-only card JSON", () => {
@@ -423,9 +425,9 @@ describe("Qwen card generator", () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     const prompt = body.input.messages[0].content[0].text;
     const negativePrompt = body.parameters.negative_prompt;
-    expect(prompt).toHaveLength(800);
-    expect(prompt.startsWith("Create an original textless app illustration")).toBe(true);
-    expect(prompt).toContain("Do not copy public source decks");
+    expect(prompt).toHaveLength(1600);
+    expect(prompt.startsWith("Create a flat 5:7 portrait PNG cover")).toBe(true);
+    expect(prompt).toContain("Do not copy an existing card image");
     expect(negativePrompt).toHaveLength(500);
     expect(negativePrompt.startsWith("copied public source deck style")).toBe(true);
     expect(negativePrompt).toContain("gendered chore stereotypes");

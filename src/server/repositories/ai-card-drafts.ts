@@ -68,6 +68,14 @@ function textGenerationStage(stage: AiCardGenerationStage): AiCardDraftSummary["
   }
 }
 
+function coverAssetPathForDraft(
+  draft: Pick<AiCardDraft, "id" | "coverImageBytes" | "coverImageMimeType">
+) {
+  return draft.coverImageBytes && draft.coverImageMimeType
+    ? `/api/ai-card-drafts/${draft.id}/cover`
+    : null;
+}
+
 function toSummary(draft: AiCardDraft): AiCardDraftSummary {
   return {
     id: draft.id,
@@ -80,6 +88,7 @@ function toSummary(draft: AiCardDraft): AiCardDraftSummary {
     areaKeys: draft.areaKeys,
     hiddenEffortKeys: draft.hiddenEffortKeys,
     cadence: draft.cadence,
+    coverAssetPath: coverAssetPathForDraft(draft),
     failureMessage: draft.failureMessage,
     acceptedResponsibilityId: draft.acceptedResponsibilityId,
     createdAt: draft.createdAt.toISOString(),
@@ -498,6 +507,7 @@ export async function acceptAiCardDraftAsResponsibility(input: {
     }
 
     const card = requireGeneratedDraftFields(draft);
+    const coverAssetPath = coverAssetPathForDraft(draft);
     const responsibility = await createResponsibilityWithClient(tx, {
         householdId: input.householdId,
         createdByPersonaId: input.createdByPersonaId,
@@ -518,7 +528,7 @@ export async function acceptAiCardDraftAsResponsibility(input: {
         sourcePlanning: card.planning,
         sourceExecution: card.execution,
         sourceMinimumStandard: card.minimumStandard,
-        sourceCoverAssetPath: null
+        sourceCoverAssetPath: coverAssetPath
     });
 
     await tx.aiCardDraft.update({

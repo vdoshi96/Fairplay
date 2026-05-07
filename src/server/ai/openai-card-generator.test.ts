@@ -344,14 +344,13 @@ describe("OpenAI fallback card generator", () => {
         n: 1
       })
     );
-    expect(body.prompt).toContain("textless app illustration");
-    expect(body.prompt).toContain("large central silhouette");
-    expect(body.prompt).toContain("blended into the app composition");
-    expect(body.prompt).toContain("no fake card frame");
+    expect(body.prompt).toContain("current Fairplay Library card asset style");
+    expect(body.prompt).toContain("full-bleed pale blush/pink background");
+    expect(body.prompt).toContain("small uppercase black serif/typewriter title");
+    expect(body.prompt).toContain("centered rough hand-drawn household-object illustration");
     expect(body.prompt).toContain("Responsibility theme: Dog Meds");
-    expect(body.prompt).not.toContain("Title:");
-    expect(body.prompt).not.toContain("title text near the top");
-    expect(body.prompt).toMatch(/Do not copy public source decks/i);
+    expect(body.prompt).toContain("Do not copy an existing card image");
+    expect(body.prompt).toContain("No public source deck replica");
   });
 
   it("throws a generation error when OpenAI returns no image bytes or URL", async () => {

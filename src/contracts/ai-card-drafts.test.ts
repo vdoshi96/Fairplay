@@ -16,7 +16,7 @@ describe("AiCardDraft contracts", () => {
     expect(() => AiCardDraftCreateSchema.parse({})).toThrow();
   });
 
-  it("accepts tracker-ready summaries as text-only results without cover API paths", () => {
+  it("accepts tracker-ready summaries with generated cover API paths", () => {
     const summary = AiCardDraftSummarySchema.parse({
       id: "550e8400-e29b-41d4-a716-446655440090",
       title: "Pet medication rhythm",
@@ -28,6 +28,8 @@ describe("AiCardDraft contracts", () => {
       areaKeys: ["Home"],
       hiddenEffortKeys: ["noticing", "planning", "follow_through"],
       cadence: "monthly",
+      coverAssetPath:
+        "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440090/cover",
       failureMessage: null,
       acceptedResponsibilityId: null,
       createdAt: "2026-05-05T12:00:00.000Z",
@@ -35,7 +37,15 @@ describe("AiCardDraft contracts", () => {
     });
 
     expect(summary.status).toBe("ready");
-    expect("coverUrl" in summary).toBe(false);
+    expect(summary.coverAssetPath).toBe(
+      "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440090/cover"
+    );
+    expect(() =>
+      AiCardDraftSummarySchema.parse({
+        ...summary,
+        coverAssetPath: "https://cdn.example/private-provider-url.png"
+      })
+    ).toThrow();
     expect(() =>
       AiCardDraftSummarySchema.parse({
         ...summary,

@@ -6,7 +6,9 @@ import type {
 import type { ResponsibilityDetail } from "@/contracts/responsibilities";
 import type { HouseholdId, PersonaId } from "@/domain/ids";
 import {
+  generateCardCover,
   structureTaskAsCard,
+  type GeneratedCoverImage,
   type StructuredAiCard
 } from "@/server/ai/card-generator";
 import {
@@ -24,6 +26,7 @@ import {
   getAiCardDraftCover,
   listAiCardDrafts,
   markAiCardDraftStage,
+  saveAiCardDraftCover,
   saveAiCardDraftFailure,
   saveAiCardDraftGeneration,
   updateAiCardDraft,
@@ -80,6 +83,20 @@ export type AiCardDraftServiceDeps = {
     draftId: AiCardDraftId;
     card?: StructuredAiCard;
   }) => Promise<AiCardDraftDetail>;
+  generateCardCover: (
+    input: {
+      title: string;
+      imagePrompt: string;
+      negativePrompt: string;
+    },
+    diagnostics?: AiDiagnosticsContext
+  ) => Promise<GeneratedCoverImage>;
+  saveCover: (input: {
+    householdId: HouseholdId;
+    draftId: AiCardDraftId;
+    bytes: Uint8Array | Buffer;
+    mimeType: string;
+  }) => Promise<AiCardDraftDetail>;
   saveFailure: (input: {
     householdId: HouseholdId;
     draftId: AiCardDraftId;
@@ -108,7 +125,11 @@ export type AiCardDraftServiceDeps = {
   acceptDraftAsResponsibility: typeof acceptAiCardDraftAsResponsibility;
 };
 
-type AiCardGenerationStage = AiCardDraftDetail["generationStage"];
+type AiCardGenerationStage =
+  | AiCardDraftDetail["generationStage"]
+  | "generating_image"
+  | "saving_image"
+  | "transcribing";
 
 const defaultDeps: AiCardDraftServiceDeps = {
   listDrafts: listAiCardDrafts,
@@ -117,6 +138,8 @@ const defaultDeps: AiCardDraftServiceDeps = {
   updateDraft: updateAiCardDraft,
   markStage: markAiCardDraftStage,
   saveGeneration: saveAiCardDraftGeneration,
+  generateCardCover,
+  saveCover: saveAiCardDraftCover,
   saveFailure: saveAiCardDraftFailure,
   cancelDraft: cancelAiCardDraft,
   deleteDraft: deleteAiCardDraft,
@@ -245,6 +268,62 @@ function assertCanDiscard(draft: AiCardDraftDetail) {
   }
 }
 
+function buildCoverGenerationInput(card: StructuredAiCard) {
+  return {
+    title: card.title,
+    imagePrompt: [
+      `Create a visual card for the generated responsibility "${card.title}".`,
+      `Represent the task with one simple household-object symbol tied to this summary: ${card.summary}`,
+      `Use these practical details only as semantic inspiration: ${card.definition}`,
+      "Keep the image adult, calm, non-blaming, and original."
+    ].join(" "),
+    negativePrompt: [
+      "logos",
+      "watermarks",
+      "people",
+      "gender stereotypes",
+      "partner blame",
+      "exact replica",
+      "copied public deck",
+      "proprietary labels",
+      "dense readable text"
+    ].join(", ")
+  };
+}
+
+async function generateAndSaveCover(
+  deps: AiCardDraftServiceDeps,
+  input: {
+    householdId: HouseholdId;
+    draftId: AiCardDraftId;
+    card: StructuredAiCard;
+    diagnostics?: AiDiagnosticsContext;
+  }
+) {
+  await deps.markStage({
+    householdId: input.householdId,
+    draftId: input.draftId,
+    stage: "generating_image"
+  });
+
+  const coverInput = buildCoverGenerationInput(input.card);
+  const cover = input.diagnostics
+    ? await deps.generateCardCover(coverInput, input.diagnostics)
+    : await deps.generateCardCover(coverInput);
+
+  await deps.markStage({
+    householdId: input.householdId,
+    draftId: input.draftId,
+    stage: "saving_image"
+  });
+  await deps.saveCover({
+    householdId: input.householdId,
+    draftId: input.draftId,
+    bytes: cover.bytes,
+    mimeType: cover.mimeType
+  });
+}
+
 async function structureAndGenerate(
   deps: AiCardDraftServiceDeps,
   input: {
@@ -271,6 +350,12 @@ async function structureAndGenerate(
     householdId: input.householdId,
     draftId: input.draftId,
     card
+  });
+  await generateAndSaveCover(deps, {
+    householdId: input.householdId,
+    draftId: input.draftId,
+    card,
+    diagnostics: input.diagnostics
   });
   return deps.markStage({
     householdId: input.householdId,
@@ -388,7 +473,20 @@ export function createAiCardDraftService(
             return null;
           }
         })();
+        if (card && draft.coverAssetPath) {
+          return deps.markStage({
+            householdId: session.householdId,
+            draftId,
+            stage: "ready"
+          });
+        }
         if (card) {
+          await generateAndSaveCover(deps, {
+            householdId: session.householdId,
+            draftId,
+            card,
+            diagnostics
+          });
           return deps.markStage({
             householdId: session.householdId,
             draftId,
