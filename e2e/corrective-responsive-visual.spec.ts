@@ -18,6 +18,7 @@ const viewports = [
   { height: 844, name: "mobile", width: 390 },
   { height: 760, name: "small-tablet", width: 768 },
   { height: 900, name: "desktop", width: 1280 },
+  { height: 768, name: "laptop", width: 1366 },
   { height: 620, name: "short-desktop", width: 1024 }
 ] as const;
 
@@ -84,6 +85,25 @@ async function closeWelcomeIfPresent(page: Page) {
     await expect(page.getByRole("dialog", { name: "Welcome to Fairplay" }))
       .not.toBeVisible();
   }
+}
+
+async function createLoadMapResponsibility(page: Page) {
+  await page.goto("/app/responsibilities/new");
+  await page.getByLabel("Title").fill("Adult Friendships");
+  await page
+    .getByLabel("Summary")
+    .fill("Keep friendship plans visible and kind.");
+  await page.getByLabel("Area keys").fill("happiness_trio, magic");
+  await page.getByLabel("Relevant days").fill("friday");
+  await page.getByRole("combobox", { name: "Status" }).selectOption({
+    label: "Active"
+  });
+  await page.getByRole("combobox", { name: "Alex role" }).selectOption({
+    label: "Accountable Owner"
+  });
+  await page.getByRole("checkbox", { name: "Planning" }).check();
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByText("Saved.")).toBeVisible();
 }
 
 async function expectNoDocumentHorizontalOverflow(page: Page, label: string) {
@@ -389,12 +409,107 @@ function windowlessViewportHeight(page: Page) {
   return page.viewportSize()?.height ?? 0;
 }
 
+async function expectLoadMapLaneScrollerWorks(page: Page, label: string) {
+  const scroller = page.getByTestId("load-map-board-scroller");
+  await expect(scroller).toBeVisible();
+  await expect(scroller).toHaveAttribute("aria-label", "Responsibility lanes");
+  await expect(page.getByRole("button", { name: "Scroll lanes left" }))
+    .toBeVisible();
+  await expect(page.getByRole("button", { name: "Scroll lanes right" }))
+    .toBeVisible();
+
+  const before = await scroller.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollLeft: element.scrollLeft,
+    scrollWidth: element.scrollWidth
+  }));
+  expect(before.scrollWidth, `${label} lane rail should be wider than viewport`)
+    .toBeGreaterThan(before.clientWidth);
+
+  await expectLaneFullyVisibleInScroller(page, "Cards of Concern", label);
+
+  await page.getByRole("button", { name: "Scroll lanes right" }).click();
+  await expect
+    .poll(() => scroller.evaluate((element) => element.scrollLeft))
+    .toBeGreaterThan(before.scrollLeft);
+
+  await scroller.evaluate((element) => {
+    element.classList.remove("scroll-smooth");
+    element.style.scrollBehavior = "auto";
+    element.scrollLeft = element.scrollWidth - element.clientWidth;
+  });
+  await expect
+    .poll(() =>
+      scroller.evaluate(
+        (element) => element.scrollWidth - element.clientWidth - element.scrollLeft
+      )
+    )
+    .toBeLessThanOrEqual(20);
+
+  const trimmedVisibleInScroller = await page
+    .getByRole("region", { name: "Trimmed" })
+    .evaluate((element) => {
+      const scrollerElement = element.closest<HTMLElement>(
+        '[data-testid="load-map-board-scroller"]'
+      );
+
+      if (!scrollerElement) {
+        return false;
+      }
+
+      const laneRect = element.getBoundingClientRect();
+      const scrollerRect = scrollerElement.getBoundingClientRect();
+
+      return (
+        laneRect.left >= scrollerRect.left - 1 &&
+        laneRect.right <= scrollerRect.right + 1
+      );
+    });
+
+  expect(trimmedVisibleInScroller, `${label} should reveal the Trimmed lane`)
+    .toBe(true);
+}
+
+async function expectLaneFullyVisibleInScroller(
+  page: Page,
+  laneName: string,
+  label: string
+) {
+  const laneVisibleInScroller = await page
+    .getByRole("region", { name: laneName })
+    .evaluate((element) => {
+      const scrollerElement = element.closest<HTMLElement>(
+        '[data-testid="load-map-board-scroller"]'
+      );
+
+      if (!scrollerElement) {
+        return false;
+      }
+
+      const laneRect = element.getBoundingClientRect();
+      const scrollerRect = scrollerElement.getBoundingClientRect();
+
+      return (
+        laneRect.left >= scrollerRect.left - 1 &&
+        laneRect.right <= scrollerRect.right + 1
+      );
+    });
+
+  expect(laneVisibleInScroller, `${label} should show ${laneName} initially`)
+    .toBe(true);
+}
+
 test.describe("corrective responsive visual QA", () => {
+  test.describe.configure({ mode: "serial" });
   test.setTimeout(90_000);
+
+  test.beforeAll(async () => {
+    await rm(screenshotDir, { force: true, recursive: true });
+    await mkdir(screenshotDir, { recursive: true });
+  });
 
   test.beforeEach(async ({ context }) => {
     await context.clearCookies();
-    await rm(screenshotDir, { force: true, recursive: true });
     await mkdir(screenshotDir, { recursive: true });
   });
 
@@ -471,5 +586,52 @@ test.describe("corrective responsive visual QA", () => {
     }
 
     expect(consoleIssues).toEqual([]);
+  });
+
+  test("populated Load Map lanes scroll inside the board rail", async ({ page }) => {
+    await createHouseholdAndChooseAlex(page);
+    await closeWelcomeIfPresent(page);
+    await createLoadMapResponsibility(page);
+
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      await page.goto("/app/load-map");
+      await closeWelcomeIfPresent(page);
+      await expect(
+        page.getByRole("heading", { name: "Responsibility overview" })
+      ).toBeVisible();
+      await expectNoDocumentHorizontalOverflow(
+        page,
+        `${viewport.name} populated load-map`
+      );
+
+      await page.screenshot({
+        fullPage: true,
+        path: `${screenshotDir}/populated-${viewport.name}-load-map-initial.png`
+      });
+
+      await expectLoadMapLaneScrollerWorks(
+        page,
+        `${viewport.name} populated load-map`
+      );
+      const scroller = page.getByTestId("load-map-board-scroller");
+
+      await scroller.evaluate((element) => {
+        element.classList.remove("scroll-smooth");
+        element.style.scrollBehavior = "auto";
+        element.scrollLeft = element.scrollWidth - element.clientWidth;
+      });
+      await expect
+        .poll(() =>
+          scroller.evaluate(
+            (element) => element.scrollWidth - element.clientWidth - element.scrollLeft
+          )
+        )
+        .toBeLessThanOrEqual(20);
+
+      await page.getByTestId("load-map-board").screenshot({
+        path: `${screenshotDir}/populated-${viewport.name}-load-map-board-scrolled.png`
+      });
+    }
   });
 });

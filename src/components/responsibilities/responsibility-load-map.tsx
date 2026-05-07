@@ -17,8 +17,15 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode
+} from "react";
 
 import type {
   LoadSnapshotSummary,
@@ -152,6 +159,7 @@ export function ResponsibilityLoadMap({
   const [searchText, setSearchText] = useState("");
   const [openMoveMenuId, setOpenMoveMenuId] = useState<string | null>(null);
   const [practiceBoardOpen, setPracticeBoardOpen] = useState(false);
+  const boardScrollerRef = useRef<HTMLDivElement | null>(null);
   const openLoadMapPractice = useCallback(() => {
     setPracticeBoardOpen(true);
   }, []);
@@ -236,6 +244,10 @@ export function ResponsibilityLoadMap({
     void onMove?.(move);
   };
 
+  const scrollLanes = useCallback((left: number) => {
+    boardScrollerRef.current?.scrollBy({ left });
+  }, []);
+
   const handleDragEnd = (event: DragEndEvent) => {
     const activeId = String(event.active.id);
     const overId = event.over ? String(event.over.id) : null;
@@ -283,7 +295,7 @@ export function ResponsibilityLoadMap({
 
   return (
     <section
-      className="grid min-w-0 gap-4 overflow-x-clip"
+      className="grid max-w-full min-w-0 gap-4"
       data-testid="load-map-dashboard-shell"
     >
       <div
@@ -336,7 +348,7 @@ export function ResponsibilityLoadMap({
         />
         <div className="relative z-10 grid min-w-0 gap-2 sm:gap-3">
           <div
-            className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8"
+            className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))] gap-2"
             data-testid="load-map-diagnostics"
           >
             <Signal
@@ -504,17 +516,49 @@ export function ResponsibilityLoadMap({
           sensors={sensors}
         >
           <div
+            className="grid min-w-0 gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-[var(--fp-shadow-soft)] sm:p-3"
             data-guide-id={
               filteredResponsibilities.length > 0 ? "load-map-board" : undefined
             }
             data-testid="load-map-board"
           >
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="text-[16px] font-bold leading-6 text-fp-ink">
+                  Lane board
+                </h2>
+                <p className="text-[13px] leading-5 text-fp-muted-ink">
+                  Slide the lane board to compare every responsibility bucket.
+                </p>
+              </div>
+              <div className="flex shrink-0 gap-1">
+                <button
+                  aria-label="Scroll lanes left"
+                  className="inline-grid h-10 w-10 place-items-center rounded-[8px] border border-fp-line bg-white text-fp-ink outline-none transition hover:bg-fp-surface focus:ring-2 focus:ring-fp-ink/20"
+                  onClick={() => scrollLanes(-320)}
+                  type="button"
+                >
+                  <ChevronLeft aria-hidden className="h-4 w-4" />
+                </button>
+                <button
+                  aria-label="Scroll lanes right"
+                  className="inline-grid h-10 w-10 place-items-center rounded-[8px] border border-fp-line bg-white text-fp-ink outline-none transition hover:bg-fp-surface focus:ring-2 focus:ring-fp-ink/20"
+                  onClick={() => scrollLanes(320)}
+                  type="button"
+                >
+                  <ChevronRight aria-hidden className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
             <div
-              className="-mx-3 overflow-x-auto px-3 pb-3 sm:mx-0 sm:px-0"
+              aria-label="Responsibility lanes"
+              className="max-w-full overflow-x-auto overscroll-x-contain pb-3 touch-pan-x [scrollbar-gutter:stable]"
               data-testid="load-map-board-scroller"
+              ref={boardScrollerRef}
+              tabIndex={0}
             >
               <div
-                className="flex min-w-max gap-3"
+                className="flex w-max min-w-full gap-3"
                 data-guide-id={
                   filteredResponsibilities.length > 0 ? "load-map-lanes" : undefined
                 }
@@ -580,7 +624,7 @@ function BoardLaneColumn({
     <section
       aria-labelledby={headingId}
       className={[
-        "flex max-h-[min(64vh,40rem)] w-[min(17.5rem,calc(100vw-2rem))] shrink-0 flex-col rounded-[8px] border p-2.5 transition sm:p-3",
+        "flex max-h-[min(64vh,40rem)] w-[min(15.5rem,calc(100vw-2rem))] shrink-0 flex-col rounded-[8px] border p-2.5 transition sm:p-3 2xl:w-[17.5rem]",
         laneToneClasses[lane.tone],
         isOver ? "ring-2 ring-fp-ink/25" : ""
       ]

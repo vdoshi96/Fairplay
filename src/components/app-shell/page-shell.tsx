@@ -110,7 +110,7 @@ export const PageShell = forwardRef<HTMLElement, PageShellProps>(
     return (
       <section
         className={cn(
-          "relative z-0 grid min-h-[calc(100svh_-_var(--fp-app-bottom-nav-height))] w-full overflow-x-clip px-4 pb-[var(--fp-app-content-bottom-padding)] pt-5 sm:px-6 lg:pt-8",
+          "relative z-0 grid min-h-[calc(100svh_-_var(--fp-app-bottom-nav-height))] w-full px-4 pb-[var(--fp-app-content-bottom-padding)] pt-5 sm:px-6 lg:pt-8",
           className
         )}
         data-page-background-id={background?.id}
@@ -127,7 +127,7 @@ export const PageShell = forwardRef<HTMLElement, PageShellProps>(
           />
         ) : null}
         <div
-          className="relative z-10 mx-auto grid w-full max-w-6xl gap-5 pr-[var(--fp-little-alex-inline-reserve)] lg:pl-8"
+          className="relative z-10 mx-auto grid w-full max-w-6xl min-w-0 gap-5 pr-[var(--fp-little-alex-inline-reserve)] lg:pl-8"
           data-page-shell-content
         >
           {children}

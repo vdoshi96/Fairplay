@@ -175,7 +175,7 @@ describe("ResponsibilityLoadMap", () => {
     );
   });
 
-  it("constrains the dashboard overflow while keeping lane scrolling intentional", () => {
+  it("keeps the page shell unclipped while exposing an intentional lane scroller", async () => {
     render(
       <ResponsibilityLoadMap
         loadSnapshot={loadSnapshot}
@@ -183,8 +183,10 @@ describe("ResponsibilityLoadMap", () => {
       />
     );
 
+    expect(screen.getByTestId("load-map-dashboard-shell").className)
+      .not.toContain("overflow-x-clip");
     expect(screen.getByTestId("load-map-dashboard-shell")).toHaveClass(
-      "overflow-x-clip"
+      "max-w-full"
     );
     expect(screen.getByTestId("load-map-dashboard")).toContainElement(
       screen.getByTestId("load-map-dashboard-background")
@@ -192,10 +194,38 @@ describe("ResponsibilityLoadMap", () => {
     expect(
       document.querySelector('[data-guide-id="load-map-filters"]')
     ).toHaveClass("min-w-0");
-    expect(screen.getByTestId("load-map-board-scroller")).toHaveClass(
-      "overflow-x-auto"
+
+    const scroller = screen.getByTestId("load-map-board-scroller");
+    const scrollBy = vi.fn();
+    Object.defineProperty(scroller, "scrollBy", {
+      configurable: true,
+      value: scrollBy
+    });
+
+    expect(scroller).toHaveAttribute("aria-label", "Responsibility lanes");
+    expect(scroller).toHaveAttribute("tabindex", "0");
+    expect(scroller).toHaveClass(
+      "max-w-full",
+      "overflow-x-auto",
+      "overscroll-x-contain",
+      "touch-pan-x"
     );
-    expect(screen.getByTestId("load-map-lane-strip")).toHaveClass("min-w-max");
+    expect(screen.getByTestId("load-map-lane-strip")).toHaveClass(
+      "w-max",
+      "min-w-full"
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Scroll lanes right" })
+    );
+
+    expect(scrollBy).toHaveBeenCalledWith({ left: 320 });
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Scroll lanes left" })
+    );
+
+    expect(scrollBy).toHaveBeenCalledWith({ left: -320 });
   });
 
   it("wraps long diagnostic values inside compact signal tiles", () => {

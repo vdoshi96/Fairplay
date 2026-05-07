@@ -113,6 +113,11 @@ describe("protected app UI", () => {
       "data-page-background-id",
       "home"
     );
+    expect(screen.getByTestId("page-shell").className)
+      .not.toContain("overflow-x-clip");
+    expect(container.querySelector("[data-page-shell-content]")).toHaveClass(
+      "min-w-0"
+    );
     expect(screen.getByTestId("page-shell-background-home")).toHaveAttribute(
       "aria-hidden",
       "true"
