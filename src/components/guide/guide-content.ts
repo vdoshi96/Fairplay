@@ -1,7 +1,6 @@
 export type FeatureGuideId =
   | "loadMap"
   | "library"
-  | "radar"
   | "checkIns"
   | "settings";
 
@@ -68,7 +67,7 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
       {
         id: "filters",
         title: "Filters help you inspect the system",
-        body: "Use owner, status, cadence, hidden effort, radar, and search filters to understand the current load.",
+        body: "Use owner, status, cadence, hidden effort, review timing, and search filters to understand the current load.",
         targetId: "load-map-filters"
       }
     ]
@@ -117,47 +116,6 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
       }
     ]
   },
-  radar: {
-    id: "radar",
-    title: "Radar",
-    description: "Learn private drafts, publishing, deferring, and resolving unclear work.",
-    steps: [
-      {
-        id: "draft",
-        title: "About this feature",
-        body: "Practice turning a concern into a temporary Radar item so you can see how unclear work moves toward a shared next step without blaming anyone.",
-        targetId: "radar-create"
-      },
-      {
-        id: "visibility",
-        title: "Visibility controls when a topic is shared",
-        body: "You can keep a draft private until it is ready, then publish it to shared household space or a check-in.",
-        targetId: "radar-visibility"
-      },
-      {
-        id: "actions",
-        title: "Resolve, defer, or schedule",
-        body: "Radar topics should move toward a calm next step: decide now, defer with context, schedule, or resolve.",
-        targetId: "radar-actions",
-        practice: {
-          actionLabel: "Start dummy Radar workflow",
-          completionMessage: "Dummy Radar workflow complete.",
-          eventId: "radar-practice-start",
-          prompt:
-            "Create, edit, choose visibility, defer, schedule, resolve, and dismiss a dummy radar item.",
-          requiredEventIds: [
-            "radar-practice-create",
-            "radar-practice-edit",
-            "radar-practice-visibility",
-            "radar-practice-defer",
-            "radar-practice-schedule",
-            "radar-practice-resolve",
-            "radar-practice-dismiss"
-          ]
-        }
-      }
-    ]
-  },
   checkIns: {
     id: "checkIns",
     title: "Check-ins",
@@ -166,7 +124,7 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
       {
         id: "agenda",
         title: "About this feature",
-        body: "Practice previewing a temporary agenda and recording calm outcomes. Check-ins turn Radar topics into things to discuss, skip, defer, or decide.",
+        body: "Practice previewing a temporary agenda and recording calm outcomes. Check-ins turn review-due work and partner notes into things to discuss, skip, defer, or decide.",
         targetId: "check-in-agenda"
       },
       {

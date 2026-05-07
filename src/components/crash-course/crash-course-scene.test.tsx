@@ -54,7 +54,6 @@ describe("CrashCourseScene", () => {
     ["board-lanes", "board-lanes-room"],
     ["active-deck", "active-deck-sorting-table"],
     ["handoff", "handoff-context-bridge"],
-    ["radar-check-in", "radar-check-in-signal-room"],
     ["dynamic-fair", "dynamic-fair-capacity-scales"],
     ["repair", "repair-dialogue-corner"]
   ])("renders a distinct immersive composition for %s", (scene, composition) => {

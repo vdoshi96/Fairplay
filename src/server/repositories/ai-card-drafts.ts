@@ -388,7 +388,7 @@ export async function deleteAiCardDraft(
     where: {
       id: input.draftId,
       householdId: input.householdId,
-      status: { in: ["failed", "canceled"] }
+      status: { in: ["failed", "ready", "canceled"] }
     }
   });
 
@@ -400,7 +400,7 @@ export async function deleteAiCardDraft(
   if (existing) {
     throw new RepositoryError(
       "INVALID_INPUT",
-      "Only failed or canceled AI card drafts can be removed."
+      "Only failed, completed, or canceled AI card drafts can be removed."
     );
   }
   throw new RepositoryError("NOT_FOUND", "AI card draft not found for household.");

@@ -155,8 +155,9 @@ describe("CheckInFlow", () => {
       name: "No agenda items yet"
     });
     expect(dialog).toBeVisible();
-    expect(within(dialog).getByText(/Radar topics and review-due cards/i))
+    expect(within(dialog).getByText(/Review-due cards and saved agenda items/i))
       .toBeVisible();
+    expect(within(dialog).queryByText(/radar/i)).not.toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: "Close" })).toBeVisible();
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
@@ -164,7 +165,7 @@ describe("CheckInFlow", () => {
       .not.toBeInTheDocument();
   });
 
-  it("starts with selected preview item ids without expanding linked radar responsibilities", async () => {
+  it("starts with selected preview item ids without expanding linked responsibilities", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({

@@ -16,7 +16,6 @@ const visualHtml = (body: string) => `
           --fp-max: #4568d9;
           --fp-shared: #d9714a;
           --fp-helper: #f2b84b;
-          --fp-radar: #8b5fbf;
         }
         * { box-sizing: border-box; }
         body {
@@ -115,7 +114,7 @@ async function mockVisualRoutes(page: Page) {
           </section>
           <section class="grid">
             <article class="panel"><h2>Map responsibilities</h2><p>Start in your own words.</p></article>
-            <article class="panel"><h2>Add radar concerns</h2><p>Keep topics practical.</p></article>
+            <article class="panel"><h2>Plan check-ins</h2><p>Keep decisions reviewable.</p></article>
           </section>
         </main>
       `)
@@ -129,7 +128,7 @@ async function mockVisualRoutes(page: Page) {
           <section class="grid two">
             <div class="grid">
               <h1>Household overview</h1>
-              <p>Start with a few responsibilities and keep radar topics practical.</p>
+              <p>Start with a few responsibilities and keep check-ins practical.</p>
             </div>
             <div class="visual-row" role="img" aria-label="Balanced household personas">
               <img class="avatar" src="/assets/fairplay/generated-ui/alex-avatar.png" alt="Alex avatar" />
@@ -155,29 +154,8 @@ async function mockVisualRoutes(page: Page) {
           </section>
           <section class="grid two">
             <article class="panel"><h2>Owner mix</h2><p>A 1 / M 1</p></article>
-            <article class="panel"><h2>Open radar</h2><p>1</p></article>
+            <article class="panel"><h2>Review due</h2><p>1</p></article>
           </section>
-        </main>
-      `)
-    });
-  });
-  await page.route("**/app/radar**", async (route) => {
-    await route.fulfill({
-      contentType: "text/html",
-      body: visualHtml(`
-        <main>
-          <section class="grid two">
-            <div class="grid">
-              <h1>Concern board</h1>
-              <p>Capture blockers without blame.</p>
-            </div>
-            <img class="hero-visual" src="/assets/fairplay/generated-ui/radar-illustration.png" alt="Shared radar illustration" />
-          </section>
-          <form class="grid panel">
-            <label>Topic <input aria-label="Topic" /></label>
-            <label>Notes <textarea aria-label="Notes"></textarea></label>
-            <button type="button">Create radar item</button>
-          </form>
         </main>
       `)
     });
@@ -218,7 +196,6 @@ for (const viewport of [
       "/app/onboarding",
       "/app/home",
       "/app/load-map",
-      "/app/radar",
       "/app/check-ins/new"
     ]) {
       await page.goto(path);

@@ -8,7 +8,6 @@ import {
   Home,
   LayoutDashboard,
   Library,
-  Radar,
   Settings,
   Sparkles
 } from "lucide-react";
@@ -31,7 +30,6 @@ const navItems = [
   { href: "/app/home", icon: Home, label: "Home" },
   { href: "/app/load-map", icon: LayoutDashboard, label: "Load Map" },
   { href: "/app/library", icon: Library, label: "Library" },
-  { href: "/app/radar", icon: Radar, label: "Radar" },
   { href: "/app/check-ins", icon: CalendarCheck, label: "Check-ins" },
   { href: "/app/crash-course", icon: Sparkles, label: "Crash course" },
   { href: "/app/settings", icon: Settings, label: "Settings" }

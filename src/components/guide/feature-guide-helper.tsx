@@ -23,11 +23,6 @@ const helperScenes = {
     scene: "card-shelf",
     src: "/assets/fairplay/generated-ui/feature-guide/library.png"
   },
-  radar: {
-    label: "Radar helper scene",
-    scene: "signal-radar",
-    src: "/assets/fairplay/generated-ui/feature-guide/radar.png"
-  },
   checkIns: {
     label: "Check-ins helper scene",
     scene: "decision-table",

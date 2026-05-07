@@ -6,8 +6,7 @@ import {
   DecorativeBackgroundLayer,
   FairplayMark,
   HelperMascot,
-  PersonaAvatar,
-  RadarVisual
+  PersonaAvatar
 } from "./fairplay-visuals";
 
 describe("Fairplay visual components", () => {
@@ -39,14 +38,6 @@ describe("Fairplay visual components", () => {
       "/assets/fairplay/generated-ui/helper-mascot.png"
     );
     expect(mascot).toHaveAttribute("draggable", "false");
-  });
-
-  it("uses a calm accessible label for the radar illustration", () => {
-    render(<RadarVisual />);
-
-    expect(
-      screen.getByRole("img", { name: "Shared radar illustration" })
-    ).toHaveAttribute("src", "/assets/fairplay/generated-ui/radar-illustration.png");
   });
 
   it("uses the generated Fairplay mark asset", () => {

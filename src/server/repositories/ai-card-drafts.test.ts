@@ -635,7 +635,7 @@ describe("AI card draft repository", () => {
     });
   });
 
-  it("deletes failed and canceled drafts without deleting ready or accepted drafts", async () => {
+  it("deletes failed, canceled, and unwanted ready drafts without deleting accepted drafts", async () => {
     const { household, personas } = await createTestHousehold();
     const failed = await createAiCardDraft({
       householdId: household.id,
@@ -679,6 +679,9 @@ describe("AI card draft repository", () => {
     await expect(
       deleteAiCardDraft({ householdId: household.id, draftId: canceled.id })
     ).resolves.toBeUndefined();
+    await expect(
+      deleteAiCardDraft({ householdId: household.id, draftId: ready.id })
+    ).resolves.toBeUndefined();
 
     await expect(
       getAiCardDraft({ householdId: household.id, draftId: failed.id })
@@ -687,11 +690,31 @@ describe("AI card draft repository", () => {
       getAiCardDraft({ householdId: household.id, draftId: canceled.id })
     ).resolves.toBeNull();
     await expect(
-      deleteAiCardDraft({ householdId: household.id, draftId: ready.id })
+      getAiCardDraft({ householdId: household.id, draftId: ready.id })
+    ).resolves.toBeNull();
+
+    const {
+      household: acceptedHousehold,
+      personas: acceptedPersonas,
+      draft: acceptedDraft
+    } = await createReadyAudioDraft();
+    await acceptAiCardDraftAsResponsibility({
+      householdId: acceptedHousehold.id,
+      draftId: acceptedDraft.id,
+      createdByPersonaId: acceptedPersonas[0].id
+    });
+    await expect(
+      deleteAiCardDraft({
+        householdId: acceptedHousehold.id,
+        draftId: acceptedDraft.id
+      })
     ).rejects.toMatchObject({ code: "INVALID_INPUT" });
     await expect(
-      getAiCardDraft({ householdId: household.id, draftId: ready.id })
-    ).resolves.toMatchObject({ status: "ready" });
+      getAiCardDraft({
+        householdId: acceptedHousehold.id,
+        draftId: acceptedDraft.id
+      })
+    ).resolves.toMatchObject({ status: "accepted" });
   });
 
   it("blocks edits after a draft is accepted or canceled", async () => {

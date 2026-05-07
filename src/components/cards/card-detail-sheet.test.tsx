@@ -23,11 +23,9 @@ const card = {
 describe("CardDetailSheet", () => {
   it("shows source cover, ownership, CPE, standards, and action hooks", async () => {
     const onMove = vi.fn();
-    const onFlagForRadar = vi.fn();
     render(
       <CardDetailSheet
         card={card}
-        onFlagForRadar={onFlagForRadar}
         onMove={onMove}
       />
     );
@@ -52,10 +50,10 @@ describe("CardDetailSheet", () => {
     expect(screen.getByText("Insurance card lives in the glove box.")).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: /move to Alex/i }));
-    await userEvent.click(screen.getByRole("button", { name: /flag for radar/i }));
 
     expect(onMove).toHaveBeenCalledWith("player_1");
-    expect(onFlagForRadar).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: /flag for radar/i }))
+      .not.toBeInTheDocument();
   });
 
   it("renders accepted AI-generated cover art as a larger integrated panel", () => {
@@ -109,7 +107,6 @@ describe("CardDetailSheet", () => {
         "Card actions are unavailable on this page. Use the editor below or return to the load map."
       )
     ).toBeVisible();
-    expect(screen.getByRole("button", { name: /flag for radar/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /schedule check-in/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /^Trim$/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /move to Alex/i })).toBeDisabled();

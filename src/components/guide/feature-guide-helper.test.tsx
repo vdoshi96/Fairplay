@@ -23,12 +23,6 @@ const helperExpectations: Array<{
     src: "/assets/fairplay/generated-ui/feature-guide/library.png"
   },
   {
-    guideId: "radar",
-    label: "Radar helper scene",
-    scene: "signal-radar",
-    src: "/assets/fairplay/generated-ui/feature-guide/radar.png"
-  },
-  {
     guideId: "checkIns",
     label: "Check-ins helper scene",
     scene: "decision-table",
@@ -65,5 +59,6 @@ describe("FeatureGuideHelper", () => {
     });
 
     expect(new Set(renderedScenes).size).toBe(helperExpectations.length);
+    expect(screen.queryByRole("img", { name: /radar/i })).not.toBeInTheDocument();
   });
 });

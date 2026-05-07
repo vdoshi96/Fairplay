@@ -37,7 +37,7 @@ describe("crash course flow", () => {
     expect(lessonText).toContain("treadmill");
     expect(lessonText).toContain("finite");
     expect(lessonText).toContain("training");
-    expect(lessonText).toContain("radar");
+    expect(lessonText).not.toContain("radar");
     expect(lessonText).toContain("check-in");
     expect(lessonText).toContain("dynamic");
     expect(lessonText).toContain("appreciation");
@@ -60,7 +60,6 @@ describe("crash course flow", () => {
     expect(finalLesson.featurePath?.map((item) => item.label)).toEqual([
       "Browse the Library",
       "Open the Load Map",
-      "Add a Radar item",
       "Run a Check-in"
     ]);
   });
@@ -143,7 +142,7 @@ describe("crash course flow", () => {
     ).toBeVisible();
     expect(
       screen.getByText(
-        "You now know how Fairplay treats hidden load, ownership, planning, standards, handoffs, radar, check-ins, repair, and safety."
+        "You now know how Fairplay treats hidden load, ownership, planning, standards, handoffs, check-ins, repair, and safety."
       )
     ).toBeVisible();
     expect(screen.getByRole("heading", { name: "Recommended learning path" }))
@@ -159,12 +158,30 @@ describe("crash course flow", () => {
     expect(
       screen.getByRole("link", { name: "Open the Load Map" })
     ).toHaveAttribute("href", "/app/load-map");
+    expect(screen.queryByRole("link", { name: "Add a Radar item" }))
+      .not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Finish course" })
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Skip crash course" })
     ).not.toBeInTheDocument();
+  });
+
+  it("lets completed users restart the course from the completion splash", () => {
+    const onRestart = vi.fn();
+    render(
+      <CrashCourseFlow
+        completed
+        completionContextLabel="Alex's Fairplay crash course"
+        currentStep={CRASH_COURSE_LESSONS.length - 1}
+        onRestart={onRestart}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Restart crash course" }));
+
+    expect(onRestart).toHaveBeenCalledTimes(1);
   });
 
   it("includes an interactive standard rewrite prompt in the standards lesson", () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, Flag, MoveRight, Scissors } from "lucide-react";
+import { CalendarClock, MoveRight, Scissors } from "lucide-react";
 import Image from "next/image";
 
 import type { CardTemplateLabel } from "@/contracts/card-templates";
@@ -32,7 +32,6 @@ const aiDraftCoverPathPattern =
 
 type CardDetailSheetProps = {
   card: CardDetailCard;
-  onFlagForRadar?: () => void;
   onMove?: (lane: ResponsibilityBoardLane) => void;
   onScheduleCheckIn?: () => void;
   onTrim?: () => void;
@@ -61,7 +60,6 @@ const laneLabels: Record<ResponsibilityBoardLane, string> = {
 
 export function CardDetailSheet({
   card,
-  onFlagForRadar,
   onMove,
   onScheduleCheckIn,
   onTrim
@@ -70,8 +68,7 @@ export function CardDetailSheet({
   const ownerLabel = card.ownerLabel ?? laneLabel;
   const isGeneratedCover = aiDraftCoverPathPattern.test(card.sourceCoverAssetPath ?? "");
   const coverAssetPath = card.sourceCoverAssetPath ?? card.coverAssetPath ?? null;
-  const noActionHooks =
-    !onFlagForRadar && !onMove && !onScheduleCheckIn && !onTrim;
+  const noActionHooks = !onMove && !onScheduleCheckIn && !onTrim;
   const unavailableMessage = noActionHooks
     ? "Card actions are unavailable on this page. Use the editor below or return to the load map."
     : "Some card actions are unavailable on this page.";
@@ -212,7 +209,7 @@ export function CardDetailSheet({
       </div>
 
       <div className="sticky bottom-0 z-10 grid gap-2 border-t border-fp-line bg-white/95 p-3 shadow-[0_-10px_30px_rgba(31,41,55,0.08)] backdrop-blur sm:grid-cols-3 lg:static lg:flex lg:shadow-none">
-        {!onFlagForRadar || !onMove || !onScheduleCheckIn || !onTrim ? (
+        {!onMove || !onScheduleCheckIn || !onTrim ? (
           <p
             className="text-[13px] font-semibold text-fp-muted-ink sm:col-span-3 lg:flex-1"
             id={unavailableMessageId}
@@ -220,15 +217,6 @@ export function CardDetailSheet({
             {unavailableMessage}
           </p>
         ) : null}
-        <Button
-          aria-describedby={!onFlagForRadar ? unavailableMessageId : undefined}
-          disabled={!onFlagForRadar}
-          onClick={onFlagForRadar}
-          variant="primary"
-        >
-          <Flag aria-hidden="true" size={16} />
-          Flag for radar
-        </Button>
         <Button
           aria-describedby={!onScheduleCheckIn ? unavailableMessageId : undefined}
           disabled={!onScheduleCheckIn}

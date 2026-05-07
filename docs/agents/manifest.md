@@ -6,6 +6,7 @@ This manifest tracks agent work for the Fairplay repository.
 
 | Date | Task | Owner | Status | Path |
 | --- | --- | --- | --- | --- |
+| 2026-05-07 | Product surface cleanup: AI discard, Radar retirement, crash-course restart | Codex orchestration agent | Completed locally; QA passed | `docs/agents/tasks/2026-05-07-product-surface-cleanup/` |
 | 2026-05-07 | AI card image generation restoration | Codex orchestration agent | Completed locally; final git workflow pending | `docs/agents/tasks/2026-05-07-ai-card-image-generation/` |
 | 2026-05-04 | Workspace/repo setup | Codex setup agent | Completed locally; push pending | `docs/agents/tasks/2026-05-04-workspace-repo-setup/` |
 | 2026-05-04 | Fair Play EPUB research | Codex research agent | Completed | `docs/agents/tasks/2026-05-04-fair-play-epub-research/` |

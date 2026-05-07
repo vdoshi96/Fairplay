@@ -653,8 +653,9 @@ export function NewCheckInLauncher({
                 No agenda items yet
               </h2>
               <p className="text-[14px] leading-6 text-fp-muted-ink">
-                Radar topics and review-due cards will appear here when there is
-                something ready for a check-in. Nothing was created or changed.
+                Review-due cards and saved agenda items will appear here when
+                there is something ready for a check-in. Nothing was created or
+                changed.
               </p>
             </div>
             <button

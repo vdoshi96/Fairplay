@@ -44,7 +44,6 @@
   --fp-max: #506fa8;
   --fp-shared: #c26f59;
   --fp-helper: #9b6d35;
-  --fp-radar: #8c6ab4;
   --fp-success: #3f7f56;
   --fp-caution: #9b6d35;
   --fp-danger: #a45b63;
@@ -86,7 +85,6 @@ html[data-theme="dark"] {
   --fp-max: #9eaee1;
   --fp-shared: #e99a82;
   --fp-helper: #d3a35e;
-  --fp-radar: #c1a1e8;
   --fp-success: #8cc991;
   --fp-caution: #d3a35e;
   --fp-danger: #e0929b;
@@ -278,17 +276,6 @@ a {
   }
 }
 
-@keyframes fp-radar-pulse {
-  0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--fp-radar) 28%, transparent);
-    opacity: 0.86;
-  }
-  100% {
-    box-shadow: 0 0 0 16px color-mix(in srgb, var(--fp-radar) 0%, transparent);
-    opacity: 0.48;
-  }
-}
-
 @keyframes fp-assignment-shift {
   0% {
     opacity: 0.72;
@@ -367,10 +354,6 @@ a {
 
 .fp-motion-persona-bob {
   animation: fp-persona-bob 4s ease-in-out infinite;
-}
-
-.fp-motion-radar-pulse {
-  animation: fp-radar-pulse 2.2s ease-out infinite;
 }
 
 .fp-motion-assignment-shift {
@@ -975,7 +958,6 @@ a {
   }
 
   .fp-motion-persona-bob,
-  .fp-motion-radar-pulse,
   .fp-motion-assignment-shift,
   .fp-motion-checkin-spark,
   .fp-motion-cloud-drift,

@@ -158,6 +158,7 @@ describe("AiTaskManager", () => {
     ).toHaveAttribute("src", `/api/ai-card-drafts/${draftIds.ready}/cover`);
     expect(within(readyDraft).getByRole("button", { name: "Review" })).toBeVisible();
     expect(within(readyDraft).getByRole("button", { name: "Put in play" })).toBeVisible();
+    expect(within(readyDraft).getByRole("button", { name: "Discard" })).toBeVisible();
   });
 
   it("submits text captures to the draft API and refreshes the library", async () => {
@@ -270,7 +271,7 @@ describe("AiTaskManager", () => {
     expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it("lets failed and canceled drafts be removed without trapping the tracker", async () => {
+  it("lets failed, canceled, and unwanted ready drafts be removed without trapping the tracker", async () => {
     const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
       if (
         url === `/api/ai-card-drafts/${draftIds.failed}` &&
@@ -284,6 +285,16 @@ describe("AiTaskManager", () => {
 
       if (
         url === `/api/ai-card-drafts/${draftIds.canceled}` &&
+        init?.method === "DELETE"
+      ) {
+        return {
+          ok: true,
+          json: async () => ({ ok: true })
+        };
+      }
+
+      if (
+        url === `/api/ai-card-drafts/${draftIds.ready}` &&
         init?.method === "DELETE"
       ) {
         return {
@@ -311,6 +322,13 @@ describe("AiTaskManager", () => {
             generationStage: "failed",
             promptPreview: "Canceled recycling task request",
             failureMessage: "AI card draft generation failed."
+          }),
+          draft({
+            id: draftIds.ready,
+            status: "ready",
+            generationStage: "ready",
+            title: "Generated recycling plan",
+            summary: "Generated text looks wrong."
           })
         ]}
       />
@@ -362,7 +380,24 @@ describe("AiTaskManager", () => {
         name: /canceled recycling task request canceled draft/i
       })
     ).not.toBeInTheDocument();
-    expect(routerRefresh).toHaveBeenCalledTimes(2);
+
+    const readyDraft = screen.getByRole("article", {
+      name: /generated recycling plan ready draft/i
+    });
+    await userEvent.click(within(readyDraft).getByRole("button", { name: "Discard" }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/ai-card-drafts/${draftIds.ready}`,
+        expect.objectContaining({ method: "DELETE" })
+      )
+    );
+    expect(
+      screen.queryByRole("article", {
+        name: /generated recycling plan ready draft/i
+      })
+    ).not.toBeInTheDocument();
+    expect(routerRefresh).toHaveBeenCalledTimes(3);
   });
 
   it("updates a failed draft after retry succeeds without waiting for refreshed props", async () => {

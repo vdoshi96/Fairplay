@@ -42,7 +42,7 @@ Session behavior:
 
 ## Onboarding and Education
 
-1. User sees a short setup path: map a few responsibilities, assign owners, add concerns to radar, and schedule a check-in.
+1. User sees a short setup path: map a few responsibilities, assign owners, plan check-ins, and schedule a check-in.
 2. User can start from a blank responsibility, a tiny demo example, or a guided first responsibility.
 3. Education uses original wording and explains concepts such as ownership, hidden coordination, good-enough expectations, review dates, and private vs shared visibility.
 4. User can skip education and return later.
@@ -55,9 +55,9 @@ Safety behavior:
 ## Load Map and Responsibility Overview
 
 1. User opens the load map.
-2. App displays responsibilities grouped by current state or filtered by owner, cadence, tag, review date, hidden effort, or radar flag.
+2. App displays responsibilities grouped by current state or filtered by owner, cadence, tag, review date, or hidden effort.
 3. Each responsibility summary shows title, owner state, cadence, review timing, status, and visibility-sensitive indicators.
-4. User can add, edit, pause, archive, mark not relevant, or flag for radar.
+4. User can add, edit, pause, archive, or mark not relevant.
 5. Aggregate load signals show patterns such as owner distribution, due reviews, open concerns, high-frequency items, and paused/not-relevant counts without partner scores.
 
 ## Responsibility Creation and Assignment
@@ -78,24 +78,10 @@ States:
 - Not relevant: out of household scope.
 - Archived: retained for history but hidden from daily views.
 
-## Shared Radar
-
-1. User opens radar to see shared concerns, blockers, unclear expectations, due reviews, and private drafts.
-2. User creates a radar item with topic, optional linked responsibility, reason, urgency, desired timing, and visibility.
-3. Private drafts remain visible only to the selected persona in the current household context.
-4. Publishing a private draft to shared or partner-visible space requires confirmation.
-5. Radar items can be scheduled for a check-in, resolved, dismissed, or deferred.
-
-Relationship-safety behavior:
-
-- Radar language avoids blame labels.
-- The app supports pausing or deferring a topic.
-- No item is framed as proof that a partner failed.
-
 ## Guided Check-In
 
 1. User starts or resumes a check-in.
-2. App suggests a short agenda from open radar items, due reviews, recent changes, and optionally one appreciation/acknowledgement item.
+2. App suggests a short agenda from due reviews, recent changes, and optionally one appreciation/acknowledgement item.
 3. User chooses which items to discuss and can skip any item.
 4. For each selected item, the app captures what changed, what is blocked, what expectation needs clarification, who carries the outcome until next review, and the revisit date.
 5. Decisions can update responsibility owner, cadence, status, standard, visibility, or review date.

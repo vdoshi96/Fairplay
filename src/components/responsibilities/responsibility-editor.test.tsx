@@ -254,19 +254,7 @@ describe("ResponsibilityEditor", () => {
     });
   });
 
-  it("reports radar flag success and failure", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ error: "Unable to flag this responsibility." })
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({})
-      });
-    vi.stubGlobal("fetch", fetchMock);
-
+  it("does not expose radar flagging from the responsibility editor", () => {
     render(
       <ResponsibilityEditor
         initialResponsibility={responsibility}
@@ -274,18 +262,6 @@ describe("ResponsibilityEditor", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Flag for radar" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Unable to flag this responsibility."
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Flag for radar" }));
-    expect(await screen.findByRole("status")).toHaveTextContent(
-      "Flagged for radar."
-    );
-    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({
-      reasonKey: "review_due",
-      visibility: "private"
-    });
+    expect(screen.queryByRole("button", { name: /radar/i })).not.toBeInTheDocument();
   });
 });

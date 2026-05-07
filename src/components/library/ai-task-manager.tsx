@@ -748,6 +748,14 @@ export function AiCardTracker({
                     <Send aria-hidden="true" size={16} />
                     Put in play
                   </Button>
+                  <Button
+                    disabled={pendingAction === `remove:${draft.id}`}
+                    onClick={() => onRemove(draft.id)}
+                    variant="ghost"
+                  >
+                    <Trash2 aria-hidden="true" size={16} />
+                    Discard
+                  </Button>
                 </div>
               ) : null}
             </article>
@@ -1120,6 +1128,14 @@ export function AiCardReviewPanel({
             <Button disabled={isPuttingInPlay || isSaving} onClick={onPutInPlay}>
               <Send aria-hidden="true" size={16} />
               Put in play
+            </Button>
+            <Button
+              disabled={isRemoving || isSaving}
+              onClick={onRemove}
+              variant="ghost"
+            >
+              <Trash2 aria-hidden="true" size={16} />
+              Discard
             </Button>
           </div>
           </>

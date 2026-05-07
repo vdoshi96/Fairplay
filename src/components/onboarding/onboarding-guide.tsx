@@ -21,8 +21,8 @@ const steps = [
     body: "Name who carries the outcome, who helps, and when to revisit the plan."
   },
   {
-    title: "Add radar concerns",
-    body: "Capture blockers or unclear expectations without turning them into blame."
+    title: "Plan check-ins",
+    body: "Keep blockers, changed capacity, and unclear expectations ready for a calm next conversation."
   },
   {
     title: "Schedule a check-in",
