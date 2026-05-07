@@ -47,7 +47,6 @@ const aiDrafts: AiCardDraftSummary[] = [
     areaKeys: [],
     hiddenEffortKeys: [],
     cadence: null,
-    coverUrl: null,
     failureMessage: null,
     acceptedResponsibilityId: null,
     createdAt: "2026-05-05T12:00:00.000Z",
@@ -206,11 +205,6 @@ describe("CardLibrary", () => {
     await userEvent.type(screen.getByLabelText("Dummy draft title"), "Lunch kit reset");
     await userEvent.click(screen.getByRole("button", { name: "Save dummy edits" }));
     expect(screen.getByText("Dummy draft edits saved.")).toBeVisible();
-
-    await userEvent.click(
-      screen.getByRole("button", { name: "Preview regenerated dummy image" })
-    );
-    expect(screen.getByText("Dummy image preview refreshed.")).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: "Put dummy card in play" }));
     expect(

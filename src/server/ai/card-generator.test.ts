@@ -59,9 +59,7 @@ const generatedCard: StructuredAiCard = {
   conception: "Notice refill and dose timing.",
   planning: "Put the next dose on the household calendar.",
   execution: "Give the medicine and record it.",
-  minimumStandard: "Medicine is given by the due date.",
-  imagePrompt: "dog medicine calendar still life",
-  imageNegativePrompt: "people, logos"
+  minimumStandard: "Medicine is given by the due date."
 };
 
 describe("provider-neutral card generator", () => {

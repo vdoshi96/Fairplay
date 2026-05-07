@@ -65,9 +65,7 @@ const validCard = {
   conception: "Notice when books enter the house.",
   planning: "Check due dates and renew when useful.",
   execution: "Return books before fees or replacement stress.",
-  minimumStandard: "Books are returned or renewed by due date.",
-  imagePrompt: "A library book stack with a due-date slip.",
-  imageNegativePrompt: "logos, people, readable labels"
+  minimumStandard: "Books are returned or renewed by due date."
 };
 
 describe("OpenAI fallback card generator", () => {

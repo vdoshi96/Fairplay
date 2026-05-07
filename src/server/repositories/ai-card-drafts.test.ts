@@ -52,9 +52,7 @@ const generatedCard: StructuredAiCard = {
   conception: "Notice refill and dose timing.",
   planning: "Put the next dose on the household calendar.",
   execution: "Give the medicine and record it.",
-  minimumStandard: "Medicine is given by the due date.",
-  imagePrompt: "dog medicine calendar still life",
-  imageNegativePrompt: "people, logos"
+  minimumStandard: "Medicine is given by the due date."
 };
 
 async function createReadyAudioDraft(card: StructuredAiCard = generatedCard) {
@@ -120,10 +118,10 @@ describe("AI card draft repository", () => {
       sourceInputType: "text",
       status: "processing",
       generationStage: "queued",
-      promptPreview: "Restock the school snack bin every Sunday.",
-      coverUrl: null
+      promptPreview: "Restock the school snack bin every Sunday."
     });
     expect("audioBytes" in draft).toBe(false);
+    expect("coverUrl" in draft).toBe(false);
 
     await expect(
       getAiCardDraft({
@@ -133,7 +131,7 @@ describe("AI card draft repository", () => {
     ).resolves.toMatchObject({ id: draft.id });
   });
 
-  it("creates an audio draft with stored bytes and metadata without exposing audio publicly", async () => {
+  it("keeps legacy audio bytes private while exposing drafts as text-only", async () => {
     const { household, personas } = await createTestHousehold();
     const audioBytes = new Uint8Array([1, 2, 3, 4]);
 
@@ -146,7 +144,7 @@ describe("AI card draft repository", () => {
     });
 
     expect(draft).toMatchObject({
-      sourceInputType: "audio",
+      sourceInputType: "text",
       promptPreview: "Audio card draft"
     });
     expect("audioBytes" in draft).toBe(false);
@@ -159,7 +157,7 @@ describe("AI card draft repository", () => {
     expect(stored.audioMimeType).toBe("audio/webm");
   });
 
-  it("lists summaries with prompt fallbacks and cover URLs only when cover bytes exist", async () => {
+  it("lists text-only summaries without public cover URLs", async () => {
     const { household, personas } = await createTestHousehold();
     const textDraft = await createAiCardDraft({
       householdId: household.id,
@@ -188,9 +186,7 @@ describe("AI card draft repository", () => {
         conception: "Know when visitors are coming.",
         planning: "Add towels to the reset.",
         execution: "Wash and stage towels.",
-        minimumStandard: "Clean towels are available.",
-        imagePrompt: "folded towels",
-        imageNegativePrompt: "people"
+        minimumStandard: "Clean towels are available."
       }
     });
     await saveAiCardDraftGeneration({
@@ -212,16 +208,17 @@ describe("AI card draft repository", () => {
         expect.objectContaining({
           id: textDraft.id,
           promptPreview: "Guest Towels",
-          coverUrl: `/api/ai-card-drafts/${textDraft.id}/cover`
+          sourceInputType: "text"
         }),
         expect.objectContaining({
           id: audioDraft.id,
           promptPreview: "Change the air filter monthly.",
-          coverUrl: null
+          sourceInputType: "text"
         })
       ])
     );
     expect(summaries.some((summary) => "audioBytes" in summary)).toBe(false);
+    expect(summaries.some((summary) => "coverUrl" in summary)).toBe(false);
   });
 
   it("updates generation status, stage, failure message, fields, and cover bytes", async () => {
@@ -267,9 +264,7 @@ describe("AI card draft repository", () => {
         conception: "Notice paper flow.",
         planning: "Pick a review day.",
         execution: "Sign and return forms.",
-        minimumStandard: "Forms are handled before due dates.",
-        imagePrompt: "folder and pencil",
-        imageNegativePrompt: "logos"
+        minimumStandard: "Forms are handled before due dates."
       }
     });
     await markAiCardDraftStage({
@@ -289,8 +284,11 @@ describe("AI card draft repository", () => {
     ).resolves.toMatchObject({
       title: "Backpack Papers",
       cadence: "weekly",
-      coverUrl: `/api/ai-card-drafts/${draft.id}/cover`
+      generationStage: "structuring"
     });
+    await expect(
+      getAiCardDraft({ householdId: household.id, draftId: draft.id })
+    ).resolves.not.toHaveProperty("coverUrl");
     await expect(
       getAiCardDraftCover({ householdId: household.id, draftId: draft.id })
     ).resolves.toMatchObject({ mimeType: "image/png" });
@@ -424,7 +422,7 @@ describe("AI card draft repository", () => {
       visibility: "shared_household",
       boardLane: "not_in_play",
       householdStandard: generatedCard.minimumStandard,
-      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
+      sourceCoverAssetPath: null
     });
     await expect(
       prisma.responsibility.findUniqueOrThrow({
@@ -444,7 +442,7 @@ describe("AI card draft repository", () => {
       sourcePlanning: generatedCard.planning,
       sourceExecution: generatedCard.execution,
       sourceMinimumStandard: generatedCard.minimumStandard,
-      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
+      sourceCoverAssetPath: null
     });
 
     await expect(
@@ -510,11 +508,11 @@ describe("AI card draft repository", () => {
       sourcePlanning: "Generated auto planning.",
       sourceExecution: "Generated auto execution.",
       sourceMinimumStandard: "Generated auto minimum standard.",
-      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
+      sourceCoverAssetPath: null
     });
   });
 
-  it("rejects accepting a draft without cover bytes", async () => {
+  it("accepts a ready text draft without cover bytes", async () => {
     const { household, personas } = await createTestHousehold();
     const draft = await createAiCardDraft({
       householdId: household.id,
@@ -533,27 +531,21 @@ describe("AI card draft repository", () => {
       stage: "ready"
     });
 
-    await expect(
-      acceptAiCardDraftAsResponsibility({
-        householdId: household.id,
-        draftId: draft.id,
-        createdByPersonaId: personas[0].id
-      })
-    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    const responsibility = await acceptAiCardDraftAsResponsibility({
+      householdId: household.id,
+      draftId: draft.id,
+      createdByPersonaId: personas[0].id
+    });
 
-    await expect(
-      prisma.responsibility.count({
-        where: {
-          householdId: household.id,
-          title: generatedCard.title
-        }
-      })
-    ).resolves.toBe(0);
+    expect(responsibility).toMatchObject({
+      title: generatedCard.title,
+      sourceCoverAssetPath: null
+    });
     await expect(
       getAiCardDraft({ householdId: household.id, draftId: draft.id })
     ).resolves.toMatchObject({
-      status: "ready",
-      acceptedResponsibilityId: null
+      status: "accepted",
+      acceptedResponsibilityId: responsibility.id
     });
   });
 
@@ -634,7 +626,6 @@ describe("AI card draft repository", () => {
     ).resolves.toMatchObject({
       status: "canceled",
       title: null,
-      coverUrl: null,
       failureMessage: null
     });
   });

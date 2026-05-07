@@ -15,26 +15,18 @@ export const AI_CARD_DRAFT_STATUSES = [
 
 export const AI_CARD_GENERATION_STAGES = [
   "queued",
-  "transcribing",
   "structuring",
-  "generating_image",
-  "saving_image",
   "ready",
   "failed"
 ] as const;
 
-export const AI_CARD_SOURCE_INPUT_TYPES = ["text", "audio"] as const;
+export const AI_CARD_SOURCE_INPUT_TYPES = ["text"] as const;
 
 export const AiCardDraftStatusSchema = z.enum(AI_CARD_DRAFT_STATUSES);
 export const AiCardGenerationStageSchema = z.enum(AI_CARD_GENERATION_STAGES);
 export const AiCardSourceInputTypeSchema = z.enum(AI_CARD_SOURCE_INPUT_TYPES);
 
 const NullableGeneratedTextSchema = z.string().trim().max(3000).nullable();
-const AiCardDraftCoverUrlSchema = z
-  .string()
-  .regex(
-    /^\/api\/ai-card-drafts\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\/cover$/i
-  );
 
 export const AiCardDraftCreateSchema = z
   .object({
@@ -63,7 +55,6 @@ export const AiCardDraftSummarySchema = z
     areaKeys: z.array(AreaKeySchema),
     hiddenEffortKeys: z.array(HiddenEffortKeySchema),
     cadence: CadenceSchema.nullable(),
-    coverUrl: AiCardDraftCoverUrlSchema.nullable(),
     failureMessage: z.string().trim().max(1000).nullable(),
     acceptedResponsibilityId: ResponsibilityIdSchema.nullable(),
     createdAt: IsoDateTimeSchema,
@@ -73,14 +64,11 @@ export const AiCardDraftSummarySchema = z
 
 export const AiCardDraftDetailSchema = AiCardDraftSummarySchema.extend({
   inputText: z.string().trim().max(4000).nullable(),
-  audioTranscript: z.string().trim().max(4000).nullable(),
   definition: NullableGeneratedTextSchema,
   conception: NullableGeneratedTextSchema,
   planning: NullableGeneratedTextSchema,
   execution: NullableGeneratedTextSchema,
-  minimumStandard: NullableGeneratedTextSchema,
-  imagePrompt: NullableGeneratedTextSchema,
-  imageNegativePrompt: NullableGeneratedTextSchema
+  minimumStandard: NullableGeneratedTextSchema
 }).strict();
 
 export const AiCardDraftUpdateSchema = z
@@ -94,9 +82,7 @@ export const AiCardDraftUpdateSchema = z
     conception: NullableGeneratedTextSchema.optional(),
     planning: NullableGeneratedTextSchema.optional(),
     execution: NullableGeneratedTextSchema.optional(),
-    minimumStandard: NullableGeneratedTextSchema.optional(),
-    imagePrompt: NullableGeneratedTextSchema.optional(),
-    imageNegativePrompt: NullableGeneratedTextSchema.optional()
+    minimumStandard: NullableGeneratedTextSchema.optional()
   })
   .strict();
 

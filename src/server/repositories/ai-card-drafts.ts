@@ -38,10 +38,6 @@ export type SaveAiCardDraftGenerationInput = ScopedAiCardDraftInput & {
   audioTranscript?: string | null;
 };
 
-function coverUrl(draft: Pick<AiCardDraft, "id" | "coverImageBytes">) {
-  return draft.coverImageBytes ? `/api/ai-card-drafts/${draft.id}/cover` : null;
-}
-
 function truncatePreview(value: string) {
   const trimmed = value.trim();
   return trimmed.length > 180 ? trimmed.slice(0, 177).trimEnd() + "..." : trimmed;
@@ -58,19 +54,32 @@ function promptPreview(
   );
 }
 
+function textGenerationStage(stage: AiCardGenerationStage): AiCardDraftSummary["generationStage"] {
+  switch (stage) {
+    case "failed":
+    case "queued":
+    case "ready":
+    case "structuring":
+      return stage;
+    case "generating_image":
+    case "saving_image":
+    case "transcribing":
+      return "structuring";
+  }
+}
+
 function toSummary(draft: AiCardDraft): AiCardDraftSummary {
   return {
     id: draft.id,
     title: draft.title,
     promptPreview: promptPreview(draft),
     status: draft.status,
-    generationStage: draft.generationStage,
-    sourceInputType: draft.sourceInputType,
+    generationStage: textGenerationStage(draft.generationStage),
+    sourceInputType: "text",
     summary: draft.summary,
     areaKeys: draft.areaKeys,
     hiddenEffortKeys: draft.hiddenEffortKeys,
     cadence: draft.cadence,
-    coverUrl: coverUrl(draft),
     failureMessage: draft.failureMessage,
     acceptedResponsibilityId: draft.acceptedResponsibilityId,
     createdAt: draft.createdAt.toISOString(),
@@ -82,14 +91,11 @@ function toDetail(draft: AiCardDraft): AiCardDraftDetail {
   return {
     ...toSummary(draft),
     inputText: draft.inputText,
-    audioTranscript: draft.audioTranscript,
     definition: draft.definition,
     conception: draft.conception,
     planning: draft.planning,
     execution: draft.execution,
-    minimumStandard: draft.minimumStandard,
-    imagePrompt: draft.imagePrompt,
-    imageNegativePrompt: draft.imageNegativePrompt
+    minimumStandard: draft.minimumStandard
   };
 }
 
@@ -145,9 +151,7 @@ function generationData(card: StructuredAiCard) {
     conception: card.conception,
     planning: card.planning,
     execution: card.execution,
-    minimumStandard: card.minimumStandard,
-    imagePrompt: card.imagePrompt,
-    imageNegativePrompt: card.imageNegativePrompt
+    minimumStandard: card.minimumStandard
   };
 }
 
@@ -168,9 +172,7 @@ function requireGeneratedDraftFields(draft: AiCardDraft): StructuredAiCard {
     !draft.conception ||
     !draft.planning ||
     !draft.execution ||
-    !draft.minimumStandard ||
-    !draft.imagePrompt ||
-    !draft.imageNegativePrompt
+    !draft.minimumStandard
   ) {
     throw new RepositoryError(
       "INVALID_INPUT",
@@ -188,9 +190,7 @@ function requireGeneratedDraftFields(draft: AiCardDraft): StructuredAiCard {
     conception: draft.conception,
     planning: draft.planning,
     execution: draft.execution,
-    minimumStandard: draft.minimumStandard,
-    imagePrompt: draft.imagePrompt,
-    imageNegativePrompt: draft.imageNegativePrompt
+    minimumStandard: draft.minimumStandard
   };
 }
 
@@ -472,15 +472,7 @@ export async function acceptAiCardDraftAsResponsibility(input: {
       );
     }
 
-    if (!draft.coverImageBytes || !draft.coverImageMimeType) {
-      throw new RepositoryError(
-        "INVALID_INPUT",
-        "AI card draft needs a generated cover before acceptance."
-      );
-    }
-
     const card = requireGeneratedDraftFields(draft);
-    const sourceCoverAssetPath = `/api/ai-card-drafts/${draft.id}/cover`;
     const responsibility = await createResponsibilityWithClient(tx, {
         householdId: input.householdId,
         createdByPersonaId: input.createdByPersonaId,
@@ -501,7 +493,7 @@ export async function acceptAiCardDraftAsResponsibility(input: {
         sourcePlanning: card.planning,
         sourceExecution: card.execution,
         sourceMinimumStandard: card.minimumStandard,
-        sourceCoverAssetPath
+        sourceCoverAssetPath: null
     });
 
     await tx.aiCardDraft.update({

@@ -446,9 +446,7 @@ const structuredCardJsonSchema = {
     "conception",
     "planning",
     "execution",
-    "minimumStandard",
-    "imagePrompt",
-    "imageNegativePrompt"
+    "minimumStandard"
   ],
   properties: {
     title: { type: "string" },
@@ -492,8 +490,6 @@ const structuredCardJsonSchema = {
     conception: { type: "string" },
     planning: { type: "string" },
     execution: { type: "string" },
-    minimumStandard: { type: "string" },
-    imagePrompt: { type: "string" },
-    imageNegativePrompt: { type: "string" }
+    minimumStandard: { type: "string" }
   }
 } as const;

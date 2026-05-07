@@ -88,12 +88,11 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
           completionMessage: "Dummy Library workflow complete.",
           eventId: "library-practice-start",
           prompt:
-            "Use a dummy Greg capture, review the generated draft, edit it, preview imagery, and put it in play without creating a real card.",
+            "Use a dummy Greg capture, review the generated text draft, edit it, and put it in play without creating a real card.",
           requiredEventIds: [
             "library-capture-filled",
             "library-draft-reviewed",
             "library-draft-edited",
-            "library-image-previewed",
             "library-put-in-play"
           ]
         }
