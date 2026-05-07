@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { NextRequest } from "next/server";
 
+import { PageHeader } from "@/components/app-shell/page-shell";
 import { CardLibrary } from "@/components/library/card-library";
 import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import type { CardTemplateSummary } from "@/contracts/card-templates";
@@ -50,19 +51,14 @@ export default async function LibraryPage() {
   }
 
   return (
-    <main className="grid gap-5">
-      <div className="grid gap-1">
-        <p className="text-[13px] font-semibold text-fp-muted-ink">Card library</p>
-        <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-          Source deck
-        </h1>
-      </div>
+    <section className="grid gap-5">
+      <PageHeader eyebrow="Card library" title="Source deck" />
       <CardLibrary
         aiDrafts={aiDrafts}
         onCreateFromTemplate={createFromTemplate}
         templates={templates}
       />
-    </main>
+    </section>
   );
 }
 
