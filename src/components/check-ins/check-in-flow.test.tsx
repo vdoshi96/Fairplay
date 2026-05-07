@@ -517,12 +517,15 @@ describe("CheckInFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Assign dummy topic" }));
     expect(screen.getByText("Dummy topic assigned to Max.")).toBeVisible();
     expect(
-      screen.getByText("Next required click: Record dummy decision.")
+      screen.getByText("Next required action: Write a dummy decision summary.")
     ).toBeVisible();
 
     fireEvent.change(screen.getByLabelText("Dummy decision summary"), {
       target: { value: "Max owns lunch kit reset until June." }
     });
+    expect(
+      screen.getByText("Next required click: Record dummy decision.")
+    ).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Record dummy decision" }));
     expect(screen.getByText("Dummy decision recorded.")).toBeVisible();
     expect(

@@ -796,22 +796,32 @@ function CheckInPracticeWorkflow() {
               Assign dummy topic
             </button>
           </PracticeActionGuidance>
-          <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-            Dummy decision summary
-            <textarea
-              aria-label="Dummy decision summary"
-              className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
-              onChange={(event) => setDecisionSummary(event.target.value)}
-              value={decisionSummary}
-            />
-            <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
-              Capture the outcome, not the debate.
-            </span>
-          </label>
+          <PracticeActionGuidance
+            actionLabel="Write a dummy decision summary"
+            active={topicAssigned && decisionSummary.trim().length === 0}
+            kind="action"
+          >
+            <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+              Dummy decision summary
+              <textarea
+                aria-label="Dummy decision summary"
+                className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
+                onChange={(event) => setDecisionSummary(event.target.value)}
+                value={decisionSummary}
+              />
+              <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+                Capture the outcome, not the debate.
+              </span>
+            </label>
+          </PracticeActionGuidance>
           <div className="flex flex-wrap items-start gap-2">
             <PracticeActionGuidance
               actionLabel="Record dummy decision"
-              active={topicAssigned && !decisionRecorded}
+              active={
+                topicAssigned &&
+                decisionSummary.trim().length > 0 &&
+                !decisionRecorded
+              }
             >
               <button
                 className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
