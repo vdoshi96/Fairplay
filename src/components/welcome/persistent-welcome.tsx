@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BookOpen, GraduationCap, Sparkles, X } from "lucide-react";
+import { BookOpen, Sparkles, X } from "lucide-react";
 
 type PersistentWelcomeProps = {
   dismissed: boolean;
@@ -15,11 +15,6 @@ const welcomeLinks = [
     href: "/app/crash-course",
     icon: Sparkles,
     label: "Start crash course"
-  },
-  {
-    href: "/app/home#learn-a-feature",
-    icon: GraduationCap,
-    label: "Learn a feature"
   },
   {
     href: "/app/library",
@@ -89,7 +84,7 @@ export function PersistentWelcome({
               Welcome resources
             </h2>
             <p className="text-[13px] leading-5 text-fp-muted-ink">
-              Crash course, feature tips, and the card library are nearby.
+              Crash course and the card library are nearby.
             </p>
           </div>
 
@@ -169,7 +164,7 @@ export function PersistentWelcome({
         </button>
       </div>
 
-      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {welcomeLinks.map((item) => {
           const Icon = item.icon;
 

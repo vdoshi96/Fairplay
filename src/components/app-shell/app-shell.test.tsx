@@ -130,13 +130,17 @@ describe("protected app UI", () => {
       "href",
       "/app/home#learn-a-feature"
     );
+    expect(screen.getByRole("link", { name: "Learn a feature" })).toHaveAttribute(
+      "aria-describedby",
+      "learn-a-feature-heading"
+    );
     expect(screen.getByRole("link", { name: "Card library" })).toHaveAttribute(
       "href",
       "/app/library"
     );
     expect(
       screen.getByRole("heading", { name: "Learn a feature" })
-    ).toBeVisible();
+    ).toHaveAttribute("id", "learn-a-feature-heading");
     expect(container.querySelector("#learn-a-feature")).not.toBeNull();
     expect(container.querySelector(`#${retiredGuideAnchor}`)).toBeNull();
     expect(screen.queryByText(retiredGuideLabel)).not.toBeInTheDocument();

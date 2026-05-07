@@ -30,7 +30,7 @@ describe("PersistentWelcome", () => {
     ).toBeVisible();
   });
 
-  it("renders a compact welcome on feature routes", () => {
+  it("renders a compact welcome on feature routes without duplicating the learner action", () => {
     pathname.mockReturnValue("/app/library");
 
     render(<PersistentWelcome dismissed={false} />);
@@ -38,16 +38,13 @@ describe("PersistentWelcome", () => {
     const welcome = screen.getByRole("dialog", { name: "Welcome to Fairplay" });
     expect(welcome).toHaveAttribute("data-welcome-variant", "compact");
     expect(
-      screen.getByText("Crash course, feature tips, and the card library are nearby.")
+      screen.getByText("Crash course and the card library are nearby.")
     ).toBeVisible();
     expect(screen.getByRole("link", { name: "Start crash course" })).toHaveAttribute(
       "href",
       "/app/crash-course"
     );
-    expect(screen.getByRole("link", { name: "Learn a feature" })).toHaveAttribute(
-      "href",
-      "/app/home#learn-a-feature"
-    );
+    expect(screen.queryByRole("link", { name: "Learn a feature" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Browse card library" })).toHaveAttribute(
       "href",
       "/app/library"
@@ -55,9 +52,6 @@ describe("PersistentWelcome", () => {
     const compactActions = screen.getByTestId("welcome-compact-actions");
     expect(compactActions).toContainElement(
       screen.getByRole("link", { name: "Start crash course" })
-    );
-    expect(compactActions).toContainElement(
-      screen.getByRole("link", { name: "Learn a feature" })
     );
     expect(compactActions).toContainElement(
       screen.getByRole("link", { name: "Browse card library" })
@@ -102,7 +96,7 @@ describe("PersistentWelcome", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("links to the crash course, learn-a-feature area, and card library without dismissing", () => {
+  it("links to the crash course and card library without duplicating the learner area", () => {
     const onDismiss = vi.fn();
     render(<PersistentWelcome dismissed={false} onDismiss={onDismiss} />);
 
@@ -110,10 +104,7 @@ describe("PersistentWelcome", () => {
       "href",
       "/app/crash-course"
     );
-    expect(screen.getByRole("link", { name: "Learn a feature" })).toHaveAttribute(
-      "href",
-      "/app/home#learn-a-feature"
-    );
+    expect(screen.queryByRole("link", { name: "Learn a feature" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Browse card library" })).toHaveAttribute(
       "href",
       "/app/library"

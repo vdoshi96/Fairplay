@@ -317,88 +317,136 @@ export function ResponsibilityLoadMap({
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
-        <Signal label="Owner mix" value={ownerMix(loadSnapshot.ownerDistribution)}>
-          <AssignmentShift
-            className="mt-2 w-fit"
-            from="alex"
-            label="Owner mix visual"
-            to="max"
-          />
-        </Signal>
-        <Signal
-          label="Shared"
-          value={String(loadSnapshot.sharedDistribution.shared ?? 0)}
+      <div className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink p-3 shadow-[var(--fp-shadow-soft)]">
+        <DecorativeBackgroundLayer
+          className="opacity-25 [mask-image:linear-gradient(125deg,black_0%,rgba(0,0,0,0.62)_42%,rgba(0,0,0,0.14)_100%)]"
+          src={loadMapWorkbenchBackground}
+          testId="load-map-workbench-background"
+          washClassName="bg-white/82"
         />
-        <Signal label="Open radar" value={String(loadSnapshot.radarOpenCount)} />
-        <Signal label="Due review" value={String(loadSnapshot.reviewDueCount)} />
-        <Signal
-          label="Paused or out"
-          value={String(loadSnapshot.pausedOrNotRelevantCount)}
-        />
-        <Signal
-          label="High frequency"
-          value={String(
-            (loadSnapshot.cadenceDistribution.daily ?? 0) +
-              (loadSnapshot.cadenceDistribution.weekly ?? 0)
-          )}
-        />
-        <Signal
-          label="Area mix"
-          value={summaryMix(loadSnapshot.areaDistribution)}
-        />
-        <Signal
-          label="Hidden effort mix"
-          value={summaryMix(loadSnapshot.hiddenEffortMix)}
-        />
-      </div>
+        <div className="relative z-10 grid gap-3">
+          <div
+            className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4"
+            data-testid="load-map-diagnostics"
+          >
+            <Signal
+              label="Owner mix"
+              tone="owner"
+              value={ownerMix(loadSnapshot.ownerDistribution)}
+            >
+              <AssignmentShift
+                className="mt-2 w-fit"
+                from="alex"
+                label="Owner mix visual"
+                to="max"
+              />
+            </Signal>
+            <Signal
+              label="Shared"
+              tone="shared"
+              value={String(loadSnapshot.sharedDistribution.shared ?? 0)}
+            />
+            <Signal
+              label="Open radar"
+              tone="radar"
+              value={String(loadSnapshot.radarOpenCount)}
+            />
+            <Signal
+              label="Due review"
+              tone="review"
+              value={String(loadSnapshot.reviewDueCount)}
+            />
+            <Signal
+              label="Paused or out"
+              tone="reserve"
+              value={String(loadSnapshot.pausedOrNotRelevantCount)}
+            />
+            <Signal
+              label="High frequency"
+              tone="cadence"
+              value={String(
+                (loadSnapshot.cadenceDistribution.daily ?? 0) +
+                  (loadSnapshot.cadenceDistribution.weekly ?? 0)
+              )}
+            />
+            <Signal
+              label="Area mix"
+              tone="area"
+              value={summaryMix(loadSnapshot.areaDistribution)}
+            />
+            <Signal
+              label="Hidden effort mix"
+              tone="effort"
+              value={summaryMix(loadSnapshot.hiddenEffortMix)}
+            />
+          </div>
 
-      <div
-        className="grid gap-3 rounded-[8px] border border-fp-line bg-white p-3 sm:grid-cols-2 lg:grid-cols-4"
-        data-guide-id="load-map-filters"
-      >
-        <Select label="Owner" onChange={setOwner} options={ownerOptions} value={owner} />
-        <Select
-          label="Status"
-          onChange={setStatus}
-          options={statusOptions}
-          value={status}
-        />
-        <Select
-          label="Cadence"
-          onChange={setCadence}
-          options={cadenceOptions}
-          value={cadence}
-        />
-        <Select label="Area" onChange={setArea} options={areaOptions} value={area} />
-        <Select
-          label="Hidden effort"
-          onChange={setHiddenEffort}
-          options={hiddenEffortOptions}
-          value={hiddenEffort}
-        />
-        <Select
-          label="Radar"
-          onChange={setRadar}
-          options={["all", "flagged", "clear"] as const}
-          value={radar}
-        />
-        <Select
-          label="Review timing"
-          onChange={setReviewTiming}
-          options={["all", "due", "upcoming", "none"] as const}
-          value={reviewTiming}
-        />
-        <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-          Search
-          <input
-            aria-label="Search responsibilities"
-            className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
-            onChange={(event) => setSearchText(event.target.value)}
-            type="search"
-            value={searchText}
-          />
-        </label>
+          <div
+            className="grid gap-3 rounded-[8px] border border-white/70 bg-white/88 p-3 backdrop-blur-[1px] lg:grid-cols-[1fr_1.5fr_1fr] xl:grid-cols-[1fr_1.5fr_1fr_1fr]"
+            data-guide-id="load-map-filters"
+          >
+            <FilterGroup legend="Ownership">
+              <Select
+                label="Owner"
+                onChange={setOwner}
+                options={ownerOptions}
+                value={owner}
+              />
+              <Select
+                label="Hidden effort"
+                onChange={setHiddenEffort}
+                options={hiddenEffortOptions}
+                value={hiddenEffort}
+              />
+            </FilterGroup>
+            <FilterGroup legend="Card details">
+              <Select
+                label="Status"
+                onChange={setStatus}
+                options={statusOptions}
+                value={status}
+              />
+              <Select
+                label="Cadence"
+                onChange={setCadence}
+                options={cadenceOptions}
+                value={cadence}
+              />
+              <Select
+                label="Area"
+                onChange={setArea}
+                options={areaOptions}
+                value={area}
+              />
+            </FilterGroup>
+            <FilterGroup legend="Attention">
+              <Select
+                label="Radar"
+                onChange={setRadar}
+                options={["all", "flagged", "clear"] as const}
+                value={radar}
+              />
+              <Select
+                label="Review timing"
+                onChange={setReviewTiming}
+                options={["all", "due", "upcoming", "none"] as const}
+                value={reviewTiming}
+              />
+            </FilterGroup>
+            <FilterGroup legend="Find">
+              <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+                Search
+                <input
+                  aria-label="Search responsibilities"
+                  className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+                  onChange={(event) => setSearchText(event.target.value)}
+                  type="search"
+                  value={searchText}
+                />
+              </label>
+            </FilterGroup>
+          </div>
+        </div>
       </div>
 
       {responsibilities.length === 0 ? (
@@ -658,7 +706,7 @@ function LoadMapPracticeBoard({
                       role="menuitem"
                       type="button"
                     >
-                      Player 1
+                      Alex
                     </button>
                   </div>
                 ) : null}
@@ -672,12 +720,12 @@ function LoadMapPracticeBoard({
         </div>
         <div className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
           <p className="text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
-            Player 1
+            Alex
           </p>
           {primaryLane === "player_1" ? (
             <div className="mt-2 grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
               <p className="text-[13px] font-bold text-fp-ink">
-                {savedTitle} is in Player 1.
+                {savedTitle} is in Alex.
               </p>
               <label className="grid gap-1 text-[12px] font-semibold text-fp-muted-ink">
                 Dummy card title
@@ -879,17 +927,52 @@ function summaryMix(distribution: Record<string, number>) {
     .join(" / ");
 }
 
+function FilterGroup({
+  children,
+  legend
+}: {
+  children: ReactNode;
+  legend: string;
+}) {
+  return (
+    <fieldset className="grid content-start gap-3 rounded-[8px] border border-fp-line bg-white/90 p-3">
+      <legend className="px-1 text-[12px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
+        {legend}
+      </legend>
+      {children}
+    </fieldset>
+  );
+}
+
+const signalToneClasses = {
+  area: "border-emerald-200 bg-emerald-50/90",
+  cadence: "border-indigo-200 bg-indigo-50/90",
+  effort: "border-violet-200 bg-violet-50/90",
+  owner: "border-sky-200 bg-sky-50/90",
+  radar: "border-amber-200 bg-amber-50/90",
+  reserve: "border-stone-200 bg-stone-50/90",
+  review: "border-rose-200 bg-rose-50/90",
+  shared: "border-teal-200 bg-teal-50/90"
+} as const;
+
 function Signal({
   children,
   label,
+  tone,
   value
 }: {
   children?: ReactNode;
   label: string;
+  tone: keyof typeof signalToneClasses;
   value: string;
 }) {
   return (
-    <div className="rounded-[8px] border border-fp-line bg-white p-3">
+    <div
+      className={[
+        "rounded-[8px] border p-3 shadow-sm",
+        signalToneClasses[tone]
+      ].join(" ")}
+    >
       <p className="text-[12px] font-semibold text-fp-muted-ink">{label}</p>
       <p className="mt-1 text-[20px] font-bold text-fp-ink">{value}</p>
       {children}
