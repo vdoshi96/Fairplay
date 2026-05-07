@@ -17,4 +17,3 @@ Boundaries:
 - Do not change backend AI draft, Radar, or Check-in mutation paths.
 - Keep dummy workflows local to onboarding state and avoid mutating real household data.
 - Keep Skip and Escape guide exit behavior intact.
-

@@ -13,4 +13,3 @@ TDD notes:
 - Red tests were added before implementation for dialog placement, guide copy, sandbox workspaces, cleanup, Radar section movement, and empty agenda modal.
 - The first focused test run failed on the expected missing behavior.
 - After implementation, remaining failures were accessible-name regressions from label helper text; those were fixed without removing the UX copy.
-

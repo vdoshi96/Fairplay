@@ -15,4 +15,3 @@ Manual/browser spot checks if time allows:
 - Confirm Skip and Escape still close the guide.
 - Confirm dummy workflows show mock artifacts, do not call production mutation handlers, persist during onboarding, and can be cleaned up.
 - Confirm Check-in `Preview agenda` with no items opens the empty agenda modal and close dismisses it.
-

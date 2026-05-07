@@ -11,4 +11,3 @@
 - Added Check-in empty agenda modal for `Preview agenda` when no suggestions exist.
 - Added Check-in practice workspace copy and cleanup.
 - Verified focused Vitest suite after implementation.
-
