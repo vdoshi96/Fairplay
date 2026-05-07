@@ -64,6 +64,24 @@ describe("CheckInFlow", () => {
     vi.unstubAllGlobals();
   });
 
+  it("renders the new check-in launcher as a centered workflow with grouped actions", () => {
+    render(<NewCheckInLauncher initialSuggestions={checkIn.items} />);
+
+    expect(screen.getByTestId("check-in-new-workflow")).toBeVisible();
+
+    const actions = screen.getByTestId("check-in-launcher-actions");
+    expect(
+      within(actions).getByRole("button", { name: "Preview agenda" })
+    ).toBeVisible();
+    expect(
+      within(actions).getByRole("button", { name: "Start check-in" })
+    ).toBeVisible();
+
+    const agenda = screen.getByTestId("check-in-agenda-preview-list");
+    expect(agenda).toHaveAttribute("data-guide-id", "check-in-agenda");
+    expect(within(agenda).getByText("Clarify morning handoff")).toBeVisible();
+  });
+
   it("lets users remove suggested agenda items before starting", async () => {
     vi.stubGlobal(
       "fetch",
