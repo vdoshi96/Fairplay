@@ -15,6 +15,7 @@ import {
   transcribeAudio
 } from "./qwen-card-generator";
 import { buildImagePrompt, cardSystemPrompt } from "./card-generation-shared";
+import { CADENCES, HIDDEN_EFFORT_KEYS } from "@/domain/enums";
 
 const config: QwenConfig = {
   cardApiKey: "card-secret",
@@ -78,6 +79,48 @@ describe("Qwen card generator", () => {
   it("asks structured card generation for text-only card JSON", () => {
     expect(cardSystemPrompt).toMatch(/structured text only/i);
     expect(cardSystemPrompt).not.toMatch(/imagePrompt|imageNegativePrompt|textless app illustration/i);
+  });
+
+  it("tells Qwen to use app enum tokens for strict structured fields", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                title: "Take the Recycling Out",
+                summary: "Move recyclables to the pickup location on time.",
+                areaKeys: ["cleaning"],
+                hiddenEffortKeys: ["noticing", "planning", "doing"],
+                cadence: "weekly",
+                definition: "Own the household recycling flow.",
+                conception: "Notice when recycling is ready to go out.",
+                planning: "Check the pickup schedule and sort materials.",
+                execution: "Move the bins to the collection spot.",
+                minimumStandard: "Recycling is out before pickup."
+              })
+            }
+          }
+        ]
+      })
+    );
+
+    await structureTaskAsCard(
+      { taskText: "take the recycling out" },
+      { fetch: fetchMock, config }
+    );
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    const promptText = body.messages.map((message: { content: string }) => message.content).join("\n");
+
+    for (const key of HIDDEN_EFFORT_KEYS) {
+      expect(promptText).toContain(key);
+    }
+    for (const cadence of CADENCES) {
+      expect(promptText).toContain(cadence);
+    }
+    expect(promptText).toMatch(/enum tokens only/i);
+    expect(promptText).toMatch(/not display labels or explanations/i);
   });
 
   it("throws a safe config error when required env vars are missing", async () => {
