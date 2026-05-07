@@ -86,6 +86,25 @@ async function closeWelcomeIfPresent(page: Page) {
   }
 }
 
+async function createLoadMapResponsibility(page: Page) {
+  await page.goto("/app/responsibilities/new");
+  await page.getByLabel("Title").fill("Adult Friendships");
+  await page
+    .getByLabel("Summary")
+    .fill("Keep friendship plans visible and kind.");
+  await page.getByLabel("Area keys").fill("happiness_trio, magic");
+  await page.getByLabel("Relevant days").fill("friday");
+  await page.getByRole("combobox", { name: "Status" }).selectOption({
+    label: "Active"
+  });
+  await page.getByRole("combobox", { name: "Alex role" }).selectOption({
+    label: "Accountable Owner"
+  });
+  await page.getByRole("checkbox", { name: "Planning" }).check();
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByText("Saved.")).toBeVisible();
+}
+
 async function expectNoDocumentHorizontalOverflow(page: Page, label: string) {
   const overflow = await page.evaluate(() => {
     const width = window.innerWidth;
@@ -389,7 +408,62 @@ function windowlessViewportHeight(page: Page) {
   return page.viewportSize()?.height ?? 0;
 }
 
+async function expectLoadMapLaneScrollerWorks(page: Page, label: string) {
+  const scroller = page.getByTestId("load-map-board-scroller");
+  await expect(scroller).toBeVisible();
+  await expect(scroller).toHaveAttribute("aria-label", "Responsibility lanes");
+  await expect(page.getByRole("button", { name: "Scroll lanes left" }))
+    .toBeVisible();
+  await expect(page.getByRole("button", { name: "Scroll lanes right" }))
+    .toBeVisible();
+
+  const before = await scroller.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollLeft: element.scrollLeft,
+    scrollWidth: element.scrollWidth
+  }));
+  expect(before.scrollWidth, `${label} lane rail should be wider than viewport`)
+    .toBeGreaterThan(before.clientWidth);
+
+  await page.getByRole("button", { name: "Scroll lanes right" }).click();
+  await expect
+    .poll(() => scroller.evaluate((element) => element.scrollLeft))
+    .toBeGreaterThan(before.scrollLeft);
+
+  await scroller.evaluate((element) => {
+    const previousScrollBehavior = element.style.scrollBehavior;
+
+    element.style.scrollBehavior = "auto";
+    element.scrollTo({ left: element.scrollWidth });
+    element.style.scrollBehavior = previousScrollBehavior;
+  });
+
+  const trimmedVisibleInScroller = await page
+    .getByRole("region", { name: "Trimmed" })
+    .evaluate((element) => {
+      const scrollerElement = element.closest<HTMLElement>(
+        '[data-testid="load-map-board-scroller"]'
+      );
+
+      if (!scrollerElement) {
+        return false;
+      }
+
+      const laneRect = element.getBoundingClientRect();
+      const scrollerRect = scrollerElement.getBoundingClientRect();
+
+      return (
+        laneRect.left >= scrollerRect.left - 1 &&
+        laneRect.right <= scrollerRect.right + 1
+      );
+    });
+
+  expect(trimmedVisibleInScroller, `${label} should reveal the Trimmed lane`)
+    .toBe(true);
+}
+
 test.describe("corrective responsive visual QA", () => {
+  test.describe.configure({ mode: "serial" });
   test.setTimeout(90_000);
 
   test.beforeEach(async ({ context }) => {
@@ -471,5 +545,46 @@ test.describe("corrective responsive visual QA", () => {
     }
 
     expect(consoleIssues).toEqual([]);
+  });
+
+  test("populated Load Map lanes scroll inside the board rail", async ({ page }) => {
+    await createHouseholdAndChooseAlex(page);
+    await closeWelcomeIfPresent(page);
+    await createLoadMapResponsibility(page);
+
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      await page.goto("/app/load-map");
+      await closeWelcomeIfPresent(page);
+      await expect(
+        page.getByRole("heading", { name: "Responsibility overview" })
+      ).toBeVisible();
+      await expectNoDocumentHorizontalOverflow(
+        page,
+        `${viewport.name} populated load-map`
+      );
+      await expectLoadMapLaneScrollerWorks(
+        page,
+        `${viewport.name} populated load-map`
+      );
+      const scroller = page.getByTestId("load-map-board-scroller");
+
+      await scroller.evaluate((element) => {
+        element.style.scrollBehavior = "auto";
+        element.scrollTo({ left: element.scrollWidth });
+      });
+      await expect
+        .poll(() =>
+          scroller.evaluate(
+            (element) => element.scrollWidth - element.clientWidth - element.scrollLeft
+          )
+        )
+        .toBeLessThanOrEqual(20);
+
+      await page.screenshot({
+        fullPage: true,
+        path: `${screenshotDir}/populated-${viewport.name}-load-map.png`
+      });
+    }
   });
 });
