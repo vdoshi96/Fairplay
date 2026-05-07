@@ -19,6 +19,7 @@ import {
   acceptAiCardDraftAsResponsibility,
   cancelAiCardDraft,
   createAiCardDraft,
+  deleteAiCardDraft,
   getAiCardDraft,
   getAiCardDraftCover,
   listAiCardDrafts,
@@ -89,6 +90,10 @@ export type AiCardDraftServiceDeps = {
     householdId: HouseholdId;
     draftId: AiCardDraftId;
   }) => Promise<AiCardDraftDetail>;
+  deleteDraft: (input: {
+    householdId: HouseholdId;
+    draftId: AiCardDraftId;
+  }) => Promise<void>;
   getCover: (input: {
     householdId: HouseholdId;
     draftId: AiCardDraftId;
@@ -114,6 +119,7 @@ const defaultDeps: AiCardDraftServiceDeps = {
   saveGeneration: saveAiCardDraftGeneration,
   saveFailure: saveAiCardDraftFailure,
   cancelDraft: cancelAiCardDraft,
+  deleteDraft: deleteAiCardDraft,
   getCover: getAiCardDraftCover,
   structureTaskAsCard,
   acceptDraftAsResponsibility: acceptAiCardDraftAsResponsibility
@@ -226,6 +232,15 @@ function assertCanCancel(draft: AiCardDraftDetail) {
     throw new AiCardDraftServiceError(
       "INVALID_INPUT",
       "Accepted or canceled AI card drafts cannot be canceled."
+    );
+  }
+}
+
+function assertCanDiscard(draft: AiCardDraftDetail) {
+  if (draft.status !== "failed" && draft.status !== "canceled") {
+    throw new AiCardDraftServiceError(
+      "INVALID_INPUT",
+      "Only failed or canceled AI card drafts can be removed."
     );
   }
 }
@@ -374,11 +389,6 @@ export function createAiCardDraftService(
           }
         })();
         if (card) {
-          await deps.saveGeneration({
-            householdId: session.householdId,
-            draftId,
-            card
-          });
           return deps.markStage({
             householdId: session.householdId,
             draftId,
@@ -438,6 +448,24 @@ export function createAiCardDraftService(
         draftId
       });
       return canceled;
+    },
+
+    async discard(
+      session: CurrentSession,
+      draftId: AiCardDraftId
+    ): Promise<void> {
+      requireSelectedPersona(session);
+      const draft = await getRequiredDraft(deps, session, draftId);
+      assertCanDiscard(draft);
+
+      try {
+        await deps.deleteDraft({
+          householdId: session.householdId,
+          draftId
+        });
+      } catch (error) {
+        mapRepositoryServiceError(error);
+      }
     },
 
     async getCover(

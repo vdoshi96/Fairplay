@@ -7,6 +7,7 @@ const update = vi.fn();
 const retry = vi.fn();
 const putInPlay = vi.fn();
 const cancel = vi.fn();
+const discard = vi.fn();
 
 vi.mock("@/server/auth/current-session", () => ({
   getCurrentSession
@@ -25,7 +26,8 @@ vi.mock("@/server/ai-card-drafts/service", () => ({
     update,
     retry,
     putInPlay,
-    cancel
+    cancel,
+    discard
   }
 }));
 
@@ -67,6 +69,7 @@ describe("/api/ai-card-drafts/[id]", () => {
       title: "Laundry reset"
     });
     cancel.mockResolvedValue({ id, status: "canceled" });
+    discard.mockResolvedValue(undefined);
   });
 
   it("gets a draft by id", async () => {
@@ -222,5 +225,16 @@ describe("/api/ai-card-drafts/[id]", () => {
     expect(body).toEqual({
       error: "Image regeneration is unavailable for text-only card generation."
     });
+  });
+
+  it("deletes failed or canceled drafts through the discard service", async () => {
+    const { DELETE } = await import("./route");
+
+    const response = await DELETE(request(), context);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ ok: true });
+    expect(discard).toHaveBeenCalledWith(session, id);
   });
 });

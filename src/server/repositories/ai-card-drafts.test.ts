@@ -10,6 +10,7 @@ import {
   acceptAiCardDraftAsResponsibility,
   cancelAiCardDraft,
   createAiCardDraft,
+  deleteAiCardDraft,
   deleteAiCardDraftAudio,
   getAiCardDraft,
   getAiCardDraftCover,
@@ -628,6 +629,65 @@ describe("AI card draft repository", () => {
       title: null,
       failureMessage: null
     });
+  });
+
+  it("deletes failed and canceled drafts without deleting ready or accepted drafts", async () => {
+    const { household, personas } = await createTestHousehold();
+    const failed = await createAiCardDraft({
+      householdId: household.id,
+      createdByPersonaId: personas[0].id,
+      sourceInputType: "text",
+      inputText: "Failed discard"
+    });
+    await saveAiCardDraftFailure({
+      householdId: household.id,
+      draftId: failed.id,
+      failureCode: "GENERATION_FAILED",
+      failureMessage: "AI card draft generation failed."
+    });
+    const canceled = await createAiCardDraft({
+      householdId: household.id,
+      createdByPersonaId: personas[0].id,
+      sourceInputType: "text",
+      inputText: "Canceled discard"
+    });
+    await cancelAiCardDraft({ householdId: household.id, draftId: canceled.id });
+    const ready = await createAiCardDraft({
+      householdId: household.id,
+      createdByPersonaId: personas[0].id,
+      sourceInputType: "text",
+      inputText: "Ready discard"
+    });
+    await saveAiCardDraftGeneration({
+      householdId: household.id,
+      draftId: ready.id,
+      card: generatedCard
+    });
+    await markAiCardDraftStage({
+      householdId: household.id,
+      draftId: ready.id,
+      stage: "ready"
+    });
+
+    await expect(
+      deleteAiCardDraft({ householdId: household.id, draftId: failed.id })
+    ).resolves.toBeUndefined();
+    await expect(
+      deleteAiCardDraft({ householdId: household.id, draftId: canceled.id })
+    ).resolves.toBeUndefined();
+
+    await expect(
+      getAiCardDraft({ householdId: household.id, draftId: failed.id })
+    ).resolves.toBeNull();
+    await expect(
+      getAiCardDraft({ householdId: household.id, draftId: canceled.id })
+    ).resolves.toBeNull();
+    await expect(
+      deleteAiCardDraft({ householdId: household.id, draftId: ready.id })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    await expect(
+      getAiCardDraft({ householdId: household.id, draftId: ready.id })
+    ).resolves.toMatchObject({ status: "ready" });
   });
 
   it("blocks edits after a draft is accepted or canceled", async () => {

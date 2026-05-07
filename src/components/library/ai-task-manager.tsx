@@ -8,6 +8,7 @@ import {
   RefreshCcw,
   Send,
   Sparkles,
+  Trash2,
   X
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -33,6 +34,7 @@ type AiTaskManagerProps = {
 
 type PendingAction =
   | `cancel:${string}`
+  | `remove:${string}`
   | `put-in-play:${string}`
   | `retry:${string}`
   | `save:${string}`
@@ -40,6 +42,7 @@ type PendingAction =
 
 type TrackedAiCardDraft = AiCardDraftSummary & {
   isOptimistic?: boolean;
+  isLocalOnly?: boolean;
   localInputText?: string;
 };
 
@@ -62,6 +65,9 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
   const router = useRouter();
   const pendingCreateControllersRef = useRef(new Map<string, AbortController>());
   const [captureOpen, setCaptureOpen] = useState(false);
+  const [discardedDraftIds, setDiscardedDraftIds] = useState<Set<string>>(
+    () => new Set()
+  );
   const [localDrafts, setLocalDrafts] = useState<TrackedAiCardDraft[]>([]);
   const [reviewDraft, setReviewDraft] = useState<TrackedAiCardDraft | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
@@ -75,11 +81,31 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
 
   const trackedDrafts = useMemo(() => {
     const serverIds = new Set(drafts.map((draft) => draft.id));
+    const localDraftById = new Map(localDrafts.map((draft) => [draft.id, draft]));
+    const localOnlyDrafts = localDrafts.filter(
+      (draft) => draft.isOptimistic || !serverIds.has(draft.id)
+    );
+    const mergedServerDrafts = drafts.map((draft) => {
+      const localDraft = localDraftById.get(draft.id);
+
+      return localDraft ? newestDraft(localDraft, draft) : draft;
+    });
+
     return [
-      ...localDrafts.filter((draft) => draft.isOptimistic || !serverIds.has(draft.id)),
-      ...drafts
-    ];
-  }, [drafts, localDrafts]);
+      ...localOnlyDrafts,
+      ...mergedServerDrafts
+    ].filter((draft) => !discardedDraftIds.has(draft.id));
+  }, [discardedDraftIds, drafts, localDrafts]);
+
+  useEffect(() => {
+    setReviewDraft((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return trackedDrafts.find((draft) => draft.id === current.id) ?? null;
+    });
+  }, [trackedDrafts]);
 
   async function mutateDraft(path: string, action: Exclude<PendingAction, null>) {
     setPendingAction(action);
@@ -97,6 +123,15 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
         }
         throw new Error(apiError.message);
       }
+      const updated = (await response.json()) as AiCardDraftDetail | AiCardDraftSummary;
+      const reconciled = reconcileDraftUpdate(updated);
+      setReviewDraft((current) =>
+        current?.id === reconciled.id
+          ? reconciled.status === "canceled"
+            ? null
+            : reconciled
+          : current
+      );
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The draft could not be updated.");
@@ -181,6 +216,7 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
       <AiCardTracker
         drafts={trackedDrafts}
         onCancel={cancelDraft}
+        onRemove={discardDraft}
         onPutInPlay={putInPlay}
         onRetry={(draftId) =>
           mutateDraft(`/api/ai-card-drafts/${draftId}/retry`, `retry:${draftId}`)
@@ -199,11 +235,13 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
         <AiCardReviewPanel
           draft={reviewDraft}
           isCanceling={pendingAction === `cancel:${reviewDraft.id}`}
+          isRemoving={pendingAction === `remove:${reviewDraft.id}`}
           isPuttingInPlay={pendingAction === `put-in-play:${reviewDraft.id}`}
           isRetrying={pendingAction === `retry:${reviewDraft.id}`}
           onActionError={setError}
           onCancel={() => cancelDraft(reviewDraft.id)}
           onClose={() => setReviewDraft(null)}
+          onRemove={() => discardDraft(reviewDraft.id)}
           onPutInPlay={() => putInPlay(reviewDraft.id)}
           onRetry={() =>
             mutateDraft(`/api/ai-card-drafts/${reviewDraft.id}/retry`, `retry:${reviewDraft.id}`)
@@ -218,12 +256,74 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
     if (controller) {
       controller.abort();
       pendingCreateControllersRef.current.delete(draftId);
-      setLocalDrafts((current) => current.filter((draft) => draft.id !== draftId));
-      setReviewDraft((current) => (current?.id === draftId ? null : current));
+      hideDraft(draftId);
       return;
     }
 
     void mutateDraft(`/api/ai-card-drafts/${draftId}/cancel`, `cancel:${draftId}`);
+  }
+
+  function reconcileDraftUpdate(updated: AiCardDraftDetail | AiCardDraftSummary) {
+    const fallbackInput =
+      "inputText" in updated ? updated.inputText ?? updated.promptPreview : updated.promptPreview;
+    const existing = localDrafts.find((draft) => draft.id === updated.id);
+    const reconciled = summaryFromCreatedDraft(
+      updated,
+      existing?.localInputText ?? fallbackInput
+    );
+
+    setLocalDrafts((current) => replaceLocalDraft(current, updated.id, reconciled));
+
+    return reconciled;
+  }
+
+  async function discardDraft(draftId: string) {
+    setPendingAction(`remove:${draftId}`);
+    setError(null);
+
+    const controller = pendingCreateControllersRef.current.get(draftId);
+    if (controller) {
+      controller.abort();
+      pendingCreateControllersRef.current.delete(draftId);
+      hideDraft(draftId);
+      setPendingAction(null);
+      return;
+    }
+
+    if (isLocalOnlyDraft(draftId)) {
+      hideDraft(draftId);
+      setPendingAction(null);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/ai-card-drafts/${draftId}`, {
+        method: "DELETE"
+      });
+      if (!response.ok) {
+        const apiError = await readSafeApiError(
+          response,
+          "The draft could not be removed."
+        );
+        throw new Error(apiError.message);
+      }
+      hideDraft(draftId);
+      router.refresh();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The draft could not be removed.");
+    } finally {
+      setPendingAction(null);
+    }
+  }
+
+  function hideDraft(draftId: string) {
+    setDiscardedDraftIds((current) => new Set(current).add(draftId));
+    setLocalDrafts((current) => current.filter((draft) => draft.id !== draftId));
+    setReviewDraft((current) => (current?.id === draftId ? null : current));
+  }
+
+  function isLocalOnlyDraft(draftId: string) {
+    return localDrafts.some((draft) => draft.id === draftId && draft.isLocalOnly);
   }
 
   async function createTextDraft(clientId: string, inputText: string) {
@@ -244,17 +344,19 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
         );
         const failedId = apiError.draftId ?? clientId;
         setLocalDrafts((current) =>
-          current.map((draft) =>
-            draft.id === clientId
-              ? {
-                  ...draft,
-                  id: failedId,
-                  generationStage: "failed",
-                  status: "failed",
-                  failureMessage: apiError.message,
-                  isOptimistic: false
-                }
-              : draft
+          replaceLocalDraft(
+            current,
+            clientId,
+            {
+              ...(current.find((draft) => draft.id === clientId) ??
+                createOptimisticDraft(clientId, inputText)),
+              id: failedId,
+              generationStage: "failed",
+              status: "failed",
+              failureMessage: apiError.message,
+              isLocalOnly: !apiError.draftId,
+              isOptimistic: false
+            }
           )
         );
         if (apiError.code === "GENERATION_FAILED") {
@@ -265,15 +367,16 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
 
       const created = (await response.json()) as AiCardDraftDetail | AiCardDraftSummary;
       setLocalDrafts((current) =>
-        current.map((draft) =>
-          draft.id === clientId
-            ? {
-                ...draft,
-                ...summaryFromCreatedDraft(created, inputText),
-                isOptimistic: false,
-                localInputText: inputText
-              }
-            : draft
+        replaceLocalDraft(
+          current,
+          clientId,
+          {
+            ...(current.find((draft) => draft.id === clientId) ??
+              createOptimisticDraft(clientId, inputText)),
+            ...summaryFromCreatedDraft(created, inputText),
+            isOptimistic: false,
+            localInputText: inputText
+          }
         )
       );
       router.refresh();
@@ -291,6 +394,7 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
                 generationStage: "failed",
                 status: "failed",
                 failureMessage: draft.failureMessage ?? message,
+                isLocalOnly: draft.isLocalOnly ?? true,
                 isOptimistic: false
               }
             : draft
@@ -519,6 +623,7 @@ function GregTaskmasterAvatar() {
 export function AiCardTracker({
   drafts,
   onCancel,
+  onRemove,
   onPutInPlay,
   onRetry,
   onReview,
@@ -526,6 +631,7 @@ export function AiCardTracker({
 }: {
   drafts: TrackedAiCardDraft[];
   onCancel: (draftId: string) => void;
+  onRemove: (draftId: string) => void;
   onPutInPlay: (draftId: string) => void;
   onRetry: (draftId: string) => void;
   onReview: (draft: TrackedAiCardDraft) => void;
@@ -575,20 +681,35 @@ export function AiCardTracker({
 
               {draft.status === "failed" ? (
                 <div className="flex flex-wrap gap-2">
+                  {!draft.isLocalOnly ? (
+                    <Button
+                      disabled={pendingAction === `retry:${draft.id}`}
+                      onClick={() => onRetry(draft.id)}
+                    >
+                      <RefreshCcw aria-hidden="true" size={16} />
+                      Retry
+                    </Button>
+                  ) : null}
                   <Button
-                    disabled={pendingAction === `retry:${draft.id}`}
-                    onClick={() => onRetry(draft.id)}
-                  >
-                    <RefreshCcw aria-hidden="true" size={16} />
-                    Retry
-                  </Button>
-                  <Button
-                    disabled={pendingAction === `cancel:${draft.id}`}
-                    onClick={() => onCancel(draft.id)}
+                    disabled={pendingAction === `remove:${draft.id}`}
+                    onClick={() => onRemove(draft.id)}
                     variant="ghost"
                   >
-                    <CircleX aria-hidden="true" size={16} />
-                    Cancel
+                    <Trash2 aria-hidden="true" size={16} />
+                    Remove
+                  </Button>
+                </div>
+              ) : null}
+
+              {draft.status === "canceled" ? (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    disabled={pendingAction === `remove:${draft.id}`}
+                    onClick={() => onRemove(draft.id)}
+                    variant="ghost"
+                  >
+                    <Trash2 aria-hidden="true" size={16} />
+                    Remove
                   </Button>
                 </div>
               ) : null}
@@ -699,21 +820,25 @@ export function AiCardCaptureSheet({
 export function AiCardReviewPanel({
   draft,
   isCanceling,
+  isRemoving,
   isPuttingInPlay,
   isRetrying,
   onActionError,
   onCancel,
   onClose,
+  onRemove,
   onPutInPlay,
   onRetry
 }: {
   draft: TrackedAiCardDraft;
   isCanceling: boolean;
+  isRemoving: boolean;
   isPuttingInPlay: boolean;
   isRetrying: boolean;
   onActionError: (message: string | null) => void;
   onCancel: () => void;
   onClose: () => void;
+  onRemove: () => void;
   onPutInPlay: () => void;
   onRetry: () => void;
 }) {
@@ -855,13 +980,24 @@ export function AiCardReviewPanel({
 
         {draft.status === "failed" ? (
           <div className="flex flex-wrap gap-2">
-            <Button disabled={isRetrying} onClick={onRetry}>
-              <RefreshCcw aria-hidden="true" size={16} />
-              Retry
+            {!draft.isLocalOnly ? (
+              <Button disabled={isRetrying} onClick={onRetry}>
+                <RefreshCcw aria-hidden="true" size={16} />
+                Retry
+              </Button>
+            ) : null}
+            <Button disabled={isRemoving} onClick={onRemove} variant="ghost">
+              <Trash2 aria-hidden="true" size={16} />
+              Remove
             </Button>
-            <Button disabled={isCanceling} onClick={onCancel} variant="ghost">
-              <CircleX aria-hidden="true" size={16} />
-              Cancel
+          </div>
+        ) : null}
+
+        {draft.status === "canceled" ? (
+          <div className="flex flex-wrap gap-2">
+            <Button disabled={isRemoving} onClick={onRemove} variant="ghost">
+              <Trash2 aria-hidden="true" size={16} />
+              Remove
             </Button>
           </div>
         ) : null}
@@ -1063,8 +1199,52 @@ function createOptimisticDraft(id: string, inputText: string): TrackedAiCardDraf
     createdAt: now,
     updatedAt: now,
     isOptimistic: true,
+    isLocalOnly: true,
     localInputText: inputText
   };
+}
+
+function newestDraft(
+  localDraft: TrackedAiCardDraft,
+  serverDraft: AiCardDraftSummary
+): TrackedAiCardDraft | AiCardDraftSummary {
+  if (localDraft.isOptimistic) {
+    return localDraft;
+  }
+
+  const localUpdatedAt = Date.parse(localDraft.updatedAt);
+  const serverUpdatedAt = Date.parse(serverDraft.updatedAt);
+
+  if (Number.isNaN(localUpdatedAt) || Number.isNaN(serverUpdatedAt)) {
+    return localDraft;
+  }
+
+  return serverUpdatedAt > localUpdatedAt ? serverDraft : localDraft;
+}
+
+function replaceLocalDraft(
+  drafts: TrackedAiCardDraft[],
+  previousId: string,
+  nextDraft: TrackedAiCardDraft
+) {
+  let inserted = false;
+  const nextDrafts: TrackedAiCardDraft[] = [];
+
+  for (const draft of drafts) {
+    if (draft.id === previousId) {
+      if (!inserted) {
+        nextDrafts.push(nextDraft);
+        inserted = true;
+      }
+      continue;
+    }
+
+    if (draft.id !== nextDraft.id) {
+      nextDrafts.push(draft);
+    }
+  }
+
+  return inserted ? nextDrafts : [nextDraft, ...nextDrafts];
 }
 
 function summaryFromCreatedDraft(
@@ -1086,6 +1266,7 @@ function summaryFromCreatedDraft(
     acceptedResponsibilityId: draft.acceptedResponsibilityId,
     createdAt: draft.createdAt,
     updatedAt: draft.updatedAt,
+    isLocalOnly: false,
     localInputText: "inputText" in draft ? draft.inputText ?? inputText : inputText
   };
 }

@@ -135,6 +135,7 @@ function makeDeps(overrides: Partial<AiCardDraftServiceDeps> = {}): AiCardDraftS
       })
     ),
     cancelDraft: vi.fn().mockResolvedValue(draft({ status: "canceled" })),
+    deleteDraft: vi.fn().mockResolvedValue(undefined),
     getCover: vi.fn().mockResolvedValue({
       bytes: new Uint8Array([1, 2, 3]),
       mimeType: "image/png"
@@ -255,6 +256,9 @@ describe("AI card draft service", () => {
     await expect(service.getCover(session, draftId)).rejects.toMatchObject({
       code: "NOT_FOUND"
     });
+    await expect(service.discard(session, draftId)).rejects.toMatchObject({
+      code: "NOT_FOUND"
+    });
   });
 
   it.each(["ready", "accepted", "canceled"] as const)(
@@ -271,6 +275,46 @@ describe("AI card draft service", () => {
       expect(deps.structureTaskAsCard).not.toHaveBeenCalled();
     }
   );
+
+  it("marks failed drafts with existing generated text ready on retry without rewriting generation", async () => {
+    const deps = makeDeps({
+      getDraft: vi.fn().mockResolvedValue(
+        readyDraft({
+          status: "failed",
+          generationStage: "failed",
+          failureMessage: "Previous ready transition failed."
+        })
+      ),
+      saveGeneration: vi
+        .fn()
+        .mockRejectedValue(
+          new RepositoryError(
+            "INVALID_INPUT",
+            "AI card draft is not in an editable lifecycle state."
+          )
+        ),
+      markStage: vi.fn().mockResolvedValue(
+        readyDraft({
+          status: "ready",
+          generationStage: "ready",
+          failureMessage: null
+        })
+      )
+    });
+    const service = createAiCardDraftService(deps);
+
+    await expect(service.retry(session, draftId)).resolves.toMatchObject({
+      status: "ready"
+    });
+
+    expect(deps.structureTaskAsCard).not.toHaveBeenCalled();
+    expect(deps.saveGeneration).not.toHaveBeenCalled();
+    expect(deps.markStage).toHaveBeenCalledWith({
+      householdId,
+      draftId,
+      stage: "ready"
+    });
+  });
 
   it.each(["accepted", "canceled"] as const)(
     "rejects updates for %s drafts",
@@ -354,6 +398,35 @@ describe("AI card draft service", () => {
         code: "INVALID_INPUT"
       });
       expect(deps.cancelDraft).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(["failed", "canceled"] as const)(
+    "discards %s drafts through the repository",
+    async (status) => {
+      const deps = makeDeps({
+        getDraft: vi.fn().mockResolvedValue(draft({ status }))
+      });
+      const service = createAiCardDraftService(deps);
+
+      await service.discard(session, draftId);
+
+      expect(deps.deleteDraft).toHaveBeenCalledWith({ householdId, draftId });
+    }
+  );
+
+  it.each(["processing", "ready", "accepted"] as const)(
+    "rejects discarding %s drafts",
+    async (status) => {
+      const deps = makeDeps({
+        getDraft: vi.fn().mockResolvedValue(readyDraft({ status }))
+      });
+      const service = createAiCardDraftService(deps);
+
+      await expect(service.discard(session, draftId)).rejects.toMatchObject({
+        code: "INVALID_INPUT"
+      });
+      expect(deps.deleteDraft).not.toHaveBeenCalled();
     }
   );
 });

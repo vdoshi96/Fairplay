@@ -64,3 +64,26 @@ export async function PATCH(
     return serviceErrorResponse(error);
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  context: AiCardDraftRouteContext
+): Promise<NextResponse> {
+  const session = await getCurrentSession(request);
+
+  if (!session) {
+    return authRequired();
+  }
+
+  const draftId = await parseAiCardDraftId(context);
+  if (!draftId) {
+    return invalidRequest();
+  }
+
+  try {
+    await aiCardDraftService.discard(session, draftId);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return serviceErrorResponse(error);
+  }
+}
