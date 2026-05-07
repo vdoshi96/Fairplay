@@ -9,7 +9,9 @@ vi.mock("./qwen-card-generator", () => ({
 }));
 
 vi.mock("./openai-config", () => ({
-  getOpenAiFallbackConfig: vi.fn()
+  getOpenAiAsrFallbackConfig: vi.fn(),
+  getOpenAiImageFallbackConfig: vi.fn(),
+  getOpenAiTextFallbackConfig: vi.fn()
 }));
 
 vi.mock("./openai-card-generator", () => ({
@@ -23,7 +25,11 @@ import {
   structureTaskAsCard,
   transcribeAudio
 } from "./card-generator";
-import { getOpenAiFallbackConfig } from "./openai-config";
+import {
+  getOpenAiAsrFallbackConfig,
+  getOpenAiImageFallbackConfig,
+  getOpenAiTextFallbackConfig
+} from "./openai-config";
 import {
   generateCardCoverWithOpenAi,
   structureTaskAsCardWithOpenAi,
@@ -70,13 +76,13 @@ describe("provider-neutral card generator", () => {
       structureTaskAsCard({ taskText: "Dog medicine" })
     ).resolves.toEqual(generatedCard);
 
-    expect(getOpenAiFallbackConfig).not.toHaveBeenCalled();
+    expect(getOpenAiTextFallbackConfig).not.toHaveBeenCalled();
     expect(structureTaskAsCardWithOpenAi).not.toHaveBeenCalled();
   });
 
   it("falls back to OpenAI card structuring after Qwen fails when enabled", async () => {
     vi.mocked(qwen.structureTaskAsCard).mockRejectedValue(new Error("Qwen down"));
-    vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
+    vi.mocked(getOpenAiTextFallbackConfig).mockReturnValue(enabledFallback);
     vi.mocked(structureTaskAsCardWithOpenAi).mockResolvedValue(generatedCard);
 
     await expect(
@@ -100,7 +106,7 @@ describe("provider-neutral card generator", () => {
         providerRequestId: "qwen_req_123"
       })
     );
-    vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
+    vi.mocked(getOpenAiTextFallbackConfig).mockReturnValue(enabledFallback);
     vi.mocked(structureTaskAsCardWithOpenAi).mockResolvedValue(generatedCard);
 
     await structureTaskAsCard(
@@ -134,7 +140,7 @@ describe("provider-neutral card generator", () => {
         status: 503
       })
     );
-    vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
+    vi.mocked(getOpenAiTextFallbackConfig).mockReturnValue(enabledFallback);
     vi.mocked(structureTaskAsCardWithOpenAi).mockRejectedValue(
       Object.assign(new Error("OpenAI down"), {
         code: "OPENAI_GENERATION_FAILED",
@@ -175,7 +181,7 @@ describe("provider-neutral card generator", () => {
   it("rethrows the Qwen structuring error when fallback is disabled", async () => {
     const qwenError = new Error("Qwen down");
     vi.mocked(qwen.structureTaskAsCard).mockRejectedValue(qwenError);
-    vi.mocked(getOpenAiFallbackConfig).mockReturnValue({ enabled: false });
+    vi.mocked(getOpenAiTextFallbackConfig).mockReturnValue({ enabled: false });
 
     await expect(structureTaskAsCard({ taskText: "Dog medicine" })).rejects.toBe(
       qwenError
@@ -189,7 +195,7 @@ describe("provider-neutral card generator", () => {
       mimeType: "image/png"
     };
     vi.mocked(qwen.generateCardCover).mockRejectedValue(new Error("Qwen image down"));
-    vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
+    vi.mocked(getOpenAiImageFallbackConfig).mockReturnValue(enabledFallback);
     vi.mocked(generateCardCoverWithOpenAi).mockResolvedValue(cover);
 
     await expect(
@@ -212,7 +218,7 @@ describe("provider-neutral card generator", () => {
 
   it("fails closed with OpenAI metadata when image fallback returns a non-5:7 cover", async () => {
     vi.mocked(qwen.generateCardCover).mockRejectedValue(new Error("Qwen image down"));
-    vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
+    vi.mocked(getOpenAiImageFallbackConfig).mockReturnValue(enabledFallback);
     vi.mocked(generateCardCoverWithOpenAi).mockResolvedValue({
       bytes: tinyPngWithDimensions(1024, 1536),
       mimeType: "image/png"
@@ -238,7 +244,7 @@ describe("provider-neutral card generator", () => {
       transcribeAudio({ bytes: new Uint8Array([1, 2]), mimeType: "audio/webm" })
     ).resolves.toBe("Dog medicine every month.");
 
-    expect(getOpenAiFallbackConfig).not.toHaveBeenCalled();
+    expect(getOpenAiAsrFallbackConfig).not.toHaveBeenCalled();
     expect(transcribeAudioWithOpenAi).not.toHaveBeenCalled();
     expect(structureTaskAsCardWithOpenAi).not.toHaveBeenCalled();
     expect(generateCardCoverWithOpenAi).not.toHaveBeenCalled();
@@ -246,7 +252,7 @@ describe("provider-neutral card generator", () => {
 
   it("falls back to OpenAI audio transcription after Qwen ASR fails when enabled", async () => {
     vi.mocked(qwen.transcribeAudio).mockRejectedValue(new Error("Qwen ASR down"));
-    vi.mocked(getOpenAiFallbackConfig).mockReturnValue(enabledFallback);
+    vi.mocked(getOpenAiAsrFallbackConfig).mockReturnValue(enabledFallback);
     vi.mocked(transcribeAudioWithOpenAi).mockResolvedValue("Dog medicine every month.");
 
     await expect(
@@ -270,7 +276,7 @@ describe("provider-neutral card generator", () => {
   it("rethrows the Qwen ASR error when transcription fallback is disabled", async () => {
     const qwenError = new Error("Qwen ASR down");
     vi.mocked(qwen.transcribeAudio).mockRejectedValue(qwenError);
-    vi.mocked(getOpenAiFallbackConfig).mockReturnValue({ enabled: false });
+    vi.mocked(getOpenAiAsrFallbackConfig).mockReturnValue({ enabled: false });
 
     await expect(
       transcribeAudio({ bytes: new Uint8Array([1, 2]), mimeType: "audio/webm" })
