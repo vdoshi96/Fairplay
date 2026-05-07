@@ -35,7 +35,7 @@ describe("visible asset prompts", () => {
       labels: ["Happiness Trio", "Magic"],
       summary:
         "Each person keeps friendships visible because friends support health, happiness, resilience, career, and sanity.",
-      title: "Adult Friendships (Player 1)"
+      title: "Adult Friendships (Alex)"
     });
 
     expect(prompt).toContain("connected dots and shared table object");

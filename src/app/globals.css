@@ -30,7 +30,7 @@
   --fp-little-alex-bottom-reserve: calc(
     var(--fp-app-bottom-nav-height) + var(--fp-app-safe-area-bottom) + 0.75rem
   );
-  --fp-little-alex-inline-reserve: 0rem;
+  --fp-little-alex-inline-reserve: 3.25rem;
   --fp-home: #47746c;
   --fp-out: #506fa8;
   --fp-caregiving: #a45b63;

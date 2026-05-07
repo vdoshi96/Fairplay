@@ -20,6 +20,22 @@ Run focused tests before full sweep:
 - Crash Course content/layout tests.
 - Seed/source-card display label tests.
 
+## Final Results
+
+Latest integration verification:
+
+- `npm test -- --run`: passed, 96 files and 528 tests.
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm run prisma:validate`: passed.
+- `npm run build`: passed after a clean `.next` rebuild.
+- `npm run test:e2e`: passed, 27 Playwright tests.
+- `rg -n "Player 1|Player 2|player 1|player 2" src prisma e2e`: only negative assertions in tests remain.
+- Image/audio-generation removal audit across active Library generation UI/contracts/service/API files: no active `coverUrl`, image prompt, audio source, transcribing, or regenerate-image UI hooks remain.
+
+An earlier attempt to run build and Playwright concurrently produced transient `.next` chunk/page-not-found errors. The final build and browser suites were rerun sequentially and passed.
+After final review, the responsive visual suite now also simulates a nonzero safe area, verifies Little Alex against the shell paint bounds, checks overlap with navigation and interactive controls, and validates that page background assets load and paint pixels.
+
 ## Responsive Visual Matrix
 
 Check Home, Load Map, Library, Radar, Check-ins, Settings, and Crash Course at:
@@ -44,6 +60,19 @@ Check Home, Load Map, Library, Radar, Check-ins, Settings, and Crash Course at:
 - Radar and Check-ins do not feel like isolated cards on blank beige space.
 - Library generation prompt accepts another request immediately after submit.
 - Failed Library generation requests do not block later requests.
+
+## Screenshot Artifacts Reviewed
+
+Generated responsive screenshots are in `test-results/corrective-responsive-visual/`.
+
+Representative files reviewed during final QA:
+
+- `mobile-home.png`: page-level background is visible, redundant top-row learner shortcut is absent, feature cards remain reachable, and Little Alex stays within the viewport.
+- `mobile-load-map.png`: dashboard cards and grouped filters wrap vertically without horizontal overflow; Little Alex is visible above the bottom nav.
+- `desktop-load-map.png`: compact dashboard, filters, practice board, and background treatment fit in the desktop shell without clipped diagnostics.
+- `mobile-crash-course.png`: story art and lesson card remain visually paired; bottom nav does not cover the lesson content.
+- `desktop-crash-course.png`: story image and text card remain connected in one reading surface; final nav controls are visible.
+- `mobile-library.png`: Library request-card flow is reachable on a narrow viewport and no full-screen trap blocks navigation.
 
 ## Manual Flow Checks
 

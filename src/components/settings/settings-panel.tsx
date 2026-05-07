@@ -289,6 +289,12 @@ export function SettingsPanel({
             <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
               Household settings
             </h1>
+            <div className="mt-2">
+              <FeatureGuideLauncher
+                guide={FEATURE_GUIDES.settings}
+                showDescription={false}
+              />
+            </div>
           </div>
         </div>
 
@@ -571,12 +577,6 @@ export function SettingsPanel({
             >
               Open learning hub
             </Link>
-          </div>
-          <div className="mt-4">
-            <FeatureGuideLauncher
-              guide={FEATURE_GUIDES.settings}
-              showDescription={false}
-            />
           </div>
           {practiceOpen ? (
             <SettingsPracticeWorkflow

@@ -345,7 +345,7 @@ function findClipboardCandidates(
     }
   }
 
-  const minimumArea = Math.max(42, foregroundPixels * 0.004);
+  const minimumArea = Math.max(80, foregroundPixels * 0.006);
 
   return findComponents(tanMask, visible.width, visible.height, minimumArea).filter(
     (component) => {

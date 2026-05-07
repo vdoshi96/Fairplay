@@ -57,12 +57,13 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   ).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Learn a feature" })
-  ).toHaveAttribute("href", "/app/home#learn-a-feature");
+  ).toHaveCount(0);
   await expect(page.getByText(retiredGuideLabel)).toHaveCount(0);
+  await page.getByRole("button", { name: "Close welcome" }).click();
+  await expect(welcome).not.toBeVisible();
 
   await page.getByRole("link", { name: "Learn this feature: Library" }).click();
   await expect(page).toHaveURL(/\/app\/library\?guide=library/);
-  await expect(welcome).toBeVisible();
 
   const linkedGuide = page.getByRole("dialog", { name: "Library guide" });
   await expect(linkedGuide).toBeVisible();
@@ -81,7 +82,6 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   await page.getByRole("button", { name: "Review dummy draft" }).click();
   await page.getByLabel("Dummy draft title").fill("Lunch kit reset");
   await page.getByRole("button", { name: "Save dummy edits" }).click();
-  await page.getByRole("button", { name: "Preview regenerated dummy image" }).click();
   await page.getByRole("button", { name: "Put dummy card in play" }).click();
   await expect(page.getByText("Dummy Library workflow complete.")).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Next", exact: true }).click();
@@ -104,8 +104,6 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   await expect(manualGuide).toBeVisible();
   await manualGuide.getByRole("button", { name: "Skip", exact: true }).click();
 
-  await page.getByRole("button", { name: "Close welcome" }).click();
-  await expect(welcome).not.toBeVisible();
   await page.goto("/app/home");
   await expect(
     page.getByRole("dialog", { name: "Welcome to Fairplay" })

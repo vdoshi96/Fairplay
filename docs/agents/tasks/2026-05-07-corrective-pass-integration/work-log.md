@@ -16,8 +16,20 @@
 
 ## Open Items
 
-- Wait for branch-manager implementation reports.
-- Review and merge workstream branches into integration.
-- Resolve conflicts carefully, especially if layout and Library generation both touch Library page framing.
-- Run full QA and document screenshot/visual findings.
-- Open/merge PR to main and sync local/GitHub final commit.
+- Branch-manager implementation reports received and reviewed.
+- Workstream branches merged into integration:
+  - `codex/layout-background-corrective`
+  - `codex/load-map-dashboard-corrective`
+  - `codex/crash-content-labels-corrective`
+  - `codex/text-only-card-generation`
+- Cross-workstream integration fixes completed:
+  - Expanded `PageShell` backgrounds to the full protected app viewport while keeping content constrained.
+  - Re-anchored Little Alex from responsive safe bounds instead of a fixed initial vertical offset.
+  - Added corrective responsive screenshot coverage for Home, Load Map, Library, Radar, Check-ins, Settings, and Crash Course.
+  - Updated guided-learning e2e coverage for the removed homepage shortcut and text-only Library learner flow.
+  - Updated remaining test fixture text from `Player 1` to `Alex`.
+- Full Playwright e2e passed after the integration fixes: 27 tests passed.
+- Remaining finalization items:
+  - Run final non-browser verification sweep.
+  - Commit integration docs and fixes.
+  - Open/merge PR to `main` and sync local/GitHub final commit.
