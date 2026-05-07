@@ -81,13 +81,10 @@ describe("ResponsibilityLoadMap", () => {
         "url('/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png')"
     });
     expect(screen.getByText("No responsibilities mapped yet.")).toBeVisible();
-    expect(screen.getByTestId("load-map-practice-board")).toHaveAttribute(
-      "data-guide-id",
-      "load-map-board"
-    );
+    expect(screen.queryByTestId("load-map-practice-board")).not.toBeInTheDocument();
     expect(
       document.querySelector('[data-guide-id="load-map-move-target"]')
-    ).toBeInTheDocument();
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Add responsibility" })).toHaveAttribute(
       "href",
       "/app/responsibilities/new"
@@ -312,7 +309,7 @@ describe("ResponsibilityLoadMap", () => {
     expect(screen.getByRole("heading", { name: "Trimmed" })).toBeVisible();
   });
 
-  it("keeps a dummy move target when filters hide every real card", () => {
+  it("keeps dummy move targets hidden when filters hide every real card", () => {
     render(
       <ResponsibilityLoadMap
         loadSnapshot={loadSnapshot}
@@ -325,12 +322,9 @@ describe("ResponsibilityLoadMap", () => {
     });
 
     expect(screen.getByText("No responsibilities match these filters.")).toBeVisible();
-    expect(screen.getByTestId("load-map-practice-board")).toHaveAttribute(
-      "data-guide-id",
-      "load-map-board"
-    );
+    expect(screen.queryByTestId("load-map-practice-board")).not.toBeInTheDocument();
     expect(document.querySelectorAll('[data-guide-id="load-map-move-target"]'))
-      .toHaveLength(1);
+      .toHaveLength(0);
   });
 
   it("moves a card through the keyboard action menu", async () => {
@@ -404,6 +398,106 @@ describe("ResponsibilityLoadMap", () => {
     expect(screen.getByText("Dummy card moved, edited, trimmed, and deleted."))
       .toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["Skip", "button" as const],
+    ["Escape", "key" as const]
+  ])("removes the dummy setup workflow on guide %s", async (_label, exitType) => {
+    const onMove = vi.fn();
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        onMove={onMove}
+        responsibilities={[responsibility({ title: "Auto", boardLane: "not_in_play" })]}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+    );
+
+    expect(screen.getByTestId("load-map-practice-board")).toBeVisible();
+
+    if (exitType === "button") {
+      await userEvent.click(screen.getByRole("button", { name: "Skip" }));
+    } else {
+      fireEvent.keyDown(document, { key: "Escape" });
+    }
+
+    expect(screen.queryByTestId("load-map-practice-board")).not.toBeInTheDocument();
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it("keeps an open real move menu usable after guide practice cleanup", async () => {
+    const onMove = vi.fn();
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        onMove={onMove}
+        responsibilities={[
+          responsibility({
+            id: "550e8400-e29b-41d4-a716-446655440041",
+            title: "Auto",
+            boardLane: "not_in_play"
+          })
+        ]}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Move Auto" }));
+    expect(screen.getByRole("menuitem", { name: "Alex" })).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+    );
+    expect(screen.getByTestId("load-map-practice-board")).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "Skip" }));
+
+    expect(screen.queryByTestId("load-map-practice-board")).not.toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Alex" })).toBeVisible();
+
+    await userEvent.click(screen.getByRole("menuitem", { name: "Alex" }));
+
+    expect(onMove).toHaveBeenCalledWith({
+      responsibilityId: "550e8400-e29b-41d4-a716-446655440041",
+      toLane: "player_1"
+    });
+  });
+
+  it("removes the dummy setup workflow after guide completion", async () => {
+    const onMove = vi.fn();
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        onMove={onMove}
+        responsibilities={[responsibility({ title: "Auto", boardLane: "not_in_play" })]}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Open dummy move menu" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "Alex" }));
+    await userEvent.click(screen.getByRole("button", { name: "Save dummy card edit" }));
+    await userEvent.click(screen.getByRole("button", { name: "Delete dummy duplicate" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    await userEvent.click(screen.getByRole("button", { name: "Done" }));
+
+    expect(screen.queryByTestId("load-map-practice-board")).not.toBeInTheDocument();
     expect(onMove).not.toHaveBeenCalled();
   });
 

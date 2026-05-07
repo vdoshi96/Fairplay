@@ -420,6 +420,71 @@ describe("settings panel", () => {
     expect(routerReplace).not.toHaveBeenCalled();
   });
 
+  it("closes dummy settings practice and persona confirmation on guide Skip", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    renderSettings();
+
+    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Start dummy Settings workflow" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open dummy persona confirmation" })
+    );
+
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Settings guide" })).getByRole(
+        "button",
+        { name: "Skip" }
+      )
+    );
+
+    expect(
+      screen.queryByRole("region", { name: "Dummy Settings practice" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "Dummy persona switch confirmation" })
+    ).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(routerPush).not.toHaveBeenCalled();
+    expect(routerRefresh).not.toHaveBeenCalled();
+    expect(routerReplace).not.toHaveBeenCalled();
+  });
+
+  it("closes dummy settings practice after guide Done without routing or fetch mutations", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    renderSettings();
+
+    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Start dummy Settings workflow" }));
+    fireEvent.change(screen.getByLabelText("Dummy appearance mode"), {
+      target: { value: "dark" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Check dummy welcome replay" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open dummy persona confirmation" })
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Locate dummy learning hub" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+
+    expect(
+      screen.queryByRole("region", { name: "Dummy Settings practice" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "Dummy persona switch confirmation" })
+    ).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(routerPush).not.toHaveBeenCalled();
+    expect(routerRefresh).not.toHaveBeenCalled();
+    expect(routerReplace).not.toHaveBeenCalled();
+  });
+
   it("opens the settings-specific guide from the route query on the overview step", () => {
     queryValue.value = "guide=settings";
 

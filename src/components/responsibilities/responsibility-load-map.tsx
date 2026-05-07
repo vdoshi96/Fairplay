@@ -36,7 +36,8 @@ import { FEATURE_GUIDES } from "@/components/guide/guide-content";
 import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import {
   completeGuidePractice,
-  useGuidePracticeRequest
+  useGuidePracticeRequest,
+  useGuidePracticeReset
 } from "@/components/guide/guide-practice";
 import { AssignmentShift, MotionPanel } from "@/components/motion/fairplay-motion";
 import {
@@ -162,8 +163,12 @@ export function ResponsibilityLoadMap({
   const openLoadMapPractice = useCallback(() => {
     setPracticeBoardOpen(true);
   }, []);
+  const resetLoadMapPractice = useCallback(() => {
+    setPracticeBoardOpen(false);
+  }, []);
 
   useGuidePracticeRequest("load-map-practice-start", openLoadMapPractice);
+  useGuidePracticeReset("load-map-practice-start", resetLoadMapPractice);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 }
@@ -476,15 +481,13 @@ export function ResponsibilityLoadMap({
               <p className="text-[14px] leading-6 text-fp-muted-ink">
                 Add one household responsibility and decide what needs attention first.
               </p>
-              <LoadMapPracticeBoard
-                useBoardGuideTarget
-              />
               <Link
                 className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-bold sm:w-fit"
                 href="/app/responsibilities/new"
               >
                 Add responsibility
               </Link>
+              {practiceBoardOpen ? <LoadMapPracticeBoard /> : null}
             </div>
             <HelperMascot className="h-24 w-24 justify-self-start sm:justify-self-end" decorative />
           </div>
@@ -568,9 +571,7 @@ export function ResponsibilityLoadMap({
               <p className="rounded-[8px] border border-fp-line bg-white p-4 text-[14px] text-fp-muted-ink">
                 No responsibilities match these filters.
               </p>
-              <LoadMapPracticeBoard
-                useBoardGuideTarget
-              />
+              {practiceBoardOpen ? <LoadMapPracticeBoard /> : null}
             </div>
           ) : null}
           {practiceBoardOpen && filteredResponsibilities.length > 0 ? (

@@ -22,7 +22,8 @@ import type {
 import { CADENCES } from "@/domain/enums";
 import {
   completeGuidePractice,
-  useGuidePracticeRequest
+  useGuidePracticeRequest,
+  useGuidePracticeReset
 } from "@/components/guide/guide-practice";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
@@ -86,8 +87,12 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
   const openLibraryPractice = useCallback(() => {
     setPracticeOpen(true);
   }, []);
+  const resetLibraryPractice = useCallback(() => {
+    setPracticeOpen(false);
+  }, []);
 
   useGuidePracticeRequest("library-practice-start", openLibraryPractice);
+  useGuidePracticeReset("library-practice-start", resetLibraryPractice);
 
   const trackedDrafts = useMemo(() => {
     const serverIds = new Set(drafts.map((draft) => draft.id));

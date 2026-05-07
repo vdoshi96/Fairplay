@@ -25,7 +25,8 @@ import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher"
 import { FEATURE_GUIDES } from "@/components/guide/guide-content";
 import {
   completeGuidePractice,
-  useGuidePracticeRequest
+  useGuidePracticeRequest,
+  useGuidePracticeReset
 } from "@/components/guide/guide-practice";
 import { useTheme, type ResolvedTheme } from "@/components/theme/theme-provider";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -93,8 +94,13 @@ export function SettingsPanel({
   const openSettingsPractice = useCallback(() => {
     setPracticeOpen(true);
   }, []);
+  const resetSettingsPractice = useCallback(() => {
+    setPracticeOpen(false);
+    setDummyPersonaConfirmOpen(false);
+  }, []);
 
   useGuidePracticeRequest("settings-practice-start", openSettingsPractice);
+  useGuidePracticeReset("settings-practice-start", resetSettingsPractice);
 
   useEffect(() => {
     const content = contentRef.current;

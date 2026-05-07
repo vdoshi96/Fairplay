@@ -1,12 +1,20 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
   GUIDE_PRACTICE_COMPLETE_EVENT,
-  requestGuidePractice
+  requestGuidePractice,
+  resetGuidePractice
 } from "./guide-practice";
 import type { GuideStep } from "./guide-content";
 
@@ -86,18 +94,47 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
   );
   const [practiceSurfaceBox, setPracticeSurfaceBox] =
     useState<HighlightBox | null>(null);
+  const guidePracticeEventIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          steps
+            .map((step) => step.practice?.eventId)
+            .filter((eventId): eventId is string => Boolean(eventId))
+        )
+      ),
+    [steps]
+  );
+  const guidePracticeEventIdsRef = useRef(guidePracticeEventIds);
+  const exitGuide = useCallback(() => {
+    guidePracticeEventIds.forEach((eventId) => resetGuidePractice(eventId));
+    onExit();
+  }, [guidePracticeEventIds, onExit]);
+
+  useEffect(() => {
+    guidePracticeEventIdsRef.current = guidePracticeEventIds;
+  }, [guidePracticeEventIds]);
+
+  useEffect(
+    () => () => {
+      guidePracticeEventIdsRef.current.forEach((eventId) =>
+        resetGuidePractice(eventId)
+      );
+    },
+    []
+  );
 
   useLayoutEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        onExit();
+        exitGuide();
       }
     }
 
     document.addEventListener("keydown", handleKeyDown);
 
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onExit]);
+  }, [exitGuide]);
 
   useEffect(() => {
     dialogRef.current?.focus();
@@ -401,7 +438,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <Button onClick={onExit} variant="ghost">
+          <Button onClick={exitGuide} variant="ghost">
             Skip
           </Button>
           <div className="flex items-center gap-2">
@@ -415,7 +452,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
               disabled={!practiceComplete}
               onClick={() => {
                 if (isLastStep) {
-                  onExit();
+                  exitGuide();
                   return;
                 }
 
