@@ -52,8 +52,8 @@ const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> =
 
 const laneLabels: Record<ResponsibilityBoardLane, string> = {
   cards_of_concern: "Cards of Concern",
-  player_1: "Player 1",
-  player_2: "Player 2",
+  player_1: "Alex",
+  player_2: "Max",
   kid_split: "Kid Split",
   not_in_play: "Not in Play",
   trimmed: "Trimmed"
@@ -70,6 +70,12 @@ export function CardDetailSheet({
   const ownerLabel = card.ownerLabel ?? laneLabel;
   const isGeneratedCover = aiDraftCoverPathPattern.test(card.sourceCoverAssetPath ?? "");
   const coverAssetPath = card.sourceCoverAssetPath ?? card.coverAssetPath ?? null;
+  const noActionHooks =
+    !onFlagForRadar && !onMove && !onScheduleCheckIn && !onTrim;
+  const unavailableMessage = noActionHooks
+    ? "Card actions are unavailable on this page. Use the editor below or return to the load map."
+    : "Some card actions are unavailable on this page.";
+  const unavailableMessageId = `${card.id}-card-actions-unavailable`;
 
   return (
     <Sheet className="grid gap-5 p-0 sm:p-0">
@@ -190,6 +196,7 @@ export function CardDetailSheet({
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {RESPONSIBILITY_BOARD_LANES.map((lane) => (
                 <Button
+                  aria-describedby={!onMove ? unavailableMessageId : undefined}
                   className="justify-between"
                   disabled={!onMove || lane === card.boardLane}
                   key={lane}
@@ -205,15 +212,36 @@ export function CardDetailSheet({
       </div>
 
       <div className="sticky bottom-0 z-10 grid gap-2 border-t border-fp-line bg-white/95 p-3 shadow-[0_-10px_30px_rgba(31,41,55,0.08)] backdrop-blur sm:grid-cols-3 lg:static lg:flex lg:shadow-none">
-        <Button disabled={!onFlagForRadar} onClick={onFlagForRadar} variant="primary">
+        {!onFlagForRadar || !onMove || !onScheduleCheckIn || !onTrim ? (
+          <p
+            className="text-[13px] font-semibold text-fp-muted-ink sm:col-span-3 lg:flex-1"
+            id={unavailableMessageId}
+          >
+            {unavailableMessage}
+          </p>
+        ) : null}
+        <Button
+          aria-describedby={!onFlagForRadar ? unavailableMessageId : undefined}
+          disabled={!onFlagForRadar}
+          onClick={onFlagForRadar}
+          variant="primary"
+        >
           <Flag aria-hidden="true" size={16} />
           Flag for radar
         </Button>
-        <Button disabled={!onScheduleCheckIn} onClick={onScheduleCheckIn}>
+        <Button
+          aria-describedby={!onScheduleCheckIn ? unavailableMessageId : undefined}
+          disabled={!onScheduleCheckIn}
+          onClick={onScheduleCheckIn}
+        >
           <CalendarClock aria-hidden="true" size={16} />
           Schedule check-in
         </Button>
-        <Button disabled={!onTrim} onClick={onTrim}>
+        <Button
+          aria-describedby={!onTrim ? unavailableMessageId : undefined}
+          disabled={!onTrim}
+          onClick={onTrim}
+        >
           <Scissors aria-hidden="true" size={16} />
           Trim
         </Button>

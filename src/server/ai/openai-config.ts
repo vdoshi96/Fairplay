@@ -22,6 +22,21 @@ export type OpenAiEnabledFallbackConfig = {
   imageModel: ApprovedOpenAiImageModel;
 };
 
+export type OpenAiTextFallbackConfig = Pick<
+  OpenAiEnabledFallbackConfig,
+  "enabled" | "baseUrl" | "textApiKey" | "textModel"
+>;
+
+export type OpenAiAsrFallbackConfig = Pick<
+  OpenAiEnabledFallbackConfig,
+  "enabled" | "baseUrl" | "asrApiKey" | "asrModel"
+>;
+
+export type OpenAiImageFallbackConfig = Pick<
+  OpenAiEnabledFallbackConfig,
+  "enabled" | "baseUrl" | "imageApiKey" | "imageModel"
+>;
+
 export type OpenAiFallbackConfig =
   | OpenAiDisabledFallbackConfig
   | OpenAiEnabledFallbackConfig;
@@ -63,17 +78,12 @@ export function getOpenAiFallbackConfig(
     return { enabled: false };
   }
 
-  const missingNames = Object.values(envMapping).filter(
-    (name) => !unsafeValueLooksPresent(env[name])
+  assertOpenAiEnvPresent(
+    Object.keys(envMapping) as Array<keyof Omit<OpenAiEnabledFallbackConfig, "enabled">>,
+    env
   );
-  if (missingNames.length > 0) {
-    throw new OpenAiFallbackConfigError(missingNames);
-  }
-
   const imageModel = env.OPENAI_IMAGE_MODEL as string;
-  if (!isApprovedOpenAiImageModel(imageModel)) {
-    throw new OpenAiImageModelConfigError();
-  }
+  assertApprovedOpenAiImageModel(imageModel);
 
   return {
     enabled: true,
@@ -85,4 +95,75 @@ export function getOpenAiFallbackConfig(
     imageApiKey: env.OPENAI_IMAGE_API_KEY as string,
     imageModel
   };
+}
+
+export function getOpenAiTextFallbackConfig(
+  env: Record<string, string | undefined> = process.env
+): OpenAiDisabledFallbackConfig | OpenAiTextFallbackConfig {
+  if (env.AI_PROVIDER_FALLBACK_ENABLED !== "true") {
+    return { enabled: false };
+  }
+
+  assertOpenAiEnvPresent(["baseUrl", "textApiKey", "textModel"], env);
+
+  return {
+    enabled: true,
+    baseUrl: env.OPENAI_BASE_URL as string,
+    textApiKey: env.OPENAI_TEXT_API_KEY as string,
+    textModel: env.OPENAI_TEXT_MODEL as string
+  };
+}
+
+export function getOpenAiAsrFallbackConfig(
+  env: Record<string, string | undefined> = process.env
+): OpenAiDisabledFallbackConfig | OpenAiAsrFallbackConfig {
+  if (env.AI_PROVIDER_FALLBACK_ENABLED !== "true") {
+    return { enabled: false };
+  }
+
+  assertOpenAiEnvPresent(["baseUrl", "asrApiKey", "asrModel"], env);
+
+  return {
+    enabled: true,
+    baseUrl: env.OPENAI_BASE_URL as string,
+    asrApiKey: env.OPENAI_ASR_API_KEY as string,
+    asrModel: env.OPENAI_ASR_MODEL as string
+  };
+}
+
+export function getOpenAiImageFallbackConfig(
+  env: Record<string, string | undefined> = process.env
+): OpenAiDisabledFallbackConfig | OpenAiImageFallbackConfig {
+  if (env.AI_PROVIDER_FALLBACK_ENABLED !== "true") {
+    return { enabled: false };
+  }
+
+  assertOpenAiEnvPresent(["baseUrl", "imageApiKey", "imageModel"], env);
+  const imageModel = env.OPENAI_IMAGE_MODEL as string;
+  assertApprovedOpenAiImageModel(imageModel);
+
+  return {
+    enabled: true,
+    baseUrl: env.OPENAI_BASE_URL as string,
+    imageApiKey: env.OPENAI_IMAGE_API_KEY as string,
+    imageModel
+  };
+}
+
+function assertOpenAiEnvPresent(
+  keys: Array<keyof Omit<OpenAiEnabledFallbackConfig, "enabled">>,
+  env: Record<string, string | undefined>
+) {
+  const missingNames = keys
+    .map((key) => envMapping[key])
+    .filter((name) => !unsafeValueLooksPresent(env[name]));
+  if (missingNames.length > 0) {
+    throw new OpenAiFallbackConfigError(missingNames);
+  }
+}
+
+function assertApprovedOpenAiImageModel(imageModel: string): asserts imageModel is ApprovedOpenAiImageModel {
+  if (!isApprovedOpenAiImageModel(imageModel)) {
+    throw new OpenAiImageModelConfigError();
+  }
 }

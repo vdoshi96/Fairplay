@@ -51,7 +51,7 @@ describe("CardDetailSheet", () => {
     ).toBeVisible();
     expect(screen.getByText("Insurance card lives in the glove box.")).toBeVisible();
 
-    await userEvent.click(screen.getByRole("button", { name: /move to Player 1/i }));
+    await userEvent.click(screen.getByRole("button", { name: /move to Alex/i }));
     await userEvent.click(screen.getByRole("button", { name: /flag for radar/i }));
 
     expect(onMove).toHaveBeenCalledWith("player_1");
@@ -99,5 +99,19 @@ describe("CardDetailSheet", () => {
     expect(screen.getByRole("img", { name: /auto cover/i })).toHaveClass(
       "object-contain"
     );
+  });
+
+  it("explains card actions are unavailable when no action hooks are wired", () => {
+    render(<CardDetailSheet card={card} />);
+
+    expect(
+      screen.getByText(
+        "Card actions are unavailable on this page. Use the editor below or return to the load map."
+      )
+    ).toBeVisible();
+    expect(screen.getByRole("button", { name: /flag for radar/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /schedule check-in/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^Trim$/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /move to Alex/i })).toBeDisabled();
   });
 });

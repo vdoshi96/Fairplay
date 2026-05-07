@@ -20,10 +20,39 @@ describe("crash course flow", () => {
     ]);
   });
 
+  it("covers the report-derived learning concepts in practical original language", () => {
+    const lessonText = CRASH_COURSE_LESSONS.map((lesson) =>
+      [lesson.title, lesson.concept, lesson.action].join(" ")
+    )
+      .join(" ")
+      .toLowerCase();
+
+    expect(lessonText).toContain("visible work");
+    expect(lessonText).toContain("hidden work");
+    expect(lessonText).toContain("owner");
+    expect(lessonText).toContain("helper");
+    expect(lessonText).toContain("cpe");
+    expect(lessonText).toContain("good enough");
+    expect(lessonText).toContain("physical");
+    expect(lessonText).toContain("cognitive");
+    expect(lessonText).toContain("emotional");
+    expect(lessonText).toContain("treadmill");
+    expect(lessonText).toContain("finite");
+    expect(lessonText).toContain("training");
+    expect(lessonText).toContain("radar");
+    expect(lessonText).toContain("check-in");
+    expect(lessonText).toContain("dynamic");
+    expect(lessonText).toContain("appreciation");
+    expect(lessonText).toContain("repair");
+    expect(lessonText).toContain("deferral");
+    expect(lessonText).toContain("safety");
+  });
+
   it("renders lessons inside a full-viewport immersive stage", () => {
     render(<CrashCourseFlow currentStep={1} />);
 
     const stage = screen.getByTestId("crash-course-stage");
+    const shell = screen.getByTestId("crash-course-lesson-shell");
     const panel = screen.getByTestId("crash-course-lesson-panel");
     const scene = screen.getByRole("img", {
       name: "Owner and helper learning scene"
@@ -33,6 +62,9 @@ describe("crash course flow", () => {
     expect(stage.className).toContain("overflow-hidden");
     expect(stage.className).toContain("relative");
     expect(stage.className).toContain("bg-fp-paper");
+    expect(shell.className).toContain("lg:grid-cols-[minmax(0,0.82fr)_minmax(24rem,0.62fr)]");
+    expect(shell.className).toContain("items-end");
+    expect(panel.className).toContain("lg:translate-y-0");
     expect(panel.className).toContain("z-10");
     expect(panel.className).toContain("bg-[var(--fp-surface-strong)]");
     expect(panel.className).not.toContain("bg-white/");

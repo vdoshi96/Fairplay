@@ -38,7 +38,8 @@ Required variables:
 - `SESSION_SECRET`: long random secret for server-managed sessions. Use a different value per environment.
 - `AUTH_COOKIE_NAME`: defaults to `fairplay_session`.
 - `APP_BASE_URL`: app origin, such as `http://localhost:3000` locally.
-- `QWEN_CARD_API_KEY`, `QWEN_IMAGE_API_KEY`, and the Qwen model/base URL variables from `.env.example`: required for AI Task Manager text, audio transcription, and card-front generation.
+- AI Task Manager Qwen variables are operation-scoped: text card structuring requires `QWEN_CARD_API_KEY`, `QWEN_CARD_MODEL`, and `QWEN_OPENAI_BASE_URL`; audio transcription also requires `QWEN_ASR_MODEL`; card-front generation requires `QWEN_IMAGE_API_KEY`, `QWEN_IMAGE_MODEL`, and `QWEN_IMAGE_BASE_URL`.
+- Optional OpenAI fallback is enabled only when `AI_PROVIDER_FALLBACK_ENABLED=true`. Its text, ASR, and image variables are also operation-scoped, so text fallback does not require `OPENAI_ASR_*` or `OPENAI_IMAGE_*`, audio fallback does not require text/image variables, and image fallback does not require text/ASR variables.
 
 Environment variables must be configured outside source. Do not commit `.env`, `.env.local`, managed database credentials, real session secrets, plaintext passwords, seed real household records, or private reference materials.
 

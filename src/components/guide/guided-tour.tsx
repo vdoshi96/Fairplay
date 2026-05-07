@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { MouseEvent as ReactMouseEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,9 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
   const [completedPracticeEventIds, setCompletedPracticeEventIds] = useState<
     Set<string>
   >(() => new Set());
+  const [startedPracticeEventIds, setStartedPracticeEventIds] = useState<
+    Set<string>
+  >(() => new Set());
   const dialogRef = useRef<HTMLDivElement>(null);
   const activeStep = steps[Math.min(activeIndex, Math.max(steps.length - 1, 0))];
   const isLastStep = activeIndex >= steps.length - 1;
@@ -51,6 +55,16 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
     requiredPracticeEventIds.every((eventId) =>
       completedPracticeEventIds.has(eventId)
     );
+  const practiceStarted = activeStep?.practice
+    ? startedPracticeEventIds.has(activeStep.practice.eventId)
+    : false;
+  const allowsRequiredPracticeInteraction = Boolean(
+    activeStep?.practice?.requiredEventIds?.length &&
+      practiceStarted &&
+      !practiceComplete
+  );
+  const [practiceSurfaceBox, setPracticeSurfaceBox] =
+    useState<HighlightBox | null>(null);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -140,18 +154,133 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
     };
   }, [activeStep]);
 
+  useEffect(() => {
+    if (!allowsRequiredPracticeInteraction) {
+      setPracticeSurfaceBox(null);
+      return;
+    }
+
+    function updatePracticeSurfaceBox() {
+      const surface = document.querySelector<HTMLElement>(
+        "[data-guide-practice-surface]"
+      );
+
+      if (!surface) {
+        setPracticeSurfaceBox(null);
+        return;
+      }
+
+      const rect = surface.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const left = Math.max(0, Math.min(rect.left, viewportWidth));
+      const top = Math.max(0, Math.min(rect.top, viewportHeight));
+      const right = Math.max(left, Math.min(rect.right, viewportWidth));
+      const bottom = Math.max(top, Math.min(rect.bottom, viewportHeight));
+
+      if (right <= left || bottom <= top) {
+        setPracticeSurfaceBox(null);
+        return;
+      }
+
+      setPracticeSurfaceBox({
+        height: bottom - top,
+        left,
+        top,
+        width: right - left
+      });
+    }
+
+    updatePracticeSurfaceBox();
+    window.addEventListener("resize", updatePracticeSurfaceBox);
+    window.addEventListener("scroll", updatePracticeSurfaceBox, true);
+
+    return () => {
+      window.removeEventListener("resize", updatePracticeSurfaceBox);
+      window.removeEventListener("scroll", updatePracticeSurfaceBox, true);
+    };
+  }, [allowsRequiredPracticeInteraction]);
+
   if (!activeStep) {
     return null;
   }
 
+  const backdropBlockerClass = "fixed z-40 cursor-default bg-black/55";
+  const stopBackdropClick = (event: ReactMouseEvent<HTMLButtonElement>) =>
+    event.stopPropagation();
+
   return (
     <>
-      <button
-        aria-label="Guided tour backdrop"
-        className="fixed inset-0 z-40 cursor-default bg-black/55"
-        onClick={(event) => event.stopPropagation()}
-        type="button"
-      />
+      {practiceSurfaceBox ? (
+        <>
+          <button
+            aria-label="Guided tour backdrop"
+            className={backdropBlockerClass}
+            data-testid="guide-backdrop-blocker"
+            onClick={stopBackdropClick}
+            style={{
+              height: practiceSurfaceBox.top,
+              left: 0,
+              top: 0,
+              width: "100dvw"
+            }}
+            type="button"
+          />
+          <button
+            aria-hidden="true"
+            className={backdropBlockerClass}
+            data-testid="guide-backdrop-blocker"
+            onClick={stopBackdropClick}
+            style={{
+              height: `calc(100dvh - ${
+                practiceSurfaceBox.top + practiceSurfaceBox.height
+              }px)`,
+              left: 0,
+              top: practiceSurfaceBox.top + practiceSurfaceBox.height,
+              width: "100dvw"
+            }}
+            tabIndex={-1}
+            type="button"
+          />
+          <button
+            aria-hidden="true"
+            className={backdropBlockerClass}
+            data-testid="guide-backdrop-blocker"
+            onClick={stopBackdropClick}
+            style={{
+              height: practiceSurfaceBox.height,
+              left: 0,
+              top: practiceSurfaceBox.top,
+              width: practiceSurfaceBox.left
+            }}
+            tabIndex={-1}
+            type="button"
+          />
+          <button
+            aria-hidden="true"
+            className={backdropBlockerClass}
+            data-testid="guide-backdrop-blocker"
+            onClick={stopBackdropClick}
+            style={{
+              height: practiceSurfaceBox.height,
+              left: practiceSurfaceBox.left + practiceSurfaceBox.width,
+              top: practiceSurfaceBox.top,
+              width: `calc(100dvw - ${
+                practiceSurfaceBox.left + practiceSurfaceBox.width
+              }px)`
+            }}
+            tabIndex={-1}
+            type="button"
+          />
+        </>
+      ) : (
+        <button
+          aria-label="Guided tour backdrop"
+          className="fixed inset-0 z-40 cursor-default bg-black/55"
+          onClick={stopBackdropClick}
+          type="button"
+        />
+      )}
 
       {highlightBox ? (
         <div
@@ -170,7 +299,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       <section
         aria-label={`${featureName} guide`}
         aria-modal="true"
-        className="pointer-events-auto fixed bottom-5 left-1/2 z-[70] grid w-[min(92vw,28rem)] -translate-x-1/2 gap-4 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 text-fp-ink shadow-[var(--fp-shadow-elevated)] outline-none sm:bottom-8 sm:left-auto sm:right-8 sm:translate-x-0"
+        className="pointer-events-auto fixed bottom-4 left-1/2 z-[70] grid max-h-[calc(100dvh-2rem)] w-[min(92vw,30rem)] -translate-x-1/2 gap-4 overflow-y-auto rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 text-fp-ink shadow-[var(--fp-shadow-elevated)] outline-none sm:bottom-6 sm:left-auto sm:right-6 sm:translate-x-0"
         ref={dialogRef}
         role="dialog"
         tabIndex={-1}
@@ -187,7 +316,15 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
               <button
                 className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:opacity-60"
                 disabled={practiceComplete}
-                onClick={() => requestGuidePractice(activeStep.practice?.eventId ?? "")}
+                onClick={() => {
+                  const practiceEventId = activeStep.practice?.eventId ?? "";
+                  setStartedPracticeEventIds((current) => {
+                    const next = new Set(current);
+                    next.add(practiceEventId);
+                    return next;
+                  });
+                  requestGuidePractice(practiceEventId);
+                }}
                 type="button"
               >
                 {activeStep.practice.actionLabel}

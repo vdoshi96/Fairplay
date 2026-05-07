@@ -36,8 +36,8 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
     steps: [
       {
         id: "board",
-        title: "The Load Map is your operating board",
-        body: "Cards in play are active household responsibilities. The board makes ownership visible without turning it into a score.",
+        title: "About this feature",
+        body: "Practice reading lanes, ownership, and card movement so you know why the Load Map turns household work into visible agreements instead of a scoreboard.",
         targetId: "load-map-board"
       },
       {
@@ -80,8 +80,8 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
     steps: [
       {
         id: "ai-task-manager",
-        title: "Use Greg - The Taskmaster",
-        body: "Greg turns a quick text or voice note into a draft card you can review before it joins the household system.",
+        title: "About this feature",
+        body: "Practice a temporary Greg capture and draft review. The demo data stays local to onboarding, and nothing permanent is created.",
         targetId: "library-ai-task-manager",
         practice: {
           actionLabel: "Start dummy Library workflow",
@@ -125,8 +125,8 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
     steps: [
       {
         id: "draft",
-        title: "Radar starts with a neutral topic",
-        body: "Use Radar for blockers, unclear standards, or overloaded areas. It is a signal board, not a blame board.",
+        title: "About this feature",
+        body: "Practice turning a concern into a temporary Radar item so you can see how unclear work moves toward a shared next step without blaming anyone.",
         targetId: "radar-create"
       },
       {
@@ -166,8 +166,8 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
     steps: [
       {
         id: "agenda",
-        title: "Preview the agenda",
-        body: "Check-ins turn Radar topics into a calm list of things to discuss, skip, defer, or decide.",
+        title: "About this feature",
+        body: "Practice previewing a temporary agenda and recording calm outcomes. Check-ins turn Radar topics into things to discuss, skip, defer, or decide.",
         targetId: "check-in-agenda"
       },
       {

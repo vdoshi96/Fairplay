@@ -151,6 +151,30 @@ describe("ResponsibilityLoadMap", () => {
     expect(screen.queryByText("Weekly meal outline")).not.toBeInTheDocument();
   });
 
+  it("groups filters into cleaner ownership, details, and attention sections", () => {
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        responsibilities={[responsibility()]}
+      />
+    );
+
+    const ownership = screen.getByRole("group", { name: "Ownership" });
+    const details = screen.getByRole("group", { name: "Card details" });
+    const attention = screen.getByRole("group", { name: "Attention" });
+
+    expect(ownership).toContainElement(screen.getByLabelText("Owner"));
+    expect(ownership).toContainElement(screen.getByLabelText("Hidden effort"));
+    expect(details).toContainElement(screen.getByLabelText("Status"));
+    expect(details).toContainElement(screen.getByLabelText("Cadence"));
+    expect(details).toContainElement(screen.getByLabelText("Area"));
+    expect(attention).toContainElement(screen.getByLabelText("Radar"));
+    expect(attention).toContainElement(screen.getByLabelText("Review timing"));
+    expect(screen.getByTestId("load-map-diagnostics")).toContainElement(
+      screen.getByText("Hidden effort mix")
+    );
+  });
+
   it("treats resolved linked radar items as clear", () => {
     render(
       <ResponsibilityLoadMap
@@ -189,7 +213,7 @@ describe("ResponsibilityLoadMap", () => {
     expect(screen.getByText("Planning 1 / Doing 1")).toBeVisible();
   });
 
-  it("renders Trello board lanes with counts and explanations", () => {
+  it("renders Trello board lanes with counts and Alex/Max explanations", () => {
     render(
       <ResponsibilityLoadMap
         loadSnapshot={loadSnapshot}
@@ -211,7 +235,7 @@ describe("ResponsibilityLoadMap", () => {
 
     const reserveLane = screen.getByRole("region", { name: "Not in Play" });
     const concernLane = screen.getByRole("region", { name: "Cards of Concern" });
-    const playerOneLane = screen.getByRole("region", { name: "Player 1" });
+    const alexLane = screen.getByRole("region", { name: "Alex" });
 
     expect(
       screen.getByRole("button", { name: "Learn this feature" })
@@ -237,8 +261,11 @@ describe("ResponsibilityLoadMap", () => {
     expect(within(reserveLane).getByText("1 card")).toBeVisible();
     expect(within(reserveLane).getByText(/reserve cards/i)).toBeVisible();
     expect(within(concernLane).getByText("1 card")).toBeVisible();
-    expect(within(playerOneLane).getByText("1 card")).toBeVisible();
-    expect(screen.getByRole("heading", { name: "Player 2" })).toBeVisible();
+    expect(within(alexLane).getByText("1 card")).toBeVisible();
+    expect(within(alexLane).getByText(/owned by Alex/i)).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Max" })).toBeVisible();
+    expect(screen.getByText(/owned by Max/i)).toBeVisible();
+    expect(screen.queryByText(/Player 1|Player 2/)).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Kid Split" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "Trimmed" })).toBeVisible();
   });
@@ -282,7 +309,7 @@ describe("ResponsibilityLoadMap", () => {
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Move Auto" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Player 1" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "Alex" }));
 
     expect(onMove).toHaveBeenCalledWith({
       responsibilityId: "550e8400-e29b-41d4-a716-446655440040",
@@ -320,14 +347,14 @@ describe("ResponsibilityLoadMap", () => {
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Open dummy move menu" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Player 1" }));
-    expect(screen.getByText("Dummy lunch plan is in Player 1.")).toBeVisible();
+    await userEvent.click(screen.getByRole("menuitem", { name: "Alex" }));
+    expect(screen.getByText("Dummy lunch plan is in Alex.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
 
     await userEvent.clear(screen.getByLabelText("Dummy card title"));
     await userEvent.type(screen.getByLabelText("Dummy card title"), "Lunch handoff");
     await userEvent.click(screen.getByRole("button", { name: "Save dummy card edit" }));
-    expect(screen.getByText("Lunch handoff is in Player 1.")).toBeVisible();
+    expect(screen.getByText("Lunch handoff is in Alex.")).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: "Trim dummy duplicate" }));
     await userEvent.click(screen.getByRole("button", { name: "Delete dummy duplicate" }));
@@ -356,7 +383,7 @@ describe("ResponsibilityLoadMap", () => {
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Open dummy move menu" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "Player 1" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "Alex" }));
     await userEvent.click(screen.getByRole("button", { name: "Save dummy card edit" }));
     await userEvent.click(screen.getByRole("button", { name: "Delete dummy duplicate" }));
 

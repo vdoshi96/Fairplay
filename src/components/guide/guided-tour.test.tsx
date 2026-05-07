@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -186,8 +186,8 @@ describe("GuidedTour", () => {
               body: "Move a pretend card before continuing.",
               targetId: "load-map-move-target",
               practice: {
-                actionLabel: "Move dummy card to Player 1",
-                completionMessage: "Dummy card moved to Player 1.",
+                actionLabel: "Move dummy card to Alex",
+                completionMessage: "Dummy card moved to Alex.",
                 eventId: "load-map-move",
                 prompt: "Move the dummy card without changing your real board."
               }
@@ -210,11 +210,11 @@ describe("GuidedTour", () => {
     ).toBeVisible();
 
     await userEvent.click(
-      screen.getByRole("button", { name: "Move dummy card to Player 1" })
+      screen.getByRole("button", { name: "Move dummy card to Alex" })
     );
 
     expect(handlePracticeRequest).toHaveBeenCalledTimes(1);
-    expect(screen.getByText("Dummy card moved to Player 1.")).toBeVisible();
+    expect(screen.getByText("Dummy card moved to Alex.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
     window.removeEventListener(GUIDE_PRACTICE_REQUEST_EVENT, handlePracticeRequest);
   });
@@ -349,5 +349,64 @@ describe("GuidedTour", () => {
     expect(dialog.className).not.toContain("bg-white");
     expect(practiceButton).toHaveClass("bg-[var(--fp-surface-strong)]");
     expect(practiceButton.className).not.toContain("bg-white");
+  });
+
+  it("opens only the required practice surface through the backdrop after launch", async () => {
+    installVisibleTargetGeometry();
+    render(
+      <div>
+        <button data-guide-id="load-map-board">Board target</button>
+        <section data-guide-practice-surface>Dummy page-level practice</section>
+        <GuidedTour
+          featureName="Load Map"
+          onExit={vi.fn()}
+          steps={[
+            {
+              id: "practice",
+              title: "Practice workflow",
+              body: "Use the page-level dummy workflow.",
+              targetId: "load-map-board",
+              practice: {
+                actionLabel: "Start dummy workflow",
+                completionMessage: "Dummy workflow complete.",
+                eventId: "load-map-practice-start",
+                prompt: "Use the page-level dummy workflow.",
+                requiredEventIds: ["load-map-move"]
+              }
+            }
+          ]}
+        />
+      </div>
+    );
+
+    const backdrop = screen.getByLabelText("Guided tour backdrop");
+    expect(backdrop.className).not.toContain("pointer-events-none");
+
+    fireEvent.click(screen.getByRole("button", { name: "Start dummy workflow" }));
+
+    await waitFor(() =>
+      expect(screen.getAllByTestId("guide-backdrop-blocker")).toHaveLength(4)
+    );
+    expect(screen.getByLabelText("Guided tour backdrop").className).not.toContain(
+      "pointer-events-none"
+    );
+  });
+
+  it("keeps the guide dialog viewport safe with lower placement and internal scrolling", () => {
+    installVisibleTargetGeometry();
+    render(
+      <div>
+        <button data-guide-id="load-map-board">Board target</button>
+        <GuidedTour featureName="Load Map" onExit={vi.fn()} steps={steps} />
+      </div>
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Load Map guide" });
+
+    expect(dialog).toHaveClass("bottom-4", "left-1/2", "-translate-x-1/2");
+    expect(dialog).toHaveClass("max-h-[calc(100dvh-2rem)]", "overflow-y-auto");
+    expect(dialog).toHaveClass("sm:bottom-6", "sm:right-6");
+    expect(dialog.className).not.toContain("top-1/2");
+    expect(dialog.className).not.toContain("bottom-5");
   });
 });

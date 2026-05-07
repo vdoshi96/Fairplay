@@ -7,7 +7,14 @@ import {
   type GeneratedCoverImage,
   type StructuredAiCard
 } from "./qwen-card-generator";
-import { getOpenAiFallbackConfig } from "./openai-config";
+import {
+  getOpenAiAsrFallbackConfig,
+  getOpenAiImageFallbackConfig,
+  getOpenAiTextFallbackConfig,
+  type OpenAiAsrFallbackConfig,
+  type OpenAiImageFallbackConfig,
+  type OpenAiTextFallbackConfig
+} from "./openai-config";
 import { isFiveBySevenPng } from "./card-generation-shared";
 import {
   generateCardCoverWithOpenAi,
@@ -33,6 +40,7 @@ export async function transcribeAudio(
   return withOpenAiFallback({
     diagnostics,
     fallback: (config) => transcribeAudioWithOpenAi(input, { config }),
+    getFallbackConfig: getOpenAiAsrFallbackConfig,
     primary: () => transcribeAudioWithQwen(input),
     stage: "transcribing"
   });
@@ -45,6 +53,7 @@ export async function structureTaskAsCard(
   return withOpenAiFallback({
     diagnostics,
     fallback: (config) => structureTaskAsCardWithOpenAi(input, { config }),
+    getFallbackConfig: getOpenAiTextFallbackConfig,
     primary: () => structureTaskAsCardWithQwen(input),
     stage: "structuring"
   });
@@ -68,6 +77,7 @@ export async function generateCardCover(
 
       return cover;
     },
+    getFallbackConfig: getOpenAiImageFallbackConfig,
     primary: () => generateCardCoverWithQwen(input),
     stage: "generating_image"
   });
@@ -103,11 +113,15 @@ class InvalidOpenAiImageFallbackError extends Error {
   }
 }
 
-async function withOpenAiFallback<T>(input: {
+type EnabledOpenAiFallbackConfig =
+  | OpenAiAsrFallbackConfig
+  | OpenAiImageFallbackConfig
+  | OpenAiTextFallbackConfig;
+
+async function withOpenAiFallback<T, TConfig extends EnabledOpenAiFallbackConfig>(input: {
   diagnostics?: AiDiagnosticsContext;
-  fallback: (
-    config: Extract<ReturnType<typeof getOpenAiFallbackConfig>, { enabled: true }>
-  ) => Promise<T>;
+  fallback: (config: TConfig) => Promise<T>;
+  getFallbackConfig: () => { enabled: false } | TConfig;
   primary: () => Promise<T>;
   stage: string;
 }): Promise<T> {
@@ -116,9 +130,9 @@ async function withOpenAiFallback<T>(input: {
   } catch (primaryError) {
     logProviderDiagnostic(input.diagnostics, "provider_failure", primaryError, input.stage);
 
-    let fallbackConfig: ReturnType<typeof getOpenAiFallbackConfig>;
+    let fallbackConfig: { enabled: false } | TConfig;
     try {
-      fallbackConfig = getOpenAiFallbackConfig();
+      fallbackConfig = input.getFallbackConfig();
     } catch (fallbackConfigError) {
       logProviderDiagnostic(
         input.diagnostics,
