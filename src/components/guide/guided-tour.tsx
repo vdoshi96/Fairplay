@@ -17,6 +17,7 @@ import {
   resetGuidePractice
 } from "./guide-practice";
 import type { GuideStep } from "./guide-content";
+import { PracticeActionGuidance } from "./practice-action-guidance";
 
 export type { GuideStep } from "./guide-content";
 
@@ -402,22 +403,27 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
           {activeStep.practice ? (
             <div className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] px-3 py-3 text-[14px] leading-5 text-fp-muted-ink">
               <p>{activeStep.practice.prompt}</p>
-              <button
-                className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:opacity-60"
-                disabled={practiceComplete}
-                onClick={() => {
-                  const practiceEventId = activeStep.practice?.eventId ?? "";
-                  setStartedPracticeEventIds((current) => {
-                    const next = new Set(current);
-                    next.add(practiceEventId);
-                    return next;
-                  });
-                  requestGuidePractice(practiceEventId);
-                }}
-                type="button"
+              <PracticeActionGuidance
+                actionLabel={activeStep.practice.actionLabel}
+                active={!practiceComplete && !practiceStarted}
               >
-                {activeStep.practice.actionLabel}
-              </button>
+                <button
+                  className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:opacity-60"
+                  disabled={practiceComplete}
+                  onClick={() => {
+                    const practiceEventId = activeStep.practice?.eventId ?? "";
+                    setStartedPracticeEventIds((current) => {
+                      const next = new Set(current);
+                      next.add(practiceEventId);
+                      return next;
+                    });
+                    requestGuidePractice(practiceEventId);
+                  }}
+                  type="button"
+                >
+                  {activeStep.practice.actionLabel}
+                </button>
+              </PracticeActionGuidance>
               {practiceComplete ? (
                 <p className="font-semibold text-fp-ink">
                   {activeStep.practice.completionMessage}

@@ -25,6 +25,7 @@ import {
   useGuidePracticeRequest,
   useGuidePracticeReset
 } from "@/components/guide/guide-practice";
+import { PracticeActionGuidance } from "@/components/guide/practice-action-guidance";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Sheet } from "@/components/ui/sheet";
@@ -429,6 +430,7 @@ function LibraryPracticeWorkflow() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [preview, setPreview] = useState<OnboardingPreviewCard | null>(null);
+  const [editsSaved, setEditsSaved] = useState(false);
   const [putInPlayPreviewed, setPutInPlayPreviewed] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -445,6 +447,7 @@ function LibraryPracticeWorkflow() {
     setTitle("");
     setSummary("");
     setPreview(null);
+    setEditsSaved(false);
     setPutInPlayPreviewed(false);
     setStatus("Dummy Library workspace cleaned up.");
   }
@@ -459,6 +462,7 @@ function LibraryPracticeWorkflow() {
     setStatus("Generating a dummy card preview. This can take a moment.");
     setDraftCreated(false);
     setReviewOpen(false);
+    setEditsSaved(false);
     setPutInPlayPreviewed(false);
 
     try {
@@ -531,14 +535,24 @@ function LibraryPracticeWorkflow() {
             the temporary workspace below.
           </span>
         </label>
-        <button
-          className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary disabled:opacity-60 sm:w-fit"
-          disabled={request.trim().length === 0 || isGenerating}
-          onClick={createDummyDraft}
-          type="button"
+        <PracticeActionGuidance
+          actionLabel="Create dummy draft"
+          active={
+            request.trim().length > 0 &&
+            !draftCreated &&
+            !isGenerating
+          }
+          wrapperClassName="sm:w-fit"
         >
-          {isGenerating ? "Creating dummy draft" : "Create dummy draft"}
-        </button>
+          <button
+            className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary disabled:opacity-60 sm:w-fit"
+            disabled={request.trim().length === 0 || isGenerating}
+            onClick={createDummyDraft}
+            type="button"
+          >
+            {isGenerating ? "Creating dummy draft" : "Create dummy draft"}
+          </button>
+        </PracticeActionGuidance>
       </div>
 
       {draftCreated ? (
@@ -562,16 +576,22 @@ function LibraryPracticeWorkflow() {
               Mock artifact: Greg draft, not a household card.
             </p>
           </div>
-          <button
-            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
-            onClick={() => {
-              setReviewOpen(true);
-              mark("library-draft-reviewed", "Dummy draft opened for review.");
-            }}
-            type="button"
+          <PracticeActionGuidance
+            actionLabel="Review dummy draft"
+            active={!reviewOpen}
+            wrapperClassName="sm:w-fit"
           >
-            Review dummy draft
-          </button>
+            <button
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
+              onClick={() => {
+                setReviewOpen(true);
+                mark("library-draft-reviewed", "Dummy draft opened for review.");
+              }}
+              type="button"
+            >
+              Review dummy draft
+            </button>
+          </PracticeActionGuidance>
         </section>
       ) : null}
 
@@ -619,29 +639,40 @@ function LibraryPracticeWorkflow() {
               ) : null}
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary"
-              onClick={() =>
-                mark("library-draft-edited", "Dummy draft edits saved.")
-              }
-              type="button"
+          <div className="flex flex-wrap items-start gap-2">
+            <PracticeActionGuidance
+              actionLabel="Save dummy edits"
+              active={!editsSaved}
             >
-              Save dummy edits
-            </button>
-            <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-              onClick={() => {
-                setPutInPlayPreviewed(true);
-                mark(
-                  "library-put-in-play",
-                  "Dummy card is ready for the Load Map. No real card was created."
-                );
-              }}
-              type="button"
+              <button
+                className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary"
+                onClick={() => {
+                  setEditsSaved(true);
+                  mark("library-draft-edited", "Dummy draft edits saved.");
+                }}
+                type="button"
+              >
+                Save dummy edits
+              </button>
+            </PracticeActionGuidance>
+            <PracticeActionGuidance
+              actionLabel="Put dummy card in play"
+              active={editsSaved && !putInPlayPreviewed}
             >
-              Put dummy card in play
-            </button>
+              <button
+                className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+                onClick={() => {
+                  setPutInPlayPreviewed(true);
+                  mark(
+                    "library-put-in-play",
+                    "Dummy card is ready for the Load Map. No real card was created."
+                  );
+                }}
+                type="button"
+              >
+                Put dummy card in play
+              </button>
+            </PracticeActionGuidance>
           </div>
           {putInPlayPreviewed ? (
             <article className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">

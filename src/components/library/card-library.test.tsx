@@ -213,6 +213,9 @@ describe("CardLibrary", () => {
     expect(screen.getByRole("dialog", { name: "Library guide" })).toBeVisible();
     expect(screen.getByText("Step 1 of 4")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+    expect(
+      screen.getByText("Next required click: Start dummy Library workflow.")
+    ).toBeVisible();
 
     await userEvent.click(
       screen.getByRole("button", { name: "Start dummy Library workflow" })
@@ -233,6 +236,9 @@ describe("CardLibrary", () => {
       screen.getByLabelText("Dummy card request"),
       "Make a card for the weekly backpack reset before school."
     );
+    expect(
+      screen.getByText("Next required click: Create dummy draft.")
+    ).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "Create dummy draft" }));
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -279,6 +285,9 @@ describe("CardLibrary", () => {
       screen.getByText("Keep backpacks cleared, signed forms handled, and school items ready.")
     ).toBeVisible();
     expect(screen.queryByText(/Lunch packing handoff/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Next required click: Review dummy draft.")
+    ).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: "Review dummy draft" }));
     expect(screen.getByLabelText("Dummy draft title")).toHaveValue(
@@ -290,8 +299,14 @@ describe("CardLibrary", () => {
 
     await userEvent.clear(screen.getByLabelText("Dummy draft title"));
     await userEvent.type(screen.getByLabelText("Dummy draft title"), "Backpack launch");
+    expect(
+      screen.getByText("Next required click: Save dummy edits.")
+    ).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "Save dummy edits" }));
     expect(screen.getByText("Dummy draft edits saved.")).toBeVisible();
+    expect(
+      screen.getByText("Next required click: Put dummy card in play.")
+    ).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: "Put dummy card in play" }));
     expect(
@@ -313,6 +328,9 @@ describe("CardLibrary", () => {
     expect(screen.queryByRole("region", { name: "Temporary Library workspace" }))
       .not.toBeInTheDocument();
     expect(screen.queryByText("Mock Load Map artifact")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Next required click: Put dummy card in play.")
+    ).not.toBeInTheDocument();
   });
 
   it("closes and resets dummy Library practice after guide Skip", async () => {

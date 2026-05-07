@@ -39,6 +39,10 @@ import {
   useGuidePracticeRequest,
   useGuidePracticeReset
 } from "@/components/guide/guide-practice";
+import {
+  PracticeActionCallout,
+  PracticeActionGuidance
+} from "@/components/guide/practice-action-guidance";
 import { AssignmentShift, MotionPanel } from "@/components/motion/fairplay-motion";
 import {
   DecorativeBackgroundLayer,
@@ -683,6 +687,7 @@ function LoadMapPracticeBoard({
   );
   const [draftTitle, setDraftTitle] = useState("Dummy lunch plan");
   const [savedTitle, setSavedTitle] = useState("Dummy lunch plan");
+  const [editSaved, setEditSaved] = useState(false);
   const [duplicateState, setDuplicateState] = useState<
     "active" | "trimmed" | "deleted"
   >("active");
@@ -722,6 +727,7 @@ function LoadMapPracticeBoard({
                 className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
                 onClick={() => {
                   setSavedTitle(draftTitle.trim() || "Dummy lunch plan");
+                  setEditSaved(true);
                   completeOnce("load-map-edit");
                 }}
                 type="button"
@@ -729,21 +735,27 @@ function LoadMapPracticeBoard({
                 Save dummy card edit
               </button>
               <div className="relative">
-                <button
-                  aria-expanded={moveMenuOpen}
-                  aria-haspopup="menu"
-                  className="min-h-9 w-full rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-                  data-guide-id="load-map-move-target"
-                  onClick={() => setMoveMenuOpen((open) => !open)}
-                  type="button"
+                <PracticeActionGuidance
+                  actionLabel="Open dummy move menu"
+                  active={!moveMenuOpen}
                 >
-                  Open dummy move menu
-                </button>
+                  <button
+                    aria-expanded={moveMenuOpen}
+                    aria-haspopup="menu"
+                    className="min-h-9 w-full rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+                    data-guide-id="load-map-move-target"
+                    onClick={() => setMoveMenuOpen((open) => !open)}
+                    type="button"
+                  >
+                    Open dummy move menu
+                  </button>
+                </PracticeActionGuidance>
                 {moveMenuOpen ? (
                   <div
-                    className="absolute left-0 right-0 top-10 z-10 grid rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-lg"
+                    className="mt-2 grid rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-lg"
                     role="menu"
                   >
+                    <PracticeActionCallout actionLabel="Alex" />
                     <button
                       className="rounded-[6px] px-3 py-2 text-left text-[13px] font-semibold text-fp-ink hover:bg-[var(--fp-surface-muted)]"
                       onClick={() => {
@@ -783,16 +795,22 @@ function LoadMapPracticeBoard({
                   value={draftTitle}
                 />
               </label>
-              <button
-                className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-                onClick={() => {
-                  setSavedTitle(draftTitle.trim() || "Dummy lunch plan");
-                  completeOnce("load-map-edit");
-                }}
-                type="button"
+              <PracticeActionGuidance
+                actionLabel="Save dummy card edit"
+                active={!editSaved}
               >
-                Save dummy card edit
-              </button>
+                <button
+                  className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+                  onClick={() => {
+                    setSavedTitle(draftTitle.trim() || "Dummy lunch plan");
+                    setEditSaved(true);
+                    completeOnce("load-map-edit");
+                  }}
+                  type="button"
+                >
+                  Save dummy card edit
+                </button>
+              </PracticeActionGuidance>
             </div>
           ) : (
             <p className="mt-2 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] text-fp-muted-ink">
@@ -815,27 +833,37 @@ function LoadMapPracticeBoard({
                   ? "Dummy duplicate is trimmed."
                   : "Dummy duplicate card"}
               </p>
-              <button
-                className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-                onClick={() => {
-                  setDuplicateState("trimmed");
-                  completeOnce("load-map-trim");
-                }}
-                type="button"
+              <PracticeActionGuidance
+                actionLabel="Trim dummy duplicate"
+                active={editSaved && duplicateState === "active"}
               >
-                Trim dummy duplicate
-              </button>
-              <button
-                className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-                onClick={() => {
-                  setDuplicateState("deleted");
-                  completeOnce("load-map-trim");
-                  completeOnce("load-map-delete");
-                }}
-                type="button"
+                <button
+                  className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+                  onClick={() => {
+                    setDuplicateState("trimmed");
+                    completeOnce("load-map-trim");
+                  }}
+                  type="button"
+                >
+                  Trim dummy duplicate
+                </button>
+              </PracticeActionGuidance>
+              <PracticeActionGuidance
+                actionLabel="Delete dummy duplicate"
+                active={editSaved && duplicateState === "trimmed"}
               >
-                Delete dummy duplicate
-              </button>
+                <button
+                  className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+                  onClick={() => {
+                    setDuplicateState("deleted");
+                    completeOnce("load-map-trim");
+                    completeOnce("load-map-delete");
+                  }}
+                  type="button"
+                >
+                  Delete dummy duplicate
+                </button>
+              </PracticeActionGuidance>
             </div>
           )}
         </div>
