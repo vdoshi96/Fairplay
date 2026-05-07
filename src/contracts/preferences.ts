@@ -2,6 +2,12 @@ import { z } from "zod";
 
 import { PersonaIdSchema } from "../domain/ids";
 import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from "../domain/time";
+import {
+  LITTLE_ALEX_SKIN_TONES,
+  LITTLE_ALEX_SKIN_TONE_COLORS
+} from "./little-alex";
+
+export { LITTLE_ALEX_SKIN_TONES, LITTLE_ALEX_SKIN_TONE_COLORS };
 
 export const LITTLE_ALEX_DEFAULT_PREFERENCES = {
   genderPresentation: "neutral",
@@ -15,13 +21,7 @@ export const LittleAlexGenderPresentationSchema = z.enum([
   "feminine"
 ]);
 
-export const LittleAlexSkinToneSchema = z.enum([
-  "tone_1",
-  "tone_2",
-  "tone_3",
-  "tone_4",
-  "tone_5"
-]);
+export const LittleAlexSkinToneSchema = z.enum(LITTLE_ALEX_SKIN_TONES);
 
 export const OnboardingPreferencesSchema = z
   .object({

@@ -4,9 +4,10 @@ import Matter from "matter-js";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type {
-  LittleAlexGenderPresentation,
-  LittleAlexSkinTone
+import { LITTLE_ALEX_SKIN_TONE_COLORS } from "@/contracts/little-alex";
+import {
+  type LittleAlexGenderPresentation,
+  type LittleAlexSkinTone
 } from "@/contracts/preferences";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
@@ -118,14 +119,6 @@ type LittleAlexPhysicsProps = {
   skinTone?: LittleAlexSkinTone;
 };
 
-const skinToneCssValues: Record<LittleAlexSkinTone, string> = {
-  tone_1: "#f3c7a6",
-  tone_2: "#d8a078",
-  tone_3: "#c18463",
-  tone_4: "#b7795f",
-  tone_5: "#8f5f45"
-};
-
 const appearanceDetails = {
   feminine: {
     brow: "arched-brow",
@@ -216,16 +209,18 @@ function positionForPart(anchor: Point, part: PartConfig): Point {
 }
 
 function littleAlexFullBodySpritePath(
-  genderPresentation: LittleAlexGenderPresentation
+  genderPresentation: LittleAlexGenderPresentation,
+  skinTone: LittleAlexSkinTone
 ) {
-  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`;
+  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${skinTone}-full.png`;
 }
 
 function littleAlexPartSpritePath(
   genderPresentation: LittleAlexGenderPresentation,
+  skinTone: LittleAlexSkinTone,
   part: PartKey
 ) {
-  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${part}.png`;
+  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${skinTone}-${part}.png`;
 }
 
 function isRagdollPartVisible(state: RagdollVisualState) {
@@ -1462,7 +1457,7 @@ export function LittleAlexPhysics({
         {
           "--little-alex-gaze-x": gaze.x.toString(),
           "--little-alex-gaze-y": gaze.y.toString(),
-          "--little-alex-skin": skinToneCssValues[skinTone],
+          "--little-alex-skin": LITTLE_ALEX_SKIN_TONE_COLORS[skinTone],
           pointerEvents: "none"
         } as CSSProperties
       }
@@ -1481,12 +1476,15 @@ export function LittleAlexPhysics({
       <img
         alt=""
         className="fp-little-alex-full-sprite"
-        data-full-sprite-src={littleAlexFullBodySpritePath(genderPresentation)}
+        data-full-sprite-src={littleAlexFullBodySpritePath(
+          genderPresentation,
+          skinTone
+        )}
         data-sprite-hair={appearanceDetails[genderPresentation].hair}
         data-testid="little-alex-full-sprite"
         draggable={false}
         ref={fullBodySpriteRef}
-        src={littleAlexFullBodySpritePath(genderPresentation)}
+        src={littleAlexFullBodySpritePath(genderPresentation, skinTone)}
         style={fullBodySpriteStyle(reducedAnchor, 0, ragdollVisualState)}
       />
       {partConfigs.map((part) => (
@@ -1511,7 +1509,7 @@ export function LittleAlexPhysics({
             data-part={part.key}
             data-testid="little-alex-sprite"
             draggable={false}
-            src={littleAlexPartSpritePath(genderPresentation, part.key)}
+            src={littleAlexPartSpritePath(genderPresentation, skinTone, part.key)}
           />
         </div>
       ))}

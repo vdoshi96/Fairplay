@@ -11,6 +11,7 @@ import {
 
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
 const genderPresentations = ["neutral", "masculine", "feminine"] as const;
+const skinTones = ["tone_1", "tone_2", "tone_3", "tone_4", "tone_5"] as const;
 
 function stubReducedMotion(matches: boolean) {
   vi.stubGlobal(
@@ -762,7 +763,7 @@ describe("LittleAlexPhysics", () => {
         `fp-little-alex-presentation-${genderPresentation}`
       );
       expect(details.fullSprite).toBe(
-        `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-full.png`
       );
       expect(details.hair).toBeTruthy();
       expect(details.head).toBeTruthy();
@@ -791,16 +792,16 @@ describe("LittleAlexPhysics", () => {
           .getAllByTestId("little-alex-sprite")
           .map((sprite) => sprite.getAttribute("src"))
       ).toEqual([
-        `/assets/fairplay/little-alex-sprites/${genderPresentation}-head.png`,
-        `/assets/fairplay/little-alex-sprites/${genderPresentation}-torso.png`,
-        `/assets/fairplay/little-alex-sprites/${genderPresentation}-leftArm.png`,
-        `/assets/fairplay/little-alex-sprites/${genderPresentation}-rightArm.png`,
-        `/assets/fairplay/little-alex-sprites/${genderPresentation}-leftLeg.png`,
-        `/assets/fairplay/little-alex-sprites/${genderPresentation}-rightLeg.png`
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-head.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-torso.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-leftArm.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-rightArm.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-leftLeg.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-rightLeg.png`
       ]);
       expect(fullSprite).toHaveAttribute(
         "src",
-        `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-full.png`
       );
       expect(fullSprite).toHaveStyle({ opacity: "1" });
       expect(fullSprite).toHaveStyle({
@@ -824,8 +825,34 @@ describe("LittleAlexPhysics", () => {
     expect(fullSprite).toHaveAttribute("data-sprite-hair", "long-hair");
     expect(fullSprite).toHaveAttribute(
       "src",
-      "/assets/fairplay/little-alex-sprites/feminine-full.png"
+      "/assets/fairplay/little-alex-sprites/feminine-tone_2-full.png"
     );
+  });
+
+  it("uses distinct visible sprite paths for every skin tone", () => {
+    stubReducedMotion(true);
+
+    const fullSpritePaths = skinTones.map((skinTone) => {
+      const { unmount } = render(<LittleAlexPhysics skinTone={skinTone} />);
+      const fullSprite = screen.getByTestId("little-alex-full-sprite");
+      const limbSprite = screen
+        .getAllByTestId("little-alex-sprite")
+        .find((sprite) => sprite.getAttribute("data-part") === "head");
+
+      expect(fullSprite).toHaveAttribute(
+        "src",
+        `/assets/fairplay/little-alex-sprites/neutral-${skinTone}-full.png`
+      );
+      expect(limbSprite).toHaveAttribute(
+        "src",
+        `/assets/fairplay/little-alex-sprites/neutral-${skinTone}-head.png`
+      );
+      unmount();
+
+      return fullSprite.getAttribute("src");
+    });
+
+    expect(new Set(fullSpritePaths).size).toBe(skinTones.length);
   });
 
   it("overlaps reduced-motion arm and torso x bounds at both shoulders", () => {
@@ -890,7 +917,7 @@ describe("LittleAlexPhysics", () => {
       });
       expect(screen.getByTestId("little-alex-full-sprite")).toHaveAttribute(
         "src",
-        `/assets/fairplay/little-alex-sprites/${genderPresentation}-full.png`
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_4-full.png`
       );
       expect(screen.getAllByTestId("little-alex-sprite")).toHaveLength(6);
 
