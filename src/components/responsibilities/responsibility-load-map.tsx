@@ -751,23 +751,25 @@ function LoadMapPracticeBoard({
                   </button>
                 </PracticeActionGuidance>
                 {moveMenuOpen ? (
-                  <div
-                    className="mt-2 grid rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-lg"
-                    role="menu"
-                  >
+                  <div className="mt-2 grid gap-2">
                     <PracticeActionCallout actionLabel="Alex" />
-                    <button
-                      className="rounded-[6px] px-3 py-2 text-left text-[13px] font-semibold text-fp-ink hover:bg-[var(--fp-surface-muted)]"
-                      onClick={() => {
-                        setPrimaryLane("player_1");
-                        setMoveMenuOpen(false);
-                        completeOnce("load-map-move");
-                      }}
-                      role="menuitem"
-                      type="button"
+                    <div
+                      className="grid rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-lg"
+                      role="menu"
                     >
-                      Alex
-                    </button>
+                      <button
+                        className="rounded-[6px] px-3 py-2 text-left text-[13px] font-semibold text-fp-ink hover:bg-[var(--fp-surface-muted)]"
+                        onClick={() => {
+                          setPrimaryLane("player_1");
+                          setMoveMenuOpen(false);
+                          completeOnce("load-map-move");
+                        }}
+                        role="menuitem"
+                        type="button"
+                      >
+                        Alex
+                      </button>
+                    </div>
                   </div>
                 ) : null}
               </div>

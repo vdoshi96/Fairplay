@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDown, MousePointerClick } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 type PracticeActionKind = "action" | "click";
 
@@ -55,11 +55,29 @@ export function PracticeActionGuidance({
   kind = "click",
   wrapperClassName
 }: PracticeActionGuidanceProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!active) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      wrapperRef.current?.scrollIntoView?.({
+        block: "center",
+        inline: "nearest"
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [active, actionLabel]);
+
   return (
     <div
       className={["grid min-w-0 gap-1.5", wrapperClassName]
         .filter(Boolean)
         .join(" ")}
+      ref={wrapperRef}
     >
       <PracticeActionCallout
         actionLabel={actionLabel}

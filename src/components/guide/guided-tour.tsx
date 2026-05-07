@@ -218,7 +218,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       setDialogPlacement(
         getDialogPlacement({
           dialogElement: dialogRef.current,
-          highlightBox
+          highlightBox: practiceSurfaceBox ?? highlightBox
         })
       );
     }
@@ -231,7 +231,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       window.removeEventListener("resize", updateDialogPlacement);
       window.removeEventListener("scroll", updateDialogPlacement, true);
     };
-  }, [activeIndex, activeStep, highlightBox]);
+  }, [activeIndex, activeStep, highlightBox, practiceSurfaceBox]);
 
   useEffect(() => {
     if (!allowsRequiredPracticeInteraction) {
@@ -239,16 +239,10 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       return;
     }
 
-    function updatePracticeSurfaceBox() {
-      const surface = document.querySelector<HTMLElement>(
-        "[data-guide-practice-surface]"
-      );
+    let resizeObserver: ResizeObserver | null = null;
+    let observedSurface: HTMLElement | null = null;
 
-      if (!surface) {
-        setPracticeSurfaceBox(null);
-        return;
-      }
-
+    function measurePracticeSurface(surface: HTMLElement) {
       const rect = surface.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
@@ -270,11 +264,35 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       });
     }
 
+    function updatePracticeSurfaceBox() {
+      const surface = document.querySelector<HTMLElement>(
+        "[data-guide-practice-surface]"
+      );
+
+      if (!surface) {
+        setPracticeSurfaceBox(null);
+        return;
+      }
+
+      if (
+        surface !== observedSurface &&
+        typeof ResizeObserver !== "undefined"
+      ) {
+        resizeObserver?.disconnect();
+        observedSurface = surface;
+        resizeObserver = new ResizeObserver(() => measurePracticeSurface(surface));
+        resizeObserver.observe(surface);
+      }
+
+      measurePracticeSurface(surface);
+    }
+
     updatePracticeSurfaceBox();
     window.addEventListener("resize", updatePracticeSurfaceBox);
     window.addEventListener("scroll", updatePracticeSurfaceBox, true);
 
     return () => {
+      resizeObserver?.disconnect();
       window.removeEventListener("resize", updatePracticeSurfaceBox);
       window.removeEventListener("scroll", updatePracticeSurfaceBox, true);
     };
