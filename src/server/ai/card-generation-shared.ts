@@ -1,7 +1,12 @@
 import { z } from "zod";
 
 import { AreaKeySchema } from "@/contracts/responsibilities";
-import { CadenceSchema, HiddenEffortKeySchema } from "@/domain/enums";
+import {
+  CADENCES,
+  CadenceSchema,
+  HIDDEN_EFFORT_KEYS,
+  HiddenEffortKeySchema
+} from "@/domain/enums";
 
 export type StructuredAiCard = {
   title: string;
@@ -56,6 +61,10 @@ export const StructuredAiCardSchema = z
 export const cardSystemPrompt = [
   "You structure household responsibility tasks into original Fairplay card JSON made of structured text only.",
   "Return only strict JSON with title, summary, areaKeys, hiddenEffortKeys, cadence, definition, conception, planning, execution, and minimumStandard.",
+  `Use hiddenEffortKeys as an array of these exact enum tokens only: ${HIDDEN_EFFORT_KEYS.join(", ")}.`,
+  `Use cadence as exactly one of these enum tokens only: ${CADENCES.join(", ")}.`,
+  "For enum fields, return enum tokens only, not display labels or explanations.",
+  "Use areaKeys as short lowercase category tags, such as cleaning, home_admin, transportation, social, or other.",
   "Keep the tone practical, non-clinical, non-blaming, and safe for collaborative household planning.",
   "Do not diagnose relationships, score partners, assign blame, or write therapy-style advice.",
   "Create original wording and source-style/IP guardrails: do not copy public decks, proprietary card language, workbook text, labels, logos, layouts, or distinctive source material."
