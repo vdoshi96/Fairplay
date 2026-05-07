@@ -37,8 +37,20 @@ describe("generated UI asset specs", () => {
         "check-in-spark",
         "ai-task-helper",
         "greg-taskmaster-avatar",
-        "crash-course-not-chore",
-        "crash-course-owner-helper",
+        "crash-course-hidden-load-entry",
+        "crash-course-visible-reminder",
+        "crash-course-treadmill-reset",
+        "crash-course-active-set",
+        "crash-course-helper-owner",
+        "crash-course-cpe-outcome",
+        "crash-course-done-standard",
+        "crash-course-standard-autonomy",
+        "crash-course-handoff-context",
+        "crash-course-load-map",
+        "crash-course-capacity-shift",
+        "crash-course-check-in-signal",
+        "crash-course-repair-loop",
+        "crash-course-next-move",
         "crash-course-completion-celebration",
         "feature-guide-load-map",
         "feature-guide-library",
@@ -70,5 +82,23 @@ describe("generated UI asset specs", () => {
     expect(prompt).not.toMatch(/gpt-image-2|Taskmaster|celebrity/i);
     expect(generatedUiAssetNegativePrompt).toMatch(/readable text/);
     expect(generatedUiAssetNegativePrompt).toMatch(/real-person likeness/);
+  });
+
+  it("keeps crash-course course text as provenance instead of drawable prompt text", () => {
+    const crashCourseAssets = GENERATED_UI_ASSETS.filter(
+      (asset) =>
+        asset.slug.startsWith("crash-course-") &&
+        asset.slug !== "crash-course-completion-celebration"
+    );
+
+    expect(crashCourseAssets).toHaveLength(14);
+    for (const asset of crashCourseAssets) {
+      expect(asset.courseText).toBeTruthy();
+      const prompt = buildGeneratedUiAssetPrompt(asset);
+
+      expect(prompt).toContain("Silent storyboard rule");
+      expect(prompt).not.toContain("Accessibility intent");
+      expect(prompt).not.toContain(asset.courseText as string);
+    }
   });
 });

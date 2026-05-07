@@ -5,6 +5,7 @@ export const GENERATED_UI_QWEN_MODEL = "qwen-image-2.0-pro";
 export type GeneratedUiAssetSpec = {
   alt: string;
   composition: string;
+  courseText?: string;
   promptSubject: string;
   ratio: string;
   size: `${number}*${number}`;
@@ -15,6 +16,21 @@ export type GeneratedUiAssetSpec = {
 export const generatedUiAssetNegativePrompt = [
   "readable text",
   "pseudo-writing",
+  "captions",
+  "subtitles",
+  "labels",
+  "handwriting",
+  "printed text",
+  "text blocks",
+  "word-like marks",
+  "diagram labels",
+  "title text",
+  "UI text",
+  "calendar numbers",
+  "numbered labels",
+  "speech bubble text",
+  "signage",
+  "glyphs",
   "letters",
   "numbers",
   "logo",
@@ -49,93 +65,165 @@ export const generatedUiAssetNegativePrompt = [
 export function buildGeneratedUiAssetPrompt(input: {
   alt: string;
   composition: string;
+  courseText?: string;
   promptSubject: string;
   ratio: string;
 }) {
   return [
     "Original Fairplay app illustration.",
     "Style: cute flat 2D cartoon, warm adult product polish, rounded geometric forms, soft paper texture, crisp silhouettes, no 3D, no photorealism.",
+    "Silent storyboard rule: this image sits next to app subtitles, so it must communicate only with objects, body language, color, arrows, blank tiles, and composition. Do not render words, letters, labels, captions, numbers, signage, handwriting, UI text, or pseudo-writing anywhere.",
     "Palette: warm off-white base with balanced teal, blue, coral, golden yellow, fresh green, and dark ink accents. Avoid one-note beige, slate, purple, brown, or orange themes.",
     `Canvas: ${input.ratio} composition, mobile-readable, generous breathing room, no border, no title area.`,
     `Subject: ${input.promptSubject}.`,
     `Composition: ${input.composition}.`,
-    `Accessibility intent: ${input.alt}.`,
     "Safety/IP: original app artwork only; no public deck, workbook, card-game, source-art, brand, or public-figure resemblance.",
-    "Final image must contain no readable text, no pseudo-writing, no logos, no watermark, no branded interface, and no people doing stereotyped chores."
-  ].join("\n");
+    "Final image must contain no readable text, no pseudo-writing, no labels, no captions, no logos, no watermark, no branded interface, and no people doing stereotyped chores."
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 const crashCourseSceneSpecs = [
   {
-    alt: "Hidden household load background",
+    alt: "Hidden household load storyboard background",
     composition:
-      "a cozy room with visible household objects in front and subtle memory loops, calendar shapes, route paths, care signals, and organizing containers behind them",
+      "a warm entry table with one visible form, one lunch container, soft calendar loops, tiny reminder sparks, route lines, and care objects glowing behind the obvious task",
+    courseText:
+      "household work includes visible work and hidden work before and after the obvious task",
     promptSubject:
-      "invisible household work becoming visible through calm abstract planning paths",
-    slug: "crash-course-not-chore"
+      "hidden household work becoming visible through calm planning paths",
+    slug: "crash-course-hidden-load-entry"
   },
   {
-    alt: "Owner and helper background",
+    alt: "Visible work and reminder storyboard background",
     composition:
-      "two abstract sidekick characters with a shared grocery basket, one holding a blank responsibility tile and one carrying neutral support objects",
+      "a kitchen counter with one hand placing a blank item in a basket while another side shows calendar dots, a timing path, and a quiet consequence marker",
+    courseText:
+      "separate doing the final action from carrying the reminders, timing, details, and consequence",
     promptSubject:
-      "balanced owner and helper roles working around one shared household outcome",
-    slug: "crash-course-owner-helper"
+      "the difference between visible action and cognitive reminder load",
+    slug: "crash-course-visible-reminder"
   },
   {
-    alt: "Conception planning execution path background",
+    alt: "Recurring reset storyboard background",
     composition:
-      "three connected islands with a lightbulb object, a simple route map, and a finished household basket joined by one soft path",
+      "a gentle loop path around dishes, folded cloth, medicine timer, and lunch box shapes, contrasted with one completed project marker on a side path",
+    courseText:
+      "recurring work resets like a treadmill while finite projects have clearer finish lines",
     promptSubject:
-      "a full responsibility path from noticing to planning to completion",
-    slug: "crash-course-cpe-path"
+      "recurring household responsibilities returning again and again",
+    slug: "crash-course-treadmill-reset"
   },
   {
-    alt: "Minimum standards note background",
+    alt: "Active responsibilities storyboard background",
     composition:
-      "a blank note, measuring ribbon, small household bowl, and two balanced color dots agreeing on the same finish line",
+      "a tidy table sorting blank rounded responsibility tiles into active, paused, and later zones with a clear warm path through the active group",
+    courseText:
+      "fairness is clearer when only current-season responsibilities are treated as active",
     promptSubject:
-      "shared minimum standards as a clear kind agreement",
-    slug: "crash-course-standards-note"
+      "choosing the household responsibilities that are actually in play",
+    slug: "crash-course-active-set"
   },
   {
-    alt: "Board lanes background",
+    alt: "Owner and helper storyboard background",
     composition:
-      "soft abstract responsibility lanes made from rounded panels, colored dots, and gentle arrows, not a copied kanban board",
+      "two abstract sidekick characters around a grocery table, one holding the outcome tile and route line, the other offering useful support objects",
+    courseText:
+      "helping is valuable, but the owner carries the outcome and follow-through",
     promptSubject:
-      "household responsibilities moving through clear visible states",
-    slug: "crash-course-board-lanes"
+      "balanced owner and helper roles around one shared household outcome",
+    slug: "crash-course-helper-owner"
   },
   {
-    alt: "Active deck background",
+    alt: "Full ownership path storyboard background",
     composition:
-      "two small piles of blank rounded tiles, one glowing active path and one paused path, with a helper spark keeping the system calm",
+      "three unlabeled object moments linked by one continuous responsibility path: a glowing idea lamp, a folded route map with plain colored roads only, and a completed household basket; no words on any object",
+    courseText:
+      "full ownership carries conception, planning, and execution from noticing to reliable completion",
     promptSubject:
-      "choosing which responsibilities are active without card-deck mimicry",
-    slug: "crash-course-active-deck"
+      "a silent full-responsibility path from noticing to planning to completion",
+    slug: "crash-course-cpe-outcome"
   },
   {
-    alt: "Handoff background",
+    alt: "Done well enough storyboard background",
     composition:
-      "two abstract sidekick characters on either side of a soft bridge path, passing a blank rounded responsibility tile with context dots",
-    promptSubject: "a calm household handoff with context traveling alongside the task",
-    slug: "crash-course-handoff"
+      "a blank note, small lunch container, timing arc, safety pin shape, flexible ribbon, and two balanced color dots agreeing on one finish line",
+    courseText:
+      "done well enough names what matters, what is flexible, acceptable timing, and care details",
+    promptSubject:
+      "a clear shared household standard before resentment builds",
+    slug: "crash-course-done-standard"
   },
   {
-    alt: "Dynamic fairness background",
+    alt: "Kind standard storyboard background",
     composition:
-      "a balanced scale, soft capacity meter, rest symbol, and shared support path with no scores or blame",
+      "a calm workbench with one blank protected outcome tile, multiple colored method paths, and two sidekick dots leaving room around the owner; no signs, notes, words, or labels",
+    courseText:
+      "a shared standard protects the outcome without becoming control or avoidance",
+    promptSubject:
+      "a silent visual metaphor for preserving owner autonomy while protecting the outcome",
+    slug: "crash-course-standard-autonomy"
+  },
+  {
+    alt: "Handoff context storyboard background",
+    composition:
+      "two abstract sidekick characters on either side of a bridge path, passing a blank responsibility tile with access, timing, blocker, training, and review dots traveling with it",
+    courseText:
+      "a handoff moves context, not just the task, so the next owner does not have to extract it",
+    promptSubject:
+      "a calm household handoff with context traveling alongside the responsibility",
+    slug: "crash-course-handoff-context"
+  },
+  {
+    alt: "Load Map storyboard background",
+    composition:
+      "an airy room-scale abstract map of rounded responsibility lanes, owner dots, cadence markers, blank review flags, and concentration paths; no title, no headings, no words, no tiny writing",
+    courseText:
+      "the Load Map shows concentration, cadence, unclear ownership, and due reviews without becoming a scoreboard",
+    promptSubject:
+      "a silent household responsibility map used for discussion instead of scoring",
+    slug: "crash-course-load-map"
+  },
+  {
+    alt: "Capacity shift storyboard background",
+    composition:
+      "a balanced scale beside a soft capacity meter, travel path, rest symbol, recovery leaf, and movable responsibility dots shifting without blame",
+    courseText:
+      "fairness changes as work seasons, health, travel, recovery, stress, and bandwidth change",
     promptSubject:
       "fairness adapting to capacity and context over time",
-    slug: "crash-course-dynamic-fair"
+    slug: "crash-course-capacity-shift"
   },
   {
-    alt: "Repair background",
+    alt: "Check-in signal storyboard background",
     composition:
-      "two blank speech bubbles, a gentle repair note shape, a bridge, and warm light returning to a shared path",
+      "a quiet check-in table with small signal lights for blockers, appreciation, reviews, standards, and decisions flowing into neutral choice paths",
+    courseText:
+      "Check-ins catch small signals before they harden into bigger tension",
+    promptSubject:
+      "a calm household check-in turning signals into choices",
+    slug: "crash-course-check-in-signal"
+  },
+  {
+    alt: "Repair loop storyboard background",
+    composition:
+      "two blank speech bubbles, a small missed-step marker, repair note shape, support dot, review loop, and warm light returning to a shared path",
+    courseText:
+      "repair names what missed, what changed, what support is needed, and what will be different next time",
     promptSubject:
       "kind repair after a household agreement misses the mark",
-    slug: "crash-course-repair"
+    slug: "crash-course-repair-loop"
+  },
+  {
+    alt: "Next move storyboard background",
+    composition:
+      "one highlighted blank responsibility tile moving along a simple path from a shelf to an abstract map to a small check-in table, with two balanced sidekick dots nearby; all surfaces are blank",
+    courseText:
+      "turn the course into one real responsibility, an owner, a done-well-enough standard, and a review point",
+    promptSubject:
+      "one silent practical next move from learning into the app workflow",
+    slug: "crash-course-next-move"
   }
 ] as const;
 

@@ -9,7 +9,7 @@ const appPages = [
   { name: "library", path: "/app/library", heading: "Source deck" },
   { name: "load-map", path: "/app/load-map", heading: "Responsibility overview" },
   { name: "check-ins", path: "/app/check-ins/new", heading: "New check-in" },
-  { name: "crash-course", path: "/app/crash-course", heading: "See the hidden load" },
+  { name: "crash-course", path: "/app/crash-course", heading: "Start with what no one sees" },
   { name: "settings", path: "/app/settings", heading: "Household settings" }
 ] as const;
 

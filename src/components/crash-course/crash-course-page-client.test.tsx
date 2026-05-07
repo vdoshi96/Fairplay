@@ -91,7 +91,7 @@ describe("crash course page client", () => {
       crashCourseSkippedAt: null
     });
     expect(
-      await screen.findByRole("heading", { name: "See the hidden load" })
+      await screen.findByRole("heading", { name: "Start with what no one sees" })
     ).toBeVisible();
   });
 });

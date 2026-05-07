@@ -44,7 +44,7 @@ export function CrashCourseFlow({
   const isFirst = step === 0;
   const isLast = step === CRASH_COURSE_LESSONS.length - 1;
   const progressLabel = useMemo(
-    () => `Lesson ${step + 1} of ${CRASH_COURSE_LESSONS.length}`,
+    () => `Frame ${step + 1} of ${CRASH_COURSE_LESSONS.length}`,
     [step]
   );
 
@@ -60,160 +60,206 @@ export function CrashCourseFlow({
       className="relative isolate min-h-[100svh] overflow-hidden bg-fp-paper px-4 pb-32 pt-6 sm:px-6 sm:pb-10 lg:px-8 lg:pb-8 lg:pr-44"
       data-testid="crash-course-stage"
     >
-      <CrashCourseScene
-        className="pointer-events-none absolute inset-0 h-full min-h-[100svh] w-full"
-        scene={lesson.scene}
-      />
-
       <div
-        className="relative z-10 mx-auto grid min-h-[calc(100svh_-_9rem)] w-full max-w-6xl items-center gap-4 py-3 sm:py-6 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,30rem)]"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[url('/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png')] bg-cover bg-center opacity-25"
+      />
+      <div
+        className="relative z-10 mx-auto grid min-h-[calc(100svh_-_9rem)] w-full max-w-6xl items-end gap-4 py-3 sm:py-6"
         data-testid="crash-course-lesson-shell"
       >
-        <div
-          className="z-10 grid max-h-[calc(100svh_-_9rem)] w-full gap-5 overflow-y-auto rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 shadow-2xl backdrop-blur-md sm:p-7 lg:col-start-2"
-          data-testid="crash-course-lesson-panel"
-        >
-          {completed ? (
-            <>
-              <div className="grid gap-4">
-                <img
-                  alt=""
-                  aria-hidden="true"
-                  className="h-28 w-28 rounded-[8px] object-contain shadow-[var(--fp-shadow-soft)]"
-                  data-testid="crash-course-completion-celebration"
-                  draggable={false}
-                  height={768}
-                  loading="eager"
-                  src="/assets/fairplay/generated-ui/crash-course/completion-celebration.png"
-                  width={768}
-                />
-                <div className="grid gap-2">
-                  <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
-                    Course complete
-                  </p>
-                  <h1
-                    id="crash-course-title"
-                    className="text-[30px] font-bold leading-[36px] text-fp-ink"
-                  >
-                    Hooray! Congrats on finishing {completionContextLabel}.
-                  </h1>
-                </div>
-              </div>
-
-              <div className="grid gap-3 text-[15px] leading-6 text-fp-muted-ink">
-                <p>
-                  You now know how Fairplay treats hidden load, ownership,
-                  planning, standards, handoffs, check-ins, repair, and safety.
-                </p>
-                <p>
-                  Next, follow the recommended learning path when you are ready
-                  to turn those ideas into a visible household agreement.
-                </p>
-              </div>
-
-              <FeaturePathList />
-
-              {onRestart ? (
-                <button
-                  className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25"
-                  onClick={onRestart}
-                  type="button"
-                >
-                  Restart crash course
-                </button>
-              ) : null}
-            </>
-          ) : (
-            <>
+        {completed ? (
+          <div className="mx-auto grid w-full max-w-3xl gap-5 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 shadow-2xl backdrop-blur-md sm:p-7">
+            <div className="grid gap-4">
+              <img
+                alt=""
+                aria-hidden="true"
+                className="h-28 w-28 rounded-[8px] object-contain shadow-[var(--fp-shadow-soft)]"
+                data-testid="crash-course-completion-celebration"
+                draggable={false}
+                height={768}
+                loading="eager"
+                src="/assets/fairplay/generated-ui/crash-course/completion-celebration.png"
+                width={768}
+              />
               <div className="grid gap-2">
                 <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
-                  {progressLabel}
+                  Course complete
                 </p>
                 <h1
                   id="crash-course-title"
-                  className="text-[28px] font-bold leading-[34px] text-fp-ink"
+                  className="text-[30px] font-bold leading-[36px] text-fp-ink"
                 >
-                  {lesson.title}
+                  Hooray! Congrats on finishing {completionContextLabel}.
                 </h1>
-                {lesson.exampleCardTitle ? (
-                  <p className="text-[14px] font-semibold leading-5 text-fp-ink">
-                    Example card: {lesson.exampleCardTitle}
+              </div>
+            </div>
+
+            <div className="grid gap-3 text-[15px] leading-6 text-fp-muted-ink">
+              <p>
+                You now know how Fairplay treats hidden load, ownership,
+                planning, standards, handoffs, check-ins, repair, and safety.
+              </p>
+              <p>
+                Next, follow the recommended learning path when you are ready to
+                turn those ideas into a visible household agreement.
+              </p>
+            </div>
+
+            <FeaturePathList />
+
+            {onRestart ? (
+              <button
+                className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25"
+                onClick={onRestart}
+                type="button"
+              >
+                Restart crash course
+              </button>
+            ) : null}
+          </div>
+        ) : (
+          <div
+            className="relative grid min-h-[calc(100svh_-_9rem)] w-full overflow-hidden rounded-[8px] border border-fp-line bg-[#edf4ee] shadow-2xl"
+            data-testid="crash-course-storyboard-frame"
+          >
+            <CrashCourseScene
+              className="min-h-[calc(100svh_-_9rem)]"
+              scene={lesson.scene}
+            />
+
+            <div
+              className="relative z-10 grid max-h-[72svh] gap-4 overflow-y-auto border-t border-white/70 bg-[var(--fp-surface-strong)]/95 p-4 shadow-2xl backdrop-blur-md sm:p-5 lg:absolute lg:bottom-4 lg:left-4 lg:right-4 lg:max-h-[48svh] lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:rounded-[8px] lg:border lg:border-fp-line"
+              data-testid="crash-course-subtitle-panel"
+            >
+              <div className="grid gap-3">
+                <div className="grid gap-2">
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
+                    {progressLabel}
                   </p>
-                ) : null}
-              </div>
-
-              <div className="grid gap-3 text-[15px] leading-6 text-fp-muted-ink">
-                <p>{lesson.concept}</p>
-                <p>{lesson.action}</p>
-              </div>
-
-              {lesson.id === "done-well-enough" ? (
-                <div className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-4">
-                  <label
-                    htmlFor="minimum-standard-draft"
-                    className="text-[14px] font-bold leading-5 text-fp-ink"
+                  <h1
+                    id="crash-course-title"
+                    className="text-[26px] font-bold leading-[32px] text-fp-ink sm:text-[28px] sm:leading-[34px]"
                   >
-                    Rewrite a household minimum standard in your own words
-                  </label>
-                  <textarea
-                    id="minimum-standard-draft"
-                    className="min-h-28 resize-y rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3 text-[15px] leading-6 text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
-                    placeholder="Example: Lunches are packed before bedtime, and backup lunch money is ready for rushed mornings."
-                    value={standardDraft}
-                    onChange={(event) => setStandardDraft(event.target.value)}
-                  />
-                  {standardDraft.trim().length > 0 ? (
-                    <p className="text-[13px] font-semibold leading-5 text-fp-muted-ink">
-                      Saved as a local draft for this practice step.
+                    {lesson.title}
+                  </h1>
+                  {lesson.exampleCardTitle ? (
+                    <p className="text-[14px] font-semibold leading-5 text-fp-ink">
+                      Example card: {lesson.exampleCardTitle}
                     </p>
                   ) : null}
                 </div>
-              ) : null}
 
-              {lesson.featurePath ? <FeaturePathList /> : null}
+                <div className="grid gap-2 text-[15px] leading-6 text-fp-muted-ink">
+                  <p>{lesson.concept}</p>
+                  <p>{lesson.action}</p>
+                </div>
 
-              <div className="grid gap-3 border-t border-fp-line pt-4 sm:grid-cols-[1fr_auto] sm:items-center">
-                <button
-                  type="button"
-                  className="min-h-11 rounded-[8px] border border-fp-line px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-45"
-                  onClick={onSkip}
-                >
-                  Skip crash course
-                </button>
+                {lesson.id === "done-standard" ? (
+                  <div className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-4">
+                    <label
+                      htmlFor="minimum-standard-draft"
+                      className="text-[14px] font-bold leading-5 text-fp-ink"
+                    >
+                      Rewrite a household minimum standard in your own words
+                    </label>
+                    <textarea
+                      id="minimum-standard-draft"
+                      className="min-h-24 resize-y rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3 text-[15px] leading-6 text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
+                      placeholder="Example: Lunches are packed before bedtime, and backup lunch money is ready for rushed mornings."
+                      value={standardDraft}
+                      onChange={(event) => setStandardDraft(event.target.value)}
+                    />
+                    {standardDraft.trim().length > 0 ? (
+                      <p className="text-[13px] font-semibold leading-5 text-fp-muted-ink">
+                        Saved as a local draft for this practice step.
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
 
-                <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+                {lesson.featurePath ? <FeaturePathList /> : null}
+              </div>
+
+              <div className="grid content-end gap-3">
+                <StoryIndexTabs activeStep={step} onSelect={moveTo} />
+
+                <div className="grid gap-3 border-t border-fp-line pt-4">
                   <button
                     type="button"
                     className="min-h-11 rounded-[8px] border border-fp-line px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-45"
-                    disabled={isFirst}
-                    onClick={() => moveTo(step - 1)}
+                    onClick={onSkip}
                   >
-                    Previous lesson
+                    Skip crash course
                   </button>
-                  {isLast ? (
+
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/25"
-                      onClick={onComplete}
+                      className="min-h-11 rounded-[8px] border border-fp-line px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-45"
+                      disabled={isFirst}
+                      onClick={() => moveTo(step - 1)}
                     >
-                      Finish course
+                      Previous lesson
                     </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/25"
-                      onClick={() => moveTo(step + 1)}
-                    >
-                      Next lesson
-                    </button>
-                  )}
+                    {isLast ? (
+                      <button
+                        type="button"
+                        className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/25"
+                        onClick={onComplete}
+                      >
+                        Finish course
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/25"
+                        onClick={() => moveTo(step + 1)}
+                      >
+                        Next lesson
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
+  );
+}
+
+function StoryIndexTabs({
+  activeStep,
+  onSelect
+}: {
+  activeStep: number;
+  onSelect: (step: number) => void;
+}) {
+  return (
+    <nav
+      aria-label="Crash course storyboard"
+      className="flex gap-1 overflow-x-auto pb-1"
+    >
+      {CRASH_COURSE_LESSONS.map((lesson, index) => (
+        <button
+          aria-current={index === activeStep ? "step" : undefined}
+          aria-label={`Go to lesson ${index + 1}: ${lesson.title}`}
+          className={[
+            "grid h-9 min-w-9 place-items-center rounded-[8px] border text-[12px] font-bold outline-none transition focus:ring-2 focus:ring-fp-ink/25",
+            index === activeStep
+              ? "border-fp-primary bg-fp-primary text-fp-on-primary"
+              : "border-fp-line bg-[var(--fp-surface)] text-fp-muted-ink hover:bg-[var(--fp-surface-muted)] hover:text-fp-ink"
+          ].join(" ")}
+          key={lesson.id}
+          onClick={() => onSelect(index)}
+          type="button"
+        >
+          {String(index + 1).padStart(2, "0")}
+        </button>
+      ))}
+    </nav>
   );
 }
 

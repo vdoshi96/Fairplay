@@ -5,13 +5,22 @@ import { CRASH_COURSE_LESSONS } from "./crash-course-content";
 import { CrashCourseFlow } from "./crash-course-flow";
 
 describe("crash course flow", () => {
-  it("contains five tight source-safe conceptual sections", () => {
+  it("breaks the course into a storyboard of short source-safe frames", () => {
     expect(CRASH_COURSE_LESSONS.map((lesson) => lesson.title)).toEqual([
-      "See the hidden load",
-      "Own the outcome",
-      "Define done well enough",
-      "Move work with the context",
-      "Keep a repair loop"
+      "Start with what no one sees",
+      "Separate the work from the reminder",
+      "Name the reset",
+      "Choose what is actually in play",
+      "Helping is not the same as owning",
+      "Carry the whole outcome",
+      "Define done before it matters",
+      "Keep the standard kind",
+      "Move context with the handoff",
+      "Read the Load Map as a map",
+      "Adjust for capacity",
+      "Catch signals in a Check-in",
+      "Repair the miss",
+      "Turn the story into one next move"
     ]);
   });
 
@@ -23,8 +32,9 @@ describe("crash course flow", () => {
       .toLowerCase();
     const wordCount = lessonText.split(/\s+/).filter(Boolean).length;
 
-    expect(wordCount).toBeGreaterThanOrEqual(650);
-    expect(wordCount).toBeLessThanOrEqual(1200);
+    expect(CRASH_COURSE_LESSONS).toHaveLength(14);
+    expect(wordCount).toBeGreaterThanOrEqual(800);
+    expect(wordCount).toBeLessThanOrEqual(1500);
     expect(lessonText).toContain("visible work");
     expect(lessonText).toContain("hidden work");
     expect(lessonText).toContain("owner");
@@ -45,6 +55,22 @@ describe("crash course flow", () => {
     expect(lessonText).toContain("safety");
     expect(lessonText).not.toContain("minimum standard of care");
     expect(lessonText).not.toContain("share meeting");
+  });
+
+  it("keeps each storyboard frame short enough to read like subtitles", () => {
+    const sceneKeys = new Set(CRASH_COURSE_LESSONS.map((lesson) => lesson.scene));
+
+    expect(sceneKeys.size).toBe(CRASH_COURSE_LESSONS.length);
+    for (const lesson of CRASH_COURSE_LESSONS) {
+      const wordCount = [lesson.concept, lesson.action]
+        .join(" ")
+        .split(/\s+/)
+        .filter(Boolean).length;
+
+      expect(wordCount).toBeGreaterThanOrEqual(45);
+      expect(wordCount).toBeLessThanOrEqual(115);
+      expect(lesson.action).toMatch(/[.!]$/);
+    }
   });
 
   it("keeps feature-learning recommendations in the final section only", () => {
@@ -68,9 +94,10 @@ describe("crash course flow", () => {
 
     const stage = screen.getByTestId("crash-course-stage");
     const shell = screen.getByTestId("crash-course-lesson-shell");
-    const panel = screen.getByTestId("crash-course-lesson-panel");
+    const storyboardFrame = screen.getByTestId("crash-course-storyboard-frame");
+    const subtitlePanel = screen.getByTestId("crash-course-subtitle-panel");
     const scene = screen.getByRole("img", {
-      name: "Owner and helper learning scene"
+      name: "Reminder and visible work storyboard scene"
     });
 
     expect(stage.className).toContain("min-h-[100svh]");
@@ -80,31 +107,28 @@ describe("crash course flow", () => {
     expect(stage.className).toContain("pb-32");
     expect(stage.className).toContain("lg:pr-44");
     expect(shell.className).toContain("mx-auto");
-    expect(shell.className).toContain("lg:grid-cols-[minmax(0,1fr)_minmax(22rem,30rem)]");
-    expect(shell.className).toContain("items-center");
+    expect(shell.className).toContain("items-end");
+    expect(storyboardFrame).toContainElement(scene);
+    expect(storyboardFrame).toContainElement(subtitlePanel);
+    expect(subtitlePanel.className).toContain("backdrop-blur-md");
+    expect(subtitlePanel.className).toContain("lg:absolute");
     expect(screen.queryByTestId("crash-course-scene-anchor")).not.toBeInTheDocument();
-    expect(panel.className).toContain("max-h-[calc(100svh_-_9rem)]");
-    expect(panel.className).toContain("z-10");
-    expect(panel.className).toContain("bg-[var(--fp-surface-strong)]");
-    expect(panel.className).not.toContain("bg-white/");
     expect(scene).toHaveAttribute("data-scene-scale", "immersive-background");
-    expect(scene.className).toContain("absolute");
-    expect(scene.className).toContain("inset-0");
   });
 
   it("moves through lessons and records progress callbacks", () => {
     const onProgress = vi.fn();
-    render(<CrashCourseFlow currentStep={1} onProgress={onProgress} />);
+    render(<CrashCourseFlow currentStep={4} onProgress={onProgress} />);
 
     expect(
       screen.getByRole("img", { name: "Owner and helper learning scene" })
     ).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: "Next lesson" }));
-    expect(onProgress).toHaveBeenLastCalledWith(2);
+    expect(onProgress).toHaveBeenLastCalledWith(5);
 
     fireEvent.click(screen.getByRole("button", { name: "Previous lesson" }));
-    expect(onProgress).toHaveBeenLastCalledWith(1);
+    expect(onProgress).toHaveBeenLastCalledWith(4);
   });
 
   it("skips and finishes through explicit callbacks", () => {
@@ -182,7 +206,7 @@ describe("crash course flow", () => {
   });
 
   it("includes an interactive standard rewrite prompt in the standards lesson", () => {
-    render(<CrashCourseFlow currentStep={2} />);
+    render(<CrashCourseFlow currentStep={6} />);
 
     const prompt = screen.getByLabelText(
       "Rewrite a household minimum standard in your own words"

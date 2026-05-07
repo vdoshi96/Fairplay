@@ -1,5 +1,26 @@
 # Fairplay Context Log
 
+## 2026-05-07 - Crash Course Storyboard Refresh
+
+Requested by the user: put the crash-course storyboard and course text close together, make the text read like subtitles for the images, break the course into more parts, and generate new Qwen images that follow the course text.
+
+Actions completed:
+
+- Reworked the crash course from 5 long lessons into 14 short storyboard frames.
+- Updated the crash-course UI so the image and subtitle-style course text live in the same framed stage, with storyboard number tabs and previous/next/finish controls nearby.
+- Generated 14 new Qwen crash-course PNGs under `public/assets/fairplay/generated-ui/crash-course/`.
+- Tightened generated UI prompts to treat crash-course art as silent storyboard frames with no labels, captions, UI text, readable text, or pseudo-writing.
+- Preserved desktop right padding on the immersive route so Little Alex does not overlap subtitle controls.
+
+Verification:
+
+- `npm run assets:generate-ui -- --skip-existing --delay-ms=0`
+- `npm run lint`
+- `npm run typecheck`
+- `npm test -- --run`
+- `npm run build`
+- `npx playwright test e2e/corrective-responsive-visual.spec.ts --project=chromium --grep "captures real app pages across responsive viewport sizes"`
+
 ## 2026-05-07 - Board Lane Compatibility Decision
 
 Requested by the user: use the recommended board lane path before opening the PR to main.

@@ -10,7 +10,7 @@ const appPages = [
   { name: "library", path: "/app/library", heading: "Source deck" },
   { name: "check-ins", path: "/app/check-ins/new", heading: "New check-in" },
   { name: "settings", path: "/app/settings", heading: "Household settings" },
-  { name: "crash-course", path: "/app/crash-course", heading: "See the hidden load" }
+  { name: "crash-course", path: "/app/crash-course", heading: "Start with what no one sees" }
 ] as const;
 
 const viewports = [
@@ -328,7 +328,7 @@ async function expectFeatureGuideButtonInsideViewport(page: Page, label: string)
 
 async function expectPageBackground(page: Page, pageName: string) {
   if (pageName === "crash-course") {
-    await expect(page.getByTestId("crash-course-lesson-panel")).toBeVisible();
+    await expect(page.getByTestId("crash-course-subtitle-panel")).toBeVisible();
     return;
   }
 

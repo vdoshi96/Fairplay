@@ -26,6 +26,8 @@ Repo indexing and durable memory bootstrap on `main`.
 - Product-surface cleanup retired the Radar page/component from the app navigation surface.
 - This cleanup pass removed the Radar backend/API/model/assets from the active product surface.
 - AI card generation was restored to produce generated cover art for successful text-input drafts.
+- Crash course now uses a 14-frame storyboard with subtitle-style course text attached to the image frame.
+- Crash-course storyboard art was regenerated with Qwen into 14 textless 3:2 PNGs under `public/assets/fairplay/generated-ui/crash-course/`.
 - Corrective QA on the latest integration branch reported passing Vitest, lint, typecheck, Prisma validate, build, and Playwright e2e.
 
 ## Verification From This Pass
@@ -62,6 +64,7 @@ Result: requested files are present and non-empty. The trailing-whitespace scan 
 - Applied `20260507120000_remove_radar` to the local Postgres database.
 - Reran `npm run test -- --run`; all 85 test files and 475 tests passed, including `src/server/repositories/persistence.integration.test.ts`.
 - Accepted the board lane recommendation: keep persisted lane keys stable and use UI labels; any rename should be a separate compatibility migration.
+- For the crash-course storyboard refresh, ran `npm run assets:generate-ui -- --skip-existing --delay-ms=0`, `npm run lint`, `npm run typecheck`, `npm test -- --run` with 85 test files and 481 tests passing, `npm run build`, and the targeted Playwright responsive visual check for app pages.
 
 ## Suggested Cleanup Plan
 
