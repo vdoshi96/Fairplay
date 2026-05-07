@@ -27,6 +27,7 @@ const BUBBLE_RELEASE_SPEED_THRESHOLD = 6;
 const WALL_THICKNESS = 96;
 const VIEWPORT_PADDING = 2;
 const SERVER_SAFE_ANCHOR = { x: 906, y: 218 };
+const RAGDOLL_RECOVERY_TRANSITION_MS = 360;
 
 type Point = {
   x: number;
@@ -71,6 +72,8 @@ type GazeState = {
 };
 
 type IdleState = "active" | "standing" | "walking";
+
+type RagdollVisualState = "settled" | "dragging" | "flinging" | "recovering";
 
 type WalkDirection = -1 | 1;
 
@@ -849,6 +852,8 @@ export function LittleAlexPhysics({
   const [activityVersion, setActivityVersion] = useState(0);
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [gaze, setGaze] = useState<GazeState>(DEFAULT_GAZE_STATE);
+  const [ragdollVisualState, setRagdollVisualState] =
+    useState<RagdollVisualState>("settled");
   const bodyRefs = useRef<Partial<Record<PartKey, HTMLDivElement>>>({});
   const bubbleRef = useRef<HTMLDivElement | null>(null);
   const bubbleTimeoutRef = useRef<number | null>(null);
@@ -864,10 +869,25 @@ export function LittleAlexPhysics({
     turnsInDirection: 0
   });
   const physicsRef = useRef<PhysicsWorld | null>(null);
+  const ragdollRecoveryTimeoutRef = useRef<number | null>(null);
+  const ragdollVisualStateRef = useRef<RagdollVisualState>("settled");
 
   useEffect(() => {
     idleStateRef.current = idleState;
   }, [idleState]);
+
+  useEffect(() => {
+    ragdollVisualStateRef.current = ragdollVisualState;
+  }, [ragdollVisualState]);
+
+  const clearRagdollRecoveryTimeout = useCallback(() => {
+    if (!ragdollRecoveryTimeoutRef.current) {
+      return;
+    }
+
+    window.clearTimeout(ragdollRecoveryTimeoutRef.current);
+    ragdollRecoveryTimeoutRef.current = null;
+  }, []);
 
   const updateGaze = useCallback(
     (target: Point) => {
@@ -1022,6 +1042,24 @@ export function LittleAlexPhysics({
   }, [idleState, syncPhysicsDom]);
 
   useEffect(() => {
+    if (
+      idleState === "active" ||
+      ragdollVisualStateRef.current !== "flinging"
+    ) {
+      return undefined;
+    }
+
+    setRagdollVisualState("recovering");
+    clearRagdollRecoveryTimeout();
+    ragdollRecoveryTimeoutRef.current = window.setTimeout(() => {
+      setRagdollVisualState("settled");
+      ragdollRecoveryTimeoutRef.current = null;
+    }, RAGDOLL_RECOVERY_TRANSITION_MS);
+
+    return undefined;
+  }, [clearRagdollRecoveryTimeout, idleState]);
+
+  useEffect(() => {
     if (!motionPreferenceReady) {
       return undefined;
     }
@@ -1140,6 +1178,8 @@ export function LittleAlexPhysics({
       }
 
       event.currentTarget.setPointerCapture(event.pointerId);
+      clearRagdollRecoveryTimeout();
+      setRagdollVisualState(reducedMotion ? "settled" : "dragging");
       setIdleState("active");
       setIdleStandDelayMs(IDLE_STAND_DELAY_MS);
       setActivityVersion((current) => current + 1);
@@ -1163,7 +1203,7 @@ export function LittleAlexPhysics({
         velocity: { x: 0, y: 0 }
       };
     },
-    [reducedAnchor, reducedMotion, updateGaze]
+    [clearRagdollRecoveryTimeout, reducedAnchor, reducedMotion, updateGaze]
   );
 
   const moveDrag = useCallback(
@@ -1266,6 +1306,7 @@ export function LittleAlexPhysics({
           y: point.y - drag.offset.y
         });
 
+        setRagdollVisualState("settled");
         setReducedAnchor(releaseAnchor);
         idleWalkTurnRef.current = initialIdleWalkTurn(releaseAnchor.x);
         if (shouldShowBubble) {
@@ -1277,9 +1318,11 @@ export function LittleAlexPhysics({
       const physics = physicsRef.current;
 
       if (!physics) {
+        setRagdollVisualState("settled");
         return;
       }
 
+      setRagdollVisualState(shouldShowBubble ? "flinging" : "settled");
       Object.entries(physics.bodies).forEach(([key, body]) => {
         const weight = key === "torso" ? 1 : 0.82;
 
@@ -1325,8 +1368,9 @@ export function LittleAlexPhysics({
       if (bubbleTimeoutRef.current) {
         window.clearTimeout(bubbleTimeoutRef.current);
       }
+      clearRagdollRecoveryTimeout();
     },
-    []
+    [clearRagdollRecoveryTimeout]
   );
 
   return (
@@ -1353,6 +1397,7 @@ export function LittleAlexPhysics({
       data-idle-walk-direction={idleWalkTurnRef.current.direction}
       data-idle-walk-target-x={Math.round(idleWalkTurnRef.current.targetX)}
       data-idle-walk-turns={idleWalkTurnRef.current.turnsInDirection}
+      data-ragdoll-state={ragdollVisualState}
       data-testid="little-alex-horne"
       style={
         {

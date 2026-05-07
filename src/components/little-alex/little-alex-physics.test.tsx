@@ -355,6 +355,117 @@ describe("LittleAlexPhysics", () => {
     expect(bubble.style.transform).toContain("translate3d");
   });
 
+  it("enters fling ragdoll visual state only after a real non-reduced fling", () => {
+    stubReducedMotion(false);
+    stubPointerCapture();
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics chatPhrase="well done everyone" />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
+
+    dispatchPointer(grabTarget, "pointerdown", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "dragging");
+
+    dispatchPointer(grabTarget, "pointermove", {
+      clientX: 820,
+      clientY: 260,
+      pointerId: 1,
+      timeStamp: 80
+    });
+    dispatchPointer(grabTarget, "pointerup", {
+      clientX: 820,
+      clientY: 260,
+      pointerId: 1,
+      timeStamp: 96
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "flinging");
+  });
+
+  it("keeps the ragdoll visual state settled for a simple click release", () => {
+    stubReducedMotion(false);
+    stubPointerCapture();
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    dispatchPointer(grabTarget, "pointerdown", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+    dispatchPointer(grabTarget, "pointerup", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 16
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
+  });
+
+  it("recovers the ragdoll visual state on the existing post-release timer", () => {
+    vi.useFakeTimers();
+    stubReducedMotion(false);
+    stubPointerCapture();
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    dispatchPointer(grabTarget, "pointerdown", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+    dispatchPointer(grabTarget, "pointermove", {
+      clientX: 800,
+      clientY: 240,
+      pointerId: 1,
+      timeStamp: 64
+    });
+    dispatchPointer(grabTarget, "pointerup", {
+      clientX: 800,
+      clientY: 240,
+      pointerId: 1,
+      timeStamp: 80
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "flinging");
+
+    act(() => {
+      vi.advanceTimersByTime(6_499);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "flinging");
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "recovering");
+
+    act(() => {
+      vi.advanceTimersByTime(360);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
+  });
+
   it("stands mostly still before starting slow idle walking after five seconds untouched", () => {
     vi.useFakeTimers();
     stubReducedMotion(false);
