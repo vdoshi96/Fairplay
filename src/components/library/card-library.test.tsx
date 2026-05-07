@@ -314,4 +314,80 @@ describe("CardLibrary", () => {
       .not.toBeInTheDocument();
     expect(screen.queryByText("Mock Load Map artifact")).not.toBeInTheDocument();
   });
+
+  it("closes and resets dummy Library practice after guide Skip", async () => {
+    render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Start dummy Library workflow" })
+    );
+    await userEvent.type(
+      screen.getByLabelText("Dummy card request"),
+      "Make a card for the weekly backpack reset."
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Skip" }));
+
+    expect(
+      screen.queryByRole("region", { name: "Dummy Library practice" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+    ).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Start dummy Library workflow" })
+    );
+
+    expect(screen.getByLabelText("Dummy card request")).toHaveValue("");
+    expect(screen.queryByText(/weekly backpack reset/i)).not.toBeInTheDocument();
+  });
+
+  it("closes dummy Library practice after guide completion without hiding Greg", async () => {
+    let resolvePreview: (response: Response) => void = () => undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            resolvePreview = resolve;
+          })
+      )
+    );
+    render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Start dummy Library workflow" })
+    );
+    await userEvent.type(screen.getByLabelText("Dummy card request"), "Lunch kits");
+    await userEvent.click(screen.getByRole("button", { name: "Create dummy draft" }));
+    resolvePreview(
+      new Response(
+        JSON.stringify({
+          title: "Lunch kits",
+          summary: "Keep lunch supplies ready."
+        }),
+        { headers: { "content-type": "application/json" }, status: 200 }
+      )
+    );
+    expect(await screen.findByText("Lunch kits")).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "Review dummy draft" }));
+    await userEvent.click(screen.getByRole("button", { name: "Save dummy edits" }));
+    await userEvent.click(screen.getByRole("button", { name: "Put dummy card in play" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    await userEvent.click(screen.getByRole("button", { name: "Done" }));
+
+    expect(
+      screen.queryByRole("region", { name: "Dummy Library practice" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+    ).toBeVisible();
+  });
 });

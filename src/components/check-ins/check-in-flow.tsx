@@ -13,7 +13,8 @@ import { FEATURE_GUIDES } from "@/components/guide/guide-content";
 import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import {
   completeGuidePractice,
-  useGuidePracticeRequest
+  useGuidePracticeRequest,
+  useGuidePracticeReset
 } from "@/components/guide/guide-practice";
 import { MotionPanel, MotionSpark } from "@/components/motion/fairplay-motion";
 import {
@@ -104,8 +105,12 @@ export function CheckInFlow({
   const openCheckInPractice = useCallback(() => {
     setPracticeOpen(true);
   }, []);
+  const resetCheckInPractice = useCallback(() => {
+    setPracticeOpen(false);
+  }, []);
 
   useGuidePracticeRequest("check-in-practice-start", openCheckInPractice);
+  useGuidePracticeReset("check-in-practice-start", resetCheckInPractice);
 
   const currentItem = useMemo(
     () => checkIn.items[currentIndex] ?? checkIn.items.at(-1) ?? null,
@@ -488,8 +493,12 @@ export function NewCheckInLauncher({
   const openCheckInPractice = useCallback(() => {
     setPracticeOpen(true);
   }, []);
+  const resetCheckInPractice = useCallback(() => {
+    setPracticeOpen(false);
+  }, []);
 
   useGuidePracticeRequest("check-in-practice-start", openCheckInPractice);
+  useGuidePracticeReset("check-in-practice-start", resetCheckInPractice);
 
   async function previewAgenda() {
     try {

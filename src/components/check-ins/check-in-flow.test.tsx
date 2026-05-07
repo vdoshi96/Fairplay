@@ -529,4 +529,89 @@ describe("CheckInFlow", () => {
     expect(screen.queryByRole("region", { name: "Temporary Check-in workspace" }))
       .not.toBeInTheDocument();
   });
+
+  it("closes dummy check-in practice on guide Skip without production mutations", () => {
+    const onUpdateItem = vi.fn();
+    const onDecision = vi.fn();
+    const onComplete = vi.fn();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <CheckInFlow
+        initialCheckIn={checkIn}
+        onComplete={onComplete}
+        onDecision={onDecision}
+        onUpdateItem={onUpdateItem}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Start dummy Check-in workflow" })
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Preview dummy agenda" }));
+
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Check-ins guide" })).getByRole(
+        "button",
+        { name: "Skip" }
+      )
+    );
+
+    expect(
+      screen.queryByRole("region", { name: "Dummy Check-in practice" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Temporary Check-in workspace" })
+    ).not.toBeInTheDocument();
+    expect(onUpdateItem).not.toHaveBeenCalled();
+    expect(onDecision).not.toHaveBeenCalled();
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("closes dummy check-in practice after guide Done without production mutations", () => {
+    const onUpdateItem = vi.fn();
+    const onDecision = vi.fn();
+    const onComplete = vi.fn();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <CheckInFlow
+        initialCheckIn={checkIn}
+        onComplete={onComplete}
+        onDecision={onDecision}
+        onUpdateItem={onUpdateItem}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Start dummy Check-in workflow" })
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Preview dummy agenda" }));
+    fireEvent.click(screen.getByRole("button", { name: "Assign dummy topic" }));
+    fireEvent.change(screen.getByLabelText("Dummy decision summary"), {
+      target: { value: "Alex owns the lunch kit reset." }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Record dummy decision" }));
+    fireEvent.click(screen.getByRole("button", { name: "Defer dummy item" }));
+    fireEvent.click(screen.getByRole("button", { name: "Complete dummy check-in" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+
+    expect(
+      screen.queryByRole("region", { name: "Dummy Check-in practice" })
+    ).not.toBeInTheDocument();
+    expect(onUpdateItem).not.toHaveBeenCalled();
+    expect(onDecision).not.toHaveBeenCalled();
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });
