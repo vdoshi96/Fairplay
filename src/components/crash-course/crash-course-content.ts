@@ -20,7 +20,6 @@ export type CrashCourseSceneKey =
   | "board-lanes"
   | "active-deck"
   | "handoff"
-  | "radar-check-in"
   | "dynamic-fair"
   | "repair";
 
@@ -69,10 +68,10 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
     id: "repair-loop",
     title: "Keep a repair loop",
     concept:
-      "Fairness is dynamic. Work seasons, health, travel, children, recovery, stress, and emotional bandwidth change what is workable. Radar gives tension a neutral holding place before it becomes an argument: unclear standards, blockers, appreciation, due reviews, or a decision that needs calmer timing. Check-ins turn those signals into choices, acknowledgement, deferral, repair, or a next review date. Repair is part of the system because missed standards and defensive moments will happen. If a topic feels unsafe, coercive, or likely to escalate, keep notes private, pause the workflow, and choose outside support over forcing a conversation.",
+      "Fairness is dynamic. Work seasons, health, travel, children, recovery, stress, and emotional bandwidth change what is workable. A repair loop gives tension a neutral path before it becomes an argument: unclear standards, blockers, appreciation, due reviews, or a decision that needs calmer timing. Check-ins turn those signals into choices, acknowledgement, deferral, repair, or a next review date. Repair is part of the system because missed standards and defensive moments will happen. If a topic feels unsafe, coercive, or likely to escalate, keep notes private, pause the workflow, and choose outside support over forcing a conversation.",
     action:
-      "Use the learning path below when you are ready to move from concepts to features. Start with the Library, make ownership visible in the Load Map, send uncertainty to Radar, and use Check-ins to repair, revise, and rebuild trust.",
-    scene: "radar-check-in",
+      "Use the learning path below when you are ready to move from concepts to features. Start with the Library, make ownership visible in the Load Map, and use Check-ins to repair, revise, and rebuild trust.",
+    scene: "repair",
     exampleCardTitle: "Bedtime routine",
     featurePath: [
       {
@@ -84,11 +83,6 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
         description: "Assign owners, preserve context, and review the load.",
         href: "/app/load-map",
         label: "Open the Load Map"
-      },
-      {
-        description: "Capture uncertainty before it turns into a fight.",
-        href: "/app/radar",
-        label: "Add a Radar item"
       },
       {
         description: "Turn signals into decisions, deferrals, and repair.",

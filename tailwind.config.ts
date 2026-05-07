@@ -19,7 +19,6 @@ const config: Config = {
           max: "var(--fp-max)",
           shared: "var(--fp-shared)",
           helper: "var(--fp-helper)",
-          radar: "var(--fp-radar)",
           success: "var(--fp-success)",
           caution: "var(--fp-caution)",
           danger: "var(--fp-danger)"

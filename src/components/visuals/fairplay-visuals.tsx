@@ -120,20 +120,6 @@ export function HelperMascot({ alt, className, decorative }: VisualImageProps) {
   );
 }
 
-export function RadarVisual({ alt, className, decorative }: VisualImageProps) {
-  return (
-    <VisualImage
-      alt={alt}
-      className={className}
-      decorative={decorative}
-      defaultAlt="Shared radar illustration"
-      height={1024}
-      src="/assets/fairplay/generated-ui/radar-illustration.png"
-      width={1536}
-    />
-  );
-}
-
 export function FairplayMark({ alt, className, decorative }: VisualImageProps) {
   return (
     <VisualImage

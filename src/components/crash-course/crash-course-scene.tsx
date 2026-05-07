@@ -48,11 +48,6 @@ const SCENE_DETAILS: Record<CrashCourseSceneKey, SceneDetail> = {
     label: "Handoff learning scene",
     src: "/assets/fairplay/generated-ui/crash-course/handoff.png"
   },
-  "radar-check-in": {
-    composition: "radar-check-in-signal-room",
-    label: "Radar and check-ins learning scene",
-    src: "/assets/fairplay/generated-ui/crash-course/radar-check-in.png"
-  },
   "dynamic-fair": {
     composition: "dynamic-fair-capacity-scales",
     label: "Dynamic fairness learning scene",

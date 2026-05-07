@@ -243,6 +243,7 @@ const FULL_BODY_DISPLAY_HEIGHT = characterBounds.maxY - characterBounds.minY;
 const FULL_BODY_DISPLAY_WIDTH = 86;
 const FULL_BODY_CENTER_OFFSET_Y =
   characterBounds.minY + FULL_BODY_DISPLAY_HEIGHT / 2;
+const FULL_BODY_VISUAL_BOTTOM_PADDING = 12;
 const MOBILE_FULL_BODY_VISUAL_SCALE = 0.32;
 const MOBILE_FULL_BODY_VISUAL_INLINE_NUDGE = 31;
 
@@ -447,7 +448,11 @@ function clampFullBodyAnchor(
     y: clampToViewportRange(
       anchor.y,
       bounds.minY + halfExtents.y - FULL_BODY_CENTER_OFFSET_Y + VIEWPORT_PADDING,
-      bounds.maxY - halfExtents.y - FULL_BODY_CENTER_OFFSET_Y - VIEWPORT_PADDING
+      bounds.maxY -
+        halfExtents.y -
+        FULL_BODY_CENTER_OFFSET_Y -
+        VIEWPORT_PADDING -
+        FULL_BODY_VISUAL_BOTTOM_PADDING
     )
   };
 }

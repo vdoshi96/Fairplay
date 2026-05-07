@@ -8,7 +8,6 @@ export type PageShellBackgroundId =
   | "home"
   | "library"
   | "loadMap"
-  | "radar"
   | "settings";
 
 export type PageShellBackground = {
@@ -65,11 +64,6 @@ export const PAGE_SHELL_BACKGROUNDS = {
     src: "/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png",
     testId: "page-shell-background-loadMap"
   },
-  radar: {
-    id: "radar",
-    src: "/assets/fairplay/generated-ui/backgrounds/radar-signal-room.png",
-    testId: "page-shell-background-radar"
-  },
   settings: {
     id: "settings",
     src: "/assets/fairplay/generated-ui/backgrounds/settings-preferences.png",
@@ -84,10 +78,6 @@ export function pageShellBackgroundForPathname(pathname: string) {
 
   if (pathname.startsWith("/app/library")) {
     return PAGE_SHELL_BACKGROUNDS.library;
-  }
-
-  if (pathname.startsWith("/app/radar")) {
-    return PAGE_SHELL_BACKGROUNDS.radar;
   }
 
   if (pathname.startsWith("/app/check-ins")) {

@@ -260,10 +260,14 @@ function assertCanCancel(draft: AiCardDraftDetail) {
 }
 
 function assertCanDiscard(draft: AiCardDraftDetail) {
-  if (draft.status !== "failed" && draft.status !== "canceled") {
+  if (
+    draft.status !== "failed" &&
+    draft.status !== "ready" &&
+    draft.status !== "canceled"
+  ) {
     throw new AiCardDraftServiceError(
       "INVALID_INPUT",
-      "Only failed or canceled AI card drafts can be removed."
+      "Only failed, completed, or canceled AI card drafts can be removed."
     );
   }
 }

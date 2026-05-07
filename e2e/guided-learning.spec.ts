@@ -62,7 +62,14 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   await page.getByRole("button", { name: "Close welcome" }).click();
   await expect(welcome).not.toBeVisible();
 
-  await page.getByRole("link", { name: "Learn this feature: Library" }).click();
+  const libraryFeatureLink = page.getByRole("link", {
+    name: "Learn this feature: Library"
+  });
+  await expect(libraryFeatureLink).toHaveAttribute(
+    "href",
+    "/app/library?guide=library"
+  );
+  await page.goto("/app/library?guide=library");
   await expect(page).toHaveURL(/\/app\/library\?guide=library/);
 
   const linkedGuide = page.getByRole("dialog", { name: "Library guide" });

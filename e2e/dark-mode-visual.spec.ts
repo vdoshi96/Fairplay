@@ -8,7 +8,6 @@ const appPages = [
   { name: "home", path: "/app/home", heading: "Learn Fairplay in layers" },
   { name: "library", path: "/app/library", heading: "Source deck" },
   { name: "load-map", path: "/app/load-map", heading: "Responsibility overview" },
-  { name: "radar", path: "/app/radar", heading: "Concern board" },
   { name: "check-ins", path: "/app/check-ins/new", heading: "New check-in" },
   { name: "crash-course", path: "/app/crash-course", heading: "See the hidden load" },
   { name: "settings", path: "/app/settings", heading: "Household settings" }

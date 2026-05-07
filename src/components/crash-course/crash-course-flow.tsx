@@ -12,6 +12,7 @@ type CrashCourseFlowProps = {
   completionContextLabel?: string;
   currentStep?: number;
   onProgress?: (step: number) => void;
+  onRestart?: () => void;
   onSkip?: () => void;
   onComplete?: () => void;
 };
@@ -28,6 +29,7 @@ export function CrashCourseFlow({
   completionContextLabel = "the Fairplay crash course",
   currentStep = 0,
   onProgress,
+  onRestart,
   onSkip,
   onComplete
 }: CrashCourseFlowProps) {
@@ -101,8 +103,7 @@ export function CrashCourseFlow({
               <div className="grid gap-3 text-[15px] leading-6 text-fp-muted-ink">
                 <p>
                   You now know how Fairplay treats hidden load, ownership,
-                  planning, standards, handoffs, radar, check-ins, repair, and
-                  safety.
+                  planning, standards, handoffs, check-ins, repair, and safety.
                 </p>
                 <p>
                   Next, follow the recommended learning path when you are ready
@@ -111,6 +112,16 @@ export function CrashCourseFlow({
               </div>
 
               <FeaturePathList />
+
+              {onRestart ? (
+                <button
+                  className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25"
+                  onClick={onRestart}
+                  type="button"
+                >
+                  Restart crash course
+                </button>
+              ) : null}
             </>
           ) : (
             <>

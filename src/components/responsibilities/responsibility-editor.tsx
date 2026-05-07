@@ -185,9 +185,9 @@ export function ResponsibilityEditor({
   const [revisitAt, setRevisitAt] = useState("");
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [pendingAction, setPendingAction] = useState<
-    "save" | "status" | "radar" | null
-  >(null);
+  const [pendingAction, setPendingAction] = useState<"save" | "status" | null>(
+    null
+  );
 
   const assignmentList = useMemo(
     () =>
@@ -372,41 +372,6 @@ export function ResponsibilityEditor({
       setFeedback({
         tone: "error",
         message: errorMessage(error, "Unable to update this responsibility.")
-      });
-    } finally {
-      setPendingAction(null);
-    }
-  }
-
-  async function flagForRadar() {
-    if (!initialResponsibility) {
-      return;
-    }
-
-    setFeedback(null);
-    setPendingAction("radar");
-
-    try {
-      await checkedFetch(
-        `/api/responsibilities/${initialResponsibility.id}/radar-flag`,
-        {
-          method: "POST",
-          headers: {
-            "content-type": "application/json"
-          },
-          body: JSON.stringify({
-            reasonKey: "review_due",
-            visibility: "private"
-          })
-        },
-        "Unable to flag this responsibility for radar."
-      );
-
-      setFeedback({ tone: "success", message: "Flagged for radar." });
-    } catch (error) {
-      setFeedback({
-        tone: "error",
-        message: errorMessage(error, "Unable to flag this responsibility for radar.")
       });
     } finally {
       setPendingAction(null);
@@ -666,14 +631,6 @@ export function ResponsibilityEditor({
               type="button"
             >
               Mark not relevant
-            </button>
-            <button
-              className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold"
-              disabled={actionDisabled}
-              onClick={() => void flagForRadar()}
-              type="button"
-            >
-              Flag for radar
             </button>
             <button
               className="min-h-11 rounded-[8px] border border-fp-danger bg-white px-4 text-[14px] font-bold text-fp-danger"

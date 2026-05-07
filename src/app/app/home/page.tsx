@@ -37,12 +37,6 @@ const featureCards: Array<{
     title: "Library"
   },
   {
-    body: "Capture unclear work, blockers, and topics that need calmer discussion.",
-    guideHref: "/app/radar?guide=radar",
-    guideId: "radar",
-    title: "Radar"
-  },
-  {
     body: "Turn decisions into a short agenda with clear outcomes and next steps.",
     guideHref: "/app/check-ins/new?guide=checkIns",
     guideId: "checkIns",

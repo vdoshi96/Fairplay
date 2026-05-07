@@ -152,7 +152,6 @@ export function ResponsibilityLoadMap({
   const [cadence, setCadence] = useState<CadenceFilter>("all");
   const [area, setArea] = useState("all");
   const [hiddenEffort, setHiddenEffort] = useState<HiddenEffortFilter>("all");
-  const [radar, setRadar] = useState<"all" | "flagged" | "clear">("all");
   const [reviewTiming, setReviewTiming] = useState<
     "all" | "due" | "upcoming" | "none"
   >("all");
@@ -192,10 +191,6 @@ export function ResponsibilityLoadMap({
       owner === "all" ||
       (owner === "unassigned" && currentOwners.length === 0) ||
       currentOwners.some((assignment) => assignment.personaKey === owner);
-    const radarFlagged = responsibility.linkedRadarItems.some(
-      (item) => item.state !== "resolved"
-    );
-
     const normalizedSearch = searchText.trim().toLowerCase();
 
     return (
@@ -207,9 +202,6 @@ export function ResponsibilityLoadMap({
         responsibility.hiddenEffortKeys.includes(
           hiddenEffort as HiddenEffortKey
         )) &&
-      (radar === "all" ||
-        (radar === "flagged" && radarFlagged) ||
-        (radar === "clear" && !radarFlagged)) &&
       (reviewTiming === "all" || reviewState(responsibility) === reviewTiming) &&
       (normalizedSearch.length === 0 ||
         responsibility.title.toLowerCase().includes(normalizedSearch) ||
@@ -344,7 +336,7 @@ export function ResponsibilityLoadMap({
         />
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--fp-alex),var(--fp-shared),var(--fp-max),var(--fp-radar))]"
+          className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--fp-alex),var(--fp-shared),var(--fp-max),var(--fp-helper))]"
         />
         <div className="relative z-10 grid min-w-0 gap-2 sm:gap-3">
           <div
@@ -369,12 +361,6 @@ export function ResponsibilityLoadMap({
               testId="load-map-signal-shared"
               tone="shared"
               value={String(loadSnapshot.sharedDistribution.shared ?? 0)}
-            />
-            <Signal
-              label="Open radar"
-              testId="load-map-signal-radar"
-              tone="radar"
-              value={String(loadSnapshot.radarOpenCount)}
             />
             <Signal
               label="Due review"
@@ -450,12 +436,6 @@ export function ResponsibilityLoadMap({
               />
             </FilterGroup>
             <FilterGroup legend="Attention">
-              <Select
-                label="Radar"
-                onChange={setRadar}
-                options={["all", "flagged", "clear"] as const}
-                value={radar}
-              />
               <Select
                 label="Review timing"
                 onChange={setReviewTiming}
@@ -1032,7 +1012,6 @@ const signalToneClasses = {
   cadence: "border-indigo-200 bg-indigo-50/90",
   effort: "border-violet-200 bg-violet-50/90",
   owner: "border-sky-200 bg-sky-50/90",
-  radar: "border-amber-200 bg-amber-50/90",
   reserve: "border-stone-200 bg-stone-50/90",
   review: "border-rose-200 bg-rose-50/90",
   shared: "border-teal-200 bg-teal-50/90"
@@ -1043,7 +1022,6 @@ const signalAccentClasses: Record<keyof typeof signalToneClasses, string> = {
   cadence: "bg-indigo-500",
   effort: "bg-violet-500",
   owner: "bg-sky-500",
-  radar: "bg-amber-500",
   reserve: "bg-stone-500",
   review: "bg-rose-500",
   shared: "bg-teal-500"

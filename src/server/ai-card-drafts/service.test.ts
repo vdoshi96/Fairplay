@@ -470,7 +470,7 @@ describe("AI card draft service", () => {
     }
   );
 
-  it.each(["failed", "canceled"] as const)(
+  it.each(["failed", "ready", "canceled"] as const)(
     "discards %s drafts through the repository",
     async (status) => {
       const deps = makeDeps({
@@ -484,7 +484,7 @@ describe("AI card draft service", () => {
     }
   );
 
-  it.each(["processing", "ready", "accepted"] as const)(
+  it.each(["processing", "accepted"] as const)(
     "rejects discarding %s drafts",
     async (status) => {
       const deps = makeDeps({

@@ -11,7 +11,7 @@ The visual tone can be cute and companionable, but it must stay adult, useful, a
 - Mobile-first and scanable: information should be legible in short sessions on a phone.
 - Warm, not childish: rounded shapes, simple characters, and small celebrations are welcome; toy-like, patronizing, or babyish art is not.
 - Practical, not clinical: avoid therapy-office cues, diagnostic charts, crisis language, and moral judgment.
-- Non-punitive: owner distribution, radar, and check-ins must never look like partner scores, winner/loser comparisons, or failure proof.
+- Non-punitive: owner distribution and check-ins must never look like partner scores, winner/loser comparisons, or failure proof.
 - Explicit visibility: private, shared, partner-visible, and check-in-only states need clear labels and consistent icon/color support.
 - Original by default: no source deck/card visuals, no copied public app style, no workbook/table mimicry, no source character designs, and no proprietary taxonomy.
 
@@ -32,7 +32,6 @@ Use a balanced palette with warm neutrals, fresh accents, and strong text contra
 | `--fp-max` | `#4568D9` | Max avatar and ownership accent |
 | `--fp-shared` | `#D9714A` | Shared ownership and handoff accent |
 | `--fp-helper` | `#F2B84B` | Helper motif and gentle highlights |
-| `--fp-radar` | `#8B5FBF` | Radar concerns, used sparingly |
 | `--fp-success` | `#2F9F68` | Completion and resolved states |
 | `--fp-caution` | `#B7791F` | Needs-review and soon states |
 | `--fp-danger` | `#B94A48` | Destructive confirmation only |
@@ -44,8 +43,7 @@ Use a balanced palette with warm neutrals, fresh accents, and strong text contra
 - Alex accent: `--fp-alex` as border/icon on light surfaces; use `--fp-ink` for text beside it.
 - Max accent: `--fp-max` as border/icon on light surfaces; use white text only on large filled Max buttons or badges.
 - Shared accent: `--fp-shared` for ownership chips and handoff states; avoid pairing it with long white text unless contrast is verified.
-- Radar accent: use as icon, left border, or small status dot. Do not flood concern screens with purple.
-- Danger: reserve for destructive confirmations; never use red to shame an owner, radar item, or overdue review.
+- Danger: reserve for destructive confirmations; never use red to shame an owner or overdue review.
 
 ## Type Direction
 
@@ -88,8 +86,8 @@ Use an 8px spacing grid with compact mobile-first density:
 ### App Shell
 
 - Quiet header with active persona, household name, and a clear persona switch affordance.
-- Bottom navigation on mobile for Home, Load Map, Radar, Check-In, Settings.
-- Visual assets should sit beside the workflow, not in front of it: small avatar in the shell, helper mascot in onboarding or empty states, small radar illustration in low-density moments.
+- Bottom navigation on mobile for Home, Load Map, Library, Check-Ins, Crash Course, and Settings.
+- Visual assets should sit beside the workflow, not in front of it: small avatar in the shell and helper mascot in onboarding or empty states.
 
 ### Responsibility Rows
 
@@ -97,13 +95,6 @@ Use an 8px spacing grid with compact mobile-first density:
 - Owner indicators should be small avatar dots or color rails, not full character art in every row.
 - Shared ownership should use a braided or linked-dot motif, not a versus layout.
 - Avoid red overdue shame. Use "Needs review" or "Review soon" visual tone with caution accents.
-
-### Radar
-
-- Radar should feel like a shared attention board, not an accusation board.
-- Use pulse/ring motifs, quiet dots, or signal arcs for "needs attention."
-- Private drafts need clear lock or visibility language and a distinct but calm visual treatment.
-- Publishing a private item must have a confirmation moment; do not animate it as a dramatic reveal.
 
 ### Check-Ins
 
@@ -156,12 +147,6 @@ Prompt: "Create an original neutral household helper mascot for Fairplay, a prac
 
 Negative prompt: "No animals, no robots that look clinical, no therapy symbol, no broom/mop stereotype, no chore pile, no card deck, no printable card, no source-like household method imagery, no copied public app art, no gendered role cues."
 
-### Radar Board Illustration
-
-Prompt: "Create an original mobile app empty-state illustration for Fairplay's shared radar. Show a calm circular radar pulse with two balanced persona dots and a small helper spark near the edge. Include subtle labels only as abstract line shapes, not readable text. Mood is practical, warm, and low-stress. Use light background, teal, blue, coral, yellow, and a small purple radar accent. Clean vector-like shapes."
-
-Negative prompt: "No Trello board layout, no columns, no cards, no deck, no worksheet grid, no copied category labels, no alarm or danger siren, no partner blame, no score, no red angry marks, no source visual style."
-
 ### Check-In Celebration
 
 Prompt: "Create an original small celebration illustration for completing a household check-in in Fairplay. Show Alex and Max avatar dots or simplified faces near a shared path with a few soft confetti shapes, one helper spark, and a completed review loop. The tone is relieved and calm, not party-like or childish. Clean vector-like style, high contrast, light background, no text."
@@ -184,7 +169,6 @@ Negative prompt: "No playing cards, no deck, no board columns, no chore checklis
 Recommended animation names for implementation:
 
 - `fp-persona-bob`: optional idle/hover avatar movement, 2px to 4px vertical travel, 3s to 5s loop, paused by default unless near active persona UI.
-- `fp-radar-pulse`: subtle expanding ring for radar attention, low opacity, 1.8s to 2.4s loop, no red flashing.
 - `fp-assignment-shift`: ownership transition between persona dots, 260ms path/opacity movement with clear final label.
 - `fp-checkin-spark`: small completion burst using 5 to 9 geometric pieces, 500ms max, non-looping.
 - `fp-panel-enter`: list or step entry, 160ms opacity plus 4px upward movement.
@@ -196,7 +180,6 @@ Approved placeholder SVGs live in `docs/assets/visuals/`:
 - `alex-avatar.svg`
 - `max-avatar.svg`
 - `helper-mascot.svg`
-- `radar-board-placeholder.svg`
 - `pwa-icon-concept.svg`
 
 These are documentation assets and source-of-direction placeholders. T09 may copy approved SVGs into `public/assets/fairplay/` or use them as references for implementation, preserving originality and accessibility rules.

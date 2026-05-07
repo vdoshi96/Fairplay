@@ -72,7 +72,8 @@ export function CrashCoursePageClient({
 
   async function updatePreferences(
     nextStatus: "active" | "skipped" | "completed",
-    nextStep = currentStep
+    nextStep = currentStep,
+    replayRequested = false
   ) {
     const now = new Date().toISOString();
     setSaving(true);
@@ -85,7 +86,8 @@ export function CrashCoursePageClient({
         body: JSON.stringify({
           crashCourseCurrentStep: nextStep,
           crashCourseSkippedAt: nextStatus === "skipped" ? now : null,
-          crashCourseCompletedAt: nextStatus === "completed" ? now : null
+          crashCourseCompletedAt: nextStatus === "completed" ? now : null,
+          ...(replayRequested ? { crashCourseReplayRequestedAt: now } : {})
         })
       });
 
@@ -153,6 +155,7 @@ export function CrashCoursePageClient({
         onComplete={() =>
           void updatePreferences("completed", CRASH_COURSE_LESSONS.length - 1)
         }
+        onRestart={() => void updatePreferences("active", 0, true)}
       />
     </section>
   );

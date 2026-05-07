@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { PersonaSummary } from "@/contracts/personas";
@@ -45,5 +46,52 @@ describe("crash course page client", () => {
     expect(
       screen.queryByText("Course marked complete for your active persona.")
     ).not.toBeInTheDocument();
+  });
+
+  it("restarts a completed crash course from lesson one", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          crashCourseCompletedAt: "2026-05-05T12:00:00.000Z",
+          crashCourseCurrentStep: 4,
+          crashCourseReplayRequestedAt: null,
+          crashCourseSkippedAt: null,
+          personaId: selectedPersona.id,
+          updatedAt: "2026-05-05T12:00:00.000Z",
+          welcomeDismissedAt: null
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({})
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<CrashCoursePageClient selectedPersona={selectedPersona} />);
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Restart crash course" })
+    );
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/preferences/onboarding",
+        expect.objectContaining({ method: "PATCH" })
+      )
+    );
+    const patchCall = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        url === "/api/preferences/onboarding" && init?.method === "PATCH"
+    );
+    expect(JSON.parse((patchCall?.[1] as RequestInit).body as string)).toMatchObject({
+      crashCourseCompletedAt: null,
+      crashCourseCurrentStep: 0,
+      crashCourseSkippedAt: null
+    });
+    expect(
+      await screen.findByRole("heading", { name: "See the hidden load" })
+    ).toBeVisible();
   });
 });

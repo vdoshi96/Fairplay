@@ -9,7 +9,7 @@ async function mockCheckInFlow(page: Page) {
           <h1>New check-in</h1>
           <section aria-label="Agenda preview">
             <article><h2>Meal plan review</h2><span>Review due</span></article>
-            <article id="radar"><h2>Clarify morning handoff</h2><span>Check-in only</span></article>
+            <article id="partner-topic"><h2>Clarify morning handoff</h2><span>Check-in only</span></article>
           </section>
           <button id="start">Start check-in</button>
           <section aria-label="Current item" id="current"></section>

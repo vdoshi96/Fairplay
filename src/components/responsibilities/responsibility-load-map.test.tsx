@@ -96,7 +96,7 @@ describe("ResponsibilityLoadMap", () => {
     );
   });
 
-  it("filters by owner, status, cadence, area, hidden effort, radar flag, and review timing", () => {
+  it("filters by owner, status, cadence, area, hidden effort, and review timing", () => {
     render(
       <ResponsibilityLoadMap
         loadSnapshot={loadSnapshot}
@@ -140,9 +140,6 @@ describe("ResponsibilityLoadMap", () => {
     fireEvent.change(screen.getByLabelText("Hidden effort"), {
       target: { value: "doing" }
     });
-    fireEvent.change(screen.getByLabelText("Radar"), {
-      target: { value: "flagged" }
-    });
     fireEvent.change(screen.getByLabelText("Review timing"), {
       target: { value: "upcoming" }
     });
@@ -168,8 +165,9 @@ describe("ResponsibilityLoadMap", () => {
     expect(details).toContainElement(screen.getByLabelText("Status"));
     expect(details).toContainElement(screen.getByLabelText("Cadence"));
     expect(details).toContainElement(screen.getByLabelText("Area"));
-    expect(attention).toContainElement(screen.getByLabelText("Radar"));
     expect(attention).toContainElement(screen.getByLabelText("Review timing"));
+    expect(screen.queryByLabelText("Radar")).not.toBeInTheDocument();
+    expect(screen.queryByText("Open radar")).not.toBeInTheDocument();
     expect(screen.getByTestId("load-map-diagnostics")).toContainElement(
       screen.getByText("Hidden effort mix")
     );
@@ -253,7 +251,7 @@ describe("ResponsibilityLoadMap", () => {
     );
   });
 
-  it("treats resolved linked radar items as clear", () => {
+  it("does not expose linked radar filters or labels on the Load Map", () => {
     render(
       <ResponsibilityLoadMap
         loadSnapshot={loadSnapshot}
@@ -270,11 +268,9 @@ describe("ResponsibilityLoadMap", () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText("Radar"), {
-      target: { value: "clear" }
-    });
-
     expect(screen.getByText("Weekly meal outline")).toBeVisible();
+    expect(screen.queryByLabelText("Radar")).not.toBeInTheDocument();
+    expect(screen.queryByText(/radar/i)).not.toBeInTheDocument();
   });
 
   it("shows area and hidden effort summary signals from the snapshot", () => {
