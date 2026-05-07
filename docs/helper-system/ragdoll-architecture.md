@@ -55,7 +55,7 @@ Wall impacts are already handled by Matter.js walls and restitution. Ragdoll lim
 Recovery should use the existing idle transition timing. When idle leaves `active` after a release:
 
 1. Enter `recovering`.
-2. Let CSS or a small interpolation step move visible parts toward neutral.
+2. Apply the `recovering` DOM state before `setIdlePose` writes neutral part transforms, so the recovery transform transition is active before limbs move back.
 3. Reveal the full-body sprite.
 4. Return to `settled`.
 
