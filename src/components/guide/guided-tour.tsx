@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,32 @@ type HighlightBox = {
   width: number;
 };
 
+type DialogPlacement = {
+  left: number | string;
+  maxHeight: number | string;
+  top: number | string;
+  width: number | string;
+};
+
+type NumericDialogPlacement = {
+  left: number;
+  maxHeight: number;
+  top: number;
+  width: number;
+};
+
 const highlightPadding = 8;
+const dialogViewportMargin = 16;
+const dialogTargetGap = 12;
+const maxDialogWidth = 480;
+const fallbackDialogHeight = 280;
 
 export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [highlightBox, setHighlightBox] = useState<HighlightBox | null>(null);
+  const [dialogPlacement, setDialogPlacement] = useState<DialogPlacement>(
+    getInitialDialogPlacement
+  );
   const [completedPracticeEventIds, setCompletedPracticeEventIds] = useState<
     Set<string>
   >(() => new Set());
@@ -66,7 +87,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
   const [practiceSurfaceBox, setPracticeSurfaceBox] =
     useState<HighlightBox | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         onExit();
@@ -153,6 +174,26 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       window.removeEventListener("scroll", remeasureHighlight, true);
     };
   }, [activeStep]);
+
+  useEffect(() => {
+    function updateDialogPlacement() {
+      setDialogPlacement(
+        getDialogPlacement({
+          dialogElement: dialogRef.current,
+          highlightBox
+        })
+      );
+    }
+
+    updateDialogPlacement();
+    window.addEventListener("resize", updateDialogPlacement);
+    window.addEventListener("scroll", updateDialogPlacement, true);
+
+    return () => {
+      window.removeEventListener("resize", updateDialogPlacement);
+      window.removeEventListener("scroll", updateDialogPlacement, true);
+    };
+  }, [activeIndex, activeStep, highlightBox]);
 
   useEffect(() => {
     if (!allowsRequiredPracticeInteraction) {
@@ -299,12 +340,23 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       <section
         aria-label={`${featureName} guide`}
         aria-modal="true"
-        className="pointer-events-auto fixed bottom-4 left-1/2 z-[70] grid max-h-[calc(100dvh-2rem)] w-[min(92vw,30rem)] -translate-x-1/2 gap-4 overflow-y-auto rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 text-fp-ink shadow-[var(--fp-shadow-elevated)] outline-none sm:bottom-6 sm:left-auto sm:right-6 sm:translate-x-0"
+        className="pointer-events-auto fixed z-[70] grid grid-rows-[minmax(0,1fr)_auto] gap-4 overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 text-fp-ink shadow-[var(--fp-shadow-elevated)] outline-none"
         ref={dialogRef}
         role="dialog"
+        style={{
+          left: dialogPlacement.left,
+          maxHeight: dialogPlacement.maxHeight,
+          top: dialogPlacement.top,
+          width: dialogPlacement.width
+        }}
         tabIndex={-1}
       >
-        <div className="grid gap-2">
+        <div
+          aria-label={`${activeStep.title} guide text`}
+          className="grid min-h-0 gap-2 overflow-y-auto pr-1"
+          data-testid="guide-dialog-body"
+          tabIndex={0}
+        >
           <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
             Step {activeIndex + 1} of {steps.length}
           </p>
@@ -386,7 +438,8 @@ function targetIsVisible(rect: DOMRect): boolean {
   }
 
   const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  const viewportHeight =
+    window.innerHeight || document.documentElement.clientHeight;
 
   return (
     rect.bottom > 0 &&
@@ -394,4 +447,129 @@ function targetIsVisible(rect: DOMRect): boolean {
     rect.left < viewportWidth &&
     rect.top < viewportHeight
   );
+}
+
+function getInitialDialogPlacement(): DialogPlacement {
+  return {
+    left: dialogViewportMargin,
+    maxHeight: `calc(100dvh - ${dialogViewportMargin * 2}px)`,
+    top: dialogViewportMargin,
+    width: `min(calc(100dvw - ${dialogViewportMargin * 2}px), ${maxDialogWidth}px)`
+  };
+}
+
+function getDialogPlacement({
+  dialogElement,
+  highlightBox
+}: {
+  dialogElement: HTMLDivElement | null;
+  highlightBox: HighlightBox | null;
+}): DialogPlacement {
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  const margin = Math.min(
+    dialogViewportMargin,
+    Math.max(0, Math.floor(Math.min(viewportWidth, viewportHeight) / 2))
+  );
+  const availableWidth = Math.max(0, viewportWidth - margin * 2);
+  const width = Math.min(maxDialogWidth, availableWidth);
+  const measuredRect = dialogElement?.getBoundingClientRect();
+  const measuredHeight =
+    measuredRect && measuredRect.height > 0
+      ? measuredRect.height
+      : fallbackDialogHeight;
+  const height = Math.min(measuredHeight, Math.max(0, viewportHeight - margin * 2));
+  const fallbackLeft = viewportWidth - margin - width;
+  const fallbackTop = viewportHeight - margin - height;
+
+  if (!highlightBox) {
+    const top = clamp(
+      fallbackTop,
+      margin,
+      Math.max(margin, viewportHeight - margin)
+    );
+    return {
+      left: clamp(
+        fallbackLeft,
+        margin,
+        Math.max(margin, viewportWidth - margin - width)
+      ),
+      maxHeight: Math.max(0, viewportHeight - top - margin),
+      top,
+      width
+    };
+  }
+
+  const highlightRight = highlightBox.left + highlightBox.width;
+  const highlightBottom = highlightBox.top + highlightBox.height;
+  const highlightCenterX = highlightBox.left + highlightBox.width / 2;
+  const highlightCenterY = highlightBox.top + highlightBox.height / 2;
+  const maxLeft = Math.max(margin, viewportWidth - margin - width);
+  const maxTop = Math.max(margin, viewportHeight - margin - height);
+  const candidates = [
+    {
+      left: highlightCenterX - width / 2,
+      top: highlightBottom + dialogTargetGap
+    },
+    {
+      left: highlightCenterX - width / 2,
+      top: highlightBox.top - dialogTargetGap - height
+    },
+    {
+      left: highlightBox.left - dialogTargetGap - width,
+      top: highlightCenterY - height / 2
+    },
+    {
+      left: highlightRight + dialogTargetGap,
+      top: highlightCenterY - height / 2
+    },
+    {
+      left: fallbackLeft,
+      top: fallbackTop
+    }
+  ].map((candidate) => {
+    const top = clamp(candidate.top, margin, maxTop);
+    return {
+      left: clamp(candidate.left, margin, maxLeft),
+      maxHeight: Math.max(0, viewportHeight - top - margin),
+      top,
+      width
+    };
+  });
+
+  return candidates.reduce((best, candidate) => {
+    const bestScore = scorePlacement(best, highlightBox, height);
+    const candidateScore = scorePlacement(candidate, highlightBox, height);
+    return candidateScore > bestScore ? candidate : best;
+  });
+}
+
+function scorePlacement(
+  placement: NumericDialogPlacement,
+  highlightBox: HighlightBox,
+  dialogHeight: number
+): number {
+  const placementRight = placement.left + placement.width;
+  const placementBottom =
+    placement.top + Math.min(dialogHeight, placement.maxHeight);
+  const highlightRight = highlightBox.left + highlightBox.width;
+  const highlightBottom = highlightBox.top + highlightBox.height;
+  const overlapWidth = Math.max(
+    0,
+    Math.min(placementRight, highlightRight) -
+      Math.max(placement.left, highlightBox.left)
+  );
+  const overlapHeight = Math.max(
+    0,
+    Math.min(placementBottom, highlightBottom) -
+      Math.max(placement.top, highlightBox.top)
+  );
+  const overlapArea = overlapWidth * overlapHeight;
+  const visibleHeight = Math.min(dialogHeight, placement.maxHeight);
+
+  return visibleHeight - overlapArea * 4;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
 }
