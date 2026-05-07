@@ -372,6 +372,31 @@ export async function cancelAiCardDraft(
   return toDetail(draft);
 }
 
+export async function deleteAiCardDraft(
+  input: ScopedAiCardDraftInput
+): Promise<void> {
+  const result = await prisma.aiCardDraft.deleteMany({
+    where: {
+      id: input.draftId,
+      householdId: input.householdId,
+      status: { in: ["failed", "canceled"] }
+    }
+  });
+
+  if (result.count === 1) {
+    return;
+  }
+
+  const existing = await getScopedDraft(input);
+  if (existing) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Only failed or canceled AI card drafts can be removed."
+    );
+  }
+  throw new RepositoryError("NOT_FOUND", "AI card draft not found for household.");
+}
+
 export async function markAiCardDraftAccepted(input: ScopedAiCardDraftInput & {
   acceptedResponsibilityId: ResponsibilityId;
 }): Promise<AiCardDraftDetail> {

@@ -23,7 +23,8 @@ const draftIds = {
   processing: "550e8400-e29b-41d4-a716-446655440010",
   failed: "550e8400-e29b-41d4-a716-446655440011",
   ready: "550e8400-e29b-41d4-a716-446655440012",
-  accepted: "550e8400-e29b-41d4-a716-446655440013"
+  accepted: "550e8400-e29b-41d4-a716-446655440013",
+  canceled: "550e8400-e29b-41d4-a716-446655440014"
 };
 
 function draft(
@@ -145,7 +146,9 @@ describe("AiTaskManager", () => {
 
     const failedDraft = screen.getByRole("article", { name: /failed draft/i });
     expect(within(failedDraft).getByRole("button", { name: "Retry" })).toBeVisible();
-    expect(within(failedDraft).getByRole("button", { name: "Cancel" })).toBeVisible();
+    expect(within(failedDraft).getByRole("button", { name: "Remove" })).toBeVisible();
+    expect(within(failedDraft).queryByRole("button", { name: "Cancel" }))
+      .not.toBeInTheDocument();
 
     const readyDraft = screen.getByRole("article", { name: /laundry reset/i });
     expect(within(readyDraft).getByRole("button", { name: "Review" })).toBeVisible();
@@ -259,6 +262,155 @@ describe("AiTaskManager", () => {
       (await screen.findAllByText("AI card draft generation failed. Reference fp_ai_test."))
         .length
     ).toBeGreaterThan(0);
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("lets failed and canceled drafts be removed without trapping the tracker", async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (
+        url === `/api/ai-card-drafts/${draftIds.failed}` &&
+        init?.method === "DELETE"
+      ) {
+        return {
+          ok: true,
+          json: async () => ({ ok: true })
+        };
+      }
+
+      if (
+        url === `/api/ai-card-drafts/${draftIds.canceled}` &&
+        init?.method === "DELETE"
+      ) {
+        return {
+          ok: true,
+          json: async () => ({ ok: true })
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <AiTaskManager
+        drafts={[
+          draft({
+            id: draftIds.failed,
+            status: "failed",
+            generationStage: "failed",
+            promptPreview: "Recycling task request",
+            failureMessage: "AI card draft generation failed."
+          }),
+          draft({
+            id: draftIds.canceled,
+            status: "canceled",
+            generationStage: "failed",
+            promptPreview: "Canceled recycling task request",
+            failureMessage: "AI card draft generation failed."
+          })
+        ]}
+      />
+    );
+
+    const failedDraft = screen.getByRole("article", {
+      name: /recycling task request failed draft/i
+    });
+    expect(within(failedDraft).getByRole("button", { name: "Retry" })).toBeVisible();
+    expect(within(failedDraft).getByRole("button", { name: "Remove" })).toBeVisible();
+    expect(within(failedDraft).queryByRole("button", { name: "Cancel" }))
+      .not.toBeInTheDocument();
+
+    const canceledDraft = screen.getByRole("article", {
+      name: /canceled recycling task request canceled draft/i
+    });
+    expect(within(canceledDraft).getByRole("button", { name: "Remove" })).toBeVisible();
+    expect(within(canceledDraft).queryByRole("button", { name: "Retry" }))
+      .not.toBeInTheDocument();
+    expect(within(canceledDraft).queryByRole("button", { name: "Cancel" }))
+      .not.toBeInTheDocument();
+
+    await userEvent.click(within(failedDraft).getByRole("button", { name: "Remove" }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/ai-card-drafts/${draftIds.failed}`,
+        expect.objectContaining({ method: "DELETE" })
+      )
+    );
+    expect(
+      screen.queryByRole("article", {
+        name: /recycling task request failed draft/i
+      })
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(
+      within(canceledDraft).getByRole("button", { name: "Remove" })
+    );
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/ai-card-drafts/${draftIds.canceled}`,
+        expect.objectContaining({ method: "DELETE" })
+      )
+    );
+    expect(
+      screen.queryByRole("article", {
+        name: /canceled recycling task request canceled draft/i
+      })
+    ).not.toBeInTheDocument();
+    expect(routerRefresh).toHaveBeenCalledTimes(2);
+  });
+
+  it("updates a failed draft after retry succeeds without waiting for refreshed props", async () => {
+    const failedDraft = draft({
+      id: draftIds.failed,
+      status: "failed",
+      generationStage: "failed",
+      failureMessage: "The model timed out."
+    });
+    const retriedDetail = detail({
+      id: draftIds.failed,
+      title: "Lunch packing",
+      inputText: "Make a card for packing lunches."
+    });
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (
+        url === `/api/ai-card-drafts/${draftIds.failed}/retry` &&
+        init?.method === "POST"
+      ) {
+        return {
+          ok: true,
+          json: async () => retriedDetail
+        };
+      }
+
+      if (url === `/api/ai-card-drafts/${draftIds.failed}` && !init) {
+        return {
+          ok: true,
+          json: async () => retriedDetail
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AiTaskManager drafts={[failedDraft]} />);
+
+    await userEvent.click(
+      within(screen.getByRole("article", { name: /failed draft/i })).getByRole(
+        "button",
+        { name: /laundry keeps slipping/i }
+      )
+    );
+    await userEvent.click(
+      within(screen.getByRole("region", { name: "Review AI card draft" })).getByRole(
+        "button",
+        { name: "Retry" }
+      )
+    );
+
+    expect(await screen.findByLabelText("Draft title")).toHaveValue("Lunch packing");
+    expect(screen.getByText("Make a card for packing lunches.")).toBeVisible();
+    expect(screen.queryByText("The model timed out.")).not.toBeInTheDocument();
     expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
