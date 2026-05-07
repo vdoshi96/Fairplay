@@ -1,5 +1,34 @@
 # Fairplay Context Log
 
+## 2026-05-07 - Learn This Feature Onboarding Fixes
+
+Requested by the user: fix the Learn this feature onboarding workflows across Load Map, Library, Check-ins, and Settings using controller/worker subagents and focused branches.
+
+Actions completed:
+
+- Fixed the shared guide overlay so the explanation card is dynamically placed within the viewport and portaled above feature layouts.
+- Fixed Settings guide startup so Settings launches the Settings-specific flow rather than Load Map.
+- Clarified Check-ins dummy onboarding copy and action order.
+- Added a temporary Library onboarding preview route that uses the learner's dummy request and does not persist a real card.
+- Added reset events so dummy onboarding UI is removed on guide skip, completion, dismissal, or unmount.
+- Added inline pointer/arrow callouts for the next required dummy action across Load Map, Library, Check-ins, and Settings.
+- Left Crash Course unchanged.
+- Added implementation documentation in `docs/implementation/2026-05-07-learn-feature-onboarding.md`.
+
+Branches and PRs:
+
+- `codex/onboarding-overlay-positioning`, PR #24.
+- `codex/onboarding-settings-checkins-flow`, PR #25.
+- `codex/onboarding-library-draft-generation`, PR #26.
+- `codex/onboarding-dummy-cleanup`, PR #27.
+- `codex/onboarding-click-guidance`, PR #28.
+
+Verification:
+
+- Focused Vitest suites passed on each implementation branch.
+- `npm run typecheck` and `npm run lint` passed on each implementation branch.
+- PR #28 Vercel preview failed before build because Prisma could not reach `db.prisma.io:5432` (`P1001`); the failure was documented on the PR and local validation passed.
+
 ## 2026-05-07 - Crash Course Storyboard Refresh
 
 Requested by the user: put the crash-course storyboard and course text close together, make the text read like subtitles for the images, break the course into more parts, and generate new Qwen images that follow the course text.

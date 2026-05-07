@@ -30,6 +30,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 - `../product/visual-system.md`: visual and motion direction.
 - `../deployment/local-development.md`: local DB and verification workflow.
 - `../agents/manifest.md`: historical agent task registry.
+- `../implementation/2026-05-07-learn-feature-onboarding.md`: current Learn this feature onboarding fixes and QA notes.
 
 ## Current Cleanup Priority
 

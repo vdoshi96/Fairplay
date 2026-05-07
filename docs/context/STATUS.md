@@ -4,14 +4,13 @@ Last updated: 2026-05-07
 
 ## Current Phase
 
-Repo indexing and durable memory bootstrap on `main`.
+Learn this feature onboarding fixes have landed through focused implementation PRs. Documentation and final verification are in progress.
 
 ## Branch And Working Tree
 
-- Current branch: `main`.
-- Remote tracking: `main...origin/main`.
-- Git status before this memory pass: clean.
-- Latest visible commit during indexing: `f2b4b87` merge of `codex/product-surface-cleanup`.
+- Current branch during this docs pass: `codex/onboarding-docs-qa`.
+- Remote tracking before docs edits: local `main` matched `origin/main`.
+- Latest visible implementation merge before docs edits: `471f4a7` merge of `codex/onboarding-click-guidance`.
 
 ## What Exists
 
@@ -23,6 +22,10 @@ Repo indexing and durable memory bootstrap on `main`.
 
 ## Recent Product State
 
+- Learn this feature guides across Load Map, Library, Check-ins, and Settings now use viewport-aware card positioning, body-level guide portaling, clearer flow-specific copy, temporary dummy workflows, cleanup on guide exit, and inline next-action guidance.
+- Settings Learn this feature starts the Settings guide directly.
+- Check-ins dummy onboarding clearly previews a temporary agenda and walks through the next dummy action.
+- Library dummy onboarding generates a temporary preview from the learner-entered request through `/api/ai-card-drafts/onboarding-preview` without persisting a real card.
 - Product-surface cleanup retired the Radar page/component from the app navigation surface.
 - This cleanup pass removed the Radar backend/API/model/assets from the active product surface.
 - AI card generation was restored to produce generated cover art for successful text-input drafts.
@@ -49,6 +52,7 @@ Result: requested files are present and non-empty. The trailing-whitespace scan 
 
 ## Known Blockers
 
+- Vercel preview for PR #28 failed before build because `prisma migrate deploy` could not reach `db.prisma.io:5432` (`P1001`). Local tests, typecheck, and lint passed; confirm deployment DB reachability before release.
 - Live DB-backed verification has historically been blocked when Docker/Postgres is unavailable. Run the DB-backed repository tests and persisted browser flows in a Postgres-capable environment before release.
 - `.env.local` exists locally and is ignored; it was not read.
 - `References/` exists locally and is ignored; it was not read.
