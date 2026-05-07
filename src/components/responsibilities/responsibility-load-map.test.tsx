@@ -433,6 +433,46 @@ describe("ResponsibilityLoadMap", () => {
     expect(onMove).not.toHaveBeenCalled();
   });
 
+  it("keeps an open real move menu usable after guide practice cleanup", async () => {
+    const onMove = vi.fn();
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        onMove={onMove}
+        responsibilities={[
+          responsibility({
+            id: "550e8400-e29b-41d4-a716-446655440041",
+            title: "Auto",
+            boardLane: "not_in_play"
+          })
+        ]}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Move Auto" }));
+    expect(screen.getByRole("menuitem", { name: "Alex" })).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(screen.getByRole("button", { name: "Next" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+    );
+    expect(screen.getByTestId("load-map-practice-board")).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "Skip" }));
+
+    expect(screen.queryByTestId("load-map-practice-board")).not.toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Alex" })).toBeVisible();
+
+    await userEvent.click(screen.getByRole("menuitem", { name: "Alex" }));
+
+    expect(onMove).toHaveBeenCalledWith({
+      responsibilityId: "550e8400-e29b-41d4-a716-446655440041",
+      toLane: "player_1"
+    });
+  });
+
   it("removes the dummy setup workflow after guide completion", async () => {
     const onMove = vi.fn();
     render(

@@ -165,7 +165,6 @@ export function ResponsibilityLoadMap({
   }, []);
   const resetLoadMapPractice = useCallback(() => {
     setPracticeBoardOpen(false);
-    setOpenMoveMenuId(null);
   }, []);
 
   useGuidePracticeRequest("load-map-practice-start", openLoadMapPractice);
