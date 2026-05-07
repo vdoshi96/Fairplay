@@ -28,6 +28,7 @@ import {
   useGuidePracticeRequest,
   useGuidePracticeReset
 } from "@/components/guide/guide-practice";
+import { PracticeActionGuidance } from "@/components/guide/practice-action-guidance";
 import { useTheme, type ResolvedTheme } from "@/components/theme/theme-provider";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { DecorativeBackgroundLayer } from "@/components/visuals/fairplay-visuals";
@@ -673,13 +674,18 @@ export function SettingsPanel({
             <p className="text-[14px] leading-5 text-fp-muted-ink">
               This is a local practice confirmation. It will not leave Settings.
             </p>
-            <button
-              className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-4 text-[14px] font-semibold text-fp-ink"
-              onClick={() => setDummyPersonaConfirmOpen(false)}
-              type="button"
+            <PracticeActionGuidance
+              actionLabel="Stay in settings"
+              wrapperClassName="mt-1"
             >
-              Stay in settings
-            </button>
+              <button
+                className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-4 text-[14px] font-semibold text-fp-ink"
+                onClick={() => setDummyPersonaConfirmOpen(false)}
+                type="button"
+              >
+                Stay in settings
+              </button>
+            </PracticeActionGuidance>
           </div>
         </div>
       ) : null}
@@ -695,6 +701,10 @@ function SettingsPracticeWorkflow({
   const [appearanceMode, setAppearanceMode] = useState<"system" | "light" | "dark">(
     "system"
   );
+  const [appearanceChanged, setAppearanceChanged] = useState(false);
+  const [welcomeChecked, setWelcomeChecked] = useState(false);
+  const [personaConfirmOpened, setPersonaConfirmOpened] = useState(false);
+  const [learningHubLocated, setLearningHubLocated] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
   function mark(eventId: string, message: string) {
@@ -716,57 +726,82 @@ function SettingsPracticeWorkflow({
           Practice settings actions locally without changing household data.
         </p>
       </div>
-      <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-        Dummy appearance mode
-        <select
-          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
-          onChange={(event) => {
-            const value = event.target.value as "system" | "light" | "dark";
-            setAppearanceMode(value);
-            mark(
-              "settings-appearance-mode",
-              `Dummy appearance mode changed to ${label(value)}.`
-            );
-          }}
-          value={appearanceMode}
+      <PracticeActionGuidance
+        actionLabel="Choose a dummy appearance mode"
+        active={!appearanceChanged}
+        kind="action"
+      >
+        <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+          Dummy appearance mode
+          <select
+            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
+            onChange={(event) => {
+              const value = event.target.value as "system" | "light" | "dark";
+              setAppearanceMode(value);
+              setAppearanceChanged(true);
+              mark(
+                "settings-appearance-mode",
+                `Dummy appearance mode changed to ${label(value)}.`
+              );
+            }}
+            value={appearanceMode}
+          >
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+      </PracticeActionGuidance>
+      <div className="flex flex-wrap items-start gap-2">
+        <PracticeActionGuidance
+          actionLabel="Check dummy welcome replay"
+          active={appearanceChanged && !welcomeChecked}
         >
-          <option value="system">System</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-      </label>
-      <div className="flex flex-wrap gap-2">
-        <button
-          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-          onClick={() =>
-            mark("settings-welcome-replay", "Dummy welcome replay checked.")
-          }
-          type="button"
+          <button
+            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+            onClick={() => {
+              setWelcomeChecked(true);
+              mark("settings-welcome-replay", "Dummy welcome replay checked.");
+            }}
+            type="button"
+          >
+            Check dummy welcome replay
+          </button>
+        </PracticeActionGuidance>
+        <PracticeActionGuidance
+          actionLabel="Open dummy persona confirmation"
+          active={welcomeChecked && !personaConfirmOpened}
         >
-          Check dummy welcome replay
-        </button>
-        <button
-          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-          onClick={() => {
-            onOpenPersonaConfirm();
-            mark(
-              "settings-persona-confirm",
-              "Dummy persona confirmation opened."
-            );
-          }}
-          type="button"
+          <button
+            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+            onClick={() => {
+              setPersonaConfirmOpened(true);
+              onOpenPersonaConfirm();
+              mark(
+                "settings-persona-confirm",
+                "Dummy persona confirmation opened."
+              );
+            }}
+            type="button"
+          >
+            Open dummy persona confirmation
+          </button>
+        </PracticeActionGuidance>
+        <PracticeActionGuidance
+          actionLabel="Locate dummy learning hub"
+          active={personaConfirmOpened && !learningHubLocated}
         >
-          Open dummy persona confirmation
-        </button>
-        <button
-          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-          onClick={() =>
-            mark("settings-learning-hub", "Dummy learning hub located.")
-          }
-          type="button"
-        >
-          Locate dummy learning hub
-        </button>
+          <button
+            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+            onClick={() => {
+              setLearningHubLocated(true);
+              mark("settings-learning-hub", "Dummy learning hub located.");
+            }}
+            type="button"
+          >
+            Locate dummy learning hub
+          </button>
+        </PracticeActionGuidance>
       </div>
       {status ? (
         <p

@@ -17,6 +17,7 @@ import {
   resetGuidePractice
 } from "./guide-practice";
 import type { GuideStep } from "./guide-content";
+import { PracticeActionGuidance } from "./practice-action-guidance";
 
 export type { GuideStep } from "./guide-content";
 
@@ -217,7 +218,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       setDialogPlacement(
         getDialogPlacement({
           dialogElement: dialogRef.current,
-          highlightBox
+          highlightBox: practiceSurfaceBox ?? highlightBox
         })
       );
     }
@@ -230,7 +231,7 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       window.removeEventListener("resize", updateDialogPlacement);
       window.removeEventListener("scroll", updateDialogPlacement, true);
     };
-  }, [activeIndex, activeStep, highlightBox]);
+  }, [activeIndex, activeStep, highlightBox, practiceSurfaceBox]);
 
   useEffect(() => {
     if (!allowsRequiredPracticeInteraction) {
@@ -238,16 +239,10 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       return;
     }
 
-    function updatePracticeSurfaceBox() {
-      const surface = document.querySelector<HTMLElement>(
-        "[data-guide-practice-surface]"
-      );
+    let resizeObserver: ResizeObserver | null = null;
+    let observedSurface: HTMLElement | null = null;
 
-      if (!surface) {
-        setPracticeSurfaceBox(null);
-        return;
-      }
-
+    function measurePracticeSurface(surface: HTMLElement) {
       const rect = surface.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
@@ -269,11 +264,35 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
       });
     }
 
+    function updatePracticeSurfaceBox() {
+      const surface = document.querySelector<HTMLElement>(
+        "[data-guide-practice-surface]"
+      );
+
+      if (!surface) {
+        setPracticeSurfaceBox(null);
+        return;
+      }
+
+      if (
+        surface !== observedSurface &&
+        typeof ResizeObserver !== "undefined"
+      ) {
+        resizeObserver?.disconnect();
+        observedSurface = surface;
+        resizeObserver = new ResizeObserver(() => measurePracticeSurface(surface));
+        resizeObserver.observe(surface);
+      }
+
+      measurePracticeSurface(surface);
+    }
+
     updatePracticeSurfaceBox();
     window.addEventListener("resize", updatePracticeSurfaceBox);
     window.addEventListener("scroll", updatePracticeSurfaceBox, true);
 
     return () => {
+      resizeObserver?.disconnect();
       window.removeEventListener("resize", updatePracticeSurfaceBox);
       window.removeEventListener("scroll", updatePracticeSurfaceBox, true);
     };
@@ -402,22 +421,27 @@ export function GuidedTour({ featureName, onExit, steps }: GuidedTourProps) {
           {activeStep.practice ? (
             <div className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] px-3 py-3 text-[14px] leading-5 text-fp-muted-ink">
               <p>{activeStep.practice.prompt}</p>
-              <button
-                className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:opacity-60"
-                disabled={practiceComplete}
-                onClick={() => {
-                  const practiceEventId = activeStep.practice?.eventId ?? "";
-                  setStartedPracticeEventIds((current) => {
-                    const next = new Set(current);
-                    next.add(practiceEventId);
-                    return next;
-                  });
-                  requestGuidePractice(practiceEventId);
-                }}
-                type="button"
+              <PracticeActionGuidance
+                actionLabel={activeStep.practice.actionLabel}
+                active={!practiceComplete && !practiceStarted}
               >
-                {activeStep.practice.actionLabel}
-              </button>
+                <button
+                  className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:opacity-60"
+                  disabled={practiceComplete}
+                  onClick={() => {
+                    const practiceEventId = activeStep.practice?.eventId ?? "";
+                    setStartedPracticeEventIds((current) => {
+                      const next = new Set(current);
+                      next.add(practiceEventId);
+                      return next;
+                    });
+                    requestGuidePractice(practiceEventId);
+                  }}
+                  type="button"
+                >
+                  {activeStep.practice.actionLabel}
+                </button>
+              </PracticeActionGuidance>
               {practiceComplete ? (
                 <p className="font-semibold text-fp-ink">
                   {activeStep.practice.completionMessage}

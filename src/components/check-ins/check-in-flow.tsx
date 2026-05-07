@@ -16,6 +16,7 @@ import {
   useGuidePracticeRequest,
   useGuidePracticeReset
 } from "@/components/guide/guide-practice";
+import { PracticeActionGuidance } from "@/components/guide/practice-action-guidance";
 import { MotionPanel, MotionSpark } from "@/components/motion/fairplay-motion";
 import {
   CheckInVisual,
@@ -681,6 +682,10 @@ export function NewCheckInLauncher({
 
 function CheckInPracticeWorkflow() {
   const [agendaPreviewed, setAgendaPreviewed] = useState(false);
+  const [topicAssigned, setTopicAssigned] = useState(false);
+  const [decisionRecorded, setDecisionRecorded] = useState(false);
+  const [itemDeferred, setItemDeferred] = useState(false);
+  const [dummyCompleted, setDummyCompleted] = useState(false);
   const [owner, setOwner] = useState<PersonaKey>("alex");
   const [decisionSummary, setDecisionSummary] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -692,6 +697,10 @@ function CheckInPracticeWorkflow() {
 
   function cleanUpWorkspace() {
     setAgendaPreviewed(false);
+    setTopicAssigned(false);
+    setDecisionRecorded(false);
+    setItemDeferred(false);
+    setDummyCompleted(false);
     setOwner("alex");
     setDecisionSummary("");
     setStatus("Dummy Check-in workspace cleaned up.");
@@ -713,16 +722,22 @@ function CheckInPracticeWorkflow() {
           decision, defer an item, and complete the dummy check-in.
         </p>
       </div>
-      <button
-        className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary sm:w-fit"
-        onClick={() => {
-          setAgendaPreviewed(true);
-          mark("check-in-agenda-previewed", "Dummy agenda previewed.");
-        }}
-        type="button"
+      <PracticeActionGuidance
+        actionLabel="Preview dummy agenda"
+        active={!agendaPreviewed}
+        wrapperClassName="sm:w-fit"
       >
-        Preview dummy agenda
-      </button>
+        <button
+          className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary sm:w-fit"
+          onClick={() => {
+            setAgendaPreviewed(true);
+            mark("check-in-agenda-previewed", "Dummy agenda previewed.");
+          }}
+          type="button"
+        >
+          Preview dummy agenda
+        </button>
+      </PracticeActionGuidance>
 
       {agendaPreviewed ? (
         <section
@@ -762,59 +777,94 @@ function CheckInPracticeWorkflow() {
               Pick who would own the next step in a real check-in.
             </span>
           </label>
-          <button
-            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
-            onClick={() =>
-              mark(
-                "check-in-topic-assigned",
-                `Dummy topic assigned to ${label(owner)}.`
-              )
-            }
-            type="button"
+          <PracticeActionGuidance
+            actionLabel="Assign dummy topic"
+            active={!topicAssigned}
+            wrapperClassName="sm:w-fit"
           >
-            Assign dummy topic
-          </button>
-          <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-            Dummy decision summary
-            <textarea
-              aria-label="Dummy decision summary"
-              className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
-              onChange={(event) => setDecisionSummary(event.target.value)}
-              value={decisionSummary}
-            />
-            <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
-              Capture the outcome, not the debate.
-            </span>
-          </label>
-          <div className="flex flex-wrap gap-2">
             <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-              disabled={decisionSummary.trim().length === 0}
-              onClick={() =>
-                mark("check-in-decision-recorded", "Dummy decision recorded.")
-              }
+              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
+              onClick={() => {
+                setTopicAssigned(true);
+                mark(
+                  "check-in-topic-assigned",
+                  `Dummy topic assigned to ${label(owner)}.`
+                );
+              }}
               type="button"
             >
-              Record dummy decision
+              Assign dummy topic
             </button>
-            <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-              onClick={() =>
-                mark("check-in-item-deferred", "Dummy item deferred.")
+          </PracticeActionGuidance>
+          <PracticeActionGuidance
+            actionLabel="Write a dummy decision summary"
+            active={topicAssigned && decisionSummary.trim().length === 0}
+            kind="action"
+          >
+            <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
+              Dummy decision summary
+              <textarea
+                aria-label="Dummy decision summary"
+                className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
+                onChange={(event) => setDecisionSummary(event.target.value)}
+                value={decisionSummary}
+              />
+              <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+                Capture the outcome, not the debate.
+              </span>
+            </label>
+          </PracticeActionGuidance>
+          <div className="flex flex-wrap items-start gap-2">
+            <PracticeActionGuidance
+              actionLabel="Record dummy decision"
+              active={
+                topicAssigned &&
+                decisionSummary.trim().length > 0 &&
+                !decisionRecorded
               }
-              type="button"
             >
-              Defer dummy item
-            </button>
-            <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-              onClick={() =>
-                mark("check-in-complete", "Dummy check-in completed.")
-              }
-              type="button"
+              <button
+                className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+                disabled={decisionSummary.trim().length === 0}
+                onClick={() => {
+                  setDecisionRecorded(true);
+                  mark("check-in-decision-recorded", "Dummy decision recorded.");
+                }}
+                type="button"
+              >
+                Record dummy decision
+              </button>
+            </PracticeActionGuidance>
+            <PracticeActionGuidance
+              actionLabel="Defer dummy item"
+              active={decisionRecorded && !itemDeferred}
             >
-              Complete dummy check-in
-            </button>
+              <button
+                className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+                onClick={() => {
+                  setItemDeferred(true);
+                  mark("check-in-item-deferred", "Dummy item deferred.");
+                }}
+                type="button"
+              >
+                Defer dummy item
+              </button>
+            </PracticeActionGuidance>
+            <PracticeActionGuidance
+              actionLabel="Complete dummy check-in"
+              active={itemDeferred && !dummyCompleted}
+            >
+              <button
+                className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
+                onClick={() => {
+                  setDummyCompleted(true);
+                  mark("check-in-complete", "Dummy check-in completed.");
+                }}
+                type="button"
+              >
+                Complete dummy check-in
+              </button>
+            </PracticeActionGuidance>
           </div>
         </section>
       ) : null}

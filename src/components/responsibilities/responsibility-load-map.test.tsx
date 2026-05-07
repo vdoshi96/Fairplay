@@ -369,6 +369,9 @@ describe("ResponsibilityLoadMap", () => {
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+    expect(
+      screen.getByText("Next required click: Start dummy Load Map workflow.")
+    ).toBeVisible();
 
     await userEvent.click(
       screen.getByRole("button", { name: "Start dummy Load Map workflow" })
@@ -381,18 +384,31 @@ describe("ResponsibilityLoadMap", () => {
     expect(screen.getByTestId("load-map-practice-board").className).not.toContain(
       "bg-white"
     );
+    expect(
+      screen.getByText("Next required click: Open dummy move menu.")
+    ).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: "Open dummy move menu" }));
+    expect(screen.getByText("Next required click: Alex.")).toBeVisible();
     await userEvent.click(screen.getByRole("menuitem", { name: "Alex" }));
     expect(screen.getByText("Dummy lunch plan is in Alex.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+    expect(
+      screen.getByText("Next required click: Save dummy card edit.")
+    ).toBeVisible();
 
     await userEvent.clear(screen.getByLabelText("Dummy card title"));
     await userEvent.type(screen.getByLabelText("Dummy card title"), "Lunch handoff");
     await userEvent.click(screen.getByRole("button", { name: "Save dummy card edit" }));
     expect(screen.getByText("Lunch handoff is in Alex.")).toBeVisible();
+    expect(
+      screen.getByText("Next required click: Trim dummy duplicate.")
+    ).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: "Trim dummy duplicate" }));
+    expect(
+      screen.getByText("Next required click: Delete dummy duplicate.")
+    ).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "Delete dummy duplicate" }));
 
     expect(screen.getByText("Dummy card moved, edited, trimmed, and deleted."))

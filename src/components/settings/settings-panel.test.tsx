@@ -383,6 +383,9 @@ describe("settings panel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
+    expect(
+      screen.getByText("Next required click: Start dummy Settings workflow.")
+    ).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: "Start dummy Settings workflow" }));
     const practiceRegion = screen.getByRole("region", {
@@ -394,14 +397,23 @@ describe("settings panel", () => {
       "bg-[var(--fp-surface-strong)]"
     );
     expect(practiceRegion.className).not.toContain("bg-white");
+    expect(
+      screen.getByText("Next required action: Choose a dummy appearance mode.")
+    ).toBeVisible();
 
     fireEvent.change(screen.getByLabelText("Dummy appearance mode"), {
       target: { value: "dark" }
     });
     expect(screen.getByText("Dummy appearance mode changed to Dark.")).toBeVisible();
+    expect(
+      screen.getByText("Next required click: Check dummy welcome replay.")
+    ).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: "Check dummy welcome replay" }));
     expect(screen.getByText("Dummy welcome replay checked.")).toBeVisible();
+    expect(
+      screen.getByText("Next required click: Open dummy persona confirmation.")
+    ).toBeVisible();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Open dummy persona confirmation" })
@@ -409,7 +421,13 @@ describe("settings panel", () => {
     expect(
       screen.getByRole("dialog", { name: "Dummy persona switch confirmation" })
     ).toBeVisible();
+    expect(
+      screen.getByText("Next required click: Stay in settings.")
+    ).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Stay in settings" }));
+    expect(
+      screen.getByText("Next required click: Locate dummy learning hub.")
+    ).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: "Locate dummy learning hub" }));
     expect(screen.getByText("Dummy Settings workflow complete.")).toBeVisible();

@@ -479,6 +479,9 @@ describe("CheckInFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("button", { name: "Done" })).toBeDisabled();
+    expect(
+      screen.getByText("Next required click: Start dummy Check-in workflow.")
+    ).toBeVisible();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Start dummy Check-in workflow" })
@@ -496,26 +499,44 @@ describe("CheckInFlow", () => {
       "bg-[var(--fp-surface-strong)]"
     );
     expect(practiceRegion.className).not.toContain("bg-white");
+    expect(
+      screen.getByText("Next required click: Preview dummy agenda.")
+    ).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: "Preview dummy agenda" }));
     expect(screen.getByText("Dummy agenda previewed.")).toBeVisible();
     expect(screen.getByRole("region", { name: "Temporary Check-in workspace" }))
       .toBeVisible();
+    expect(
+      screen.getByText("Next required click: Assign dummy topic.")
+    ).toBeVisible();
 
     fireEvent.change(screen.getByLabelText("Dummy topic owner"), {
       target: { value: "max" }
     });
     fireEvent.click(screen.getByRole("button", { name: "Assign dummy topic" }));
     expect(screen.getByText("Dummy topic assigned to Max.")).toBeVisible();
+    expect(
+      screen.getByText("Next required action: Write a dummy decision summary.")
+    ).toBeVisible();
 
     fireEvent.change(screen.getByLabelText("Dummy decision summary"), {
       target: { value: "Max owns lunch kit reset until June." }
     });
+    expect(
+      screen.getByText("Next required click: Record dummy decision.")
+    ).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Record dummy decision" }));
     expect(screen.getByText("Dummy decision recorded.")).toBeVisible();
+    expect(
+      screen.getByText("Next required click: Defer dummy item.")
+    ).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: "Defer dummy item" }));
     expect(screen.getByText("Dummy item deferred.")).toBeVisible();
+    expect(
+      screen.getByText("Next required click: Complete dummy check-in.")
+    ).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: "Complete dummy check-in" }));
     expect(screen.getByText("Dummy Check-in workflow complete.")).toBeVisible();
@@ -528,6 +549,9 @@ describe("CheckInFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Clean up dummy check-in workspace" }));
     expect(screen.queryByRole("region", { name: "Temporary Check-in workspace" }))
       .not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Next required click: Complete dummy check-in.")
+    ).not.toBeInTheDocument();
   });
 
   it("closes dummy check-in practice on guide Skip without production mutations", () => {

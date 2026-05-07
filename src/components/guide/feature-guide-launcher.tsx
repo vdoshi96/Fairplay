@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { PlayCircle } from "lucide-react";
 
@@ -20,6 +21,11 @@ export function FeatureGuideLauncher({
 }: FeatureGuideLauncherProps) {
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(() => searchParams.get("guide") === guide.id);
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalRoot(document.body);
+  }, []);
 
   return (
     <div className="flex max-w-full items-center gap-3">
@@ -39,13 +45,16 @@ export function FeatureGuideLauncher({
         </div>
       </div>
 
-      {isOpen ? (
-        <GuidedTour
-          featureName={guide.title}
-          onExit={() => setIsOpen(false)}
-          steps={guide.steps}
-        />
-      ) : null}
+      {isOpen && portalRoot
+        ? createPortal(
+            <GuidedTour
+              featureName={guide.title}
+              onExit={() => setIsOpen(false)}
+              steps={guide.steps}
+            />,
+            portalRoot
+          )
+        : null}
     </div>
   );
 }

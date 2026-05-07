@@ -332,6 +332,9 @@ describe("GuidedTour", () => {
     expect(
       screen.getByText("Move the dummy card without changing your real board.")
     ).toBeVisible();
+    expect(
+      screen.getByText("Next required click: Move dummy card to Alex.")
+    ).toBeVisible();
 
     await userEvent.click(
       screen.getByRole("button", { name: "Move dummy card to Alex" })
@@ -339,6 +342,9 @@ describe("GuidedTour", () => {
 
     expect(handlePracticeRequest).toHaveBeenCalledTimes(1);
     expect(screen.getByText("Dummy card moved to Alex.")).toBeVisible();
+    expect(
+      screen.queryByText("Next required click: Move dummy card to Alex.")
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
     window.removeEventListener(GUIDE_PRACTICE_REQUEST_EVENT, handlePracticeRequest);
   });
