@@ -15,6 +15,7 @@ const appPages = [
 ] as const;
 
 const viewports = [
+  { height: 740, name: "narrow-mobile", width: 320 },
   { height: 844, name: "mobile", width: 390 },
   { height: 760, name: "small-tablet", width: 768 },
   { height: 900, name: "desktop", width: 1280 },

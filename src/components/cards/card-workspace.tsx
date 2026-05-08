@@ -839,7 +839,7 @@ function CardCoverImage({
         ].join(" ")}
         role="img"
       >
-        <span className="px-2">{card.title}</span>
+        <span className="px-2">Card cover</span>
       </div>
     );
   }

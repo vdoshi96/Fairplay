@@ -1,6 +1,6 @@
 # Fairplay File Map
 
-Last updated: 2026-05-07
+Last updated: 2026-05-08
 
 This is a practical index, not a reorganization plan.
 
@@ -22,9 +22,9 @@ This is a practical index, not a reorganization plan.
 - `src/app/(auth)/`: auth route pages.
 - `src/app/app/layout.tsx`: protected app layout and app shell wrapper.
 - `src/app/app/home/page.tsx`: legacy redirect to Distribute.
-- `src/app/app/your-cards/page.tsx`: assigned-card file home for the selected persona.
-- `src/app/app/distribute/page.tsx`: searchable swipe distribution deck.
-- `src/app/app/board/page.tsx`: grouped card bucket board.
+- `src/app/app/your-cards/page.tsx`: searchable image-first assigned-card gallery for the selected persona.
+- `src/app/app/distribute/page.tsx`: searchable swipe distribution deck with an available-card list.
+- `src/app/app/board/page.tsx`: grouped image-first card bucket board.
 - `src/app/app/ask-greg/page.tsx`: card generation/advisor surface.
 - `src/app/app/load-map/page.tsx`: legacy redirect to Board.
 - `src/app/app/library/page.tsx`: library and AI draft page.
@@ -41,7 +41,7 @@ This is a practical index, not a reorganization plan.
 
 - `src/components/app-shell/`: desktop/sidebar/mobile nav shell, page shell, session view.
 - `src/components/auth/`: create/login/persona UI and auth helpers.
-- `src/components/cards/`: card state mapping, card workspace, and simplified card detail sheet.
+- `src/components/cards/`: card state mapping, image-first card workspace, and simplified card detail sheet.
 - `src/components/library/`: card library and AI Task Manager.
 - `src/components/responsibilities/`: legacy Load Map compatibility, editor, and lane metadata.
 - `src/components/check-ins/`: check-in flow.
@@ -54,7 +54,7 @@ This is a practical index, not a reorganization plan.
 - `src/components/ui/`: shared UI primitives.
 - `src/components/visuals/`: generated/inline Fairplay visuals.
 - `src/components/motion/`: shared motion primitives.
-- `src/components/welcome/`: persistent welcome UI.
+- `src/components/welcome/`: retired persistent welcome compatibility UI; not mounted in the protected app shell.
 
 ## Domain, Contracts, Server
 

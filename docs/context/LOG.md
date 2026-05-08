@@ -1,5 +1,25 @@
 # Fairplay Context Log
 
+## 2026-05-08 - Mobile Card UI And State Fix Pass
+
+Requested by the user: make the app revolve around the real Library card images across Distribute, Your Cards, and Board; fix mobile layout overflow; move the mobile Library overflow action to the bottom; remove the unnecessary welcome banner; make Little Alex grabbable on mobile; verify state movement across tabs; and use ordered sub-agent/PR workflow.
+
+Actions completed:
+
+- Merged PR #38 to expose `sourceCoverAssetPath` in responsibility summaries and add distribution state coverage.
+- Merged PR #39 to move mobile overflow into the bottom navigation, constrain app/page shell width, remove the protected-app welcome banner surface, remove Settings welcome replay, and add touch fallback dragging for Little Alex.
+- Merged PR #40 to redesign Distribute, Your Cards, and Board around image-first card components while keeping existing card-state helpers and server actions.
+- Added implementation documentation at `docs/implementation/2026-05-08-mobile-card-ui-state-fix.md`.
+- Updated project memory/wiki/product docs to reflect the current card-first mobile behavior and retired welcome surface.
+
+Verification:
+
+- PR #38: focused responsibility/contract/repository suites, full Vitest, typecheck, and lint.
+- PR #39: focused app-shell, guide, Settings, Little Alex, and distribution suites; full Vitest before merge; typecheck and lint.
+- PR #40: focused card-workspace/distribution/shell/Little Alex suites, full Vitest, typecheck, and lint.
+- Final integrated build/e2e/mobile smoke recorded in the implementation doc: Prisma validate, typecheck, lint, full Vitest, build, targeted responsive Playwright, and full Playwright all passed.
+- Playwright QA caught and this pass fixed closed mobile overflow panel geometry overlapping Little Alex checks and duplicate fallback cover title text in compact Board cards.
+
 ## 2026-05-08 - Card-First Mobile Rebuild
 
 Requested by the user: rebuild Fairplay as a polished mobile-first card responsibility app centered on swipe distribution, Your Cards, Board, Ask Greg, PWA/mobile safe areas, and simplified flip-card details.
