@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CurrentSession } from "@/server/auth/current-session";
 import { distributeResponsibilityCard } from "./card-distribution";
@@ -40,6 +40,10 @@ function responsibility(overrides: Record<string, unknown> = {}) {
 }
 
 describe("card distribution service", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("moves an unassigned card to Alex ownership and placement together", async () => {
     serviceMocks.get.mockResolvedValue(
       responsibility({
@@ -138,6 +142,53 @@ describe("card distribution service", () => {
       expect.objectContaining({
         sortOrder: 4,
         toLane: "not_in_play"
+      })
+    );
+  });
+
+  it("sends a board card back to the unclassified pool", async () => {
+    serviceMocks.get.mockResolvedValue(
+      responsibility({
+        currentAssignments: [
+          {
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          }
+        ],
+        status: "active"
+      })
+    );
+    serviceMocks.updateStatus.mockResolvedValue(undefined);
+    serviceMocks.updateAssignments.mockResolvedValue(undefined);
+    repositoryMocks.updateResponsibilityBoardPlacement.mockResolvedValue({
+      id: "550e8400-e29b-41d4-a716-446655440010",
+      boardLane: "cards_of_concern",
+      currentAssignments: []
+    });
+
+    await distributeResponsibilityCard(session, {
+      bucket: "unassigned",
+      responsibilityId: "550e8400-e29b-41d4-a716-446655440010"
+    });
+
+    expect(serviceMocks.updateStatus).toHaveBeenCalledWith(
+      session,
+      "550e8400-e29b-41d4-a716-446655440010",
+      { status: "unassigned" }
+    );
+    expect(serviceMocks.updateAssignments).toHaveBeenCalledWith(
+      session,
+      "550e8400-e29b-41d4-a716-446655440010",
+      expect.objectContaining({
+        assignments: [],
+        handoffNotes: "Moved through card distribution.",
+        revisitAt: expect.any(String)
+      })
+    );
+    expect(repositoryMocks.updateResponsibilityBoardPlacement).toHaveBeenCalledWith(
+      expect.objectContaining({
+        toLane: "cards_of_concern"
       })
     );
   });

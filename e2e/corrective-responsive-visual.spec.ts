@@ -9,7 +9,7 @@ const appPages = [
   { name: "distribute", path: "/app/distribute", heading: "Deal the next card" },
   { name: "board", path: "/app/board", heading: "Card board" },
   { name: "ask-greg", path: "/app/ask-greg", heading: "Make more cards" },
-  { name: "check-ins", path: "/app/check-ins/new", heading: "Schedule check-in" },
+  { name: "check-ins", path: "/app/check-ins", heading: "Schedule check-in" },
   { name: "settings", path: "/app/settings", heading: "Settings" },
   { name: "crash-course", path: "/app/crash-course", heading: "Concepts first. Tools after." }
 ] as const;
@@ -531,5 +531,27 @@ test.describe("corrective responsive visual QA", () => {
         path: `${screenshotDir}/populated-${viewport.name}-board.png`
       });
     }
+  });
+
+  test("Board remove returns a card to the Deal and Library pool", async ({ page }) => {
+    await createHouseholdAndChooseAlex(page);
+    await closeWelcomeIfPresent(page);
+    await createLoadMapResponsibility(page);
+
+    await page.goto("/app/board");
+    await closeWelcomeIfPresent(page);
+    await expect(page.getByRole("heading", { name: "Card board" })).toBeVisible();
+    await page.getByRole("button", { name: "Remove from board" }).click();
+    await page.waitForLoadState("networkidle");
+
+    await page.goto("/app/distribute");
+    await closeWelcomeIfPresent(page);
+    await expect(page.getByRole("heading", { name: "Adult Friendships" }))
+      .toBeVisible();
+
+    await page.goto("/app/library");
+    await closeWelcomeIfPresent(page);
+    const shelf = page.getByRole("region", { name: "Cards ready to deal" });
+    await expect(shelf).toContainText("Adult Friendships");
   });
 });

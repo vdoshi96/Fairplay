@@ -240,7 +240,10 @@ function littleAlexPartSpritePath(
   skinTone: LittleAlexSkinTone,
   part: PartKey
 ) {
-  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${skinTone}-${part}.png`;
+  const assetPart =
+    part === "leftArm" ? "rightArm" : part === "rightArm" ? "leftArm" : part;
+
+  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${skinTone}-${assetPart}.png`;
 }
 
 function isRagdollPartVisible(state: RagdollVisualState) {
@@ -267,7 +270,7 @@ const FULL_BODY_CENTER_OFFSET_Y =
 const FULL_BODY_VISUAL_BOTTOM_PADDING = 12;
 const MOBILE_FULL_BODY_VISUAL_SCALE = 0.32;
 const MOBILE_FULL_BODY_VISUAL_INLINE_NUDGE = 45;
-const MOBILE_GRAB_TARGET_SIZE = 44;
+const MOBILE_GRAB_TARGET_SIZE = 72;
 
 function cssLengthToPx(value: string | undefined, rootFontSizePx = 16) {
   const trimmed = value?.trim();
@@ -737,11 +740,10 @@ function syncGrabTarget(element: HTMLElement | null, anchor: Point) {
     return;
   }
 
-  element.style.height = "96px";
-  element.style.transform = `translate3d(${anchor.x - 48}px, ${
-    anchor.y - 72
-  }px, 0)`;
-  element.style.width = "96px";
+  const style = grabTargetStyle(anchor);
+  element.style.height = `${style.height}px`;
+  element.style.transform = style.transform as string;
+  element.style.width = `${style.width}px`;
 }
 
 function syncChatBubble(element: HTMLElement | null, anchor: Point) {
@@ -1067,6 +1069,9 @@ export function LittleAlexPhysics({
   const [activityVersion, setActivityVersion] = useState(0);
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [gaze, setGaze] = useState<GazeState>(DEFAULT_GAZE_STATE);
+  const [grabState, setGrabState] = useState<"dragging" | "idle" | "pending">(
+    "idle"
+  );
   const [ragdollVisualState, setRagdollVisualState] =
     useState<RagdollVisualState>("settled");
   const fullBodyStyle = fullBodySpriteStyle(
@@ -1394,6 +1399,9 @@ export function LittleAlexPhysics({
     }
 
     pendingDragRef.current = null;
+    if (!dragRef.current) {
+      setGrabState("idle");
+    }
   }, []);
 
   const beginDrag = useCallback(
@@ -1403,6 +1411,7 @@ export function LittleAlexPhysics({
       setRagdollVisualStateNow(reducedMotion ? "settled" : "dragging");
       setIdleState("active");
       setIdleStandDelayMs(IDLE_STAND_DELAY_MS);
+      setGrabState("dragging");
       setActivityVersion((current) => current + 1);
       idleTargetReachedRef.current = false;
       updateGaze(point);
@@ -1471,6 +1480,7 @@ export function LittleAlexPhysics({
         beginDrag(pending.startPoint, pending.pointerId, pending.startTime);
       }, TOUCH_PRESS_HOLD_DELAY_MS);
       pendingDragRef.current = pending;
+      setGrabState("pending");
       updateGaze(point);
     },
     [beginDrag, clearPendingDrag, updateGaze]
@@ -1710,6 +1720,7 @@ export function LittleAlexPhysics({
 
       updateGaze(point);
       dragRef.current = null;
+      setGrabState("idle");
       setIdleState("active");
       setIdleStandDelayMs(IDLE_RELEASE_STAND_DELAY_MS);
       setActivityVersion((current) => current + 1);
@@ -1883,6 +1894,7 @@ export function LittleAlexPhysics({
       data-idle-walk-target-x={Math.round(idleWalkTurnRef.current.targetX)}
       data-idle-walk-turns={idleWalkTurnRef.current.turnsInDirection}
       data-ragdoll-state={ragdollVisualState}
+      data-grab-state={grabState}
       data-testid="little-alex-horne"
       style={
         {
@@ -1959,7 +1971,7 @@ export function LittleAlexPhysics({
             motionPreferenceReady ? viewportSize() : { height: 768, width: 1024 }
           ),
           pointerEvents: "auto",
-          touchAction: "pan-y"
+          touchAction: grabState === "dragging" ? "none" : "pan-y"
         }}
       />
     </div>

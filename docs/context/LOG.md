@@ -130,6 +130,34 @@ Verification:
 - `npm run typecheck` and `npm run lint` passed on each implementation branch.
 - PR #28 Vercel preview failed before build because Prisma could not reach `db.prisma.io:5432` (`P1001`); the failure was documented on the PR and local validation passed.
 
+## 2026-05-08 - Focused Patch: Little Alex, Deal State, Board Removal, Check-in History
+
+Requested by the user: keep the existing FairPlay UI/behavior, pull latest main, investigate mobile Little Alex, fix swapped ragdoll hand assets, repair Deal/Library/Board card state, add Board removal, clean up Check-in scheduling, and persist Check-in history.
+
+Actions completed:
+
+- Confirmed local `main` and `origin/main` started on commit `4b7c580e3244f525188ff471eab88cd3ba8fc9c3`.
+- Fixed Little Alex mobile grab alignment by keeping the grab overlay synced to the responsive sprite geometry, enlarging the mobile touch target, and exposing pending/dragging state for hold interactions.
+- Corrected Little Alex ragdoll hand asset mapping without changing physics or assets.
+- Normalized product card buckets through `bucketForCard`, including legacy active unowned `not_in_play` records as unclassified.
+- Added `unassigned` distribution support so Board cards can be removed back to Deal/Library.
+- Added a Library "Cards ready to deal" shelf backed by the same unclassified responsibility pool as Deal.
+- Removed the visible Check-in guide launcher, split scheduling into consistent date/time pickers, and added persisted Check-in history rows.
+- Updated Playwright coverage for real Check-in persistence, Board removal returning to Deal/Library, and corrected Little Alex sprite mapping.
+- Documented findings, assumptions, QA steps, and state model changes in `docs/implementation/2026-05-08-focused-patch-alex-deal-checkins.md`.
+
+Verification:
+
+- `npm run prisma:validate`
+- `npm run prisma:generate`
+- `npm run lint`
+- `npm run typecheck`
+- `npm test -- --run` (89 files / 530 tests)
+- `npm run build`
+- `npx playwright test e2e/check-in.spec.ts e2e/corrective-responsive-visual.spec.ts --project=chromium`
+- `npx playwright test e2e/little-alex-physics.spec.ts --project=chromium`
+- `npm run test:e2e` (28 tests)
+
 ## 2026-05-07 - Crash Course Storyboard Refresh
 
 Requested by the user: put the crash-course storyboard and course text close together, make the text read like subtitles for the images, break the course into more parts, and generate new Qwen images that follow the course text.

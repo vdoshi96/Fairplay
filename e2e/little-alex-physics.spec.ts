@@ -278,7 +278,9 @@ async function expectLittleAlexSpritesLoaded(
           const sprite = bodyPart.querySelector<HTMLImageElement>(
             '[data-testid="little-alex-sprite"]'
           );
-          const expectedPath = `${basePath}/${presentation}-${skinTone}-${part}.png`;
+          const assetPart =
+            part === "leftArm" ? "rightArm" : part === "rightArm" ? "leftArm" : part;
+          const expectedPath = `${basePath}/${presentation}-${skinTone}-${assetPart}.png`;
           const expectedUrl = new URL(expectedPath, window.location.origin).href;
 
           if (!sprite) {

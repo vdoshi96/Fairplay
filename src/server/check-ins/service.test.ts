@@ -102,6 +102,7 @@ function makeDeps(overrides: Partial<CheckInServiceDeps> = {}): CheckInServiceDe
         }
       ]
     }),
+    listCheckIns: vi.fn().mockResolvedValue([]),
     createCheckIn: vi.fn().mockResolvedValue(checkIn()),
     updateItem: vi.fn().mockImplementation(async (input) => ({
       ...checkIn().items[0],
@@ -485,6 +486,62 @@ describe("check-in service", () => {
     );
     expect(completed.state).toBe("completed");
     expect(completed.summary).toContain("Review the meal plan in June.");
+  });
+
+  it("stores blank minutes when completion explicitly sends no notes", async () => {
+    const deps = makeDeps({
+      getCheckIn: vi.fn().mockResolvedValue(checkIn())
+    });
+    const service = createCheckInService(deps);
+
+    await service.complete(session, checkInId, {
+      completedAt: "2026-05-04T13:00:00.000Z",
+      summary: null
+    });
+
+    expect(deps.completeCheckIn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        completedAt: "2026-05-04T13:00:00.000Z",
+        summary: ""
+      })
+    );
+  });
+
+  it("lists persisted check-ins as history rows", async () => {
+    const deps = makeDeps({
+      listCheckIns: vi.fn().mockResolvedValue([
+        checkIn({
+          completedAt: "2026-05-21T00:15:00.000Z",
+          id: "550e8400-e29b-41d4-a716-446655440081",
+          scheduledFor: "2026-05-20T23:30:00.000Z",
+          state: "completed",
+          summary: "Discussed summer routines."
+        }),
+        checkIn({
+          completedAt: null,
+          id: "550e8400-e29b-41d4-a716-446655440082",
+          scheduledFor: "2026-05-28T23:30:00.000Z",
+          state: "scheduled",
+          summary: null
+        })
+      ])
+    });
+    const service = createCheckInService(deps);
+
+    await expect(service.listHistory(session)).resolves.toEqual([
+      {
+        id: "550e8400-e29b-41d4-a716-446655440081",
+        minutes: "Discussed summer routines.",
+        occurred: true,
+        previousCheckInDate: "2026-05-20T23:30:00.000Z"
+      },
+      {
+        id: "550e8400-e29b-41d4-a716-446655440082",
+        minutes: "",
+        occurred: false,
+        previousCheckInDate: "2026-05-28T23:30:00.000Z"
+      }
+    ]);
   });
 
   it("rejects cross-household access", async () => {

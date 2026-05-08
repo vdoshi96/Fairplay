@@ -30,8 +30,9 @@ The focused patch run has merged the Distribute availability, mobile More menu, 
 - Mobile overflow navigation now opens from the bottom action area with visible Check-in, Settings, Theory, and Card Library links plus an outside-tap dismiss layer that closes without click-through navigation. The persistent welcome banner is no longer mounted in the protected app shell.
 - Little Alex has intentional touch fallback dragging for mobile browsers while preserving immediate desktop mouse/pointer behavior.
 - Library cards also flip in place and create cards directly into a selected lane; old "put in play" copy is removed from visible card flows.
+- Library now also shows the same unclassified household pool used by Deal in a "Cards ready to deal" shelf, and Board cards can be removed back into that pool.
 - Ask Greg is a main tab for drafting more cards.
-- Check-ins is now a lightweight schedule, confirm, and optional notes flow; agenda/decision concepts are no longer visible in the UI.
+- Check-ins is now a lightweight schedule, confirm, optional notes, and persisted history flow; agenda/decision concepts and the visible feature guide launcher are no longer visible in the UI.
 - Crash Course has been rewritten as concise concept-first storyboard frames with the app learning path only at the end.
 - Product-surface cleanup retired the Radar page/component from the app navigation surface.
 - This cleanup pass removed the Radar backend/API/model/assets from the active product surface.
@@ -53,6 +54,8 @@ npm run lint
 PR-specific focused suites also covered responsibility distribution state, card workspace rendering, app shell overflow placement, Settings welcome removal, and Little Alex touch handling. Final integrated build/e2e/mobile smoke passed and is tracked in `docs/implementation/2026-05-08-mobile-card-ui-state-fix.md`.
 
 Focused patch-run verification covered Distribute pending card availability, mobile More menu visibility/dismiss behavior, and Little Alex touch intent. Rendered browser QA also confirmed a four-card distribution flow, visible mobile/desktop More links, outside-tap close without navigation, and deliberate Little Alex touch dragging. Details are tracked in `docs/implementation/2026-05-08-focused-patch-run.md`.
+
+The latest focused patch pass covered Little Alex mobile grab alignment and ragdoll hand mapping, Deal/Library/Board card-state normalization, Board removal back to the unclassified pool, consistent Check-in scheduling, and persisted Check-in history. Details are tracked in `docs/implementation/2026-05-08-focused-patch-alex-deal-checkins.md`.
 
 ## Known Blockers
 
@@ -80,6 +83,7 @@ Focused patch-run verification covered Distribute pending card availability, mob
 - Final integrated mobile card UI/state verification passed: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 517 tests), `npm run build`, `npx playwright test e2e/corrective-responsive-visual.spec.ts --project=chromium`, and full `npm run test:e2e` (27 tests). Responsive visual QA now includes 320px, 390px, 768px, 1024px, 1280px, and 1366px widths.
 - Focused patch run before the final documentation PR passed a baseline `npm test -- --run` on main (89 files, 517 tests), plus focused Vitest/typecheck/lint on PRs #42, #44, and #43.
 - Final focused patch-run verification passed after the documentation/rendered QA follow-up: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 520 tests), `npm run build`, full `npm run test:e2e` (27 Playwright tests), and rendered Playwright browser QA for the requested Distribute, More menu, and Little Alex flows.
+- Focused Little Alex/Deal/Board/Check-in patch verification passed: `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm test -- --run` (89 files, 530 tests), `npm run build`, targeted Check-in/corrective responsive/Little Alex Playwright, and full `npm run test:e2e` (28 tests).
 
 ## Suggested Cleanup Plan
 

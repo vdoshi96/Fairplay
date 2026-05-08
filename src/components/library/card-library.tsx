@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
@@ -9,6 +10,7 @@ import type {
   CardTemplateSummary
 } from "@/contracts/card-templates";
 import { CARD_TEMPLATE_LABELS } from "@/contracts/card-templates";
+import type { ResponsibilitySummary } from "@/contracts/responsibilities";
 import type { CardDistributionBucket } from "@/components/cards/card-state";
 import { CARD_BUCKET_LABELS, type CardBucket } from "@/components/cards/card-state";
 import { FEATURE_GUIDES } from "@/components/guide/guide-content";
@@ -25,6 +27,7 @@ export type LibraryCardTemplate = CardTemplateSummary & {
 type CardLibraryProps = {
   templates: LibraryCardTemplate[];
   aiDrafts?: AiCardDraftSummary[];
+  availableCards?: ResponsibilitySummary[];
   onCreateFromTemplate?: (
     templateId: string,
     bucket: CardDistributionBucket
@@ -45,10 +48,17 @@ const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> =
 
 const libraryShelfBackground =
   "/assets/fairplay/generated-ui/backgrounds/library-shelf.png";
-const assignBuckets = ["alex", "max", "savedForLater", "notApplicable"] as const;
+const assignBuckets = [
+  "alex",
+  "max",
+  "savedForLater",
+  "notApplicable",
+  "unassigned"
+] as const;
 
 export function CardLibrary({
   aiDrafts = [],
+  availableCards = [],
   templates,
   onCreateFromTemplate
 }: CardLibraryProps) {
@@ -92,6 +102,8 @@ export function CardLibrary({
           <AiTaskManager drafts={aiDrafts} />
         </div>
       </div>
+
+      <AvailableCardsShelf cards={availableCards} />
 
       <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_auto] lg:items-end">
         <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
@@ -213,6 +225,84 @@ export function CardLibrary({
         </div>
       )}
     </section>
+  );
+}
+
+function AvailableCardsShelf({ cards }: { cards: ResponsibilitySummary[] }) {
+  return (
+    <section
+      aria-label="Cards ready to deal"
+      className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 shadow-[var(--fp-shadow-soft)]"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="grid gap-1">
+          <h2 className="text-[18px] font-bold text-fp-ink">
+            Cards ready to deal
+          </h2>
+          <p className="text-[13px] font-semibold text-fp-muted-ink">
+            {cards.length} unclassified card{cards.length === 1 ? "" : "s"}
+          </p>
+        </div>
+        <Link
+          className="inline-flex min-h-10 items-center justify-center rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary"
+          href="/app/distribute"
+        >
+          Open Deal
+        </Link>
+      </div>
+      {cards.length > 0 ? (
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          {cards.slice(0, 8).map((card) => (
+            <article
+              aria-label={card.title}
+              className="grid grid-cols-[4rem_minmax(0,1fr)] gap-3 rounded-[8px] border border-fp-line bg-white p-2"
+              key={card.id}
+            >
+              <LibraryResponsibilityCover card={card} />
+              <div className="grid min-w-0 content-center gap-1">
+                <h3 className="line-clamp-2 text-[13px] font-bold leading-5 text-fp-ink">
+                  {card.title}
+                </h3>
+                <p className="text-[11px] font-semibold text-fp-muted-ink">
+                  {card.areaKeys.slice(0, 2).join(" / ") || "Household"}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="rounded-[8px] border border-dashed border-fp-line bg-white p-3 text-[13px] font-semibold text-fp-muted-ink">
+          No unclassified cards are waiting right now.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function LibraryResponsibilityCover({ card }: { card: ResponsibilitySummary }) {
+  if (!card.sourceCoverAssetPath) {
+    return (
+      <div
+        aria-label={`${card.title} cover`}
+        className="grid aspect-[5/7] place-items-center rounded-[8px] border border-fp-line bg-[var(--fp-surface)] text-center text-[11px] font-bold text-fp-muted-ink"
+        role="img"
+      >
+        Cover
+      </div>
+    );
+  }
+
+  return (
+    <div className="aspect-[5/7] overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-1">
+      <Image
+        alt={`${card.title} cover`}
+        className="h-full w-full object-contain"
+        height={700}
+        src={card.sourceCoverAssetPath}
+        unoptimized
+        width={500}
+      />
+    </div>
   );
 }
 

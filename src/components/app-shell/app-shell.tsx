@@ -37,7 +37,7 @@ const primaryNavItems = [
 ] as const;
 
 const overflowNavItems = [
-  { href: "/app/check-ins/new", icon: CalendarCheck, label: "Check-in" },
+  { href: "/app/check-ins", icon: CalendarCheck, label: "Check-in" },
   { href: "/app/crash-course", icon: BookOpen, label: "Theory" },
   { href: "/app/settings", icon: Settings, label: "Settings" },
   { href: "/app/library", icon: Library, label: "Card Library" }
