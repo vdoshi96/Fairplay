@@ -87,7 +87,7 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
 
   const linkedGuide = page.getByRole("dialog", { name: "Library guide" });
   await expect(linkedGuide).toBeVisible();
-  await expect(page.getByText("Step 1 of 4")).toBeVisible();
+  await expect(page.getByText("Step 1 of 3")).toBeVisible();
   await expect(
     linkedGuide.getByRole("heading", { name: "Practice first" })
   ).toBeVisible();

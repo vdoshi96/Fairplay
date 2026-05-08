@@ -90,8 +90,7 @@ const boardOrder: CardBucket[] = [
   "alex",
   "max",
   "savedForLater",
-  "notApplicable",
-  "unassigned"
+  "notApplicable"
 ];
 
 export function CardWorkspace({
@@ -484,7 +483,7 @@ function BoardView({
       </header>
 
       <div
-        className="grid max-w-full gap-3 md:grid-cols-2 xl:grid-cols-5"
+        className="grid max-w-full gap-3 md:grid-cols-2 xl:grid-cols-4"
         data-testid="card-board"
       >
         {boardOrder.map((bucket) => (

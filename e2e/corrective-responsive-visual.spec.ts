@@ -519,7 +519,8 @@ test.describe("corrective responsive visual QA", () => {
       await expect(board).toBeVisible();
       await expect(board.getByRole("heading", { name: "Alex" })).toBeVisible();
       await expect(board.getByRole("heading", { name: "Max" })).toBeVisible();
-      await expect(board.getByRole("heading", { name: "Unassigned" })).toBeVisible();
+      await expect(board.getByRole("heading", { name: "Unassigned" }))
+        .toHaveCount(0);
       await expect(board.getByText("Adult Friendships")).toBeVisible();
 
       await page.screenshot({
@@ -533,7 +534,7 @@ test.describe("corrective responsive visual QA", () => {
     }
   });
 
-  test("Board remove returns a card to the Deal and Library pool", async ({ page }) => {
+  test("Board remove returns a card to Deal while Library stays catalog-only", async ({ page }) => {
     await createHouseholdAndChooseAlex(page);
     await closeWelcomeIfPresent(page);
     await createLoadMapResponsibility(page);
@@ -551,7 +552,9 @@ test.describe("corrective responsive visual QA", () => {
 
     await page.goto("/app/library");
     await closeWelcomeIfPresent(page);
-    const shelf = page.getByRole("region", { name: "Cards ready to deal" });
-    await expect(shelf).toContainText("Adult Friendships");
+    await expect(page.getByRole("region", { name: "Cards ready to deal" }))
+      .toHaveCount(0);
+    await expect(page.getByRole("article", { name: "Adult Friendships (Alex)" }))
+      .toBeVisible();
   });
 });

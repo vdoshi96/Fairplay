@@ -9,10 +9,11 @@ import {
 } from "../../contracts/card-templates";
 import type { HouseholdId, PersonaId } from "../../domain/ids";
 import { FAIRPLAY_SOURCE_CARDS } from "../../seed/fairplay-source-cards";
-import { RepositoryError } from "../db/errors";
+import { isUniqueConstraintError, RepositoryError } from "../db/errors";
 import { prisma } from "../db/prisma";
 import {
   createResponsibility,
+  getResponsibilityDetail,
   type CreateResponsibilityInput
 } from "./responsibilities";
 
@@ -43,6 +44,16 @@ type TemplateRecord = Prisma.ResponsibilityTemplateGetPayload<{
   select: typeof templateSelect;
 }>;
 type SourceCardTemplate = (typeof FAIRPLAY_SOURCE_CARDS)[number];
+type CatalogResponsibilityRow = Prisma.ResponsibilityGetPayload<{
+  include: {
+    assignments: {
+      select: {
+        endsAt: true;
+        role: true;
+      };
+    };
+  };
+}>;
 
 export type CreateResponsibilityFromTemplateInput = {
   householdId: HouseholdId;
@@ -173,6 +184,179 @@ function toDetail(template: TemplateRecord): CardTemplateDetail {
   };
 }
 
+function templateToCreateInput(input: {
+  actorPersonaId: PersonaId;
+  householdId: HouseholdId;
+  lane?: ResponsibilityBoardLane;
+  template: TemplateRecord;
+  titleOverride?: string;
+}): CreateResponsibilityInput {
+  return {
+    householdId: input.householdId,
+    createdByPersonaId: input.actorPersonaId,
+    templateId: input.template.id,
+    title: input.titleOverride ?? input.template.title,
+    summary: input.template.summary,
+    areaKeys: labelsFromAreaKeys(input.template.areaKeys),
+    hiddenEffortKeys: input.template.hiddenEffortKeys,
+    cadence: input.template.defaultCadence,
+    relevantDays: [],
+    status: statusForInitialLane(input.lane),
+    visibility: "shared_household",
+    householdStandard: input.template.minimumStandard,
+    notes: null,
+    nextReviewAt: null,
+    boardLane: input.lane ?? "cards_of_concern",
+    sourceDefinition: input.template.definition ?? input.template.summary,
+    sourceConception: input.template.conception,
+    sourcePlanning: input.template.planning,
+    sourceExecution: input.template.execution,
+    sourceMinimumStandard: input.template.minimumStandard,
+    sourceCoverAssetPath: coverAssetPath(input.template)
+  };
+}
+
+function statusForInitialLane(lane?: ResponsibilityBoardLane) {
+  if (lane === "trimmed") {
+    return "not_relevant" as const;
+  }
+
+  if (lane === "not_in_play") {
+    return "paused" as const;
+  }
+
+  if (lane === "player_1" || lane === "player_2") {
+    return "active" as const;
+  }
+
+  return "unassigned" as const;
+}
+
+function hasActiveOwner(row: CatalogResponsibilityRow) {
+  return row.assignments.some(
+    (assignment) =>
+      assignment.endsAt === null &&
+      (assignment.role === "accountable_owner" ||
+        assignment.role === "shared_owner")
+  );
+}
+
+function catalogRowPriority(row: CatalogResponsibilityRow) {
+  if (row.archivedAt) {
+    return 0;
+  }
+
+  if (hasActiveOwner(row)) {
+    return 5;
+  }
+
+  if (row.boardLane === "player_1" || row.boardLane === "player_2") {
+    return 4;
+  }
+
+  if (
+    row.status === "paused" ||
+    row.status === "not_relevant" ||
+    row.boardLane === "not_in_play" ||
+    row.boardLane === "trimmed"
+  ) {
+    return 3;
+  }
+
+  if (row.status === "active" || row.status === "needs_review") {
+    return 2;
+  }
+
+  return 1;
+}
+
+function compareCatalogRows(
+  first: CatalogResponsibilityRow,
+  second: CatalogResponsibilityRow
+) {
+  return (
+    catalogRowPriority(second) - catalogRowPriority(first) ||
+    second.updatedAt.getTime() - first.updatedAt.getTime() ||
+    first.createdAt.getTime() - second.createdAt.getTime() ||
+    first.id.localeCompare(second.id)
+  );
+}
+
+async function normalizeHouseholdCatalogResponsibilities(input: {
+  householdId: HouseholdId;
+  templateIds: readonly string[];
+}) {
+  const templateIds = [...new Set(input.templateIds)].filter(Boolean);
+  const canonicalIds = new Map<string, string>();
+
+  if (templateIds.length === 0) {
+    return canonicalIds;
+  }
+
+  const rows = await prisma.responsibility.findMany({
+    where: {
+      householdId: input.householdId,
+      templateId: {
+        in: templateIds
+      }
+    },
+    include: {
+      assignments: {
+        select: {
+          endsAt: true,
+          role: true
+        }
+      }
+    }
+  });
+  const rowsByTemplateId = new Map<string, CatalogResponsibilityRow[]>();
+
+  rows.forEach((row) => {
+    if (!row.templateId) {
+      return;
+    }
+
+    rowsByTemplateId.set(row.templateId, [
+      ...(rowsByTemplateId.get(row.templateId) ?? []),
+      row
+    ]);
+  });
+
+  const duplicateIds: string[] = [];
+
+  rowsByTemplateId.forEach((templateRows, templateId) => {
+    const [canonical, ...duplicates] = [...templateRows].sort(compareCatalogRows);
+
+    if (!canonical || canonical.archivedAt) {
+      return;
+    }
+
+    canonicalIds.set(templateId, canonical.id);
+    duplicates.forEach((duplicate) => {
+      if (!duplicate.archivedAt) {
+        duplicateIds.push(duplicate.id);
+      }
+    });
+  });
+
+  if (duplicateIds.length > 0) {
+    await prisma.responsibility.updateMany({
+      where: {
+        householdId: input.householdId,
+        id: {
+          in: duplicateIds
+        }
+      },
+      data: {
+        archivedAt: new Date(),
+        status: "archived"
+      }
+    });
+  }
+
+  return canonicalIds;
+}
+
 function searchWhere(
   params: CardTemplateSearchParams
 ): Prisma.ResponsibilityTemplateWhereInput {
@@ -214,6 +398,41 @@ export async function getCardTemplate(
   return template ? toDetail(template) : null;
 }
 
+export async function ensureHouseholdCatalogResponsibilities(input: {
+  actorPersonaId: PersonaId;
+  householdId: HouseholdId;
+}) {
+  const templates = await Promise.all(
+    FAIRPLAY_SOURCE_CARDS.map((template) => upsertSourceTemplate(template))
+  );
+  const templateIds = templates.map((template) => template.id);
+  const canonicalIds = await normalizeHouseholdCatalogResponsibilities({
+    householdId: input.householdId,
+    templateIds
+  });
+
+  for (const template of templates) {
+    if (canonicalIds.has(template.id)) {
+      continue;
+    }
+
+    try {
+      await createResponsibility(
+        templateToCreateInput({
+          actorPersonaId: input.actorPersonaId,
+          householdId: input.householdId,
+          template,
+          lane: "cards_of_concern"
+        })
+      );
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
+    }
+  }
+}
+
 export async function createResponsibilityFromTemplate(
   input: CreateResponsibilityFromTemplateInput
 ) {
@@ -223,29 +442,54 @@ export async function createResponsibilityFromTemplate(
     throw new RepositoryError("NOT_FOUND", "Card template not found.");
   }
 
-  const createInput: CreateResponsibilityInput = {
+  const canonicalIds = await normalizeHouseholdCatalogResponsibilities({
     householdId: input.householdId,
-    createdByPersonaId: input.actorPersonaId,
-    templateId: template.id,
-    title: input.titleOverride ?? template.title,
-    summary: template.summary,
-    areaKeys: labelsFromAreaKeys(template.areaKeys),
-    hiddenEffortKeys: template.hiddenEffortKeys,
-    cadence: template.defaultCadence,
-    relevantDays: [],
-    status: "active",
-    visibility: "shared_household",
-    householdStandard: template.minimumStandard,
-    notes: null,
-    nextReviewAt: null,
-    boardLane: input.lane ?? template.defaultLane,
-    sourceDefinition: template.definition ?? template.summary,
-    sourceConception: template.conception,
-    sourcePlanning: template.planning,
-    sourceExecution: template.execution,
-    sourceMinimumStandard: template.minimumStandard,
-    sourceCoverAssetPath: coverAssetPath(template)
-  };
+    templateIds: [template.id]
+  });
+  const canonicalId = canonicalIds.get(template.id);
 
-  return createResponsibility(createInput);
+  if (canonicalId) {
+    const existing = await getResponsibilityDetail({
+      householdId: input.householdId,
+      responsibilityId: canonicalId
+    });
+
+    if (existing) {
+      return existing;
+    }
+  }
+
+  try {
+    return await createResponsibility(
+      templateToCreateInput({
+        actorPersonaId: input.actorPersonaId,
+        householdId: input.householdId,
+        lane: input.lane,
+        template,
+        titleOverride: input.titleOverride
+      })
+    );
+  } catch (error) {
+    if (!isUniqueConstraintError(error)) {
+      throw error;
+    }
+
+    const retryCanonicalIds = await normalizeHouseholdCatalogResponsibilities({
+      householdId: input.householdId,
+      templateIds: [template.id]
+    });
+    const retryExistingId = retryCanonicalIds.get(template.id);
+    const retryExisting = retryExistingId
+      ? await getResponsibilityDetail({
+          householdId: input.householdId,
+          responsibilityId: retryExistingId
+        })
+      : null;
+
+    if (retryExisting) {
+      return retryExisting;
+    }
+
+    throw error;
+  }
 }

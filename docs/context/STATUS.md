@@ -4,12 +4,12 @@ Last updated: 2026-05-08
 
 ## Current Phase
 
-The focused patch run has merged the Distribute availability, mobile More menu, and Little Alex touch-intent fixes through PRs #42, #44, and #43. The follow-up documentation/QA branch also fixes rendered-browser More-menu clipping and click-through discovered during final QA. The active product now labels `/app/distribute` as Deal and `/app/your-cards` as Your Deck while keeping those stable routes. Signed-in users land on Deal, Your Deck is the effective home after assignment, Board replaces Load Map, and Check-in, Settings, Theory, and Card Library stay in overflow navigation. Card images from the Library now flow into Deal, Your Deck, and Board.
+The focused catalog/deal/board and Little Alex fix is implemented on top of the Deal/Your Deck naming polish. The active product now treats Library source cards and Deal cards as the same catalog-backed set: Deal materializes the full source catalog for a household, Library no longer has a visible put-in-play workflow, and Board shows only cards assigned/categorized to Alex, Max, Save for later, or Not applicable. Little Alex touch dragging now separates grab/drag from ragdoll/fling so mobile hold follows the finger and ragdoll starts only after release behavior.
 
 ## Branch And Working Tree
 
 - Local `main` has been fast-forwarded through PR #45.
-- This naming polish is being applied on top of the ordered focused patch merges.
+- The catalog/deal/board and Little Alex fix is being applied on top of the ordered focused patch merges and naming polish.
 - Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, and #45 focused patch QA/docs.
 
 ## What Exists
@@ -26,11 +26,11 @@ The focused patch run has merged the Distribute availability, mobile More menu, 
 - The previous homepage is retired. Root, login, and persona selection land on Deal for signed-in selected-persona sessions.
 - Cards are the primary interaction model: Distribution supports search, an available-card list, tap/click flip, swipe left/right/up/down, arrow keys, and large fallback buttons.
 - Your Deck is a searchable, cadence-filterable, image-first assigned-card gallery; tapping a card flips it to show assignment, purpose, and Fogging E-Standards.
-- Board groups cards by Alex, Max, Saved for Later, Not Applicable, and Unassigned using stacked/collapsible card sections on mobile instead of horizontal page-level lane scrolling.
+- Board groups only real dealt/categorized cards: Alex, Max, Saved for Later, and Not Applicable. Unassigned is now an internal dealable-pool state, not a Board lane.
 - Mobile overflow navigation now opens from the bottom action area with visible Check-in, Settings, Theory, and Card Library links plus an outside-tap dismiss layer that closes without click-through navigation. The persistent welcome banner is no longer mounted in the protected app shell.
-- Little Alex has intentional touch fallback dragging for mobile browsers while preserving immediate desktop mouse/pointer behavior.
-- Library cards also flip in place and create cards directly into a selected lane; old "put in play" copy is removed from visible card flows.
-- Library now also shows the same unclassified household pool used by Deal in a "Cards ready to deal" shelf, and Board cards can be removed back into that pool.
+- Little Alex has intentional touch fallback dragging for mobile browsers while preserving immediate desktop mouse/pointer behavior; touch hold grabs without ragdolling until release/collision behavior.
+- Library cards flip in place as the full source catalog. The visible put-in-play/lane-pick workflow has been removed from the Library catalog flow.
+- Deal shows the full catalog-backed dealable pool and dedupes by stable template identity; Board removal clears categorization back into that pool without creating duplicate cards.
 - Ask Greg is a main tab for drafting more cards.
 - Check-ins is now a lightweight schedule, confirm, optional notes, and persisted history flow; agenda/decision concepts and the visible feature guide launcher are no longer visible in the UI.
 - Crash Course has been rewritten as concise concept-first storyboard frames with the app learning path only at the end.
@@ -56,6 +56,8 @@ PR-specific focused suites also covered responsibility distribution state, card 
 Focused patch-run verification covered Distribute pending card availability, mobile More menu visibility/dismiss behavior, and Little Alex touch intent. Rendered browser QA also confirmed a four-card distribution flow, visible mobile/desktop More links, outside-tap close without navigation, and deliberate Little Alex touch dragging. Details are tracked in `docs/implementation/2026-05-08-focused-patch-run.md`.
 
 The latest focused patch pass covered Little Alex mobile grab alignment and ragdoll hand mapping, Deal/Library/Board card-state normalization, Board removal back to the unclassified pool, consistent Check-in scheduling, and persisted Check-in history. Details are tracked in `docs/implementation/2026-05-08-focused-patch-alex-deal-checkins.md`.
+
+The catalog/deal/board and Little Alex fix materialized one active household responsibility per source template, added safe duplicate archival/indexing, removed Library put-in-play controls, removed Board Unassigned, and verified mobile/desktop Little Alex drag/fling behavior. Details are tracked in `docs/implementation/2026-05-08-catalog-deal-board-little-alex.md`.
 
 ## Known Blockers
 
@@ -84,6 +86,7 @@ The latest focused patch pass covered Little Alex mobile grab alignment and ragd
 - Focused patch run before the final documentation PR passed a baseline `npm test -- --run` on main (89 files, 517 tests), plus focused Vitest/typecheck/lint on PRs #42, #44, and #43.
 - Final focused patch-run verification passed after the documentation/rendered QA follow-up: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 520 tests), `npm run build`, full `npm run test:e2e` (27 Playwright tests), and rendered Playwright browser QA for the requested Distribute, More menu, and Little Alex flows.
 - Focused Little Alex/Deal/Board/Check-in patch verification passed: `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm test -- --run` (89 files, 530 tests), `npm run build`, targeted Check-in/corrective responsive/Little Alex Playwright, and full `npm run test:e2e` (28 tests).
+- Catalog/deal/board and Little Alex verification passed: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 538 tests), `npm run build`, targeted corrective responsive/Little Alex/guided-learning/auth Playwright specs, and full `npm run test:e2e -- --workers=1` (28 tests). `npm run prisma:migrate -- --skip-seed` hit local shadow DB permission `P3014`; `prisma migrate deploy` applied the catalog identity migration successfully.
 
 ## Suggested Cleanup Plan
 

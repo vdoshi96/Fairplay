@@ -18,6 +18,7 @@ import type { HouseholdId, PersonaId, ResponsibilityId } from "@/domain/ids";
 import { assertVisibilityTransition } from "@/domain/visibility";
 import type { CurrentSession } from "@/server/auth/current-session";
 import { prisma } from "@/server/db/prisma";
+import { ensureHouseholdCatalogResponsibilities } from "@/server/repositories/card-templates";
 import {
   addResponsibilityAssignments,
   createResponsibility,
@@ -103,6 +104,10 @@ export type ResponsibilityServiceDeps = {
   createResponsibilityEvent: (
     input: ResponsibilityEventInput
   ) => Promise<void>;
+  ensureCatalogResponsibilities?: (input: {
+    actorPersonaId: PersonaId;
+    householdId: HouseholdId;
+  }) => Promise<void>;
 };
 
 export type AssignmentMutationInput = {
@@ -226,7 +231,11 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
       responsibilities: ResponsibilitySummary[];
       loadSnapshot: LoadSnapshotSummary;
     }> {
-      requireSelectedPersona(session);
+      const actorPersonaId = requireSelectedPersona(session);
+      await deps.ensureCatalogResponsibilities?.({
+        actorPersonaId,
+        householdId: session.householdId
+      });
       const responsibilities = await deps.listResponsibilities(session.householdId);
 
       return {
@@ -503,6 +512,7 @@ export const responsibilityService = createResponsibilityService({
   },
   getResponsibility: getResponsibilityDetail,
   listResponsibilities: listResponsibilitiesForHousehold,
+  ensureCatalogResponsibilities: ensureHouseholdCatalogResponsibilities,
   async replaceActiveAssignments(input) {
     return addResponsibilityAssignments({
       householdId: input.householdId,

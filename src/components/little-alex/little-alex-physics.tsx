@@ -64,6 +64,7 @@ type DragState = {
   maxDistance: number;
   offset: Point;
   pointerId: number;
+  source: "mouse" | "touch";
   startPoint: Point;
   velocity: Point;
 };
@@ -876,10 +877,10 @@ function sameGazeState(a: GazeState, b: GazeState) {
 }
 
 function releaseShouldShowBubble(drag: DragState, releasePoint: Point) {
-  const releaseDistance = Math.max(
-    drag.maxDistance,
-    distanceBetween(drag.startPoint, releasePoint)
-  );
+  const releaseDistance =
+    drag.source === "touch"
+      ? drag.maxDistance
+      : Math.max(drag.maxDistance, distanceBetween(drag.startPoint, releasePoint));
   const releaseSpeed = Math.hypot(drag.velocity.x, drag.velocity.y);
 
   return (
@@ -1063,6 +1064,7 @@ export function LittleAlexPhysics({
 }: LittleAlexPhysicsProps) {
   const [motionPreferenceReady, setMotionPreferenceReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [physicsReady, setPhysicsReady] = useState(false);
   const [reducedAnchor, setReducedAnchor] = useState(SERVER_SAFE_ANCHOR);
   const [idleState, setIdleState] = useState<IdleState>("active");
   const [idleStandDelayMs, setIdleStandDelayMs] = useState(IDLE_STAND_DELAY_MS);
@@ -1405,10 +1407,15 @@ export function LittleAlexPhysics({
   }, []);
 
   const beginDrag = useCallback(
-    (point: Point, pointerId: number, timeStamp: number) => {
+    (
+      point: Point,
+      pointerId: number,
+      timeStamp: number,
+      source: DragState["source"]
+    ) => {
       clearPendingDrag();
       clearRagdollRecoveryTimeout();
-      setRagdollVisualStateNow(reducedMotion ? "settled" : "dragging");
+      setRagdollVisualStateNow("settled");
       setIdleState("active");
       setIdleStandDelayMs(IDLE_STAND_DELAY_MS);
       setGrabState("dragging");
@@ -1429,6 +1436,7 @@ export function LittleAlexPhysics({
           y: point.y - center.y
         },
         pointerId,
+        source,
         startPoint: point,
         velocity: { x: 0, y: 0 }
       };
@@ -1477,7 +1485,12 @@ export function LittleAlexPhysics({
         if (pending.source === "pointer") {
           capturePointerForDrag(pending.target, pending.pointerId);
         }
-        beginDrag(pending.startPoint, pending.pointerId, pending.startTime);
+        beginDrag(
+          pending.startPoint,
+          pending.pointerId,
+          pending.startTime,
+          "touch"
+        );
       }, TOUCH_PRESS_HOLD_DELAY_MS);
       pendingDragRef.current = pending;
       setGrabState("pending");
@@ -1487,10 +1500,17 @@ export function LittleAlexPhysics({
   );
 
   useEffect(() => {
-    if (!motionPreferenceReady || reducedMotion) {
+    if (!motionPreferenceReady) {
+      setPhysicsReady(false);
       return undefined;
     }
 
+    if (reducedMotion) {
+      setPhysicsReady(true);
+      return undefined;
+    }
+
+    setPhysicsReady(false);
     const { height, width } = viewportSize();
     const physics = createRagdoll(clampAnchor(reducedAnchor), width, height);
     physicsRef.current = physics;
@@ -1517,6 +1537,7 @@ export function LittleAlexPhysics({
     Matter.Runner.run(physics.runner, physics.engine);
     window.addEventListener("resize", handleResize);
     sync();
+    setPhysicsReady(true);
 
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -1527,6 +1548,7 @@ export function LittleAlexPhysics({
       if (physicsRef.current === physics) {
         physicsRef.current = null;
       }
+      setPhysicsReady(false);
     };
   }, [motionPreferenceReady, reducedAnchor, reducedMotion, syncPhysicsDom]);
 
@@ -1553,7 +1575,7 @@ export function LittleAlexPhysics({
       event.preventDefault();
       event.stopPropagation();
       capturePointerForDrag(event.currentTarget, event.pointerId);
-      beginDrag(point, event.pointerId, event.timeStamp);
+      beginDrag(point, event.pointerId, event.timeStamp, "mouse");
     },
     [beginDrag, startPendingTouchDrag]
   );
@@ -1634,7 +1656,12 @@ export function LittleAlexPhysics({
         if (pending.source === "pointer") {
           capturePointerForDrag(pending.target, pending.pointerId);
         }
-        beginDrag(pending.startPoint, pending.pointerId, pending.startTime);
+        beginDrag(
+          pending.startPoint,
+          pending.pointerId,
+          pending.startTime,
+          "touch"
+        );
         drag = dragRef.current;
       }
 
@@ -1784,6 +1811,58 @@ export function LittleAlexPhysics({
     ]
   );
 
+  const cancelDrag = useCallback(
+    (event: PointerInput, captureTarget?: HTMLElement | null) => {
+      if (pendingDragRef.current?.pointerId === event.pointerId) {
+        clearPendingDrag();
+        return;
+      }
+
+      const drag = dragRef.current;
+
+      if (!drag || drag.pointerId !== event.pointerId) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      const point = pointFromClient(event, drag.lastPoint);
+
+      if (point) {
+        updateGaze(point);
+      }
+
+      dragRef.current = null;
+      setGrabState("idle");
+      setIdleState("active");
+      setIdleStandDelayMs(IDLE_STAND_DELAY_MS);
+      setActivityVersion((current) => current + 1);
+      idleTargetReachedRef.current = false;
+
+      if (captureTarget?.hasPointerCapture(event.pointerId)) {
+        captureTarget.releasePointerCapture(event.pointerId);
+      }
+
+      setRagdollVisualStateNow("settled");
+
+      const physics = physicsRef.current;
+
+      if (physics) {
+        Object.values(physics.bodies).forEach((body) => {
+          Matter.Body.setVelocity(body, { x: 0, y: 0 });
+          Matter.Body.setAngularVelocity(body, 0);
+        });
+        syncPhysicsDom();
+      }
+    },
+    [
+      clearPendingDrag,
+      setRagdollVisualStateNow,
+      syncPhysicsDom,
+      updateGaze
+    ]
+  );
+
   const handleTouchStart = useCallback(
     (event: ReactTouchEvent<HTMLDivElement>) => {
       if (dragRef.current || pendingDragRef.current) {
@@ -1839,6 +1918,19 @@ export function LittleAlexPhysics({
     [activeTouchFromEvent, pointerInputFromTouch, releaseDrag]
   );
 
+  const handleTouchCancel = useCallback(
+    (event: ReactTouchEvent<HTMLDivElement>) => {
+      const touch = activeTouchFromEvent(event);
+
+      if (!touch) {
+        return;
+      }
+
+      cancelDrag(pointerInputFromTouch(touch, event));
+    },
+    [activeTouchFromEvent, cancelDrag, pointerInputFromTouch]
+  );
+
   useEffect(() => {
     const handleWindowPointerMove = (event: PointerEvent) => {
       moveDrag(event);
@@ -1846,17 +1938,20 @@ export function LittleAlexPhysics({
     const handleWindowPointerRelease = (event: PointerEvent) => {
       releaseDrag(event, grabTargetRef.current);
     };
+    const handleWindowPointerCancel = (event: PointerEvent) => {
+      cancelDrag(event, grabTargetRef.current);
+    };
 
     window.addEventListener("pointermove", handleWindowPointerMove);
     window.addEventListener("pointerup", handleWindowPointerRelease);
-    window.addEventListener("pointercancel", handleWindowPointerRelease);
+    window.addEventListener("pointercancel", handleWindowPointerCancel);
 
     return () => {
       window.removeEventListener("pointermove", handleWindowPointerMove);
       window.removeEventListener("pointerup", handleWindowPointerRelease);
-      window.removeEventListener("pointercancel", handleWindowPointerRelease);
+      window.removeEventListener("pointercancel", handleWindowPointerCancel);
     };
-  }, [moveDrag, releaseDrag]);
+  }, [cancelDrag, moveDrag, releaseDrag]);
 
   useEffect(
     () => () => {
@@ -1890,6 +1985,7 @@ export function LittleAlexPhysics({
         motionPreferenceReady && reducedMotion ? "reduced" : "physics"
       }
       data-physics-engine="matter-js"
+      data-physics-ready={physicsReady ? "true" : "false"}
       data-idle-walk-direction={idleWalkTurnRef.current.direction}
       data-idle-walk-target-x={Math.round(idleWalkTurnRef.current.targetX)}
       data-idle-walk-turns={idleWalkTurnRef.current.turnsInDirection}
@@ -1960,7 +2056,7 @@ export function LittleAlexPhysics({
         className="fp-little-alex-grab-target"
         data-testid="little-alex-grab-target"
         onPointerDown={handlePointerDown}
-        onTouchCancel={handleTouchRelease}
+        onTouchCancel={handleTouchCancel}
         onTouchEnd={handleTouchRelease}
         onTouchMove={handleTouchMove}
         onTouchStart={handleTouchStart}

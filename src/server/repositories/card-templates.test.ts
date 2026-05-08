@@ -7,6 +7,7 @@ import { FAIRPLAY_SOURCE_CARDS } from "../../seed/fairplay-source-cards";
 import { createHouseholdWithPersonas } from "./households";
 import {
   createResponsibilityFromTemplate,
+  ensureHouseholdCatalogResponsibilities,
   getCardTemplate,
   listCardTemplates
 } from "./card-templates";
@@ -205,7 +206,7 @@ describe("card template repository", () => {
     ]);
   });
 
-  it("creates from a stable source card id and uses the source template default lane", async () => {
+  it("creates from a stable source card id as an unassigned catalog card by default", async () => {
     const sourceCard = FAIRPLAY_SOURCE_CARDS.find(
       (template) => template.slug === "auto"
     );
@@ -230,7 +231,8 @@ describe("card template repository", () => {
     expect(created).toMatchObject({
       title: sourceCard!.title,
       areaKeys: sourceCard!.labels,
-      boardLane: sourceCard!.defaultLane,
+      boardLane: "cards_of_concern",
+      status: "unassigned",
       householdStandard: sourceCard!.minimumStandard
     });
     await expect(
@@ -245,5 +247,137 @@ describe("card template repository", () => {
       sourceDefinition: sourceCard!.definition,
       sourceCoverAssetPath: sourceCard!.coverAssetPath
     });
+  });
+
+  it("materializes the source catalog once per household and keeps Deal cards idempotent", async () => {
+    const { household, personas } = await createHouseholdWithPersonas({
+      householdName: "Catalog Home",
+      usernameNormalized: uniqueUsername("catalog-home"),
+      timezone: "America/Chicago",
+      passwordHash: `argon2id-test-hash-${randomUUID()}`,
+      hashAlgorithm: "argon2id",
+      hashParamsVersion: "test"
+    });
+    createdHouseholdIds.add(household.id);
+
+    await ensureHouseholdCatalogResponsibilities({
+      actorPersonaId: personas[0].id,
+      householdId: household.id
+    });
+    await ensureHouseholdCatalogResponsibilities({
+      actorPersonaId: personas[0].id,
+      householdId: household.id
+    });
+
+    const householdCards = await listResponsibilitiesForHousehold(household.id);
+    const catalogCards = householdCards.filter((card) => card.templateId);
+    const templateIds = new Set(catalogCards.map((card) => card.templateId));
+
+    expect(catalogCards).toHaveLength(FAIRPLAY_SOURCE_CARDS.length);
+    expect(templateIds.size).toBe(FAIRPLAY_SOURCE_CARDS.length);
+    expect(catalogCards.every((card) => card.status === "unassigned")).toBe(true);
+    expect(catalogCards.every((card) => card.boardLane === "cards_of_concern"))
+      .toBe(true);
+  });
+
+  it("enforces stable source-template identity without merging different templates", async () => {
+    const adultFriendshipsAlex = FAIRPLAY_SOURCE_CARDS.find(
+      (template) => template.slug === "adult-friendships-player-1"
+    );
+    const adultFriendshipsMax = FAIRPLAY_SOURCE_CARDS.find(
+      (template) => template.slug === "adult-friendships-player-2"
+    );
+    expect(adultFriendshipsAlex).toBeDefined();
+    expect(adultFriendshipsMax).toBeDefined();
+    const alexTemplate = await getCardTemplate(adultFriendshipsAlex!.id);
+    const maxTemplate = await getCardTemplate(adultFriendshipsMax!.id);
+    expect(alexTemplate).toBeDefined();
+    expect(maxTemplate).toBeDefined();
+
+    const { household, personas } = await createHouseholdWithPersonas({
+      householdName: "Duplicate Catalog Home",
+      usernameNormalized: uniqueUsername("duplicate-catalog-home"),
+      timezone: "America/Chicago",
+      passwordHash: `argon2id-test-hash-${randomUUID()}`,
+      hashAlgorithm: "argon2id",
+      hashParamsVersion: "test"
+    });
+    createdHouseholdIds.add(household.id);
+
+    const staleDuplicate = await prisma.responsibility.create({
+      data: {
+        householdId: household.id,
+        createdByPersonaId: personas[0].id,
+        templateId: alexTemplate!.id,
+        title: adultFriendshipsAlex!.title,
+        summary: adultFriendshipsAlex!.summary,
+        areaKeys: adultFriendshipsAlex!.labels,
+        hiddenEffortKeys: adultFriendshipsAlex!.hiddenEffortKeys,
+        cadence: adultFriendshipsAlex!.defaultCadence,
+        relevantDays: [],
+        status: "archived",
+        visibility: "shared_household",
+        householdStandard: adultFriendshipsAlex!.minimumStandard,
+        boardLane: "cards_of_concern",
+        sourceDefinition: adultFriendshipsAlex!.definition,
+        sourceMinimumStandard: adultFriendshipsAlex!.minimumStandard,
+        sourceCoverAssetPath: adultFriendshipsAlex!.coverAssetPath,
+        archivedAt: new Date("2026-05-08T00:00:00.000Z")
+      }
+    });
+    const assignedAdultFriendships = await createResponsibilityFromTemplate({
+      actorPersonaId: personas[0].id,
+      householdId: household.id,
+      lane: "player_1",
+      templateId: alexTemplate!.id
+    });
+    const repeatedAdultFriendships = await createResponsibilityFromTemplate({
+      actorPersonaId: personas[0].id,
+      householdId: household.id,
+      templateId: alexTemplate!.id
+    });
+    await createResponsibilityFromTemplate({
+      actorPersonaId: personas[0].id,
+      householdId: household.id,
+      templateId: maxTemplate!.id
+    });
+
+    const activeRows = await prisma.responsibility.findMany({
+      where: {
+        householdId: household.id,
+        templateId: {
+          in: [alexTemplate!.id, maxTemplate!.id]
+        },
+        archivedAt: null
+      },
+      orderBy: {
+        templateId: "asc"
+      },
+      select: {
+        id: true,
+        status: true,
+        templateId: true
+      }
+    });
+    const archivedStaleDuplicate = await prisma.responsibility.findUniqueOrThrow({
+      where: { id: staleDuplicate.id },
+      select: { archivedAt: true, status: true }
+    });
+
+    expect(activeRows).toHaveLength(2);
+    expect(activeRows.map((row) => row.templateId).sort()).toEqual([
+      alexTemplate!.id,
+      maxTemplate!.id
+    ].sort());
+    expect(activeRows.find((row) => row.templateId === alexTemplate!.id))
+      .toMatchObject({
+        id: assignedAdultFriendships.id,
+        status: "active"
+      });
+    expect(repeatedAdultFriendships.id).toBe(assignedAdultFriendships.id);
+    expect(archivedStaleDuplicate).toMatchObject({
+      status: "archived"
+    });
+    expect(archivedStaleDuplicate.archivedAt).toBeInstanceOf(Date);
   });
 });

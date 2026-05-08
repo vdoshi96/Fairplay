@@ -28,6 +28,7 @@ function card(
     boardSortOrder: 0,
     currentAssignments: [],
     nextReviewAt: null,
+    templateId: null,
     sourceCoverAssetPath: "/assets/fairplay/cards/meals-kids-school-lunch.png",
     sourceDefinition: "Pack and keep lunch ready for the school day.",
     sourceMinimumStandard: "Lunch is packed before school starts.",
@@ -181,6 +182,45 @@ describe("CardWorkspace", () => {
     expect(
       screen.queryByText("No more cards to deal. Generate more cards when ready.")
     ).not.toBeInTheDocument();
+  });
+
+  it("does not show duplicate catalog cards in Available cards", () => {
+    render(
+      <CardWorkspace
+        responsibilities={[
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440130",
+            templateId: "tpl_adult-friendships-player-1",
+            title: "Adult Friendships (Alex)"
+          }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440131",
+            templateId: "tpl_adult-friendships-player-1",
+            title: "Adult Friendships (Alex)"
+          }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440132",
+            templateId: "tpl_adult-friendships-player-2",
+            title: "Adult Friendships (Max)"
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const availableCards = screen.getByTestId("distribution-card-list");
+
+    expect(
+      within(availableCards).getAllByRole("button", {
+        name: /Adult Friendships \(Alex\)/i
+      })
+    ).toHaveLength(1);
+    expect(
+      within(availableCards).getByRole("button", {
+        name: /Adult Friendships \(Max\)/i
+      })
+    ).toBeVisible();
   });
 
   it("supports arrow keys as desktop gesture fallbacks", async () => {
@@ -442,7 +482,9 @@ describe("CardWorkspace", () => {
     expect(within(board).getByRole("heading", { name: "Max" })).toBeVisible();
     expect(within(board).getByRole("heading", { name: "Saved for Later" })).toBeVisible();
     expect(within(board).getByRole("heading", { name: "Not Applicable" })).toBeVisible();
-    expect(within(board).getByRole("heading", { name: "Unassigned" })).toBeVisible();
+    expect(within(board).queryByRole("heading", { name: "Unassigned" }))
+      .not.toBeInTheDocument();
+    expect(within(board).queryByText("Unclear")).not.toBeInTheDocument();
     expect(within(board).getByAltText("Lunch cover")).toHaveAttribute(
       "src",
       "/assets/fairplay/cards/meals-kids-school-lunch.png"

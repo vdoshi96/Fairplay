@@ -119,7 +119,7 @@ export function labelForCardBucket(bucket: CardBucket) {
 export function getDistributableCards<T extends ResponsibilitySummary>(
   cards: readonly T[]
 ): T[] {
-  return cards
+  return deduplicateCatalogCards(cards)
     .filter((card) => bucketForCard(card) === "unassigned")
     .slice()
     .sort(compareCards);
@@ -131,7 +131,7 @@ export function getCardsForPersona<T extends ResponsibilitySummary>(
 ): T[] {
   const bucket = bucketForPersona(personaKey);
 
-  return cards
+  return deduplicateCatalogCards(cards)
     .filter((card) => bucketForCard(card) === bucket)
     .slice()
     .sort(compareCards);
@@ -146,7 +146,7 @@ export function groupCardsByBucket<T extends ResponsibilitySummary>(cards: reado
     {} as Record<CardBucket, T[]>
   );
 
-  cards.forEach((card) => {
+  deduplicateCatalogCards(cards).forEach((card) => {
     groups[bucketForCard(card)].push(card);
   });
 
@@ -155,6 +155,52 @@ export function groupCardsByBucket<T extends ResponsibilitySummary>(cards: reado
   });
 
   return groups;
+}
+
+function deduplicateCatalogCards<T extends ResponsibilitySummary>(
+  cards: readonly T[]
+): T[] {
+  const byCatalogKey = new Map<string, T>();
+
+  cards.forEach((card) => {
+    const key = catalogIdentityForCard(card);
+    const current = byCatalogKey.get(key);
+
+    if (!current || compareCatalogCanonical(card, current) < 0) {
+      byCatalogKey.set(key, card);
+    }
+  });
+
+  return [...byCatalogKey.values()];
+}
+
+function catalogIdentityForCard(card: ResponsibilitySummary) {
+  return card.templateId ? `template:${card.templateId}` : `responsibility:${card.id}`;
+}
+
+function compareCatalogCanonical(
+  first: ResponsibilitySummary,
+  second: ResponsibilitySummary
+) {
+  return (
+    bucketPriority(bucketForCard(second)) - bucketPriority(bucketForCard(first)) ||
+    first.boardSortOrder - second.boardSortOrder ||
+    first.title.localeCompare(second.title) ||
+    first.id.localeCompare(second.id)
+  );
+}
+
+function bucketPriority(bucket: CardBucket) {
+  switch (bucket) {
+    case "alex":
+    case "max":
+      return 4;
+    case "savedForLater":
+    case "notApplicable":
+      return 3;
+    case "unassigned":
+      return 1;
+  }
 }
 
 function compareCards(first: ResponsibilitySummary, second: ResponsibilitySummary) {

@@ -28,6 +28,7 @@ function card(
     boardSortOrder: 0,
     currentAssignments: [],
     nextReviewAt: null,
+    templateId: null,
     ...overrides
   };
 }
@@ -57,6 +58,62 @@ describe("card state adapter", () => {
     ]);
 
     expect(deck.map((item) => item.title)).toEqual(["Three", "One"]);
+  });
+
+  it("deduplicates catalog cards by stable template identity without merging distinct templates", () => {
+    const deck = getDistributableCards([
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440101",
+        templateId: "tpl_adult-friendships-player-1",
+        title: "Adult Friendships (Alex)"
+      }),
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440102",
+        templateId: "tpl_adult-friendships-player-1",
+        title: "Adult Friendships (Alex)"
+      }),
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440103",
+        templateId: "tpl_adult-friendships-player-2",
+        title: "Adult Friendships (Max)"
+      })
+    ]);
+
+    expect(deck.map((item) => item.title)).toEqual([
+      "Adult Friendships (Alex)",
+      "Adult Friendships (Max)"
+    ]);
+  });
+
+  it("keeps an assigned catalog card out of available cards when a stale unassigned duplicate exists", () => {
+    const cards = [
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440111",
+        templateId: "tpl_auto",
+        title: "Auto",
+        boardLane: "cards_of_concern",
+        status: "unassigned"
+      }),
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440112",
+        templateId: "tpl_auto",
+        title: "Auto",
+        boardLane: "player_1",
+        currentAssignments: [
+          {
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          }
+        ],
+        status: "active"
+      })
+    ];
+
+    expect(getDistributableCards(cards)).toHaveLength(0);
+    expect(getCardsForPersona(cards, "alex").map((item) => item.id)).toEqual([
+      "550e8400-e29b-41d4-a716-446655440112"
+    ]);
   });
 
   it("treats legacy active not-in-play cards as unclassified until explicitly saved", () => {

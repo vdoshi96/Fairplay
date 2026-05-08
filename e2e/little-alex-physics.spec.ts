@@ -1002,7 +1002,20 @@ async function littleAlexScreenshotPixelFailures(
 }
 
 async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
+  await expect(page.getByTestId("little-alex-horne")).toHaveAttribute(
+    "data-physics-ready",
+    "true"
+  );
+
   const grabTarget = page.getByTestId("little-alex-grab-target");
+  await expect
+    .poll(async () => {
+      const readyBox = await grabTarget.boundingBox();
+
+      return Boolean(readyBox && readyBox.width > 20 && readyBox.height > 20);
+    })
+    .toBe(true);
+
   const box = await grabTarget.boundingBox();
 
   expect(box).not.toBeNull();
@@ -1024,7 +1037,20 @@ async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
 }
 
 async function dragLittleAlexTo(page: Page, targetX: number, targetY: number) {
+  await expect(page.getByTestId("little-alex-horne")).toHaveAttribute(
+    "data-physics-ready",
+    "true"
+  );
+
   const grabTarget = page.getByTestId("little-alex-grab-target");
+  await expect
+    .poll(async () => {
+      const readyBox = await grabTarget.boundingBox();
+
+      return Boolean(readyBox && readyBox.width > 20 && readyBox.height > 20);
+    })
+    .toBe(true);
+
   const box = await grabTarget.boundingBox();
 
   expect(box).not.toBeNull();
