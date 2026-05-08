@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import {
   BookOpen,
   CalendarCheck,
@@ -37,7 +37,7 @@ const primaryNavItems = [
 ] as const;
 
 const overflowNavItems = [
-  { href: "/app/check-ins/new", icon: CalendarCheck, label: "Check in" },
+  { href: "/app/check-ins/new", icon: CalendarCheck, label: "Check-in" },
   { href: "/app/crash-course", icon: BookOpen, label: "Theory" },
   { href: "/app/settings", icon: Settings, label: "Settings" },
   { href: "/app/library", icon: Library, label: "Card Library" }
@@ -235,10 +235,40 @@ function OverflowMenu({
   placement?: "bottom" | "desktop";
 }) {
   const isBottomPlacement = placement === "bottom";
+  const [isOpen, setIsOpen] = useState(false);
+  const menuId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setIsOpen(false);
+      triggerRef.current?.focus();
+    };
+
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isOpen]);
 
   return (
-    <details className="fp-overflow-menu relative min-w-0 shrink-0">
-      <summary
+    <div className="fp-overflow-menu relative min-w-0 shrink-0">
+      <button
+        aria-controls={menuId}
+        aria-expanded={isOpen}
         aria-label="Open more actions"
         className={[
           "grid cursor-pointer list-none place-items-center rounded border border-fp-line bg-white text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 [&::-webkit-details-marker]:hidden",
@@ -246,43 +276,64 @@ function OverflowMenu({
             ? "min-h-12 w-full gap-1 px-1 text-[11px] font-semibold leading-4 text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
             : "h-11 w-11"
         ].join(" ")}
-        role="button"
+        onClick={() => setIsOpen((current) => !current)}
+        ref={triggerRef}
+        type="button"
       >
         <MoreHorizontal aria-hidden className="h-5 w-5" />
         {isBottomPlacement ? <span className="truncate">More</span> : null}
-      </summary>
-      <nav
-        aria-label="More"
-        className={[
-          "fp-overflow-menu-panel z-30 grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-[var(--fp-shadow-elevated)]",
-          isBottomPlacement
-            ? "absolute bottom-full right-0 mb-2 min-w-52 origin-bottom-right"
-            : "absolute right-0 top-12 min-w-48"
-        ].join(" ")}
-        data-testid={isBottomPlacement ? "mobile-bottom-more-menu" : undefined}
-      >
-        {overflowNavItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = isActiveRoute(pathname, item.href);
+      </button>
 
-          return (
-            <Link
-              aria-current={isActive ? "page" : undefined}
-              className={[
-                "flex min-h-11 items-center gap-3 rounded-[8px] px-3 text-[14px] font-bold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
-                isActive
-                  ? "bg-fp-primary text-fp-on-primary"
-                  : "text-fp-ink hover:bg-[var(--fp-surface)]"
-              ].join(" ")}
-              href={item.href}
-              key={item.href}
-            >
-              <Icon aria-hidden className="h-4 w-4 shrink-0" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-    </details>
+      {isOpen ? (
+        <>
+          {isBottomPlacement ? (
+            <button
+              aria-label="Close more actions"
+              className="fixed inset-0 z-20 cursor-default bg-transparent"
+              data-testid="mobile-more-menu-dismiss-layer"
+              onPointerDown={(event) => {
+                event.preventDefault();
+                setIsOpen(false);
+              }}
+              type="button"
+            />
+          ) : null}
+          <nav
+            aria-label="More"
+            className={[
+              "fp-overflow-menu-panel z-30 grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-[var(--fp-shadow-elevated)]",
+              isBottomPlacement
+                ? "fixed inset-x-3 bottom-[calc(var(--fp-app-bottom-nav-height)+var(--fp-app-safe-area-bottom)+0.75rem)] mx-auto max-w-sm origin-bottom"
+                : "absolute right-0 top-12 min-w-48"
+            ].join(" ")}
+            data-testid={isBottomPlacement ? "mobile-bottom-more-menu" : undefined}
+            id={menuId}
+          >
+            {overflowNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActiveRoute(pathname, item.href);
+
+              return (
+                <Link
+                  aria-current={isActive ? "page" : undefined}
+                  className={[
+                    "flex min-h-11 items-center gap-3 rounded-[8px] px-3 text-[14px] font-bold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
+                    isActive
+                      ? "bg-fp-primary text-fp-on-primary"
+                      : "text-fp-ink hover:bg-[var(--fp-surface)]"
+                  ].join(" ")}
+                  href={item.href}
+                  key={item.href}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Icon aria-hidden className="h-4 w-4 shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </>
+      ) : null}
+    </div>
   );
 }
