@@ -66,6 +66,28 @@ export default async function ResponsibilityDetailPage({
     redirect("/app/board");
   }
 
+  async function saveCardStandards(standard: string) {
+    "use server";
+
+    const actionSession = await getPageSession();
+
+    if (!actionSession) {
+      redirect("/login");
+    }
+
+    if (!actionSession.selectedPersonaId) {
+      redirect("/choose-persona");
+    }
+
+    await responsibilityService.update(actionSession, responsibilityId, {
+      householdStandard: standard.trim() || null
+    });
+    revalidatePath(`/app/responsibilities/${responsibilityId}`);
+    revalidatePath("/app/your-cards");
+    revalidatePath("/app/distribute");
+    revalidatePath("/app/board");
+  }
+
   try {
     const responsibility = await responsibilityService.get(session, responsibilityId);
 
@@ -85,7 +107,11 @@ export default async function ResponsibilityDetailPage({
             Back to Board
           </Link>
         </nav>
-        <CardDetailSheet card={detailCardFor(responsibility)} onMove={moveCard} />
+        <CardDetailSheet
+          card={detailCardFor(responsibility)}
+          onMove={moveCard}
+          onSaveStandards={saveCardStandards}
+        />
       </div>
     );
   } catch (error) {

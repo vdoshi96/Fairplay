@@ -14,7 +14,7 @@ export function Button({
     <button
       {...props}
       className={[
-        "inline-flex min-h-10 max-w-full items-center justify-center gap-2 rounded px-4 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)] disabled:cursor-not-allowed disabled:opacity-55",
+        "inline-flex min-h-10 min-w-0 max-w-full items-center justify-center gap-2 rounded px-4 text-center text-sm font-semibold whitespace-normal transition [overflow-wrap:anywhere] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)] disabled:cursor-not-allowed disabled:opacity-55",
         variant === "primary"
           ? "bg-fp-primary text-fp-on-primary shadow-[var(--fp-shadow-soft)] hover:bg-fp-primary-hover"
           : "",

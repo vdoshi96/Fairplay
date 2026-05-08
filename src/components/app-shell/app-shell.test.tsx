@@ -45,6 +45,8 @@ const littleAlexPreferences: LittleAlexPreferences = {
 };
 
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
+const desktopLittleAlexQuery =
+  "(min-width: 1024px) and (hover: hover) and (pointer: fine)";
 
 function renderProtectedUi(children: ReactNode) {
   return render(
@@ -60,14 +62,25 @@ function renderProtectedUi(children: ReactNode) {
   );
 }
 
-function stubReducedMotion(matches: boolean) {
+function stubLittleAlexMedia({
+  desktop,
+  reducedMotion = false
+}: {
+  desktop: boolean;
+  reducedMotion?: boolean;
+}) {
   vi.stubGlobal(
     "matchMedia",
     vi.fn((query: string) => ({
       addEventListener: vi.fn(),
       addListener: vi.fn(),
       dispatchEvent: vi.fn(),
-      matches: query === reducedMotionQuery ? matches : false,
+      matches:
+        query === desktopLittleAlexQuery
+          ? desktop
+          : query === reducedMotionQuery
+            ? reducedMotion
+            : false,
       media: query,
       onchange: null,
       removeEventListener: vi.fn(),
@@ -229,6 +242,7 @@ describe("protected app UI", () => {
   });
 
   it("renders Little Alex as a decorative physics object on standard protected pages", () => {
+    stubLittleAlexMedia({ desktop: true });
     renderProtectedUi(<div>Distribution workspace</div>);
 
     const littleAlex = screen.getByTestId("little-alex-horne");
@@ -250,6 +264,14 @@ describe("protected app UI", () => {
     });
   });
 
+  it("does not render Little Alex on touch-first mobile layouts", () => {
+    stubLittleAlexMedia({ desktop: false });
+    renderProtectedUi(<div>Distribution workspace</div>);
+
+    expect(screen.queryByTestId("little-alex-horne")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("little-alex-grab-target")).not.toBeInTheDocument();
+  });
+
   it("uses theme primary tokens for active bottom and sidebar tab items", () => {
     renderProtectedUi(<div>Distribution workspace</div>);
 
@@ -265,6 +287,7 @@ describe("protected app UI", () => {
   });
 
   it("lets the Theory route use the full app canvas", () => {
+    stubLittleAlexMedia({ desktop: true });
     pathname.mockReturnValue("/app/crash-course");
 
     renderProtectedUi(<div>Immersive theory</div>);
@@ -285,7 +308,7 @@ describe("protected app UI", () => {
   });
 
   it("settles Little Alex into a draggable-safe static mode for reduced motion", () => {
-    stubReducedMotion(true);
+    stubLittleAlexMedia({ desktop: true, reducedMotion: true });
 
     renderProtectedUi(<div>Distribution workspace</div>);
 

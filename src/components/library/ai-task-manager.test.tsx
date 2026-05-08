@@ -88,6 +88,10 @@ describe("AiTaskManager", () => {
       screen.getByRole("button", { name: "Ask Greg" })
     );
 
+    expect(screen.getByTestId("ai-task-manager")).toHaveClass(
+      "min-w-0",
+      "max-w-full"
+    );
     expect(screen.getByTestId("greg-taskmaster-control")).toHaveClass(
       "grid",
       "justify-items-center"
@@ -99,10 +103,59 @@ describe("AiTaskManager", () => {
     expect(screen.queryByTestId("little-alex-horne-sidekick-image"))
       .not.toBeInTheDocument();
     expect(screen.queryByText("hi im little alex horne")).not.toBeInTheDocument();
+    expect(screen.getByTestId("ai-capture-sheet")).toHaveClass(
+      "min-w-0",
+      "max-w-full",
+      "overflow-hidden"
+    );
     expect(screen.getByRole("region", { name: "Capture AI card draft" })).toBeVisible();
-    expect(screen.getByLabelText("Describe the card")).toBeVisible();
+    expect(screen.getByLabelText("Describe the card")).toHaveClass(
+      "w-full",
+      "min-w-0",
+      "max-w-full"
+    );
     expect(screen.queryByRole("button", { name: "Start recording" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create draft" })).toBeDisabled();
+  });
+
+  it("wraps long Ask Greg draft content instead of forcing mobile overflow", () => {
+    const longTitle =
+      "SupercalifragilisticexpialidociousSchoolLunchPlanningWithoutSpaces";
+    const longSummary =
+      "ThisIsAContinuousLongGeneratedResponseThatNeedsToWrapInsideTheMobileAskGregPanelWithoutClippingOrHorizontalOverflow";
+
+    render(
+      <AiTaskManager
+        drafts={[
+          draft({
+            id: draftIds.ready,
+            status: "ready",
+            generationStage: "ready",
+            title: longTitle,
+            summary: longSummary,
+            failureMessage: longSummary,
+            coverAssetPath: `/api/ai-card-drafts/${draftIds.ready}/cover`
+          })
+        ]}
+      />
+    );
+
+    expect(screen.getByTestId("ai-card-tracker")).toHaveClass(
+      "min-w-0",
+      "max-w-full",
+      "overflow-hidden"
+    );
+    const draftCard = screen.getByTestId("ai-draft-card");
+    expect(draftCard).toHaveClass("min-w-0", "max-w-full");
+    expect(within(draftCard).getByText(longTitle)).toHaveClass(
+      "[overflow-wrap:anywhere]"
+    );
+    expect(within(draftCard).getByText(longTitle)).not.toHaveClass("truncate");
+    within(draftCard)
+      .getAllByText(longSummary)
+      .forEach((node) =>
+        expect(node).toHaveClass("[overflow-wrap:anywhere]")
+      );
   });
 
   it("shows processing, failed, ready, and accepted drafts with status-specific actions", () => {
@@ -495,6 +548,11 @@ describe("AiTaskManager", () => {
     await userEvent.click(screen.getByRole("button", { name: "Review" }));
 
     expect(await screen.findByLabelText("Draft title")).toHaveValue("Laundry reset");
+    expect(screen.getByTestId("ai-review-panel")).toHaveClass(
+      "min-w-0",
+      "max-w-full",
+      "overflow-hidden"
+    );
     const reviewPanel = screen.getByRole("region", { name: "Review AI card draft" });
     expect(
       within(reviewPanel).getByRole("img", { name: "Generated cover for Laundry reset" })
@@ -511,7 +569,7 @@ describe("AiTaskManager", () => {
     expect(screen.getByLabelText("Execution")).toHaveValue(
       "Wash, dry, fold, and put away."
     );
-    expect(screen.getByLabelText("Fogging E-Standards")).toHaveValue(
+    expect(screen.getByLabelText("Fogging Estandards")).toHaveValue(
       "Laundry is folded by Sunday."
     );
 

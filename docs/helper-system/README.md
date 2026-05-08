@@ -4,7 +4,7 @@ This directory documents Little Alex, the floating Fairplay helper/avatar.
 
 ## Current Architecture Snapshot
 
-- `src/components/app-shell/app-shell.tsx` renders `LittleAlexPhysics` on protected app routes and passes `chatPhrase`, `genderPresentation`, and `skinTone` from persona-scoped preferences.
+- `src/components/app-shell/app-shell.tsx` renders `LittleAlexPhysics` only on desktop pointer layouts, using `(min-width: 1024px) and (hover: hover) and (pointer: fine)`, and passes `chatPhrase`, `genderPresentation`, and `skinTone` from persona-scoped preferences.
 - `src/components/little-alex/little-alex-physics.tsx` owns rendering, Matter.js bodies, pointer drag/release, idle standing/walking, chat bubble display, viewport clamping, and reduced-motion behavior.
 - `src/components/settings/settings-panel.tsx` owns the Little Alex settings UI and saves the selected presentation, phrase, and skin tone through `/api/preferences/little-alex`.
 - `src/contracts/preferences.ts` defines the persisted preference schema. `src/contracts/little-alex.ts` exposes the client-safe Little Alex constants used by settings and rendering.
@@ -31,12 +31,11 @@ The original bug was in the final render layer: settings and preferences passed 
 ## Interaction Behavior
 
 - Mouse and pen pointer input starts a drag immediately on the dedicated grab target and uses pointer capture for the active pointer.
-- Touch input starts as a pending grab. Little Alex only becomes draggable after a short press-and-hold or after movement crosses the intentional drag threshold.
-- Touch movement that looks like normal vertical page scrolling cancels the pending grab instead of moving Little Alex.
-- The grab target keeps `touch-action: pan-y` so normal vertical page scrolling remains available until an intentional grab begins.
+- Mobile and touch-first layouts do not render Little Alex. This avoids competing with normal page scrolling on phones and tablets.
+- Desktop behavior remains owned by `LittleAlexPhysics`, including drag, release fling, chat bubble, ragdoll recovery, idle standing, walking timers, and reduced-motion static mode.
 - Once active, drag release still uses the existing fling, chat bubble, ragdoll recovery, idle standing, and walking timers.
 
-Known edge case: a mostly vertical touch drag requires the short hold first, because immediate vertical movement is treated as scroll intent.
+Known edge case: desktop-class devices with both a fine pointer and auxiliary touch input can still render Little Alex because the desktop media query matches the primary interaction mode.
 
 ## Verification Surface
 

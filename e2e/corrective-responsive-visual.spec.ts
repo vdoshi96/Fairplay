@@ -123,11 +123,25 @@ async function expectNoDocumentHorizontalOverflow(page: Page, label: string) {
 
 async function expectLittleAlexFullyVisible(page: Page, label: string) {
   const failures = await page.evaluate(() => {
+    const desktopLittleAlex = window.matchMedia(
+      "(min-width: 1024px) and (hover: hover) and (pointer: fine)"
+    ).matches;
     const viewport = {
       height: window.innerHeight,
       width: window.innerWidth
     };
     const shell = document.querySelector<HTMLElement>('[data-testid="little-alex-horne"]');
+
+    if (!desktopLittleAlex) {
+      return shell
+        ? ["Little Alex should not render on mobile or touch-first layouts"]
+        : [];
+    }
+
+    if (!shell) {
+      return ["Little Alex should render on desktop pointer layouts"];
+    }
+
     const shellRect = shell?.getBoundingClientRect();
     const blockingRects = Array.from(
       document.querySelectorAll<HTMLElement>(

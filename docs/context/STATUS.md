@@ -4,14 +4,14 @@ Last updated: 2026-05-08
 
 ## Current Phase
 
-The focused catalog/deal/board and Little Alex fix is implemented and merged. The active product now treats Library source cards and Deal cards as the same catalog-backed set: Deal materializes the full source catalog for a household, Library no longer has a visible put-in-play workflow, and Board shows only cards assigned/categorized to Alex, Max, Save for later, or Not applicable. Little Alex touch dragging separates grab/drag from ragdoll/fling so mobile hold follows the finger and ragdoll starts only after release behavior.
+The mobile UX/card workflow pass is implemented locally. The active product treats Library source cards and Deal cards as the same catalog-backed set, keeps Board focused on cards assigned/categorized to Alex, Max, Save for later, or Not applicable, and now has safer Deal gestures with Undo, desktop-only Little Alex, a tighter Ask Greg mobile layout, editable Fogging Estandards, and unclipped card detail text.
 
-The current follow-up stabilizes local verification: Playwright e2e now builds the app and runs against `next start` with explicit local runtime env, and Prisma local migration uses a dedicated `SHADOW_DATABASE_URL` plus a shadow DB setup helper so app roles without `CREATEDB` no longer block `migrate dev`.
+The previous tooling follow-up stabilized local verification: Playwright e2e now builds the app and runs against `next start` with explicit local runtime env, and Prisma local migration uses a dedicated `SHADOW_DATABASE_URL` plus a shadow DB setup helper so app roles without `CREATEDB` no longer block `migrate dev`.
 
 ## Branch And Working Tree
 
 - Local `main` has been fast-forwarded through PR #47.
-- Active follow-up branch: `codex/stabilize-e2e-and-prisma-local`.
+- Active follow-up branch: `codex/mobile-ux-card-workflow`.
 - Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, #45 focused patch QA/docs, and #47 catalog/deal/board plus Little Alex fix.
 
 ## What Exists
@@ -27,10 +27,12 @@ The current follow-up stabilizes local verification: Playwright e2e now builds t
 - Global generated backgrounds are stronger and paired with theme-aware washes so foreground surfaces remain readable.
 - The previous homepage is retired. Root, login, and persona selection land on Deal for signed-in selected-persona sessions.
 - Cards are the primary interaction model: Distribution supports search, an available-card list, tap/click flip, swipe left/right/up/down, arrow keys, and large fallback buttons.
-- Your Deck is a searchable, cadence-filterable, image-first assigned-card gallery; tapping a card flips it to show assignment, purpose, and Fogging E-Standards.
+- Your Deck is a searchable, cadence-filterable, image-first assigned-card gallery; tapping a card flips it to show assignment, purpose, and Fogging Estandards.
 - Board groups only real dealt/categorized cards: Alex, Max, Saved for Later, and Not Applicable. Unassigned is now an internal dealable-pool state, not a Board lane.
 - Mobile overflow navigation now opens from the bottom action area with visible Check-in, Settings, Theory, and Card Library links plus an outside-tap dismiss layer that closes without click-through navigation. The persistent welcome banner is no longer mounted in the protected app shell.
-- Little Alex has intentional touch fallback dragging for mobile browsers while preserving immediate desktop mouse/pointer behavior; touch hold grabs without ragdolling until release/collision behavior.
+- Little Alex is desktop-only on protected app routes; mobile and touch-first layouts do not render the helper, and Settings shows a compact mobile note explaining desktop availability.
+- Deal now shows concise swipe instructions under search, uses safer touch-intent thresholds before locking a card drag, and exposes last-action Undo after assignment.
+- Card detail Fogging Estandards are editable via the existing `householdStandard` persistence field, while long purpose/standards text wraps instead of clipping.
 - Library cards flip in place as the full source catalog. The visible put-in-play/lane-pick workflow has been removed from the Library catalog flow.
 - Deal shows the full catalog-backed dealable pool and dedupes by stable template identity; Board removal clears categorization back into that pool without creating duplicate cards.
 - Ask Greg is a main tab for drafting more cards.
@@ -44,6 +46,19 @@ The current follow-up stabilizes local verification: Playwright e2e now builds t
 - Corrective QA on the latest integration branch reported passing Vitest, lint, typecheck, Prisma validate, build, and Playwright e2e.
 
 ## Verification From This Pass
+
+Mobile UX/card workflow verification passed:
+
+```bash
+npm run prisma:validate
+npm run typecheck
+npm run lint
+npm run build
+npm run test:e2e
+npm test -- --run
+```
+
+Rendered browser QA also covered desktop Deal/Little Alex, 320px mobile Deal instructions/Little Alex absence, scroll-like Deal movement without assignment, last-action Undo, Ask Greg mobile layout, Settings desktop-only note, card-detail Fogging Estandards persistence, and a Chromium touch-input probe for mobile scroll safety plus intentional horizontal swipe assignment.
 
 Card-first mobile fix branch verification passed:
 

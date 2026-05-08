@@ -50,7 +50,9 @@ type CardWorkspaceCard = ResponsibilitySummary & {
 };
 
 type DragState = {
+  dragging: boolean;
   pointerId: number;
+  pointerType: string;
   startX: number;
   startY: number;
   x: number;
@@ -93,6 +95,18 @@ const boardOrder: CardBucket[] = [
   "notApplicable"
 ];
 
+type LastDealAction = {
+  bucket: DealActionBucket;
+  card: CardWorkspaceCard;
+};
+
+const TOUCH_SCROLL_DISTANCE_PX = 12;
+const TOUCH_DRAG_LOCK_DISTANCE_PX = 18;
+const HORIZONTAL_SWIPE_DISTANCE_PX = 112;
+const VERTICAL_SWIPE_DISTANCE_PX = 176;
+const HORIZONTAL_DOMINANCE_RATIO = 1.25;
+const VERTICAL_DOMINANCE_RATIO = 1.45;
+
 export function CardWorkspace({
   onDistribute,
   responsibilities,
@@ -133,7 +147,7 @@ function DistributeView({
   const [drag, setDrag] = useState<DragState | null>(null);
   const [flippedId, setFlippedId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const [lastAction, setLastAction] = useState<string | null>(null);
+  const [lastAction, setLastAction] = useState<LastDealAction | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -149,7 +163,8 @@ function DistributeView({
   const deck = useMemo(() => searchCards(allDeck, query), [allDeck, query]);
   const topCard =
     deck.find((card) => card.id === selectedId) ?? deck[0] ?? null;
-  const dragOffset = drag ? { x: drag.x - drag.startX, y: drag.y - drag.startY } : null;
+  const dragOffset =
+    drag?.dragging ? { x: drag.x - drag.startX, y: drag.y - drag.startY } : null;
   const previewBucket = dragOffset ? bucketFromOffset(dragOffset.x, dragOffset.y) : null;
   const hasSearch = query.trim().length > 0;
 
@@ -169,7 +184,7 @@ function DistributeView({
         bucket,
         responsibilityId: card.id
       });
-      setLastAction(`${card.title} -> ${CARD_BUCKET_LABELS[bucket]}`);
+      setLastAction({ bucket, card });
       setRemovedIds((current) => new Set(current).add(card.id));
       setSelectedId((current) => (current === card.id ? null : current));
       setFlippedId((current) => (current === card.id ? null : current));
@@ -180,16 +195,53 @@ function DistributeView({
     }
   }
 
+  async function undoLastAction() {
+    if (!lastAction || pendingId) {
+      return;
+    }
+
+    const card = lastAction.card;
+    setPendingId(card.id);
+    setError(null);
+
+    try {
+      await onDistribute?.({
+        bucket: "unassigned",
+        responsibilityId: card.id
+      });
+      setRemovedIds((current) => {
+        const next = new Set(current);
+        next.delete(card.id);
+        return next;
+      });
+      setSelectedId(card.id);
+      setFlippedId(null);
+      setLastAction(null);
+    } catch {
+      setError("That undo could not be saved. Try again.");
+    } finally {
+      setPendingId(null);
+    }
+  }
+
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     if (!topCard || pendingId) {
       return;
     }
 
-    event.preventDefault();
     event.stopPropagation();
-    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const pointerType = event.pointerType || "mouse";
+    const isTouch = pointerType === "touch";
+
+    if (!isTouch) {
+      event.preventDefault();
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    }
+
     const nextDrag = {
+      dragging: !isTouch,
       pointerId: event.pointerId,
+      pointerType,
       startX: event.clientX,
       startY: event.clientY,
       x: event.clientX,
@@ -205,7 +257,42 @@ function DistributeView({
       return;
     }
 
-    const nextDrag = { ...current, x: event.clientX, y: event.clientY };
+    const offsetX = event.clientX - current.startX;
+    const offsetY = event.clientY - current.startY;
+    const isTouch = current.pointerType === "touch";
+    let isDragging = current.dragging;
+
+    if (isTouch && !isDragging) {
+      const intent = touchDealIntent(offsetX, offsetY);
+
+      if (intent === "scroll") {
+        dragRef.current = null;
+        setDrag(null);
+        return;
+      }
+
+      if (intent === "pending") {
+        const nextPending = { ...current, x: event.clientX, y: event.clientY };
+        dragRef.current = nextPending;
+        setDrag(nextPending);
+        return;
+      }
+
+      isDragging = true;
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    }
+
+    if (isDragging) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    const nextDrag = {
+      ...current,
+      dragging: isDragging,
+      x: event.clientX,
+      y: event.clientY
+    };
     dragRef.current = nextDrag;
     setDrag(nextDrag);
   }
@@ -216,7 +303,9 @@ function DistributeView({
       return;
     }
 
-    const bucket = bucketFromOffset(current.x - current.startX, current.y - current.startY);
+    const bucket = current.dragging
+      ? bucketFromOffset(current.x - current.startX, current.y - current.startY)
+      : null;
     dragRef.current = null;
     setDrag(null);
 
@@ -269,6 +358,8 @@ function DistributeView({
           {hasSearch ? `${deck.length} match${deck.length === 1 ? "" : "es"}` : `${allDeck.length} cards waiting`}
         </span>
       </label>
+
+      {topCard ? <DealGestureInstructions /> : null}
 
       {topCard ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
@@ -329,9 +420,22 @@ function DistributeView({
           Arrow keys work too: left, right, up, down.
         </p>
         {lastAction ? (
-          <p className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] font-bold text-fp-muted-ink" role="status">
-            {lastAction}
-          </p>
+          <div
+            className="flex flex-wrap items-center justify-between gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] font-bold text-fp-muted-ink"
+            role="status"
+          >
+            <span>
+              {lastAction.card.title} -&gt; {CARD_BUCKET_LABELS[lastAction.bucket]}
+            </span>
+            <button
+              className="min-h-9 rounded-[8px] border border-fp-line bg-white px-3 text-[12px] font-bold text-fp-ink disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={pendingId !== null}
+              onClick={() => void undoLastAction()}
+              type="button"
+            >
+              Undo last assignment
+            </button>
+          </div>
         ) : null}
         {error ? (
           <p className="rounded-[8px] border border-fp-danger/40 bg-[var(--fp-surface-strong)] p-3 text-[13px] font-bold text-fp-danger" role="alert">
@@ -555,7 +659,7 @@ function SwipeCard({
       {...handlers}
       aria-label={card.title}
       aria-pressed={flipped}
-      className="relative z-10 grid aspect-[5/7] w-[min(82vw,23rem)] touch-none select-none content-stretch overflow-hidden rounded-[8px] border border-fp-line bg-white text-left text-fp-ink shadow-[var(--fp-shadow-elevated)] transition-transform duration-150 will-change-transform"
+      className="relative z-10 grid aspect-[5/7] w-[min(82vw,23rem)] touch-pan-y select-none content-stretch overflow-hidden rounded-[8px] border border-fp-line bg-white text-left text-fp-ink shadow-[var(--fp-shadow-elevated)] transition-transform duration-150 will-change-transform"
       onClick={onFlip}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -612,6 +716,26 @@ function SwipeCard({
         </div>
       ) : null}
     </article>
+  );
+}
+
+function DealGestureInstructions() {
+  const instructions = [
+    "Swipe left: Alex",
+    "Swipe right: Max",
+    "Swipe up: Save for later",
+    "Swipe down: Not applicable"
+  ];
+
+  return (
+    <ul
+      aria-label="Deal gesture instructions"
+      className="grid grid-cols-2 gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[12px] font-bold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] sm:grid-cols-4"
+    >
+      {instructions.map((instruction) => (
+        <li key={instruction}>{instruction}</li>
+      ))}
+    </ul>
   );
 }
 
@@ -697,16 +821,16 @@ function CardBack({
         <h3 className="text-[13px] font-bold text-fp-ink">
           What is this card for?
         </h3>
-        <p className="line-clamp-5 text-[13px] leading-5 text-fp-muted-ink">
+        <p className="whitespace-pre-wrap text-[13px] leading-5 text-fp-muted-ink [overflow-wrap:anywhere]">
           {cardPurpose(card)}
         </p>
       </section>
 
       <section className="grid gap-1 rounded-[8px] border border-fp-line bg-white p-3">
         <h3 className="text-[13px] font-bold text-fp-ink">
-          Fogging E-Standards
+          Fogging Estandards
         </h3>
-        <p className="line-clamp-5 text-[13px] leading-5 text-fp-muted-ink">
+        <p className="whitespace-pre-wrap text-[13px] leading-5 text-fp-muted-ink [overflow-wrap:anywhere]">
           {cardStandards(card)}
         </p>
       </section>
@@ -952,21 +1076,61 @@ function bucketFromOffset(
   offsetX: number,
   offsetY: number
 ): DealActionBucket | null {
-  const threshold = 88;
-
   if (!Number.isFinite(offsetX) || !Number.isFinite(offsetY)) {
     return null;
   }
 
-  if (Math.max(Math.abs(offsetX), Math.abs(offsetY)) < threshold) {
-    return null;
-  }
+  const absX = Math.abs(offsetX);
+  const absY = Math.abs(offsetY);
 
-  if (Math.abs(offsetX) > Math.abs(offsetY)) {
+  /*
+   * Mobile scrolls often start on the card. Horizontal decisions need a clear
+   * distance plus axis dominance; vertical card decisions need a much stronger
+   * distance/dominance so ordinary page scrolling does not mark a card.
+   */
+  if (
+    absX >= HORIZONTAL_SWIPE_DISTANCE_PX &&
+    absX > absY * HORIZONTAL_DOMINANCE_RATIO
+  ) {
     return offsetX < 0 ? "alex" : "max";
   }
 
-  return offsetY < 0 ? "savedForLater" : "notApplicable";
+  if (
+    absY >= VERTICAL_SWIPE_DISTANCE_PX &&
+    absY > absX * VERTICAL_DOMINANCE_RATIO
+  ) {
+    return offsetY < 0 ? "savedForLater" : "notApplicable";
+  }
+
+  return null;
+}
+
+function touchDealIntent(offsetX: number, offsetY: number) {
+  const absX = Math.abs(offsetX);
+  const absY = Math.abs(offsetY);
+
+  if (
+    absY >= VERTICAL_SWIPE_DISTANCE_PX &&
+    absY > absX * VERTICAL_DOMINANCE_RATIO
+  ) {
+    return "drag";
+  }
+
+  if (
+    absY >= TOUCH_SCROLL_DISTANCE_PX &&
+    absY > absX * HORIZONTAL_DOMINANCE_RATIO
+  ) {
+    return "scroll";
+  }
+
+  if (
+    absX >= TOUCH_DRAG_LOCK_DISTANCE_PX &&
+    absX > absY * HORIZONTAL_DOMINANCE_RATIO
+  ) {
+    return "drag";
+  }
+
+  return "pending";
 }
 
 function styleForDrag(offset: { x: number; y: number } | null): CSSProperties {
@@ -1029,8 +1193,8 @@ function cardPurpose(card: CardWorkspaceCard) {
 
 function cardStandards(card: CardWorkspaceCard) {
   return (
-    card.sourceMinimumStandard ??
     card.householdStandard ??
+    card.sourceMinimumStandard ??
     "No standard has been written for this card yet."
   );
 }
