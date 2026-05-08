@@ -28,6 +28,16 @@ The original bug was in the final render layer: settings and preferences passed 
 4. Fade/spring back to the full-body sprite when the existing post-release idle recovery timer returns Little Alex to standing.
 5. Route visible sprite paths through presentation plus skin tone. Generate or derive missing tone variants so the visible full-body and ragdoll part sprites match face/body/limbs.
 
+## Interaction Behavior
+
+- Mouse and pen pointer input starts a drag immediately on the dedicated grab target and uses pointer capture for the active pointer.
+- Touch input starts as a pending grab. Little Alex only becomes draggable after a short press-and-hold or after movement crosses the intentional drag threshold.
+- Touch movement that looks like normal vertical page scrolling cancels the pending grab instead of moving Little Alex.
+- The grab target keeps `touch-action: pan-y` so normal vertical page scrolling remains available until an intentional grab begins.
+- Once active, drag release still uses the existing fling, chat bubble, ragdoll recovery, idle standing, and walking timers.
+
+Known edge case: a mostly vertical touch drag requires the short hold first, because immediate vertical movement is treated as scroll intent.
+
 ## Verification Surface
 
 - Unit/component: `src/components/little-alex/little-alex-physics.test.tsx`
