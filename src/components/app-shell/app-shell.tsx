@@ -79,6 +79,7 @@ export function AppShell({
         <LittleAlexPhysics
           chatPhrase={littleAlexPreferences.chatPhrase}
           genderPresentation={littleAlexPreferences.genderPresentation}
+          hairColor={littleAlexPreferences.hairColor}
           skinTone={littleAlexPreferences.skinTone}
         />
       ) : null}

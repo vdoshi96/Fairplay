@@ -40,6 +40,7 @@ describe("/api/preferences/little-alex", () => {
       genderPresentation: "neutral",
       chatPhrase: "i'm little alex horne",
       skinTone: "tone_2",
+      hairColor: "dark_brown",
       updatedAt: "2026-05-06T12:00:00.000Z"
     });
     updateLittleAlexPreferences.mockResolvedValue({
@@ -47,6 +48,7 @@ describe("/api/preferences/little-alex", () => {
       genderPresentation: "feminine",
       chatPhrase: "hello from alex",
       skinTone: "tone_4",
+      hairColor: "blonde",
       updatedAt: "2026-05-06T12:00:00.000Z"
     });
   });
@@ -71,7 +73,8 @@ describe("/api/preferences/little-alex", () => {
       request("PATCH", {
         genderPresentation: "feminine",
         chatPhrase: "hello from alex",
-        skinTone: "tone_4"
+        skinTone: "tone_4",
+        hairColor: "blonde"
       })
     );
     const body = await response.json();
@@ -82,10 +85,12 @@ describe("/api/preferences/little-alex", () => {
       {
         genderPresentation: "feminine",
         chatPhrase: "hello from alex",
-        skinTone: "tone_4"
+        skinTone: "tone_4",
+        hairColor: "blonde"
       }
     );
     expect(body.skinTone).toBe("tone_4");
+    expect(body.hairColor).toBe("blonde");
   });
 
   it("rejects invalid Little Alex phrases", async () => {

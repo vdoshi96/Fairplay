@@ -41,6 +41,7 @@ const littleAlexPreferences: LittleAlexPreferences = {
   genderPresentation: "masculine",
   chatPhrase: "hello from alex",
   skinTone: "tone_5",
+  hairColor: "silver",
   updatedAt: "2026-05-06T12:00:00.000Z"
 };
 
@@ -251,7 +252,9 @@ describe("protected app UI", () => {
     expect(littleAlex).toHaveAttribute("data-motion-mode", "physics");
     expect(littleAlex).toHaveAttribute("data-chat-phrase", "hello from alex");
     expect(littleAlex).toHaveAttribute("data-gender-presentation", "masculine");
+    expect(littleAlex).toHaveAttribute("data-hair-color", "silver");
     expect(littleAlex).toHaveStyle({ "--little-alex-skin": "#8f5f45" });
+    expect(littleAlex).toHaveStyle({ "--little-alex-hair": "#c8c7bc" });
     expect(screen.getByTestId("little-alex-full-sprite")).toHaveAttribute(
       "src",
       "/assets/fairplay/little-alex-sprites/masculine-tone_5-full.png"

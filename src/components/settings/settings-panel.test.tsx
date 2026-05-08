@@ -42,6 +42,7 @@ const littleAlexPreferences: LittleAlexPreferences = {
   genderPresentation: "neutral",
   chatPhrase: "i'm little alex horne",
   skinTone: "tone_2",
+  hairColor: "dark_brown",
   updatedAt: "2026-05-06T12:00:00.000Z"
 };
 
@@ -154,7 +155,8 @@ describe("settings panel", () => {
         ...littleAlexPreferences,
         genderPresentation: "feminine",
         chatPhrase: "well done everyone",
-        skinTone: "tone_4"
+        skinTone: "tone_4",
+        hairColor: "auburn"
       })
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -172,6 +174,7 @@ describe("settings panel", () => {
       target: { value: "well done everyone" }
     });
     fireEvent.click(screen.getByRole("button", { name: "Tone 4" }));
+    fireEvent.click(screen.getByRole("button", { name: "Auburn" }));
     fireEvent.click(screen.getByRole("button", { name: "Save Little Alex" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -185,7 +188,8 @@ describe("settings panel", () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
       genderPresentation: "feminine",
       chatPhrase: "well done everyone",
-      skinTone: "tone_4"
+      skinTone: "tone_4",
+      hairColor: "auburn"
     });
     expect(screen.getByRole("status")).toHaveTextContent(
       "Little Alex updated for Alex."

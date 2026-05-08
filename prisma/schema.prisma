@@ -27,6 +27,14 @@ enum LittleAlexSkinTone {
   tone_5
 }
 
+enum LittleAlexHairColor {
+  dark_brown
+  black
+  auburn
+  blonde
+  silver
+}
+
 enum ResponsibilityStatus {
   unassigned
   active
@@ -218,6 +226,7 @@ model PersonaLittleAlexPreferences {
   genderPresentation LittleAlexGenderPresentation   @default(neutral)
   chatPhrase         String                         @default("i'm little alex horne") @db.VarChar(30)
   skinTone           LittleAlexSkinTone             @default(tone_2)
+  hairColor          LittleAlexHairColor            @default(dark_brown)
   createdAt          DateTime                       @default(now())
   updatedAt          DateTime                       @updatedAt
   persona            Persona                        @relation(fields: [personaId], references: [id], onDelete: Cascade)

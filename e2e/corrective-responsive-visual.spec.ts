@@ -437,6 +437,10 @@ test.describe("corrective responsive visual QA", () => {
         await expectPageBackground(page, appPage.name);
         await expect(page.getByRole("button", { name: "Learn this feature" }))
           .toHaveCount(0);
+        if (appPage.name === "ask-greg") {
+          await expect(page.locator('img[src*="greg-taskmaster-avatar"]'))
+            .toHaveCount(1);
+        }
         await expectLittleAlexFullyVisible(
           page,
           `${viewport.name} ${appPage.name}`

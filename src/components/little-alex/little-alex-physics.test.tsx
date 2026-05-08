@@ -916,6 +916,24 @@ describe("LittleAlexPhysics", () => {
     expect(new Set(fullSpritePaths).size).toBe(skinTones.length);
   });
 
+  it("applies the configured Little Alex hair color to full and ragdoll hair overlays", () => {
+    stubReducedMotion(true);
+
+    render(<LittleAlexPhysics hairColor="auburn" />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+
+    expect(littleAlex).toHaveAttribute("data-hair-color", "auburn");
+    expect(littleAlex).toHaveStyle({ "--little-alex-hair": "#8f4632" });
+    expect(screen.getByTestId("little-alex-full-hair-overlay")).toHaveAttribute(
+      "data-hair-shape",
+      "side-swept"
+    );
+    expect(screen.getByTestId("little-alex-head-hair-overlay")).toHaveAttribute(
+      "data-hair-shape",
+      "side-swept"
+    );
+  });
+
   it("overlaps reduced-motion arm and torso x bounds at both shoulders", () => {
     stubReducedMotion(true);
 

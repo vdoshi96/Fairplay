@@ -26,6 +26,7 @@ import { Sheet } from "@/components/ui/sheet";
 
 type AiTaskManagerProps = {
   drafts: AiCardDraftSummary[];
+  showGregAvatar?: boolean;
 };
 
 type PendingAction =
@@ -57,7 +58,10 @@ const stageLabels: Record<AiCardDraftSummary["generationStage"], string> = {
   structuring: "Generating"
 };
 
-export function AiTaskManager({ drafts }: AiTaskManagerProps) {
+export function AiTaskManager({
+  drafts,
+  showGregAvatar = true
+}: AiTaskManagerProps) {
   const router = useRouter();
   const pendingCreateControllersRef = useRef(new Map<string, AbortController>());
   const [captureOpen, setCaptureOpen] = useState(false);
@@ -183,7 +187,7 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
           className="grid justify-items-center gap-0"
           data-testid="greg-taskmaster-control"
         >
-          <GregTaskmasterAvatar />
+          {showGregAvatar ? <GregTaskmasterAvatar /> : null}
           <Button onClick={() => setCaptureOpen((open) => !open)} variant="primary">
             <Sparkles aria-hidden="true" size={16} />
             Ask Greg

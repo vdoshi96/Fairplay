@@ -1312,6 +1312,7 @@ test.describe("Little Alex physics", () => {
       .getByLabel("Little Alex chat bubble phrase")
       .fill("well done everyone");
     await page.getByRole("button", { name: "Tone 4" }).click();
+    await page.getByRole("button", { name: "Auburn" }).click();
     await expectApiPatch(page, "/api/preferences/little-alex", () =>
       page.getByRole("button", { name: "Save Little Alex" }).click()
     );
@@ -1330,6 +1331,16 @@ test.describe("Little Alex physics", () => {
       "data-chat-phrase",
       "well done everyone"
     );
+    await expect(littleAlex).toHaveAttribute("data-hair-color", "auburn");
+    await expect
+      .poll(() =>
+        littleAlex.evaluate((element) =>
+          getComputedStyle(element).getPropertyValue("--little-alex-hair").trim()
+        )
+      )
+      .toBe("#8f4632");
+    await expect(page.getByTestId("little-alex-full-hair-overlay"))
+      .toHaveAttribute("data-hair-shape", "long-hair");
     await expectLittleAlexSpritesLoaded(page, "feminine", "tone_4");
     await dragLittleAlex(page, -180, 120);
     await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
