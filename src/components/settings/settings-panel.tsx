@@ -420,6 +420,9 @@ export function SettingsPanel({
               <p className="text-[14px] leading-5 text-fp-muted-ink">
                 Customize assistant for {selectedPersona.displayName}.
               </p>
+              <p className="rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 py-2 text-[12px] font-semibold leading-5 text-fp-muted-ink lg:hidden">
+                Little Alex is available on desktop. Open FairPlay on a desktop browser to play with him.
+              </p>
             </div>
 
             <div className="grid gap-2">

@@ -33,6 +33,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 - `../agents/manifest.md`: historical agent task registry.
 - `../product/card-first-mobile-redesign.md`: current card-first redesign rationale, IA, state model, gestures, PWA notes, QA, limitations, and future work.
 - `../implementation/2026-05-08-mobile-card-ui-state-fix.md`: mobile card UI/state fix report, changed files, state flow, PR order, and QA notes.
+- `../implementation/2026-05-08-mobile-ux-card-workflow.md`: Little Alex desktop-only behavior, Ask Greg mobile layout, Deal gesture/Undo thresholds, editable Fogging Estandards, and manual QA steps.
 
 ## Current Cleanup Priority
 

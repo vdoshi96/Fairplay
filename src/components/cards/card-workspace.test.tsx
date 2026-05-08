@@ -58,6 +58,7 @@ function dispatchPointerEvent(
   });
 
   fireEvent(target, event);
+  return event;
 }
 
 describe("CardWorkspace", () => {
@@ -102,6 +103,64 @@ describe("CardWorkspace", () => {
     expect(
       screen.getByText("No more cards to deal. Generate more cards when ready.")
     ).toBeVisible();
+  });
+
+  it("shows concise gesture instructions directly above the deal card", () => {
+    render(
+      <CardWorkspace
+        responsibilities={[card()]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const instructions = screen.getByRole("list", {
+      name: "Deal gesture instructions"
+    });
+    const deck = screen.getByTestId("swipe-deck");
+
+    expect(within(instructions).getByText("Swipe left: Alex")).toBeVisible();
+    expect(within(instructions).getByText("Swipe right: Max")).toBeVisible();
+    expect(within(instructions).getByText("Swipe up: Save for later")).toBeVisible();
+    expect(within(instructions).getByText("Swipe down: Not applicable")).toBeVisible();
+    expect(instructions.compareDocumentPosition(deck)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+  });
+
+  it("undoes the most recent Deal assignment and puts that card back on top", async () => {
+    const onDistribute = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[card()]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Alex" }));
+
+    await screen.findByRole("button", { name: "Undo last assignment" });
+    expect(
+      screen.getByText("School lunch -> Alex")
+    ).toBeVisible();
+    expect(
+      screen.getByText("No more cards to deal. Generate more cards when ready.")
+    ).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo last assignment" }));
+
+    await waitFor(() =>
+      expect(onDistribute).toHaveBeenLastCalledWith({
+        bucket: "unassigned",
+        responsibilityId: "550e8400-e29b-41d4-a716-446655440000"
+      })
+    );
+    expect(screen.getByRole("heading", { name: "School lunch" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Undo last assignment" }))
+      .not.toBeInTheDocument();
   });
 
   it("keeps the active card available while its move is still pending", async () => {
@@ -267,13 +326,13 @@ describe("CardWorkspace", () => {
     dispatchPointerEvent(firstCard, "pointermove", {
       buttons: 1,
       clientX: 180,
-      clientY: 240,
+      clientY: 150,
       pointerId: 11,
       pointerType: "touch"
     });
     dispatchPointerEvent(firstCard, "pointerup", {
       clientX: 180,
-      clientY: 240,
+      clientY: 150,
       pointerId: 11,
       pointerType: "touch"
     });
@@ -311,13 +370,13 @@ describe("CardWorkspace", () => {
     dispatchPointerEvent(secondCard, "pointermove", {
       buttons: 1,
       clientX: 180,
-      clientY: 360,
+      clientY: 450,
       pointerId: 12,
       pointerType: "touch"
     });
     dispatchPointerEvent(secondCard, "pointerup", {
       clientX: 180,
-      clientY: 360,
+      clientY: 450,
       pointerId: 12,
       pointerType: "touch"
     });
@@ -328,6 +387,83 @@ describe("CardWorkspace", () => {
         responsibilityId: "550e8400-e29b-41d4-a716-446655440090"
       })
     );
+  });
+
+  it("lets touch scrolling win unless a Deal gesture is clearly intentional", async () => {
+    const onDistribute = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[card()]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const firstCard = screen.getByRole("button", { name: "School lunch" });
+    const pointerDown = dispatchPointerEvent(firstCard, "pointerdown", {
+      buttons: 1,
+      clientX: 180,
+      clientY: 240,
+      pointerId: 21,
+      pointerType: "touch"
+    });
+
+    expect(pointerDown.defaultPrevented).toBe(false);
+
+    dispatchPointerEvent(firstCard, "pointermove", {
+      buttons: 1,
+      clientX: 184,
+      clientY: 390,
+      pointerId: 21,
+      pointerType: "touch"
+    });
+    dispatchPointerEvent(firstCard, "pointerup", {
+      clientX: 184,
+      clientY: 390,
+      pointerId: 21,
+      pointerType: "touch"
+    });
+
+    expect(onDistribute).not.toHaveBeenCalled();
+  });
+
+  it("does not assign on diagonal mobile drags without strong direction dominance", async () => {
+    const onDistribute = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[card()]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const firstCard = screen.getByRole("button", { name: "School lunch" });
+    dispatchPointerEvent(firstCard, "pointerdown", {
+      buttons: 1,
+      clientX: 180,
+      clientY: 240,
+      pointerId: 22,
+      pointerType: "touch"
+    });
+    dispatchPointerEvent(firstCard, "pointermove", {
+      buttons: 1,
+      clientX: 280,
+      clientY: 320,
+      pointerId: 22,
+      pointerType: "touch"
+    });
+    dispatchPointerEvent(firstCard, "pointerup", {
+      clientX: 280,
+      clientY: 320,
+      pointerId: 22,
+      pointerType: "touch"
+    });
+
+    expect(onDistribute).not.toHaveBeenCalled();
   });
 
   it("searches distribution cards before assigning one", async () => {
@@ -378,9 +514,34 @@ describe("CardWorkspace", () => {
 
     expect(screen.getByText("What is this card for?")).toBeVisible();
     expect(screen.getByText("Pack and keep lunch ready for the school day.")).toBeVisible();
-    expect(screen.getByText("Fogging E-Standards")).toBeVisible();
+    expect(screen.getByText("Fogging Estandards")).toBeVisible();
     expect(screen.getByText("Lunch is packed before school starts.")).toBeVisible();
     expect(screen.getByText(/Assigned to Unassigned/i)).toBeVisible();
+  });
+
+  it("does not clip long card-back purpose or standards text", () => {
+    const longPurpose =
+      "This card covers every planning step, every reminder, every handoff, and every follow-through detail that needs to remain readable on a narrow phone screen without disappearing behind a fixed-height clamp.";
+    const longStandard =
+      "Done means the household can see what happened, what remains, and what needs a later check without losing the rest of this sentence on mobile.";
+
+    render(
+      <CardWorkspace
+        responsibilities={[
+          card({
+            sourceDefinition: longPurpose,
+            sourceMinimumStandard: longStandard
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "School lunch" }));
+
+    expect(screen.getByText(longPurpose)).not.toHaveClass("line-clamp-5");
+    expect(screen.getByText(longStandard)).not.toHaveClass("line-clamp-5");
   });
 
   it("renders the current persona's cards as a filterable image-first gallery", () => {
@@ -457,7 +618,7 @@ describe("CardWorkspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Lunch" }));
 
     expect(screen.getByText("What is this card for?")).toBeVisible();
-    expect(screen.getByText("Fogging E-Standards")).toBeVisible();
+    expect(screen.getByText("Fogging Estandards")).toBeVisible();
     expect(screen.getByText(/Assigned to Alex/i)).toBeVisible();
   });
 

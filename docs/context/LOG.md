@@ -1,5 +1,28 @@
 # Fairplay Context Log
 
+## 2026-05-08 - Mobile UX Card Workflow Fix
+
+Requested by the user: stop forcing Little Alex on mobile, fix Ask Greg mobile width/readability, move Deal gesture instructions, add Deal Undo, make mobile card gestures safer, make Fogging Estandards editable and persistent, and prevent clipped card detail text.
+
+Actions completed:
+
+- Made Little Alex render only on desktop pointer layouts and added a compact Settings mobile note explaining desktop availability.
+- Reworked Deal touch intent so page scrolling wins unless a card swipe clearly crosses movement and direction-dominance thresholds.
+- Moved Deal gesture instructions under search, added last-action Undo, and kept button/keyboard actions intact.
+- Tightened Ask Greg mobile containers, draft/review surfaces, inputs, and button wrapping to avoid horizontal overflow.
+- Made card detail Fogging Estandards editable via `householdStandard`, with wrapped purpose/standards text and persisted navigation-back verification.
+- Updated e2e expectations, product/helper docs, wiki, decisions, and implementation notes for the desktop-only Little Alex and safer Deal gesture model.
+
+Verification:
+
+- `npm run prisma:validate`
+- `npm run typecheck`
+- `npm run lint`
+- `npm run build`
+- `npm run test:e2e` (28 Playwright tests)
+- `npm test -- --run` (90 files, 549 tests)
+- Rendered browser QA at desktop and 320px mobile, plus a Chromium CDP touch-input probe for mobile Deal scroll safety and intentional horizontal swipe/Undo.
+
 ## 2026-05-08 - Local E2E And Prisma Stability
 
 Requested by the user: fix the test server flakiness and local DB permission issues so they do not block the next pass.

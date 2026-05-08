@@ -250,7 +250,7 @@ function LibraryCardBack({ template }: { template: LibraryCardTemplate }) {
 
       <section className="grid gap-1 rounded-[8px] border border-fp-line bg-white p-3">
         <h3 className="text-[13px] font-bold text-fp-ink">
-          Fogging E-Standards
+          Fogging Estandards
         </h3>
         <p className="line-clamp-4 text-[13px] leading-5 text-fp-muted-ink">
           {template.minimumStandard ??

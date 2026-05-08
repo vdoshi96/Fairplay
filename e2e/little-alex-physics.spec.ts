@@ -1054,41 +1054,6 @@ async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
   await page.mouse.up();
 }
 
-async function dragLittleAlexTo(page: Page, targetX: number, targetY: number) {
-  await expect(page.getByTestId("little-alex-horne")).toHaveAttribute(
-    "data-physics-ready",
-    "true"
-  );
-
-  const grabTarget = page.getByTestId("little-alex-grab-target");
-  await expect
-    .poll(async () => {
-      const readyBox = await grabTarget.boundingBox();
-
-      return Boolean(readyBox && readyBox.width > 20 && readyBox.height > 20);
-    })
-    .toBe(true);
-
-  const box = await grabTarget.boundingBox();
-
-  expect(box).not.toBeNull();
-
-  if (!box) {
-    return;
-  }
-
-  const startX = box.x + box.width / 2;
-  const startY = box.y + box.height / 2;
-
-  await page.mouse.move(startX, startY);
-  await page.mouse.down();
-  await page.mouse.move((startX + targetX) / 2, (startY + targetY) / 2, {
-    steps: 4
-  });
-  await page.mouse.move(targetX, targetY, { steps: 4 });
-  await page.mouse.up();
-}
-
 test.describe("Little Alex physics", () => {
   test.describe.configure({ mode: "serial" });
 
@@ -1282,23 +1247,19 @@ test.describe("Little Alex physics", () => {
     await expectLittleAlexInViewport(page);
   });
 
-  test("keeps every body part inside a constrained mobile landscape viewport", async ({
+  test("does not render on a constrained mobile landscape viewport", async ({
     page
   }) => {
     await createHouseholdAndChooseAlex(page);
     await page.setViewportSize({ height: 260, width: 300 });
     await page.goto("/app/home");
 
-    await expect(page.getByTestId("little-alex-horne")).toBeVisible();
-    await expectLittleAlexInViewport(page);
-
-    await dragLittleAlex(page, 220, 160);
-    await page.waitForTimeout(500);
-
-    await expectLittleAlexInViewport(page);
+    await expect(page.getByTestId("little-alex-horne")).toHaveCount(0);
+    await expect(page.getByTestId("little-alex-grab-target")).toHaveCount(0);
+    await expect(page.getByTestId("little-alex-body-part")).toHaveCount(0);
   });
 
-  test("does not cover mobile navigation taps when resting near the bottom nav", async ({
+  test("does not render on mobile and leaves navigation taps unobstructed", async ({
     page
   }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -1306,7 +1267,8 @@ test.describe("Little Alex physics", () => {
     await createHouseholdAndChooseAlex(page);
     await page.goto("/app/distribute");
 
-    await expect(page.getByTestId("little-alex-horne")).toHaveCSS("z-index", "9");
+    await expect(page.getByTestId("little-alex-horne")).toHaveCount(0);
+    await expect(page.getByTestId("little-alex-grab-target")).toHaveCount(0);
 
     const mobileNav = page.getByRole("navigation", { name: "Primary" });
     const dealLink = mobileNav.getByRole("link", { name: "Deal" });
@@ -1317,12 +1279,6 @@ test.describe("Little Alex physics", () => {
     if (!distributeBox) {
       return;
     }
-
-    await dragLittleAlexTo(
-      page,
-      distributeBox.x + distributeBox.width / 2,
-      distributeBox.y + distributeBox.height / 2
-    );
 
     await dealLink.click();
     await expect(page).toHaveURL(/\/app\/distribute/);

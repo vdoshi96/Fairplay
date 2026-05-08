@@ -2,7 +2,7 @@
 
 import { MoveRight } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { CardTemplateLabel } from "@/contracts/card-templates";
 import type { ResponsibilityBoardLane } from "@/domain/enums";
@@ -36,6 +36,7 @@ export type CardDetailCard = {
 type CardDetailSheetProps = {
   card: CardDetailCard;
   onMove?: (bucket: CardDistributionBucket) => void;
+  onSaveStandards?: (standard: string) => Promise<void> | void;
 };
 
 const aiDraftCoverPathPattern =
@@ -55,8 +56,13 @@ const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> =
 
 const moveBuckets = ["alex", "max", "savedForLater", "notApplicable"] as const;
 
-export function CardDetailSheet({ card, onMove }: CardDetailSheetProps) {
+export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailSheetProps) {
+  const standardsDefaultText = standardsTextFor(card);
   const [selectedBucket, setSelectedBucket] = useState<CardDistributionBucket | "">("");
+  const [standardsDraft, setStandardsDraft] = useState(() => standardsDefaultText);
+  const [savingStandards, setSavingStandards] = useState(false);
+  const [standardsStatus, setStandardsStatus] = useState<string | null>(null);
+  const [standardsError, setStandardsError] = useState<string | null>(null);
   const laneLabel = card.boardLane
     ? CARD_BUCKET_LABELS[bucketForLane(card.boardLane)]
     : "Unassigned";
@@ -73,6 +79,31 @@ export function CardDetailSheet({ card, onMove }: CardDetailSheetProps) {
     }
 
     onMove?.(selectedBucket);
+  }
+
+  useEffect(() => {
+    setStandardsDraft(standardsDefaultText);
+    setStandardsStatus(null);
+    setStandardsError(null);
+  }, [card.id, standardsDefaultText]);
+
+  async function saveStandards() {
+    if (!onSaveStandards) {
+      return;
+    }
+
+    setSavingStandards(true);
+    setStandardsStatus(null);
+    setStandardsError(null);
+
+    try {
+      await onSaveStandards(standardsDraft.trim());
+      setStandardsStatus("Estandards saved.");
+    } catch {
+      setStandardsError("Unable to save Estandards right now. Try again.");
+    } finally {
+      setSavingStandards(false);
+    }
   }
 
   return (
@@ -152,20 +183,43 @@ export function CardDetailSheet({ card, onMove }: CardDetailSheetProps) {
             <h2 className="text-[16px] font-bold text-fp-ink">
               What is this card for?
             </h2>
-            <p className="text-[14px] leading-6 text-fp-muted-ink">
+            <p className="whitespace-pre-wrap text-[14px] leading-6 text-fp-muted-ink [overflow-wrap:anywhere]">
               {card.definition || "No purpose has been written for this card yet."}
             </p>
           </section>
 
           <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4">
             <h2 className="text-[16px] font-bold text-fp-ink">
-              Fogging E-Standards
+              Fogging Estandards
             </h2>
-            <p className="text-[14px] leading-6 text-fp-muted-ink">
-              {card.minimumStandard ??
-                card.householdStandard ??
-                "No standard has been written for this card yet."}
-            </p>
+            <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+              <textarea
+                aria-label="Fogging Estandards"
+                className="min-h-32 w-full min-w-0 max-w-full rounded-[8px] border border-fp-line bg-white px-3 py-2 text-[14px] leading-6 text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition [overflow-wrap:anywhere] focus:border-fp-ink disabled:opacity-70"
+                disabled={!onSaveStandards || savingStandards}
+                onChange={(event) => setStandardsDraft(event.target.value)}
+                value={standardsDraft}
+              />
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                disabled={!onSaveStandards || savingStandards}
+                onClick={() => void saveStandards()}
+                variant="primary"
+              >
+                {savingStandards ? "Saving..." : "Save Estandards"}
+              </Button>
+              {standardsStatus ? (
+                <p className="text-[13px] font-semibold text-fp-muted-ink" role="status">
+                  {standardsStatus}
+                </p>
+              ) : null}
+              {standardsError ? (
+                <p className="text-[13px] font-semibold text-fp-danger" role="alert">
+                  {standardsError}
+                </p>
+              ) : null}
+            </div>
           </section>
 
           <section className="grid gap-3">
@@ -203,5 +257,13 @@ export function CardDetailSheet({ card, onMove }: CardDetailSheetProps) {
         </div>
       </div>
     </Sheet>
+  );
+}
+
+function standardsTextFor(card: CardDetailCard) {
+  return (
+    card.householdStandard ??
+    card.minimumStandard ??
+    "No standard has been written for this card yet."
   );
 }

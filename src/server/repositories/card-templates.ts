@@ -176,7 +176,7 @@ function toDetail(template: TemplateRecord): CardTemplateDetail {
       "Complete the visible work and follow through until the outcome is handled.",
     minimumStandard:
       template.minimumStandard ??
-      "Agree on household-specific Fogging E-Standards before judging follow-through.",
+      "Agree on household-specific Fogging Estandards before judging follow-through.",
     defaultCadence: template.defaultCadence,
     hiddenEffortKeys: template.hiddenEffortKeys,
     sourceVersion: template.sourceVersion ?? template.contentVersion,

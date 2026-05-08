@@ -1549,7 +1549,7 @@ export const FAIRPLAY_SOURCE_CARDS = [
       "Daily Grind"
     ],
     "summary": "If you’re this cardholder, toss the idea of a relaxing night out the window because it’s time to start packing lunch for the kids.",
-    "definition": "If you’re this cardholder, toss the idea of a relaxing night out the window because it’s time to start packing lunch for the kids. Don’t let all the #schoollunch pics on Instagram get you down. Your Fogging E-Standards could be a protein bar, an apple, and a bottle of water if that’s all your kid will eat. And even if your child’s school provides lunch, you still have to take the lead and sign up for this program and provide lunch money to cover pizza Fridays.",
+    "definition": "If you’re this cardholder, toss the idea of a relaxing night out the window because it’s time to start packing lunch for the kids. Don’t let all the #schoollunch pics on Instagram get you down. Your Fogging Estandards could be a protein bar, an apple, and a bottle of water if that’s all your kid will eat. And even if your child’s school provides lunch, you still have to take the lead and sign up for this program and provide lunch money to cover pizza Fridays.",
     "conception": "MEALS (SCHOOL LUNCH) (DG)",
     "planning": "INSOURCED- Menu and snack planning and purchasing containers (give list of items needed to “home goods and supplies” cardholder or purchase yourself)OUTSOURCED- Log into school portal to order school lunch and/or add money to account (exception: all other school forms go to “school forms” cardholder)",
     "execution": "- Preparing and packing into container (including filling daily water bottle and providing utensils/ice packs)- Staying apprised of what child is eating/not eating",

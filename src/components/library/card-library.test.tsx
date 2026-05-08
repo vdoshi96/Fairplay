@@ -129,7 +129,7 @@ describe("CardLibrary", () => {
 
     await userEvent.click(within(autoCard).getByRole("button", { name: /flip auto/i }));
     expect(within(autoCard).getByText("What is this card for?")).toBeVisible();
-    expect(within(autoCard).getByText("Fogging E-Standards")).toBeVisible();
+    expect(within(autoCard).getByText("Fogging Estandards")).toBeVisible();
     expect(within(autoCard).queryByText("Choose lane")).not.toBeInTheDocument();
   });
 

@@ -192,6 +192,18 @@ describe("settings panel", () => {
     );
   });
 
+  it("shows the mobile desktop-only Little Alex note without hiding preferences", () => {
+    renderSettings();
+
+    expect(
+      screen.getByText(
+        "Little Alex is available on desktop. Open FairPlay on a desktop browser to play with him."
+      )
+    ).toBeVisible();
+    expect(screen.getByLabelText("Little Alex chat bubble phrase")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save Little Alex" })).toBeVisible();
+  });
+
   it("keeps Little Alex phrases to 30 characters", () => {
     renderSettings();
 

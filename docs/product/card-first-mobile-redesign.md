@@ -55,7 +55,10 @@ The database keeps existing `ResponsibilityBoardLane` values for compatibility. 
 - Swipe down: mark not applicable.
 - Arrow keys mirror the gestures on desktop.
 - Buttons are always visible for users who do not use gestures or assistive technology users who need an alternate input.
+- Gesture instructions sit directly under the Deal search bar so the visible card and gesture meanings are read together.
+- Touch gestures wait for clear card-swipe intent before preventing page scroll; vertical card actions require a stronger movement threshold than horizontal assignment.
 - A successful distribution removes the top card from the deck. When the deck is empty, the empty state says: “No more cards to distribute. Generate more cards when ready.”
+- The latest successful Deal assignment can be undone once, returning the card to the dealable pool and removing it from the assigned bucket.
 - All available distributable cards remain visible in the side/below deck list, and selecting one promotes it to the active swipe card.
 
 ## Mobile And PWA
@@ -76,7 +79,7 @@ The database keeps existing `ResponsibilityBoardLane` values for compatibility. 
 - Board groups all buckets with card-like components, not table panels.
 - Your Deck and Board show the same Library cover art used by source cards.
 - Mobile overflow opens from the bottom navigation, not the top app bar.
-- Little Alex can be dragged on touch and mouse devices.
+- Little Alex is desktop-only; mobile and touch-first layouts should not render the helper or reserve helper space.
 - Ask Greg can create/review drafts using existing AI card flows.
 - Root, login, and persona selection land on Deal.
 - Vercel build path remains `npm run build`.
@@ -85,6 +88,7 @@ The database keeps existing `ResponsibilityBoardLane` values for compatibility. 
 
 - Card bucket state uses the existing board-lane column rather than a new database enum to avoid a compatibility migration in this pass.
 - Assignment records are updated for Alex/Max ownership moves and cleared for Saved for Later or Not Applicable. Historical lifecycle context is not rewritten by this pass.
+- Deal Undo is last-action-only in this pass.
 - iOS Add to Home Screen behavior still needs manual device verification outside automated Playwright.
 
 ## Future Improvements

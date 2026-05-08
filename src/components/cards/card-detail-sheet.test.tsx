@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -21,7 +21,7 @@ const card = {
 } as const;
 
 describe("CardDetailSheet", () => {
-  it("shows source cover, ownership, purpose, Fogging E-Standards, and lane move", async () => {
+  it("shows source cover, ownership, purpose, Fogging Estandards, and lane move", async () => {
     const onMove = vi.fn();
     render(
       <CardDetailSheet
@@ -41,8 +41,10 @@ describe("CardDetailSheet", () => {
     expect(screen.getByText("Daily Grind")).toBeVisible();
     expect(screen.getByText("What is this card for?")).toBeVisible();
     expect(screen.getByText("Keep vehicle needs visible and handled.")).toBeVisible();
-    expect(screen.getByText("Fogging E-Standards")).toBeVisible();
-    expect(screen.getByText("Vehicle is safe, legal, and available.")).toBeVisible();
+    expect(screen.getByText("Fogging Estandards")).toBeVisible();
+    expect(screen.getByLabelText("Fogging Estandards")).toHaveValue(
+      "Both drivers can use the car safely each weekday."
+    );
     expect(screen.queryByText("CPE")).not.toBeInTheDocument();
     expect(screen.queryByText("Insurance card lives in the glove box.")).not.toBeInTheDocument();
 
@@ -95,11 +97,38 @@ describe("CardDetailSheet", () => {
     );
   });
 
+  it("edits Fogging Estandards from the current default standard", async () => {
+    const onSaveStandards = vi.fn().mockResolvedValue(undefined);
+    render(
+      <CardDetailSheet
+        card={{
+          ...card,
+          householdStandard: null
+        }}
+        onSaveStandards={onSaveStandards}
+      />
+    );
+
+    const textarea = screen.getByLabelText("Fogging Estandards");
+    expect(textarea).toHaveValue("Vehicle is safe, legal, and available.");
+    expect(textarea).toHaveClass("min-h-32", "w-full");
+
+    await userEvent.clear(textarea);
+    await userEvent.type(textarea, "Car is fueled, safe, and ready by Sunday night.");
+    await userEvent.click(screen.getByRole("button", { name: "Save Estandards" }));
+
+    await waitFor(() =>
+      expect(onSaveStandards).toHaveBeenCalledWith(
+        "Car is fueled, safe, and ready by Sunday night."
+      )
+    );
+  });
+
   it("keeps lane movement disabled when no move hook is wired", () => {
     render(<CardDetailSheet card={card} />);
 
     expect(screen.getByText("What is this card for?")).toBeVisible();
-    expect(screen.getByText("Fogging E-Standards")).toBeVisible();
+    expect(screen.getByText("Fogging Estandards")).toBeVisible();
     expect(screen.getByLabelText("Move destination")).toBeDisabled();
     expect(screen.getByRole("button", { name: "Move" })).toBeDisabled();
     expect(screen.queryByRole("button", { name: /schedule check-in/i }))

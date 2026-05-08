@@ -189,9 +189,13 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
   }
 
   return (
-    <section className="grid gap-3" aria-label="AI Task Manager">
+    <section
+      className="grid min-w-0 max-w-full gap-3"
+      aria-label="AI Task Manager"
+      data-testid="ai-task-manager"
+    >
       <div
-        className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
+        className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
         data-guide-id="library-ai-task-manager"
       >
         <div className="grid min-w-0 gap-1">
@@ -500,7 +504,7 @@ function LibraryPracticeWorkflow() {
         ["Notice", preview.conception],
         ["Plan", preview.planning],
         ["Do", preview.execution],
-        ["Fogging E-Standards", preview.minimumStandard]
+        ["Fogging Estandards", preview.minimumStandard]
       ].filter((detail): detail is [string, string] => Boolean(detail[1]?.trim()))
     : [];
 
@@ -741,38 +745,49 @@ export function AiCardTracker({
   return (
     <section
       aria-label="AI drafts"
-      className="grid gap-3 rounded border border-fp-line bg-white p-4 shadow-[var(--fp-shadow-soft)]"
+      className="grid min-w-0 max-w-full gap-3 overflow-hidden rounded border border-fp-line bg-white p-3 shadow-[var(--fp-shadow-soft)] sm:p-4"
+      data-testid="ai-card-tracker"
     >
       {drafts.length > 0 ? (
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid min-w-0 gap-3 lg:grid-cols-2">
           {drafts.map((draft) => (
             <article
               aria-label={`${draft.title ?? draft.promptPreview} ${draft.status} draft`}
-              className="grid gap-3 rounded border border-fp-line bg-fp-surface p-3"
+              className="grid min-w-0 max-w-full gap-3 rounded border border-fp-line bg-fp-surface p-3"
+              data-testid="ai-draft-card"
               key={draft.id}
             >
               <button
-                className="grid gap-3 text-left"
+                className="grid min-w-0 max-w-full gap-3 text-left"
                 onClick={() => onReview(draft)}
                 type="button"
               >
-                <div className="flex items-start justify-between gap-3">
+                <div
+                  className={[
+                    "grid min-w-0 gap-3",
+                    draft.coverAssetPath
+                      ? "grid-cols-[4rem_minmax(0,1fr)] sm:grid-cols-[6rem_minmax(0,1fr)_auto]"
+                      : "grid-cols-[minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_auto]"
+                  ].join(" ")}
+                >
                   {draft.coverAssetPath ? (
                     <GeneratedDraftCover
                       alt={`Generated cover for ${draft.title ?? draft.promptPreview}`}
-                      className="w-20 shrink-0 sm:w-24"
+                      className="w-16 shrink-0 sm:w-24"
                       src={draft.coverAssetPath}
                     />
                   ) : null}
                   <div className="min-w-0">
-                    <h3 className="truncate text-[16px] font-bold text-fp-ink">
+                    <h3 className="line-clamp-2 text-[16px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
                       {draft.title ?? draft.promptPreview}
                     </h3>
-                    <p className="line-clamp-2 text-[13px] leading-5 text-fp-muted-ink">
+                    <p className="line-clamp-3 text-[13px] leading-5 text-fp-muted-ink [overflow-wrap:anywhere]">
                       {draft.summary ?? draft.promptPreview}
                     </p>
                   </div>
-                  <DraftStatusChip draft={draft} />
+                  <span className="justify-self-start sm:justify-self-end">
+                    <DraftStatusChip draft={draft} />
+                  </span>
                 </div>
 
                 <div className="flex flex-wrap gap-2 text-[12px] font-semibold text-fp-muted-ink">
@@ -782,7 +797,7 @@ export function AiCardTracker({
               </button>
 
               {draft.failureMessage ? (
-                <p className="rounded border border-fp-line bg-white p-3 text-[13px] leading-5 text-fp-muted-ink">
+                <p className="rounded border border-fp-line bg-white p-3 text-[13px] leading-5 text-fp-muted-ink [overflow-wrap:anywhere]">
                   {draft.failureMessage}
                 </p>
               ) : null}
@@ -896,11 +911,15 @@ export function AiCardCaptureSheet({
   }
 
   return (
-    <Sheet aria-label="Capture AI card draft" className="grid gap-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="grid gap-1">
+    <Sheet
+      aria-label="Capture AI card draft"
+      className="grid min-w-0 max-w-full gap-4 overflow-hidden"
+      data-testid="ai-capture-sheet"
+    >
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="grid min-w-0 gap-1">
           <h3 className="text-[18px] font-bold text-fp-ink">Capture a card</h3>
-          <p className="text-[14px] leading-6 text-fp-muted-ink">
+          <p className="text-[14px] leading-6 text-fp-muted-ink [overflow-wrap:anywhere]">
             Describe the responsibility.
           </p>
         </div>
@@ -913,7 +932,7 @@ export function AiCardCaptureSheet({
         Describe the card
         <textarea
           aria-label="Describe the card"
-          className="min-h-28 rounded border border-fp-line bg-white px-3 py-2 text-[15px] leading-6 text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+          className="min-h-28 w-full min-w-0 max-w-full rounded border border-fp-line bg-white px-3 py-2 text-[15px] leading-6 text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition [overflow-wrap:anywhere] focus:border-fp-ink"
           onChange={(event) => setInputText(event.target.value)}
           placeholder="What needs doing, when, and what done means"
           value={inputText}
@@ -1053,15 +1072,19 @@ export function AiCardReviewPanel({
   const canEdit = draft.status === "ready";
 
   return (
-    <Sheet aria-label="Review AI card draft" className="grid gap-4">
-      <div className="grid content-start gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="grid gap-1">
+    <Sheet
+      aria-label="Review AI card draft"
+      className="grid min-w-0 max-w-full gap-4 overflow-hidden"
+      data-testid="ai-review-panel"
+    >
+      <div className="grid min-w-0 content-start gap-3">
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="grid min-w-0 gap-1">
             <div className="flex flex-wrap gap-2">
               <Chip>{statusLabels[draft.status]}</Chip>
               <Chip>{stageLabels[draft.generationStage]}</Chip>
             </div>
-            <h3 className="text-[22px] font-bold leading-7 text-fp-ink">
+            <h3 className="text-[22px] font-bold leading-7 text-fp-ink [overflow-wrap:anywhere]">
               {form.title || draft.title || draft.promptPreview}
             </h3>
           </div>
@@ -1082,7 +1105,9 @@ export function AiCardReviewPanel({
           <p className="text-[12px] font-bold uppercase text-fp-muted-ink">
             Original prompt
           </p>
-          <p className="text-[14px] leading-6 text-fp-ink">{originalPrompt}</p>
+          <p className="text-[14px] leading-6 text-fp-ink [overflow-wrap:anywhere]">
+            {originalPrompt}
+          </p>
         </section>
 
         {isLoading ? (
@@ -1097,7 +1122,7 @@ export function AiCardReviewPanel({
             <p className="text-[12px] font-bold uppercase text-fp-muted-ink">
               Error details
             </p>
-            <p className="text-[14px] leading-6 text-fp-muted-ink">
+            <p className="text-[14px] leading-6 text-fp-muted-ink [overflow-wrap:anywhere]">
               {draft.failureMessage}
             </p>
           </section>
@@ -1148,7 +1173,7 @@ export function AiCardReviewPanel({
               Rhythm
               <select
                 aria-label="Rhythm"
-                className="min-h-10 rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+                className="min-h-10 w-full min-w-0 max-w-full rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, cadence: event.target.value }))
                 }
@@ -1215,7 +1240,7 @@ export function AiCardReviewPanel({
             />
           </div>
           <TextArea
-            label="Fogging E-Standards"
+            label="Fogging Estandards"
             hint="The smallest acceptable done state."
             onChange={(value) =>
               setForm((current) => ({ ...current, minimumStandard: value }))
@@ -1461,7 +1486,7 @@ function TextInput({
       {label}
       <input
         aria-label={label}
-        className="min-h-10 rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+        className="min-h-10 w-full min-w-0 max-w-full rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition [overflow-wrap:anywhere] focus:border-fp-ink"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       />
@@ -1490,7 +1515,7 @@ function TextArea({
       {label}
       <textarea
         aria-label={label}
-        className="min-h-24 rounded border border-fp-line bg-white px-3 py-2 text-[14px] leading-6 text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+        className="min-h-24 w-full min-w-0 max-w-full rounded border border-fp-line bg-white px-3 py-2 text-[14px] leading-6 text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition [overflow-wrap:anywhere] focus:border-fp-ink"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       />
