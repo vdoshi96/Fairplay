@@ -77,6 +77,13 @@ export type GuidedAgendaPreview = {
   items: GuidedCheckInItem[];
 };
 
+export type CheckInHistoryRecord = {
+  id: CheckInId;
+  minutes: string;
+  occurred: boolean;
+  previousCheckInDate: string | null;
+};
+
 export const ResponsibilityEffectSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.enum(["assign_owner", "change_role"]),
@@ -160,6 +167,9 @@ export type CheckInServiceDeps = {
     householdId: HouseholdId;
     checkInId: CheckInId;
   }) => Promise<GuidedCheckIn | null>;
+  listCheckIns: (input: {
+    householdId: HouseholdId;
+  }) => Promise<GuidedCheckIn[]>;
   listAgendaSources: (input: {
     householdId: HouseholdId;
     selectedPersonaId: PersonaId;
@@ -313,6 +323,21 @@ function toGuidedPreviewItems(items: AgendaDraftItem[]): GuidedCheckInItem[] {
 
 export function createCheckInService(deps: CheckInServiceDeps) {
   return {
+    async listHistory(session: CurrentSession): Promise<CheckInHistoryRecord[]> {
+      requireSelectedPersona(session);
+      const records = await deps.listCheckIns({
+        householdId: session.householdId
+      });
+
+      return records.map((record) => ({
+        id: record.id,
+        minutes: record.summary ?? "",
+        occurred: record.state === "completed" && Boolean(record.completedAt),
+        previousCheckInDate:
+          record.scheduledFor ?? record.completedAt ?? record.startedAt ?? null
+      }));
+    },
+
     async preview(
       session: CurrentSession,
       input: CreateCheckInInput
@@ -477,16 +502,19 @@ export function createCheckInService(deps: CheckInServiceDeps) {
       }
 
       const generatedSummary =
-        input.summary ??
-        buildCheckInSummary({
-          decisions: record.decisions ?? [],
-          deferredItems: record.items
-            .filter((item) => item.state === "deferred")
-            .map((item) => item.title),
-          skippedItems: record.items
-            .filter((item) => item.state === "skipped")
-            .map((item) => item.title)
-        });
+        input.summary === null
+          ? ""
+          : input.summary !== undefined
+            ? input.summary
+            : buildCheckInSummary({
+                decisions: record.decisions ?? [],
+                deferredItems: record.items
+                  .filter((item) => item.state === "deferred")
+                  .map((item) => item.title),
+                skippedItems: record.items
+                  .filter((item) => item.state === "skipped")
+                  .map((item) => item.title)
+              });
 
       return deps.completeCheckIn({
         householdId: session.householdId,
@@ -621,6 +649,21 @@ export const checkInService = createCheckInService({
     });
 
     return record ? toGuidedCheckIn(record) : null;
+  },
+  async listCheckIns(input) {
+    const records = await prisma.checkIn.findMany({
+      where: {
+        householdId: input.householdId
+      },
+      include: checkInInclude,
+      orderBy: [
+        { scheduledFor: "desc" },
+        { completedAt: "desc" },
+        { createdAt: "desc" }
+      ]
+    });
+
+    return records.map(toGuidedCheckIn);
   },
   async listAgendaSources(input) {
     const dueAt = input.asOf;

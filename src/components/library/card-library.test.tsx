@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import type { CardTemplateSummary } from "@/contracts/card-templates";
+import type { ResponsibilitySummary } from "@/contracts/responsibilities";
 import { FAIRPLAY_SOURCE_CARDS } from "@/seed/fairplay-source-cards";
 import { CardLibrary } from "./card-library";
 
@@ -55,6 +56,27 @@ const aiDrafts: AiCardDraftSummary[] = [
     updatedAt: "2026-05-05T12:00:00.000Z"
   }
 ];
+
+function availableCard(
+  overrides: Partial<ResponsibilitySummary> = {}
+): ResponsibilitySummary {
+  return {
+    id: "550e8400-e29b-41d4-a716-446655440090",
+    title: "School lunch",
+    areaKeys: ["kids", "food"],
+    hiddenEffortKeys: ["planning"],
+    cadence: "daily",
+    relevantDays: [],
+    status: "unassigned",
+    visibility: "shared_household",
+    boardLane: "cards_of_concern",
+    boardSortOrder: 0,
+    currentAssignments: [],
+    nextReviewAt: null,
+    sourceCoverAssetPath: "/assets/fairplay/cards/homework.png",
+    ...overrides
+  };
+}
 
 describe("CardLibrary", () => {
   afterEach(() => {
@@ -139,6 +161,24 @@ describe("CardLibrary", () => {
     await userEvent.click(within(autoCard).getByRole("button", { name: "Alex" }));
 
     expect(onCreateFromTemplate).toHaveBeenCalledWith("tpl_auto", "alex");
+  });
+
+  it("browses the same unclassified card pool used by Deal", () => {
+    render(
+      <CardLibrary
+        availableCards={[availableCard()]}
+        aiDrafts={aiDrafts}
+        templates={templates}
+      />
+    );
+
+    const shelf = screen.getByRole("region", { name: "Cards ready to deal" });
+
+    expect(within(shelf).getByText("1 unclassified card")).toBeVisible();
+    expect(within(shelf).getByRole("article", { name: "School lunch" }))
+      .toBeVisible();
+    expect(within(shelf).getByRole("link", { name: "Open Deal" }))
+      .toHaveAttribute("href", "/app/distribute");
   });
 
   it("filters by source label while preserving stable card presentation", async () => {

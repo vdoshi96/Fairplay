@@ -1,16 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import Link from "next/link";
+import { useState } from "react";
 
 import type { GuidedCheckIn } from "@/server/check-ins/service";
-import { FEATURE_GUIDES } from "@/components/guide/guide-content";
-import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
-import {
-  completeGuidePractice,
-  useGuidePracticeRequest,
-  useGuidePracticeReset
-} from "@/components/guide/guide-practice";
-import { PracticeActionGuidance } from "@/components/guide/practice-action-guidance";
 import { MotionPanel, MotionSpark } from "@/components/motion/fairplay-motion";
 import {
   CheckInVisual,
@@ -30,11 +23,18 @@ type CheckInFlowProps = {
   ) => Promise<GuidedCheckIn> | GuidedCheckIn;
 };
 
+export type CheckInHistoryRow = {
+  id: string;
+  minutes: string;
+  occurred: boolean;
+  previousCheckInDate: string | null;
+};
+
 const checkInTableBackground =
   "/assets/fairplay/generated-ui/backgrounds/check-in-table.png";
 
-function localDateTimeToIso(value: string) {
-  return value ? new Date(value).toISOString() : null;
+function localDateAndTimeToIso(date: string, time: string) {
+  return date && time ? new Date(`${date}T${time}`).toISOString() : null;
 }
 
 function formatWhen(value: string | null | undefined) {
@@ -67,12 +67,6 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [practiceOpen, setPracticeOpen] = useState(false);
-  const openPractice = useCallback(() => setPracticeOpen(true), []);
-  const resetPractice = useCallback(() => setPracticeOpen(false), []);
-
-  useGuidePracticeRequest("check-in-practice-start", openPractice);
-  useGuidePracticeReset("check-in-practice-start", resetPractice);
 
   async function saveCompletion(nextCompletedAt?: string) {
     if (pending) {
@@ -140,11 +134,6 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
             </p>
           </div>
           <div className="grid gap-3 justify-self-start sm:justify-self-end sm:justify-items-end">
-            <FeatureGuideLauncher
-              guide={FEATURE_GUIDES.checkIns}
-              showDescription={false}
-              showHelper={false}
-            />
             <CheckInVisual className="h-20 w-28 object-contain" />
           </div>
         </div>
@@ -199,26 +188,23 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
           </button>
         </section>
       </MotionPanel>
-
-      {practiceOpen ? <CheckInPracticeWorkflow /> : null}
     </section>
   );
 }
 
-export function NewCheckInLauncher() {
-  const [scheduledFor, setScheduledFor] = useState("");
+export function NewCheckInLauncher({
+  history = []
+}: {
+  history?: CheckInHistoryRow[];
+}) {
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
   const [startedCheckIn, setStartedCheckIn] = useState<GuidedCheckIn | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [practiceOpen, setPracticeOpen] = useState(false);
-  const openPractice = useCallback(() => setPracticeOpen(true), []);
-  const resetPractice = useCallback(() => setPracticeOpen(false), []);
-
-  useGuidePracticeRequest("check-in-practice-start", openPractice);
-  useGuidePracticeReset("check-in-practice-start", resetPractice);
 
   async function scheduleCheckIn() {
-    const scheduledIso = localDateTimeToIso(scheduledFor);
+    const scheduledIso = localDateAndTimeToIso(scheduledDate, scheduledTime);
     if (!scheduledIso || pending) {
       return;
     }
@@ -240,7 +226,12 @@ export function NewCheckInLauncher() {
   }
 
   if (startedCheckIn) {
-    return <CheckInFlow initialCheckIn={startedCheckIn} />;
+    return (
+      <section className="grid gap-6">
+        <CheckInFlow initialCheckIn={startedCheckIn} />
+        <CheckInHistoryTable records={history} />
+      </section>
+    );
   }
 
   return (
@@ -272,11 +263,6 @@ export function NewCheckInLauncher() {
             </p>
           </div>
           <div className="grid gap-3 justify-self-start sm:justify-self-end sm:justify-items-end">
-            <FeatureGuideLauncher
-              guide={FEATURE_GUIDES.checkIns}
-              showDescription={false}
-              showHelper={false}
-            />
             <CheckInVisual className="h-20 w-28 object-contain" />
           </div>
         </div>
@@ -296,18 +282,29 @@ export function NewCheckInLauncher() {
         className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-[var(--fp-shadow-soft)]"
         data-guide-id="check-in-schedule"
       >
-        <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
-          Date and time
-          <input
-            className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[15px] text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
-            onChange={(event) => setScheduledFor(event.target.value)}
-            type="datetime-local"
-            value={scheduledFor}
-          />
-        </label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+            Check-in date
+            <input
+              className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[15px] text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+              onChange={(event) => setScheduledDate(event.target.value)}
+              type="date"
+              value={scheduledDate}
+            />
+          </label>
+          <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+            Check-in time
+            <input
+              className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[15px] text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+              onChange={(event) => setScheduledTime(event.target.value)}
+              type="time"
+              value={scheduledTime}
+            />
+          </label>
+        </div>
         <button
           className="min-h-11 rounded-[8px] bg-fp-primary px-3 text-[14px] font-bold text-fp-on-primary transition hover:bg-fp-primary-hover disabled:opacity-60 sm:w-fit"
-          disabled={!scheduledFor || pending}
+          disabled={!scheduledDate || !scheduledTime || pending}
           onClick={scheduleCheckIn}
           type="button"
         >
@@ -315,139 +312,77 @@ export function NewCheckInLauncher() {
         </button>
       </section>
 
-      {practiceOpen ? <CheckInPracticeWorkflow /> : null}
+      <CheckInHistoryTable records={history} />
     </section>
   );
 }
 
-function CheckInPracticeWorkflow() {
-  const [scheduled, setScheduled] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
-  const [notesSaved, setNotesSaved] = useState(false);
-  const [practiceWhen, setPracticeWhen] = useState("");
-  const [practiceNotes, setPracticeNotes] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
-
-  function mark(eventId: string, message: string) {
-    setStatus(message);
-    completeGuidePractice(eventId);
-  }
-
-  function clearPractice() {
-    setScheduled(false);
-    setConfirmed(false);
-    setNotesSaved(false);
-    setPracticeWhen("");
-    setPracticeNotes("");
-    setStatus("Practice cleared.");
-  }
-
+export function CheckInHistoryTable({
+  records
+}: {
+  records: CheckInHistoryRow[];
+}) {
   return (
-    <section
-      aria-label="Practice check-in record"
-      className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
-      data-guide-practice-surface
-    >
+    <section className="mx-auto grid w-full max-w-2xl gap-3">
       <div className="grid gap-1">
-        <h2 className="text-[16px] font-bold text-fp-ink">
-          Practice check-in record
+        <h2 className="text-[20px] font-bold leading-7 text-fp-ink">
+          Check-in history
         </h2>
-        <p className="text-[13px] leading-5 text-fp-muted-ink">
-          Practice scheduling, confirming, and saving notes. Nothing is saved.
+        <p className="text-[13px] font-semibold leading-5 text-fp-muted-ink">
+          Past check-ins and scheduled records.
         </p>
       </div>
-
-      <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-        Practice date
-        <input
-          className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] text-fp-ink"
-          onChange={(event) => setPracticeWhen(event.target.value)}
-          type="datetime-local"
-          value={practiceWhen}
-        />
-      </label>
-      <PracticeActionGuidance
-        actionLabel="Schedule practice check-in"
-        active={!scheduled && practiceWhen.length > 0}
-        wrapperClassName="sm:w-fit"
-      >
-        <button
-          className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary disabled:opacity-60 sm:w-fit"
-          disabled={practiceWhen.length === 0}
-          onClick={() => {
-            setScheduled(true);
-            mark("check-in-scheduled", "Practice check-in scheduled.");
-          }}
-          type="button"
+      <div className="overflow-x-auto rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] shadow-[var(--fp-shadow-soft)]">
+        <table
+          aria-label="Check-in history"
+          className="w-full min-w-[34rem] border-collapse text-left text-[13px]"
         >
-          Schedule practice check-in
-        </button>
-      </PracticeActionGuidance>
-
-      {scheduled ? (
-        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
-          <PracticeActionGuidance
-            actionLabel="Confirm practice check-in"
-            active={!confirmed}
-            wrapperClassName="sm:w-fit"
-          >
-            <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
-              onClick={() => {
-                setConfirmed(true);
-                mark("check-in-complete", "Practice check-in confirmed.");
-              }}
-              type="button"
-            >
-              Confirm practice check-in
-            </button>
-          </PracticeActionGuidance>
-          <PracticeActionGuidance
-            actionLabel="Save practice notes"
-            active={confirmed && practiceNotes.trim().length > 0 && !notesSaved}
-            kind="action"
-          >
-            <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-              Practice minutes
-              <textarea
-                className="min-h-20 rounded-[8px] border border-fp-line bg-white px-3 py-2 text-[14px] text-fp-ink"
-                onChange={(event) => setPracticeNotes(event.target.value)}
-                value={practiceNotes}
-              />
-            </label>
-          </PracticeActionGuidance>
-          <button
-            className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink disabled:opacity-60 sm:w-fit"
-            disabled={!confirmed || practiceNotes.trim().length === 0 || notesSaved}
-            onClick={() => {
-              setNotesSaved(true);
-              mark("check-in-notes-updated", "Practice notes saved.");
-            }}
-            type="button"
-          >
-            Save practice notes
-          </button>
-        </div>
-      ) : null}
-
-      {scheduled ? (
-        <button
-          className="min-h-10 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
-          onClick={clearPractice}
-          type="button"
-        >
-          Clear practice
-        </button>
-      ) : null}
-
-      {status ? (
-        <p
-          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3 text-[13px] font-semibold text-fp-muted-ink"
-          role="status"
-        >
-          {status}
-        </p>
-      ) : null}
+          <thead className="border-b border-fp-line bg-white">
+            <tr>
+              <th className="px-3 py-3 font-bold text-fp-ink" scope="col">
+                Previous check-in date
+              </th>
+              <th className="px-3 py-3 font-bold text-fp-ink" scope="col">
+                Previous check-in occurred
+              </th>
+              <th className="px-3 py-3 font-bold text-fp-ink" scope="col">
+                Minutes
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {records.length > 0 ? (
+              records.map((record) => (
+                <tr className="border-b border-fp-line last:border-b-0" key={record.id}>
+                  <td className="px-3 py-3 font-semibold text-fp-ink">
+                    <Link
+                      className="underline-offset-4 hover:underline"
+                      href={`/app/check-ins/${record.id}`}
+                    >
+                      {formatWhen(record.previousCheckInDate)}
+                    </Link>
+                  </td>
+                  <td className="px-3 py-3 font-semibold text-fp-muted-ink">
+                    {record.occurred ? "Yes" : "No"}
+                  </td>
+                  <td className="px-3 py-3 font-semibold text-fp-muted-ink">
+                    {record.minutes}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  className="px-3 py-5 text-center font-semibold text-fp-muted-ink"
+                  colSpan={3}
+                >
+                  No check-ins recorded yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

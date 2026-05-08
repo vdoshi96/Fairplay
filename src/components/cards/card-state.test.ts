@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { ResponsibilitySummary } from "@/contracts/responsibilities";
 import {
+  bucketForCard,
   bucketForLane,
   getCardsForPersona,
   getDistributableCards,
@@ -52,10 +53,33 @@ describe("card state adapter", () => {
       card({ title: "One", boardLane: "cards_of_concern", boardSortOrder: 2 }),
       card({ title: "Two", boardLane: "player_1" }),
       card({ title: "Three", boardLane: "kid_split", boardSortOrder: 1 }),
-      card({ title: "Four", boardLane: "not_in_play" })
+      card({ title: "Four", boardLane: "not_in_play", status: "paused" })
     ]);
 
     expect(deck.map((item) => item.title)).toEqual(["Three", "One"]);
+  });
+
+  it("treats legacy active not-in-play cards as unclassified until explicitly saved", () => {
+    const legacyUnclassified = card({
+      boardLane: "not_in_play",
+      currentAssignments: [],
+      status: "active",
+      title: "Legacy waiting card"
+    });
+    const savedForLater = card({
+      boardLane: "not_in_play",
+      currentAssignments: [],
+      status: "paused",
+      title: "Explicitly saved card"
+    });
+
+    expect(bucketForCard(legacyUnclassified)).toBe("unassigned");
+    expect(bucketForCard(savedForLater)).toBe("savedForLater");
+    expect(
+      getDistributableCards([savedForLater, legacyUnclassified]).map(
+        (item) => item.title
+      )
+    ).toEqual(["Legacy waiting card"]);
   });
 
   it("filters the current persona's assigned cards by bucket", () => {
@@ -77,7 +101,7 @@ describe("card state adapter", () => {
     const groups = groupCardsByBucket([
       card({ title: "A", boardLane: "player_1" }),
       card({ title: "B", boardLane: "player_2" }),
-      card({ title: "C", boardLane: "not_in_play" }),
+      card({ title: "C", boardLane: "not_in_play", status: "paused" }),
       card({ title: "D", boardLane: "trimmed" }),
       card({ title: "E", boardLane: "cards_of_concern" })
     ]);

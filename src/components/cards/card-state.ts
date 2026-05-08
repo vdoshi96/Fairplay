@@ -11,7 +11,7 @@ export const CARD_BUCKETS = [
 
 export type CardBucket = (typeof CARD_BUCKETS)[number];
 
-export type CardDistributionBucket = Exclude<CardBucket, "unassigned">;
+export type CardDistributionBucket = CardBucket;
 
 export type CardDistributionMove = {
   bucket: CardDistributionBucket;
@@ -66,6 +66,44 @@ export function bucketForLane(lane: ResponsibilityBoardLane): CardBucket {
   return bucketByLane[lane];
 }
 
+export function bucketForCard(
+  card: Pick<
+    ResponsibilitySummary,
+    "boardLane" | "currentAssignments" | "status"
+  >
+): CardBucket {
+  const owners = card.currentAssignments
+    .filter(
+      (assignment) =>
+        assignment.role === "accountable_owner" ||
+        assignment.role === "shared_owner"
+    )
+    .map((assignment) => assignment.personaKey)
+    .sort();
+
+  if (owners.length === 1 && (owners[0] === "alex" || owners[0] === "max")) {
+    return owners[0];
+  }
+
+  if (card.boardLane === "player_1") {
+    return "alex";
+  }
+
+  if (card.boardLane === "player_2") {
+    return "max";
+  }
+
+  if (card.status === "not_relevant" || card.boardLane === "trimmed") {
+    return "notApplicable";
+  }
+
+  if (card.status === "paused") {
+    return "savedForLater";
+  }
+
+  return "unassigned";
+}
+
 export function laneForBucket(bucket: CardBucket): ResponsibilityBoardLane {
   return laneByBucket[bucket];
 }
@@ -82,7 +120,7 @@ export function getDistributableCards<T extends ResponsibilitySummary>(
   cards: readonly T[]
 ): T[] {
   return cards
-    .filter((card) => bucketForLane(card.boardLane) === "unassigned")
+    .filter((card) => bucketForCard(card) === "unassigned")
     .slice()
     .sort(compareCards);
 }
@@ -94,7 +132,7 @@ export function getCardsForPersona<T extends ResponsibilitySummary>(
   const bucket = bucketForPersona(personaKey);
 
   return cards
-    .filter((card) => bucketForLane(card.boardLane) === bucket)
+    .filter((card) => bucketForCard(card) === bucket)
     .slice()
     .sort(compareCards);
 }
@@ -109,7 +147,7 @@ export function groupCardsByBucket<T extends ResponsibilitySummary>(cards: reado
   );
 
   cards.forEach((card) => {
-    groups[bucketForLane(card.boardLane)].push(card);
+    groups[bucketForCard(card)].push(card);
   });
 
   CARD_BUCKETS.forEach((bucket) => {

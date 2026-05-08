@@ -186,7 +186,7 @@ describe("protected app UI", () => {
     expect(mobileMore).toHaveClass("fixed");
     expect(mobileMore).not.toHaveClass("absolute");
     expect(within(mobileMore).getByRole("link", { name: "Check-in" }))
-      .toHaveAttribute("href", "/app/check-ins/new");
+      .toHaveAttribute("href", "/app/check-ins");
     expect(within(mobileMore).getByRole("link", { name: "Settings" }))
       .toHaveAttribute("href", "/app/settings");
     expect(within(mobileMore).getByRole("link", { name: "Card Library" }))

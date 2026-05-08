@@ -2,7 +2,11 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { GuidedCheckIn } from "@/server/check-ins/service";
-import { CheckInFlow, NewCheckInLauncher } from "./check-in-flow";
+import {
+  CheckInFlow,
+  CheckInHistoryTable,
+  NewCheckInLauncher
+} from "./check-in-flow";
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams()
@@ -64,12 +68,17 @@ describe("CheckInFlow", () => {
       .not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Start check-in" }))
       .not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Learn this feature" }))
+      .not.toBeInTheDocument();
 
     const scheduleButton = screen.getByRole("button", { name: "Schedule" });
     expect(scheduleButton).toBeDisabled();
 
-    fireEvent.change(screen.getByLabelText("Date and time"), {
-      target: { value: "2026-05-20T18:30" }
+    fireEvent.change(screen.getByLabelText("Check-in date"), {
+      target: { value: "2026-05-20" }
+    });
+    fireEvent.change(screen.getByLabelText("Check-in time"), {
+      target: { value: "18:30" }
     });
     fireEvent.click(scheduleButton);
 
@@ -102,6 +111,8 @@ describe("CheckInFlow", () => {
       "check-in-complete-action"
     );
     expect(screen.queryByRole("region", { name: "Decision form" }))
+      .not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Learn this feature" }))
       .not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Minutes / notes"), {
@@ -147,6 +158,23 @@ describe("CheckInFlow", () => {
     expect(screen.getByText("Notes updated.")).toBeVisible();
   });
 
+  it("sends blank minutes when a completed check-in has no notes", async () => {
+    const onComplete = vi.fn().mockResolvedValue(completedCheckIn(""));
+
+    render(<CheckInFlow initialCheckIn={scheduledCheckIn} onComplete={onComplete} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Confirm it happened" }));
+
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalledWith(
+        scheduledCheckIn.id,
+        expect.objectContaining({
+          summary: null
+        })
+      );
+    });
+  });
+
   it("announces save failures and blocks duplicate confirms", async () => {
     let rejectCompletion: (reason?: unknown) => void = () => undefined;
     const onComplete = vi.fn(
@@ -172,48 +200,50 @@ describe("CheckInFlow", () => {
     );
   });
 
-  it("walks through lightweight practice without production mutations", () => {
+  it("does not render the old guided practice controls", () => {
     const onComplete = vi.fn();
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
+
     render(<CheckInFlow initialCheckIn={scheduledCheckIn} onComplete={onComplete} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    expect(screen.getByRole("button", { name: "Done" })).toBeDisabled();
-    expect(screen.getByText("Next required click: Start practice.")).toBeVisible();
-
-    fireEvent.click(screen.getByRole("button", { name: "Start practice" }));
-    const practiceRegion = screen.getByRole("region", {
-      name: "Practice check-in record"
-    });
-    expect(practiceRegion).toHaveTextContent(/scheduling, confirming, and saving notes/i);
-    expect(practiceRegion).not.toHaveTextContent(/agenda|decision|defer/i);
-
-    fireEvent.change(screen.getByLabelText("Practice date"), {
-      target: { value: "2026-05-20T18:30" }
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Schedule practice check-in" }));
-    expect(screen.getByText("Practice check-in scheduled.")).toBeVisible();
-    expect(
-      screen.getByText("Next required click: Confirm practice check-in.")
-    ).toBeVisible();
-
-    fireEvent.click(screen.getByRole("button", { name: "Confirm practice check-in" }));
-    expect(screen.getByText("Practice check-in confirmed.")).toBeVisible();
-
-    fireEvent.change(screen.getByLabelText("Practice minutes"), {
-      target: { value: "Practice notes." }
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Save practice notes" }));
-    expect(screen.getByText("Practice notes saved.")).toBeVisible();
-    expect(screen.getByText("Practice complete.")).toBeVisible();
-    expect(screen.getByRole("button", { name: "Done" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Learn this feature" }))
+      .not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Start practice" }))
+      .not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Practice check-in record" }))
+      .not.toBeInTheDocument();
     expect(onComplete).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear practice" }));
-    expect(within(practiceRegion).getByLabelText("Practice date")).toHaveValue("");
+  it("renders persisted check-in history rows", () => {
+    render(
+      <CheckInHistoryTable
+        records={[
+          {
+            id: "550e8400-e29b-41d4-a716-446655440081",
+            minutes: "Discussed summer routines.",
+            occurred: true,
+            previousCheckInDate: "2026-05-21T00:15:00.000Z"
+          },
+          {
+            id: "550e8400-e29b-41d4-a716-446655440082",
+            minutes: "",
+            occurred: false,
+            previousCheckInDate: "2026-05-28T00:15:00.000Z"
+          }
+        ]}
+      />
+    );
+
+    const table = screen.getByRole("table", { name: "Check-in history" });
+
+    expect(within(table).getByText("Previous check-in date")).toBeVisible();
+    expect(within(table).getByText("Previous check-in occurred")).toBeVisible();
+    expect(within(table).getByText("Minutes")).toBeVisible();
+    expect(within(table).getByText("Discussed summer routines.")).toBeVisible();
+    expect(within(table).getByText("Yes")).toBeVisible();
+    expect(within(table).getByText("No")).toBeVisible();
   });
 });

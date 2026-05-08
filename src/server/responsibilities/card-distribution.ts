@@ -14,12 +14,13 @@ type DistributeResponsibilityCardInput = {
 
 const statusByDistributionBucket: Record<
   CardDistributionBucket,
-  Extract<ResponsibilityStatus, "active" | "not_relevant" | "paused">
+  Extract<ResponsibilityStatus, "active" | "not_relevant" | "paused" | "unassigned">
 > = {
   alex: "active",
   max: "active",
   notApplicable: "not_relevant",
-  savedForLater: "paused"
+  savedForLater: "paused",
+  unassigned: "unassigned"
 };
 
 export async function distributeResponsibilityCard(

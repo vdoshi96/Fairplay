@@ -1,73 +1,93 @@
 import { expect, test, type Page } from "@playwright/test";
 
-async function mockCheckInFlow(page: Page) {
-  await page.route("**/app/check-ins/new**", async (route) => {
-    await route.fulfill({
-      contentType: "text/html",
-      body: `
-        <main>
-          <h1 id="title">Schedule check-in</h1>
-          <section aria-label="Schedule a check-in" id="schedule">
-            <label>Date and time <input aria-label="Date and time" id="when" type="datetime-local" /></label>
-            <button id="schedule-button">Schedule</button>
-          </section>
-          <section aria-label="Confirm check-in" id="confirm" hidden>
-            <h2>Scheduled check-in</h2>
-            <label>Minutes / notes <textarea aria-label="Minutes / notes" id="notes"></textarea></label>
-            <button id="confirm-button">Confirm it happened</button>
-          </section>
-          <section aria-label="Meeting notes" id="record" hidden>
-            <h2>Check-in record</h2>
-            <label>Minutes / notes <textarea aria-label="Minutes / notes" id="record-notes"></textarea></label>
-            <button id="update-button">Update notes</button>
-            <p id="status"></p>
-          </section>
-          <script>
-            document.getElementById("schedule-button").addEventListener("click", () => {
-              document.getElementById("schedule").hidden = true;
-              document.getElementById("title").textContent = "Scheduled check-in";
-              document.getElementById("confirm").hidden = false;
-            });
-            document.getElementById("confirm-button").addEventListener("click", () => {
-              document.getElementById("confirm").hidden = true;
-              document.getElementById("title").textContent = "Check-in record";
-              document.getElementById("record-notes").value = document.getElementById("notes").value;
-              document.getElementById("record").hidden = false;
-              document.getElementById("status").textContent = "Check-in recorded.";
-            });
-            document.getElementById("update-button").addEventListener("click", () => {
-              document.getElementById("status").textContent = "Notes updated.";
-            });
-          </script>
-        </main>
-      `
-    });
-  });
+function uniqueHouseholdSlug() {
+  return `check-in-qa-${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 7)}`;
 }
 
-test("check-in flow schedules, confirms, and updates notes", async ({ page }) => {
-  await mockCheckInFlow(page);
+async function expectApiPost(
+  page: Page,
+  path: string,
+  action: () => Promise<void>
+) {
+  const responsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes(path) && response.request().method() === "POST"
+  );
 
-  await page.goto("/app/check-ins/new");
-  await expect(page.getByRole("heading", { name: "Schedule check-in" })).toBeVisible();
-  await page.getByLabel("Date and time").fill("2026-05-20T18:30");
-  await page.getByRole("button", { name: "Schedule" }).click();
+  await action();
+
+  const response = await responsePromise;
+  const responseText = await response.text();
+  expect(
+    response.ok(),
+    `${path} failed: ${response.status()} ${responseText}`
+  ).toBe(true);
+}
+
+async function createHouseholdAndChooseAlex(page: Page) {
+  await page.goto("/create-household");
+  await page.getByLabel("Household display name").fill("Check-in QA Home");
+  await page.getByLabel("Household username").fill(uniqueHouseholdSlug());
+  await page
+    .getByLabel("Household password")
+    .fill("correct horse battery staple");
+  await expectApiPost(page, "/api/auth/create-household", () =>
+    page.getByRole("button", { name: "Create household" }).click()
+  );
+
+  await expect(page).toHaveURL(/\/choose-persona/, { timeout: 10_000 });
+  await expectApiPost(page, "/api/personas/select", () =>
+    page.getByRole("button", { name: /choose Alex/i }).click()
+  );
+}
+
+test("check-in flow schedules, confirms, updates notes, and persists history", async ({
+  page
+}) => {
+  await createHouseholdAndChooseAlex(page);
+
+  await page.goto("/app/check-ins");
+  await expect(page.getByRole("heading", { name: "Schedule check-in" }))
+    .toBeVisible();
+  await expect(page.getByRole("button", { name: "Learn this feature" }))
+    .toHaveCount(0);
+  await page.getByLabel("Check-in date").fill("2026-05-20");
+  await page.getByLabel("Check-in time").fill("18:30");
+  await expectApiPost(page, "/api/check-ins", () =>
+    page.getByRole("button", { name: "Schedule" }).click()
+  );
 
   const confirmRegion = page.getByRole("region", { name: "Confirm check-in" });
   await expect(confirmRegion).toBeVisible();
   await confirmRegion.getByLabel("Minutes / notes").fill("Discussed summer routines.");
-  await page.getByRole("button", { name: "Confirm it happened" }).click();
+  await expectApiPost(page, "/api/check-ins/", () =>
+    page.getByRole("button", { name: "Confirm it happened" }).click()
+  );
 
-  await expect(page.locator("#title")).toHaveText("Check-in record");
-  await expect(page.getByRole("region", { name: "Meeting notes" })).toContainText(
-    "Check-in recorded."
+  await expect(page.getByRole("heading", { name: "Check-in record" }))
+    .toBeVisible();
+  await expect(page.getByText("Check-in recorded.")).toBeVisible();
+  const notesRegion = page.getByRole("region", { name: "Meeting notes" });
+  await notesRegion.getByLabel("Minutes / notes").fill("Updated minutes.");
+  await expectApiPost(page, "/api/check-ins/", () =>
+    page.getByRole("button", { name: "Update notes" }).click()
   );
-  await page
-    .getByRole("region", { name: "Meeting notes" })
-    .getByLabel("Minutes / notes")
-    .fill("Updated minutes.");
-  await page.getByRole("button", { name: "Update notes" }).click();
-  await expect(page.getByRole("region", { name: "Meeting notes" })).toContainText(
-    "Notes updated."
-  );
+  await expect(page.getByText("Notes updated.")).toBeVisible();
+
+  await page.goto("/app/check-ins");
+  const history = page.getByRole("table", { name: "Check-in history" });
+
+  await expect(history).toBeVisible();
+  await expect(
+    history.getByRole("columnheader", { name: "Previous check-in date" })
+  ).toBeVisible();
+  await expect(
+    history.getByRole("columnheader", { name: "Previous check-in occurred" })
+  ).toBeVisible();
+  await expect(history.getByRole("columnheader", { name: "Minutes" }))
+    .toBeVisible();
+  await expect(history.getByText("Yes")).toBeVisible();
+  await expect(history.getByText("Updated minutes.")).toBeVisible();
 });

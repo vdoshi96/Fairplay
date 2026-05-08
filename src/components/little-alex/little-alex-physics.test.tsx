@@ -849,8 +849,8 @@ describe("LittleAlexPhysics", () => {
       ).toEqual([
         `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-head.png`,
         `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-torso.png`,
-        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-leftArm.png`,
         `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-rightArm.png`,
+        `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-leftArm.png`,
         `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-leftLeg.png`,
         `/assets/fairplay/little-alex-sprites/${genderPresentation}-tone_2-rightLeg.png`
       ]);
@@ -1056,6 +1056,20 @@ describe("LittleAlexPhysics", () => {
     );
   });
 
+  it("keeps the mobile grab target aligned with the visible scaled sprite after physics sync", () => {
+    stubReducedMotion(false);
+    stubViewport(390, 720);
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics />);
+
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    expect(Number.parseFloat(grabTarget.style.width)).toBeGreaterThanOrEqual(72);
+    expect(translatedX(grabTarget)).toBeGreaterThanOrEqual(330);
+    expect(grabTarget.style.touchAction).toBe("pan-y");
+  });
+
   it("does not start a touch drag until the interaction is intentional", () => {
     vi.useFakeTimers();
     stubReducedMotion(false);
@@ -1072,6 +1086,7 @@ describe("LittleAlexPhysics", () => {
     });
 
     expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
+    expect(littleAlex).toHaveAttribute("data-grab-state", "pending");
 
     fireEvent.touchMove(grabTarget, {
       changedTouches: [{ clientX: 342, clientY: 526, identifier: 7 }],
@@ -1092,6 +1107,7 @@ describe("LittleAlexPhysics", () => {
     });
 
     expect(littleAlex).toHaveAttribute("data-ragdoll-state", "dragging");
+    expect(littleAlex).toHaveAttribute("data-grab-state", "dragging");
   });
 
   it("cancels pending touch drag when the movement looks like page scrolling", () => {

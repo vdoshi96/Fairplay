@@ -115,7 +115,7 @@ export type AssignmentMutationInput = {
 export type StatusMutationInput = {
   status: Extract<
     ResponsibilityStatus,
-    "active" | "needs_review" | "paused" | "not_relevant" | "archived"
+    "active" | "needs_review" | "paused" | "not_relevant" | "archived" | "unassigned"
   >;
   confirmedArchive?: boolean;
   note?: string;

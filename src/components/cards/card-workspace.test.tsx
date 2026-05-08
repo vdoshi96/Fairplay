@@ -35,6 +35,30 @@ function card(
   };
 }
 
+function dispatchPointerEvent(
+  target: Element,
+  type: "pointercancel" | "pointerdown" | "pointermove" | "pointerup",
+  init: {
+    buttons?: number;
+    clientX: number;
+    clientY: number;
+    pointerId: number;
+    pointerType?: string;
+  }
+) {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+
+  Object.entries(init).forEach(([key, value]) => {
+    Object.defineProperty(event, key, {
+      configurable: true,
+      enumerable: true,
+      value
+    });
+  });
+
+  fireEvent(target, event);
+}
+
 describe("CardWorkspace", () => {
   it("shows the distribution empty state when no deck cards remain", () => {
     render(
@@ -177,6 +201,91 @@ describe("CardWorkspace", () => {
       expect(onDistribute).toHaveBeenCalledWith({
         bucket: "max",
         responsibilityId: "550e8400-e29b-41d4-a716-446655440000"
+      })
+    );
+  });
+
+  it("supports vertical swipe gestures for save-later and not-applicable decisions", async () => {
+    const onDistribute = vi.fn().mockResolvedValue(undefined);
+    const { rerender } = render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[card()]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const firstCard = screen.getByRole("button", { name: "School lunch" });
+    dispatchPointerEvent(firstCard, "pointerdown", {
+      buttons: 1,
+      clientX: 180,
+      clientY: 360,
+      pointerId: 11,
+      pointerType: "touch"
+    });
+    dispatchPointerEvent(firstCard, "pointermove", {
+      buttons: 1,
+      clientX: 180,
+      clientY: 240,
+      pointerId: 11,
+      pointerType: "touch"
+    });
+    dispatchPointerEvent(firstCard, "pointerup", {
+      clientX: 180,
+      clientY: 240,
+      pointerId: 11,
+      pointerType: "touch"
+    });
+
+    await waitFor(() =>
+      expect(onDistribute).toHaveBeenCalledWith({
+        bucket: "savedForLater",
+        responsibilityId: "550e8400-e29b-41d4-a716-446655440000"
+      })
+    );
+
+    onDistribute.mockClear();
+    rerender(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440090",
+            title: "School forms"
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const secondCard = screen.getByRole("button", { name: "School forms" });
+    dispatchPointerEvent(secondCard, "pointerdown", {
+      buttons: 1,
+      clientX: 180,
+      clientY: 240,
+      pointerId: 12,
+      pointerType: "touch"
+    });
+    dispatchPointerEvent(secondCard, "pointermove", {
+      buttons: 1,
+      clientX: 180,
+      clientY: 360,
+      pointerId: 12,
+      pointerType: "touch"
+    });
+    dispatchPointerEvent(secondCard, "pointerup", {
+      clientX: 180,
+      clientY: 360,
+      pointerId: 12,
+      pointerType: "touch"
+    });
+
+    await waitFor(() =>
+      expect(onDistribute).toHaveBeenCalledWith({
+        bucket: "notApplicable",
+        responsibilityId: "550e8400-e29b-41d4-a716-446655440090"
       })
     );
   });
@@ -339,5 +448,33 @@ describe("CardWorkspace", () => {
       "/assets/fairplay/cards/meals-kids-school-lunch.png"
     );
     expect(board.className).not.toContain("table");
+  });
+
+  it("lets board cards return to the unclassified deal pool", async () => {
+    const onDistribute = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440020",
+            title: "Lunch",
+            boardLane: "player_1"
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="board"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove from board" }));
+
+    await waitFor(() =>
+      expect(onDistribute).toHaveBeenCalledWith({
+        bucket: "unassigned",
+        responsibilityId: "550e8400-e29b-41d4-a716-446655440020"
+      })
+    );
   });
 });

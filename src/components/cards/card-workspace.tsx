@@ -28,7 +28,7 @@ import {
   CARD_BUCKET_HELP,
   CARD_BUCKET_LABELS,
   CARD_BUCKET_TONES,
-  bucketForLane,
+  bucketForCard,
   getCardsForPersona,
   getDistributableCards,
   groupCardsByBucket
@@ -57,7 +57,9 @@ type DragState = {
   y: number;
 };
 
-const actionMeta: Record<CardDistributionBucket, {
+type DealActionBucket = Exclude<CardDistributionBucket, "unassigned">;
+
+const actionMeta: Record<DealActionBucket, {
   icon: typeof ArrowLeft;
   label: string;
   shortcut: string;
@@ -136,6 +138,7 @@ function DistributeView({
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const dragRef = useRef<DragState | null>(null);
   const deckRef = useRef<HTMLDivElement | null>(null);
   const allDeck = useMemo(
     () =>
@@ -151,7 +154,7 @@ function DistributeView({
   const previewBucket = dragOffset ? bucketFromOffset(dragOffset.x, dragOffset.y) : null;
   const hasSearch = query.trim().length > 0;
 
-  async function distribute(bucket: CardDistributionBucket) {
+  async function distribute(bucket: DealActionBucket) {
     if (!topCard || pendingId) {
       return;
     }
@@ -159,6 +162,7 @@ function DistributeView({
     const card = topCard;
     setPendingId(card.id);
     setError(null);
+    dragRef.current = null;
     setDrag(null);
 
     try {
@@ -182,30 +186,39 @@ function DistributeView({
       return;
     }
 
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setDrag({
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const nextDrag = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       x: event.clientX,
       y: event.clientY
-    });
+    };
+    dragRef.current = nextDrag;
+    setDrag(nextDrag);
   }
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
-    setDrag((current) =>
-      current?.pointerId === event.pointerId
-        ? { ...current, x: event.clientX, y: event.clientY }
-        : current
-    );
-  }
-
-  function handlePointerEnd(event: PointerEvent<HTMLDivElement>) {
-    if (!drag || drag.pointerId !== event.pointerId) {
+    const current = dragRef.current;
+    if (!current || current.pointerId !== event.pointerId) {
       return;
     }
 
-    const bucket = bucketFromOffset(event.clientX - drag.startX, event.clientY - drag.startY);
+    const nextDrag = { ...current, x: event.clientX, y: event.clientY };
+    dragRef.current = nextDrag;
+    setDrag(nextDrag);
+  }
+
+  function handlePointerEnd(event: PointerEvent<HTMLDivElement>) {
+    const current = dragRef.current;
+    if (!current || current.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const bucket = bucketFromOffset(current.x - current.startX, current.y - current.startY);
+    dragRef.current = null;
     setDrag(null);
 
     if (bucket) {
@@ -214,7 +227,7 @@ function DistributeView({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    const bucketByKey: Partial<Record<string, CardDistributionBucket>> = {
+    const bucketByKey: Partial<Record<string, DealActionBucket>> = {
       ArrowDown: "notApplicable",
       ArrowLeft: "alex",
       ArrowRight: "max",
@@ -535,7 +548,7 @@ function SwipeCard({
   onPointerMove: (event: PointerEvent<HTMLDivElement>) => void;
   onPointerUp: (event: PointerEvent<HTMLDivElement>) => void;
   pending: boolean;
-  previewBucket: CardDistributionBucket | null;
+  previewBucket: DealActionBucket | null;
   style?: CSSProperties;
 }) {
   return (
@@ -655,7 +668,7 @@ function CardBack({
   card: CardWorkspaceCard;
   className?: string;
 }) {
-  const lane = bucketForLane(card.boardLane);
+  const bucket = bucketForCard(card);
 
   return (
     <div
@@ -676,7 +689,7 @@ function CardBack({
             Assigned to {assignmentLabelFor(card)}
           </span>
           <span className="rounded-full border border-fp-line bg-white px-3 py-1 text-[12px] font-bold text-fp-muted-ink">
-            {CARD_BUCKET_LABELS[lane]}
+            {CARD_BUCKET_LABELS[bucket]}
           </span>
         </div>
       </header>
@@ -735,22 +748,38 @@ function CompactCard({
         </span>
       </Link>
       {onDistribute ? (
-        <div className="grid grid-cols-2 gap-1">
-          {moveBuckets.map((nextBucket) => (
+        <div className="grid gap-2">
+          {bucket !== "unassigned" ? (
             <button
-              className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
-              key={nextBucket}
+              className="min-h-9 rounded-[8px] border border-fp-line bg-white px-2 text-[11px] font-bold text-fp-ink"
               onClick={() =>
                 void onDistribute({
-                  bucket: nextBucket,
+                  bucket: "unassigned",
                   responsibilityId: card.id
                 })
               }
               type="button"
             >
-              {CARD_BUCKET_LABELS[nextBucket]}
+              Remove from board
             </button>
-          ))}
+          ) : null}
+          <div className="grid grid-cols-2 gap-1">
+            {moveBuckets.map((nextBucket) => (
+              <button
+                className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
+                key={nextBucket}
+                onClick={() =>
+                  void onDistribute({
+                    bucket: nextBucket,
+                    responsibilityId: card.id
+                  })
+                }
+                type="button"
+              >
+                {CARD_BUCKET_LABELS[nextBucket]}
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
     </article>
@@ -858,7 +887,7 @@ function ActionButton({
   disabled,
   onClick
 }: {
-  bucket: CardDistributionBucket;
+  bucket: DealActionBucket;
   disabled: boolean;
   onClick: () => void;
 }) {
@@ -923,8 +952,12 @@ function EmptyDeck() {
 function bucketFromOffset(
   offsetX: number,
   offsetY: number
-): CardDistributionBucket | null {
+): DealActionBucket | null {
   const threshold = 88;
+
+  if (!Number.isFinite(offsetX) || !Number.isFinite(offsetY)) {
+    return null;
+  }
 
   if (Math.max(Math.abs(offsetX), Math.abs(offsetY)) < threshold) {
     return null;
@@ -984,7 +1017,7 @@ function assignmentLabelFor(card: CardWorkspaceCard) {
     return owners.map((assignment) => humanize(assignment.personaKey)).join(" + ");
   }
 
-  return CARD_BUCKET_LABELS[bucketForLane(card.boardLane)];
+  return CARD_BUCKET_LABELS[bucketForCard(card)];
 }
 
 function cardPurpose(card: CardWorkspaceCard) {
