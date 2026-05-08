@@ -172,6 +172,35 @@ describe("check-in service", () => {
       .toHaveLength(5);
   });
 
+  it("creates a lightweight scheduled record without agenda items", async () => {
+    const scheduledFor = "2026-05-20T23:30:00.000Z";
+    const deps = makeDeps({
+      createCheckIn: vi.fn().mockResolvedValue(
+        checkIn({
+          state: "scheduled",
+          scheduledFor,
+          startedAt: null,
+          items: []
+        })
+      )
+    });
+    const service = createCheckInService(deps);
+
+    const scheduled = await service.create(session, { scheduledFor });
+
+    expect(deps.createCheckIn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        householdId,
+        facilitatorPersonaId: alexId,
+        state: "scheduled",
+        scheduledFor,
+        items: []
+      })
+    );
+    expect(deps.listAgendaSources).not.toHaveBeenCalled();
+    expect(scheduled.items).toHaveLength(0);
+  });
+
   it("caps requested agenda size above five for create and preview", async () => {
     const deps = makeDeps();
     const service = createCheckInService(deps);

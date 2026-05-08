@@ -6,56 +6,37 @@ async function mockCheckInFlow(page: Page) {
       contentType: "text/html",
       body: `
         <main>
-          <h1>New check-in</h1>
-          <section aria-label="Agenda preview">
-            <article><h2>Meal plan review</h2><span>Review due</span></article>
-            <article id="partner-topic"><h2>Clarify morning handoff</h2><span>Check-in only</span></article>
+          <h1 id="title">Schedule check-in</h1>
+          <section aria-label="Schedule a check-in" id="schedule">
+            <label>Date and time <input aria-label="Date and time" id="when" type="datetime-local" /></label>
+            <button id="schedule-button">Schedule</button>
           </section>
-          <button id="start">Start check-in</button>
-          <section aria-label="Current item" id="current"></section>
-          <section aria-label="Decision form" id="decision" hidden>
-            <label>Decision type
-              <select id="type" aria-label="Decision type">
-                <option value="assign_owner">Assign owner</option>
-                <option value="schedule_review">Schedule review</option>
-              </select>
-            </label>
-            <label>Owner
-              <select id="owner" aria-label="Owner">
-                <option value="alex">Alex</option>
-                <option value="max">Max</option>
-              </select>
-            </label>
-            <label>Decision summary <textarea aria-label="Decision summary" id="summary"></textarea></label>
-            <label>Review date <input aria-label="Review date" id="review" type="date" /></label>
-            <button id="record">Record decision</button>
+          <section aria-label="Confirm check-in" id="confirm" hidden>
+            <h2>Scheduled check-in</h2>
+            <label>Minutes / notes <textarea aria-label="Minutes / notes" id="notes"></textarea></label>
+            <button id="confirm-button">Confirm it happened</button>
           </section>
-          <section aria-label="Check-in summary" id="complete"></section>
+          <section aria-label="Meeting notes" id="record" hidden>
+            <h2>Check-in record</h2>
+            <label>Minutes / notes <textarea aria-label="Minutes / notes" id="record-notes"></textarea></label>
+            <button id="update-button">Update notes</button>
+            <p id="status"></p>
+          </section>
           <script>
-            document.getElementById("start").addEventListener("click", () => {
-              document.getElementById("current").innerHTML =
-                '<h2>Meal plan review</h2><button id="discuss">Discuss</button><button id="defer">Defer</button>';
-              document.getElementById("decision").hidden = false;
-              document.getElementById("defer").addEventListener("click", () => {
-                document.getElementById("current").innerHTML =
-                  '<h2>Clarify morning handoff</h2><p>Deferred</p><button id="finish">Complete check-in</button>';
-                document.getElementById("finish").addEventListener("click", () => {
-                  document.getElementById("complete").innerHTML =
-                    '<h2>Completed</h2><p>Decisions: Alex owns meal planning until June review.</p><p>Deferred: Clarify morning handoff.</p>';
-                });
-              });
+            document.getElementById("schedule-button").addEventListener("click", () => {
+              document.getElementById("schedule").hidden = true;
+              document.getElementById("title").textContent = "Scheduled check-in";
+              document.getElementById("confirm").hidden = false;
             });
-            document.getElementById("record").addEventListener("click", () => {
-              document.getElementById("current").innerHTML =
-                '<h2>Clarify morning handoff</h2><p>Check-in only</p><button id="defer">Defer</button>';
-              document.getElementById("defer").addEventListener("click", () => {
-                document.getElementById("current").innerHTML =
-                  '<h2>Clarify morning handoff</h2><p>Deferred</p><button id="finish">Complete check-in</button>';
-                document.getElementById("finish").addEventListener("click", () => {
-                  document.getElementById("complete").innerHTML =
-                    '<h2>Completed</h2><p>Decisions: Alex owns meal planning until June review.</p><p>Deferred: Clarify morning handoff.</p>';
-                });
-              });
+            document.getElementById("confirm-button").addEventListener("click", () => {
+              document.getElementById("confirm").hidden = true;
+              document.getElementById("title").textContent = "Check-in record";
+              document.getElementById("record-notes").value = document.getElementById("notes").value;
+              document.getElementById("record").hidden = false;
+              document.getElementById("status").textContent = "Check-in recorded.";
+            });
+            document.getElementById("update-button").addEventListener("click", () => {
+              document.getElementById("status").textContent = "Notes updated.";
             });
           </script>
         </main>
@@ -64,37 +45,25 @@ async function mockCheckInFlow(page: Page) {
   });
 }
 
-test("check-in flow records one decision, defers one topic, and shows summary", async ({
-  page
-}) => {
+test("check-in flow schedules, confirms, and updates notes", async ({ page }) => {
   await mockCheckInFlow(page);
 
   await page.goto("/app/check-ins/new");
-  await expect(page.getByRole("region", { name: "Agenda preview" })).toContainText(
-    "Meal plan review"
-  );
-  await expect(page.getByText("Check-in only")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Schedule check-in" })).toBeVisible();
+  await page.getByLabel("Date and time").fill("2026-05-20T18:30");
+  await page.getByRole("button", { name: "Schedule" }).click();
 
-  await page.getByRole("button", { name: "Start check-in" }).click();
-  await page.getByLabel("Decision type").selectOption("assign_owner");
-  await page.getByLabel("Owner").selectOption("alex");
-  await page.getByLabel("Decision summary").fill("Alex owns meal planning until June review.");
-  await page.getByLabel("Review date").fill("2026-06-04");
-  await page.getByRole("button", { name: "Record decision" }).click();
+  await expect(page.getByRole("region", { name: "Confirm check-in" })).toBeVisible();
+  await page.getByLabel("Minutes / notes").fill("Discussed summer routines.");
+  await page.getByRole("button", { name: "Confirm it happened" }).click();
 
-  await expect(page.getByRole("region", { name: "Current item" })).toContainText(
-    "Clarify morning handoff"
+  await expect(page.getByRole("heading", { name: "Check-in record" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Meeting notes" })).toContainText(
+    "Check-in recorded."
   );
-  await page.getByRole("button", { name: "Defer" }).click();
-  await expect(page.getByRole("region", { name: "Current item" })).toContainText(
-    "Deferred"
-  );
-
-  await page.getByRole("button", { name: "Complete check-in" }).click();
-  await expect(page.getByRole("region", { name: "Check-in summary" })).toContainText(
-    "Decisions: Alex owns meal planning until June review."
-  );
-  await expect(page.getByRole("region", { name: "Check-in summary" })).toContainText(
-    "Deferred: Clarify morning handoff."
+  await page.getByLabel("Minutes / notes").fill("Updated minutes.");
+  await page.getByRole("button", { name: "Update notes" }).click();
+  await expect(page.getByRole("region", { name: "Meeting notes" })).toContainText(
+    "Notes updated."
   );
 });
