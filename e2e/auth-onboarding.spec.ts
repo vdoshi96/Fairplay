@@ -89,13 +89,13 @@ async function mockProtectedRouteHandoffs(page: Page) {
   await page.route("**/app/onboarding**", async (route) => {
     await route.fulfill({
       contentType: "text/html",
-      body: `<main><h1>Set up your household rhythm</h1><a href="/app/distribute">Skip to distribute</a></main>`
+      body: `<main><h1>Set up your household rhythm</h1><a href="/app/distribute">Skip to deal cards</a></main>`
     });
   });
   await page.route("**/app/distribute**", async (route) => {
     await route.fulfill({
       contentType: "text/html",
-      body: `<main><h1>Swipe the next card</h1><p>River Home</p><button>Log out</button></main>`
+      body: `<main><h1>Deal the next card</h1><p>River Home</p><button>Log out</button></main>`
     });
   });
 }
@@ -130,9 +130,9 @@ test.describe("auth and onboarding", () => {
     await expect(
       page.getByRole("heading", { name: "Set up your household rhythm" })
     ).toBeVisible();
-    await page.getByRole("link", { name: "Skip to distribute" }).click();
+    await page.getByRole("link", { name: "Skip to deal cards" }).click();
     await expect(page).toHaveURL(/\/app\/distribute/);
-    await expect(page.getByRole("heading", { name: "Swipe the next card" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Deal the next card" })).toBeVisible();
   });
 
   test("logout -> login -> choose persona -> distribute", async ({ page }) => {

@@ -4,13 +4,13 @@ Last updated: 2026-05-08
 
 ## Current Phase
 
-The focused patch run has merged the Distribute availability, mobile More menu, and Little Alex touch-intent fixes through PRs #42, #44, and #43. The follow-up documentation/QA branch also fixes rendered-browser More-menu clipping and click-through discovered during final QA. The active product lands signed-in users on Distribute, uses Your Cards as the effective home after assignment, replaces Load Map with Board, and keeps Check-in, Settings, Theory, and Card Library in overflow navigation. Card images from the Library now flow into Distribute, Your Cards, and Board.
+The focused patch run has merged the Distribute availability, mobile More menu, and Little Alex touch-intent fixes through PRs #42, #44, and #43. The follow-up documentation/QA branch also fixes rendered-browser More-menu clipping and click-through discovered during final QA. The active product now labels `/app/distribute` as Deal and `/app/your-cards` as Your Deck while keeping those stable routes. Signed-in users land on Deal, Your Deck is the effective home after assignment, Board replaces Load Map, and Check-in, Settings, Theory, and Card Library stay in overflow navigation. Card images from the Library now flow into Deal, Your Deck, and Board.
 
 ## Branch And Working Tree
 
-- Local `main` has been fast-forwarded through PR #43.
-- This documentation/QA pass is being finalized after the ordered focused patch merges and includes the rendered More-menu follow-up.
-- Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, and #43 Little Alex touch intent.
+- Local `main` has been fast-forwarded through PR #45.
+- This naming polish is being applied on top of the ordered focused patch merges.
+- Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, and #45 focused patch QA/docs.
 
 ## What Exists
 
@@ -23,9 +23,9 @@ The focused patch run has merged the Distribute availability, mobile More menu, 
 ## Recent Product State
 
 - Global generated backgrounds are stronger and paired with theme-aware washes so foreground surfaces remain readable.
-- The previous homepage is retired. Root, login, and persona selection land on Distribute for signed-in selected-persona sessions.
+- The previous homepage is retired. Root, login, and persona selection land on Deal for signed-in selected-persona sessions.
 - Cards are the primary interaction model: Distribution supports search, an available-card list, tap/click flip, swipe left/right/up/down, arrow keys, and large fallback buttons.
-- Your Cards is a searchable, cadence-filterable, image-first assigned-card gallery; tapping a card flips it to show assignment, purpose, and Fogging E-Standards.
+- Your Deck is a searchable, cadence-filterable, image-first assigned-card gallery; tapping a card flips it to show assignment, purpose, and Fogging E-Standards.
 - Board groups cards by Alex, Max, Saved for Later, Not Applicable, and Unassigned using stacked/collapsible card sections on mobile instead of horizontal page-level lane scrolling.
 - Mobile overflow navigation now opens from the bottom action area with visible Check-in, Settings, Theory, and Card Library links plus an outside-tap dismiss layer that closes without click-through navigation. The persistent welcome banner is no longer mounted in the protected app shell.
 - Little Alex has intentional touch fallback dragging for mobile browsers while preserving immediate desktop mouse/pointer behavior.

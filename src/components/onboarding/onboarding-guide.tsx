@@ -101,7 +101,7 @@ export function OnboardingGuide({ onSkip }: OnboardingGuideProps) {
           className="grid min-h-11 place-items-center rounded-[8px] bg-fp-primary px-4 text-center text-[14px] font-semibold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/30"
           href="/app/distribute"
         >
-          Start distributing cards
+          Start dealing cards
         </a>
         <button
           className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"

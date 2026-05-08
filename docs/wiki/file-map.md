@@ -18,12 +18,12 @@ This is a practical index, not a reorganization plan.
 ## App Source
 
 - `src/app/layout.tsx`: root metadata, font, theme init script, global provider.
-- `src/app/page.tsx`: redirects users to login, persona selection, or Distribute.
+- `src/app/page.tsx`: redirects users to login, persona selection, or Deal.
 - `src/app/(auth)/`: auth route pages.
 - `src/app/app/layout.tsx`: protected app layout and app shell wrapper.
-- `src/app/app/home/page.tsx`: legacy redirect to Distribute.
-- `src/app/app/your-cards/page.tsx`: searchable image-first assigned-card gallery for the selected persona.
-- `src/app/app/distribute/page.tsx`: searchable swipe distribution deck with an available-card list.
+- `src/app/app/home/page.tsx`: legacy redirect to Deal.
+- `src/app/app/your-cards/page.tsx`: Your Deck, a searchable image-first assigned-card gallery for the selected persona.
+- `src/app/app/distribute/page.tsx`: Deal, a searchable swipe deck with an available-card list.
 - `src/app/app/board/page.tsx`: grouped image-first card bucket board.
 - `src/app/app/ask-greg/page.tsx`: card generation/advisor surface.
 - `src/app/app/load-map/page.tsx`: legacy redirect to Board.

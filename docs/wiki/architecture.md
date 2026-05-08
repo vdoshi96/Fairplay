@@ -15,7 +15,7 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 - Auth pages: `/login`, `/create-household`, `/choose-persona`.
 - Primary app pages: `/app/your-cards`, `/app/distribute`, `/app/board`, `/app/ask-greg`.
 - Secondary app pages: `/app/library`, `/app/check-ins`, `/app/check-ins/new`, `/app/check-ins/[id]`, `/app/crash-course`, `/app/onboarding`, `/app/responsibilities/new`, `/app/responsibilities/[id]`, `/app/settings`.
-- Legacy compatibility routes: `/app/home` redirects to Distribute and `/app/load-map` redirects to Board.
+- Legacy compatibility routes: `/app/home` redirects to Deal and `/app/load-map` redirects to Board.
 - API routes: auth, personas, preferences, responsibilities, load snapshot, card templates, AI card drafts, and check-ins.
 
 ### UI Components
@@ -24,7 +24,7 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 
 - `app-shell`: navigation, page shell, session view, layout tokens.
 - `auth`: forms, login/create/persona clients, auth page shell.
-- `cards`: card-state mapping, image-first card workspace for Your Cards/Distribute/Board, and simplified card detail sheet.
+- `cards`: card-state mapping, image-first card workspace for Your Deck/Deal/Board, and simplified card detail sheet.
 - `library`: card library and AI task manager.
 - `responsibilities`: legacy load map compatibility, editor, board lane metadata, and service-backed card distribution.
 - `check-ins`: lightweight schedule, confirmation, and notes flow.
@@ -63,7 +63,7 @@ Migrations currently include initial schema, legacy Radar timing/removal history
 8. Repositories persist through Prisma.
 9. Pages/components refresh or navigate after successful mutation.
 
-Card cover art flows from Library source templates into responsibility summaries as `sourceCoverAssetPath`. Distribute, Your Cards, and Board all render from `responsibilityService.listOverview(session)` through `CardWorkspace`, so assignment movement and cover art stay consistent across tabs.
+Card cover art flows from Library source templates into responsibility summaries as `sourceCoverAssetPath`. Deal, Your Deck, and Board all render from `responsibilityService.listOverview(session)` through `CardWorkspace`, so assignment movement and cover art stay consistent across tabs.
 
 ## Verification Map
 

@@ -46,7 +46,7 @@ describe("CardWorkspace", () => {
     );
 
     expect(
-      screen.getByText("No more cards to distribute. Generate more cards when ready.")
+      screen.getByText("No more cards to deal. Generate more cards when ready.")
     ).toBeVisible();
     expect(screen.getByRole("link", { name: "Ask Greg" })).toHaveAttribute(
       "href",
@@ -75,7 +75,7 @@ describe("CardWorkspace", () => {
       })
     );
     expect(
-      screen.getByText("No more cards to distribute. Generate more cards when ready.")
+      screen.getByText("No more cards to deal. Generate more cards when ready.")
     ).toBeVisible();
   });
 
@@ -103,14 +103,14 @@ describe("CardWorkspace", () => {
     expect(screen.getByRole("button", { name: "School lunch" })).toBeVisible();
     expect(screen.getByText("Moving...")).toBeVisible();
     expect(
-      screen.queryByText("No more cards to distribute. Generate more cards when ready.")
+      screen.queryByText("No more cards to deal. Generate more cards when ready.")
     ).not.toBeInTheDocument();
 
     resolveMove?.();
 
     await waitFor(() =>
       expect(
-        screen.getByText("No more cards to distribute. Generate more cards when ready.")
+        screen.getByText("No more cards to deal. Generate more cards when ready.")
       ).toBeVisible()
     );
   });
@@ -155,7 +155,7 @@ describe("CardWorkspace", () => {
     );
     expect(screen.getByRole("heading", { name: "Bills" })).toBeVisible();
     expect(
-      screen.queryByText("No more cards to distribute. Generate more cards when ready.")
+      screen.queryByText("No more cards to deal. Generate more cards when ready.")
     ).not.toBeInTheDocument();
   });
 
@@ -250,10 +250,10 @@ describe("CardWorkspace", () => {
       />
     );
 
-    expect(screen.getByRole("heading", { name: "Your Cards" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Your Deck" })).toBeVisible();
     expect(screen.getByText("Lunch")).toBeVisible();
     expect(screen.queryByText("Bills")).not.toBeInTheDocument();
-    expect(screen.getByRole("searchbox", { name: /search your cards/i }))
+    expect(screen.getByRole("searchbox", { name: /search your deck/i }))
       .toBeVisible();
     expect(screen.getByTestId("your-card-gallery")).toHaveClass("grid");
     expect(screen.getByAltText("Lunch cover")).toHaveAttribute(
@@ -283,7 +283,7 @@ describe("CardWorkspace", () => {
     expect(screen.getAllByText("Lunch")).toHaveLength(1);
   });
 
-  it("flips a Your Cards item without opening the old detail flow", () => {
+  it("flips a Your Deck item without opening the old detail flow", () => {
     render(
       <CardWorkspace
         responsibilities={[

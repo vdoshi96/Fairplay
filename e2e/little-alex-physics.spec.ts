@@ -1263,8 +1263,8 @@ test.describe("Little Alex physics", () => {
     await expect(page.getByTestId("little-alex-horne")).toHaveCSS("z-index", "9");
 
     const mobileNav = page.getByRole("navigation", { name: "Primary" });
-    const distributeLink = mobileNav.getByRole("link", { name: "Distribute" });
-    const distributeBox = await distributeLink.boundingBox();
+    const dealLink = mobileNav.getByRole("link", { name: "Deal" });
+    const distributeBox = await dealLink.boundingBox();
 
     expect(distributeBox).not.toBeNull();
 
@@ -1278,7 +1278,7 @@ test.describe("Little Alex physics", () => {
       distributeBox.y + distributeBox.height / 2
     );
 
-    await distributeLink.click();
+    await dealLink.click();
     await expect(page).toHaveURL(/\/app\/distribute/);
   });
 

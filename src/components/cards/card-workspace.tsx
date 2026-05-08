@@ -231,9 +231,9 @@ function DistributeView({
   return (
     <section className="grid min-h-[calc(100svh_-_var(--fp-app-content-bottom-padding))] gap-4">
       <header className="grid gap-2">
-        <p className="text-[13px] font-bold text-fp-muted-ink">Distribute</p>
+        <p className="text-[13px] font-bold text-fp-muted-ink">Deal</p>
         <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-          Swipe the next card
+          Deal the next card
         </h1>
       </header>
 
@@ -245,7 +245,7 @@ function DistributeView({
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fp-muted-ink"
           />
           <input
-            aria-label="Search cards to distribute"
+            aria-label="Search cards to deal"
             className="min-h-12 w-full rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] py-3 pl-10 pr-3 text-[16px] font-semibold text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by title, area, standard"
@@ -261,7 +261,7 @@ function DistributeView({
       {topCard ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
           <div
-            aria-label="Responsibility swipe deck"
+            aria-label="Responsibility deal deck"
             className="relative grid min-h-[28rem] place-items-center outline-none sm:min-h-[32rem]"
             data-testid="swipe-deck"
             onKeyDown={handleKeyDown}
@@ -300,7 +300,7 @@ function DistributeView({
         <EmptyDeck />
       )}
 
-      <div className="grid gap-2" aria-label="Distribution buttons">
+      <div className="grid gap-2" aria-label="Deal buttons">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {(["alex", "max", "savedForLater", "notApplicable"] as const).map(
             (bucket) => (
@@ -358,7 +358,7 @@ function YourCardsView({
           {selectedPersona.displayName}
         </p>
         <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-          Your Cards
+          Your Deck
         </h1>
       </header>
 
@@ -366,14 +366,14 @@ function YourCardsView({
         <>
           <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 shadow-[var(--fp-shadow-soft)]">
             <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
-              Search your cards
+              Search your deck
               <span className="relative">
                 <Search
                   aria-hidden
                   className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fp-muted-ink"
                 />
                 <input
-                  aria-label="Search your cards"
+                  aria-label="Search your deck"
                   className="min-h-11 w-full rounded-[8px] border border-fp-line bg-white py-2.5 pl-10 pr-3 text-[16px] font-semibold text-fp-ink outline-none transition focus:border-fp-ink"
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search by title, area, standard"
@@ -441,13 +441,13 @@ function YourCardsView({
         <section className="grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-5 text-center shadow-[var(--fp-shadow-soft)]">
           <Archive aria-hidden className="mx-auto h-9 w-9 text-fp-muted-ink" />
           <h2 className="text-[18px] font-bold text-fp-ink">
-            No cards assigned to you yet.
+            No cards dealt to you yet.
           </h2>
           <Link
             className="mx-auto inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary"
             href="/app/distribute"
           >
-            Distribute cards
+            Deal cards
           </Link>
         </section>
       )}
@@ -768,7 +768,7 @@ function AvailableCardList({
 }) {
   return (
     <section
-      aria-label="Available cards to distribute"
+      aria-label="Available cards to deal"
       className="grid content-start gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 shadow-[var(--fp-shadow-soft)]"
       data-testid="distribution-card-list"
     >
@@ -907,7 +907,7 @@ function EmptyDeck() {
       <div className="grid justify-items-center gap-3">
         <Sparkles aria-hidden className="h-10 w-10 text-[var(--fp-helper)]" />
         <h2 className="max-w-sm text-[22px] font-bold leading-7 text-fp-ink">
-          No more cards to distribute. Generate more cards when ready.
+          No more cards to deal. Generate more cards when ready.
         </h2>
         <Link
           className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary"

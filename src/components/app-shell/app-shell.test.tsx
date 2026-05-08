@@ -90,11 +90,11 @@ describe("protected app UI", () => {
   it("renders the card-first app shell without the old homepage", () => {
     const { container } = renderProtectedUi(
       <section>
-        <h1>Swipe the next card</h1>
+        <h1>Deal the next card</h1>
       </section>
     );
 
-    expect(screen.getByRole("heading", { name: "Swipe the next card" }))
+    expect(screen.getByRole("heading", { name: "Deal the next card" }))
       .toBeVisible();
     expect(
       screen.getAllByRole("link", { name: /River Home/i })[0]
@@ -127,11 +127,11 @@ describe("protected app UI", () => {
       "standard"
     );
     expect(screen.getAllByRole("navigation", { name: "Primary" })).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: "Your Cards" })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "Your Deck" })[0]).toHaveAttribute(
       "href",
       "/app/your-cards"
     );
-    expect(screen.getAllByRole("link", { name: "Distribute" })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "Deal" })[0]).toHaveAttribute(
       "aria-current",
       "page"
     );
@@ -253,12 +253,12 @@ describe("protected app UI", () => {
   it("uses theme primary tokens for active bottom and sidebar tab items", () => {
     renderProtectedUi(<div>Distribution workspace</div>);
 
-    const activeDistributeLinks = screen
-      .getAllByRole("link", { name: "Distribute" })
+    const activeDealLinks = screen
+      .getAllByRole("link", { name: "Deal" })
       .filter((link) => link.getAttribute("aria-current") === "page");
 
-    expect(activeDistributeLinks).toHaveLength(2);
-    activeDistributeLinks.forEach((link) => {
+    expect(activeDealLinks).toHaveLength(2);
+    activeDealLinks.forEach((link) => {
       expect(link).toHaveClass("bg-fp-primary", "text-fp-on-primary");
       expect(link.className).not.toContain("text-white");
     });

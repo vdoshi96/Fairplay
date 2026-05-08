@@ -5,8 +5,8 @@ import { expect, test, type Page } from "@playwright/test";
 const screenshotDir = "test-results/corrective-responsive-visual";
 
 const appPages = [
-  { name: "your-cards", path: "/app/your-cards", heading: "Your Cards" },
-  { name: "distribute", path: "/app/distribute", heading: "Swipe the next card" },
+  { name: "your-cards", path: "/app/your-cards", heading: "Your Deck" },
+  { name: "distribute", path: "/app/distribute", heading: "Deal the next card" },
   { name: "board", path: "/app/board", heading: "Card board" },
   { name: "ask-greg", path: "/app/ask-greg", heading: "Make more cards" },
   { name: "check-ins", path: "/app/check-ins/new", heading: "Schedule check-in" },

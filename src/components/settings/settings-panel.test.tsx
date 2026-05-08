@@ -351,7 +351,7 @@ describe("settings panel", () => {
       container.querySelector('[data-guide-id="settings-guided-start"]')
     ).not.toBeNull();
     expect(container.querySelector('[data-guide-id="settings-logout"]')).not.toBeNull();
-    expect(screen.getByRole("link", { name: "Open distribute" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Deal cards" })).toHaveAttribute(
       "href",
       "/app/distribute"
     );

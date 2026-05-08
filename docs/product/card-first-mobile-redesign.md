@@ -12,8 +12,8 @@ The design follows current mobile guidance: primary content must fit the device 
 
 Primary tabs:
 
-- Your Cards: the effective home after distribution. Shows cards assigned to the current persona in a searchable, cadence-filterable, image-first gallery.
-- Distribute: the card-swipe deck with a visible available-card list. Left assigns Alex, right assigns Max, up saves for later, and down marks not applicable.
+- Your Deck: the effective home after cards are dealt. Shows cards assigned to the current persona in a searchable, cadence-filterable, image-first gallery.
+- Deal: the card-swipe deck with a visible available-card list. Left assigns Alex, right assigns Max, up saves for later, and down marks not applicable.
 - Board: a grouped card board for Alex, Max, Saved for Later, Not Applicable, and Unassigned, stacked/collapsible on mobile instead of horizontally scrolling lanes.
 - Ask Greg: a focused card-generation and advisor surface.
 
@@ -31,7 +31,7 @@ Legacy routing:
 - `/app/home` redirects away from the retired homepage.
 - `/app/load-map` redirects to the Board.
 - `/app/crash-course` remains the learning route but is labeled Theory in navigation.
-- Root and post-login persona selection land on Distribute.
+- Root and post-login persona selection land on Deal.
 
 ## Card State Model
 
@@ -74,11 +74,11 @@ The database keeps existing `ResponsibilityBoardLane` values for compatibility. 
 - Buttons perform the same actions as swipes.
 - Empty states render for no distributable cards and no owned cards.
 - Board groups all buckets with card-like components, not table panels.
-- Your Cards and Board show the same Library cover art used by source cards.
+- Your Deck and Board show the same Library cover art used by source cards.
 - Mobile overflow opens from the bottom navigation, not the top app bar.
 - Little Alex can be dragged on touch and mouse devices.
 - Ask Greg can create/review drafts using existing AI card flows.
-- Root, login, and persona selection land on Distribute.
+- Root, login, and persona selection land on Deal.
 - Vercel build path remains `npm run build`.
 
 ## Known Limitations
@@ -90,5 +90,5 @@ The database keeps existing `ResponsibilityBoardLane` values for compatibility. 
 ## Future Improvements
 
 - Add a dedicated `cardBucket` persistence field once compatibility and migration strategy are approved.
-- Make generated cards enter the Distribute deck directly after Greg finishes a draft.
+- Make generated cards enter the Deal deck directly after Greg finishes a draft.
 - Add haptic-like visual feedback for successful swipes while respecting reduced motion.

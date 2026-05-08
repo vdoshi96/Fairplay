@@ -76,7 +76,7 @@ export default async function ResponsibilityDetailPage({
             className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 py-3 text-[14px] font-bold text-fp-ink"
             href="/app/your-cards"
           >
-            Back to Your Cards
+            Back to Your Deck
           </Link>
           <Link
             className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 py-3 text-[14px] font-bold text-fp-ink"

@@ -149,7 +149,7 @@ export function PersistentWelcome({
           </h2>
           <p className="max-w-3xl text-[15px] leading-6 text-fp-muted-ink">
             Start with Theory, browse the full card library, or jump into the
-            distribution deck. This welcome stays here until you close it.
+            deal deck. This welcome stays here until you close it.
           </p>
         </div>
 

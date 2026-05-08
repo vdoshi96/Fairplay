@@ -546,7 +546,7 @@ export function SettingsPanel({
               className="flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-center text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
               href="/app/distribute"
             >
-              Open distribute
+              Deal cards
             </Link>
           </div>
           {practiceOpen ? (

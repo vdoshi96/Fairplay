@@ -71,7 +71,7 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
 
   await page.goto("/app/your-cards");
   await expect(
-    page.getByRole("heading", { name: "Your Cards" })
+    page.getByRole("heading", { name: "Your Deck" })
   ).toBeVisible();
 
   await expect(

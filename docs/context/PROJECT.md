@@ -13,8 +13,8 @@ The current v1 product centers on a two-person household using shared credential
 - Create a household with one household username and password.
 - Log in with shared credentials, then choose Alex or Max for the session.
 - Complete onboarding, Theory, and feature-guide learning flows.
-- Land on Distribute after login/persona selection and assign cards with swipes, arrow keys, or large fallback buttons.
-- Use Your Cards as the primary assigned-card home with searchable, filterable, image-first assigned cards.
+- Land on Deal after login/persona selection and assign cards with swipes, arrow keys, or large fallback buttons.
+- Use Your Deck as the primary assigned-card home with searchable, filterable, image-first assigned cards.
 - Use Board to review all card buckets: Alex, Max, Saved for Later, Not Applicable, and Unassigned.
 - Browse the Card Library and create AI-assisted responsibility card drafts through Ask Greg.
 - Schedule check-ins, confirm they happened, and add optional minutes/notes.

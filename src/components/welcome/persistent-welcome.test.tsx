@@ -17,7 +17,7 @@ describe("PersistentWelcome", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders a prominent welcome on the Your Cards route", () => {
+  it("renders a prominent welcome on the Your Deck route", () => {
     pathname.mockReturnValue("/app/your-cards");
 
     render(<PersistentWelcome dismissed={false} />);

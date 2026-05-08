@@ -84,7 +84,7 @@ describe("crash course flow", () => {
     expect(lessonsWithFeaturePath).toHaveLength(1);
     expect(finalLesson.featurePath?.map((item) => item.label)).toEqual([
       "Browse the Library",
-      "Open Distribute",
+      "Deal cards",
       "Schedule a Check-in"
     ]);
   });
@@ -186,7 +186,7 @@ describe("crash course flow", () => {
       "/assets/fairplay/generated-ui/crash-course/completion-celebration.png"
     );
     expect(
-      screen.getByRole("link", { name: "Open Distribute" })
+      screen.getByRole("link", { name: "Deal cards" })
     ).toHaveAttribute("href", "/app/distribute");
     expect(
       screen.queryByRole("button", { name: "Finish Theory" })

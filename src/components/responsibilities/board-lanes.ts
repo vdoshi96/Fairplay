@@ -17,7 +17,7 @@ export const BOARD_LANES: readonly {
   {
     key: "cards_of_concern",
     label: "Unassigned",
-    shortHelp: "Ready for a distribution decision.",
+    shortHelp: "Ready for a deal decision.",
     tone: "concern"
   },
   {

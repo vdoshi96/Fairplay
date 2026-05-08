@@ -30,8 +30,8 @@ type AppShellProps = {
 };
 
 const primaryNavItems = [
-  { href: "/app/your-cards", icon: CreditCard, label: "Your Cards" },
-  { href: "/app/distribute", icon: Send, label: "Distribute" },
+  { href: "/app/your-cards", icon: CreditCard, label: "Your Deck" },
+  { href: "/app/distribute", icon: Send, label: "Deal" },
   { href: "/app/board", icon: Layers3, label: "Board" },
   { href: "/app/ask-greg", icon: MessageCircle, label: "Ask Greg" }
 ] as const;

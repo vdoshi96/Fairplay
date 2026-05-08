@@ -31,7 +31,7 @@ export const CARD_BUCKET_HELP: Record<CardBucket, string> = {
   max: "Owned by Max",
   notApplicable: "Not part of this household right now",
   savedForLater: "Useful, but not ready to assign",
-  unassigned: "Ready for a quick distribution decision"
+  unassigned: "Ready for a quick deal decision"
 };
 
 export const CARD_BUCKET_TONES: Record<CardBucket, string> = {

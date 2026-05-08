@@ -1,5 +1,21 @@
 # Fairplay Context Log
 
+## 2026-05-08 - Deal And Deck Naming Polish
+
+Requested by the user: consider calling Distribute "Deal" as in dealing cards, and Your Cards "Your Deck."
+
+Actions completed:
+
+- Updated the primary app-shell tab labels to Your Deck and Deal while keeping stable routes `/app/your-cards` and `/app/distribute`.
+- Updated Deal/Your Deck headings, search labels, empty states, onboarding/settings/crash-course links, and related tests.
+- Updated current project memory/wiki/product docs to describe the new visible labels without changing route or data-model names.
+
+Verification:
+
+- Focused Vitest passed: app shell, card workspace, crash-course flow, settings panel, and persistent welcome suites.
+- `npm run typecheck` and `npm run lint` passed.
+- Targeted Playwright passed for the affected auth/onboarding, guided-learning, dark-mode, corrective responsive, and Little Alex nav specs: 20 tests.
+
 ## 2026-05-08 - Focused Patch Run
 
 Requested by the user: patch only the Distribute availability bug, the mobile More menu, and Little Alex intentional drag behavior; avoid broad Home/Board/Greg redesign; use subagents and separate branches where possible; merge fixes through ordered PRs; and confirm local/GitHub main alignment.
