@@ -56,13 +56,13 @@ describe("feature guide content", () => {
     expect(FEATURE_GUIDES.library.steps).toHaveLength(4);
     expect(FEATURE_GUIDES.library.steps[0]).toMatchObject({
       targetId: "library-ai-task-manager",
-      title: "About this feature",
+      title: "Practice first",
       practice: {
-        actionLabel: "Start dummy Library workflow"
+        actionLabel: "Start practice"
       }
     });
     expect(FEATURE_GUIDES.library.steps[0].body).toMatch(/temporary/i);
-    expect(FEATURE_GUIDES.library.steps[0].body).toMatch(/nothing permanent/i);
+    expect(FEATURE_GUIDES.library.steps[0].body).toMatch(/Nothing permanent/i);
   });
 
   it("explains what learners practice and why in the Load Map first step", () => {

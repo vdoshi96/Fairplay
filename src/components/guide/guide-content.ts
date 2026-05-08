@@ -67,7 +67,7 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
       {
         id: "filters",
         title: "Filters help you inspect the system",
-        body: "Use owner, status, cadence, hidden effort, review timing, and search filters to understand the current load.",
+        body: "Use owner, status, cadence, effort, review, and search to inspect the current load.",
         targetId: "load-map-filters"
       }
     ]
@@ -75,19 +75,18 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
   library: {
     id: "library",
     title: "Library",
-    description: "Learn AI card drafts, search, labels, source cards, and putting a card in play.",
+    description: "Learn drafts, search, labels, and putting a card in play.",
     steps: [
       {
         id: "ai-task-manager",
-        title: "About this feature",
-        body: "Practice a temporary Greg capture and draft review. The demo data stays local to onboarding, and nothing permanent is created.",
+        title: "Practice first",
+        body: "Try a temporary Greg draft, edit it, and preview Load Map. Nothing permanent is created.",
         targetId: "library-ai-task-manager",
         practice: {
-          actionLabel: "Start dummy Library workflow",
-          completionMessage: "Dummy Library workflow complete.",
+          actionLabel: "Start practice",
+          completionMessage: "Practice complete.",
           eventId: "library-practice-start",
-          prompt:
-            "Use a dummy Greg capture, review the generated text draft, edit it, and put it in play without creating a real card.",
+          prompt: "Practice the card workflow without creating a real card.",
           requiredEventIds: [
             "library-capture-filled",
             "library-draft-reviewed",

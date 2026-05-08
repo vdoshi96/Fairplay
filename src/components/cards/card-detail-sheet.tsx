@@ -2,6 +2,7 @@
 
 import { CalendarClock, MoveRight, Scissors } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 
 import type { CardTemplateLabel } from "@/contracts/card-templates";
 import type { ResponsibilityBoardLane } from "@/domain/enums";
@@ -64,15 +65,27 @@ export function CardDetailSheet({
   onScheduleCheckIn,
   onTrim
 }: CardDetailSheetProps) {
+  const [selectedLane, setSelectedLane] = useState<ResponsibilityBoardLane | "">("");
   const laneLabel = card.boardLane ? laneLabels[card.boardLane] : "Not placed";
   const ownerLabel = card.ownerLabel ?? laneLabel;
   const isGeneratedCover = aiDraftCoverPathPattern.test(card.sourceCoverAssetPath ?? "");
   const coverAssetPath = card.sourceCoverAssetPath ?? card.coverAssetPath ?? null;
   const noActionHooks = !onMove && !onScheduleCheckIn && !onTrim;
   const unavailableMessage = noActionHooks
-    ? "Card actions are unavailable on this page. Use the editor below or return to the load map."
-    : "Some card actions are unavailable on this page.";
+    ? "Actions are unavailable here. Use the editor or Load Map."
+    : "Some actions are unavailable here.";
   const unavailableMessageId = `${card.id}-card-actions-unavailable`;
+  const moveOptions = RESPONSIBILITY_BOARD_LANES.filter(
+    (lane) => lane !== card.boardLane
+  );
+
+  function moveSelectedCard() {
+    if (!selectedLane) {
+      return;
+    }
+
+    onMove?.(selectedLane);
+  }
 
   return (
     <Sheet className="grid gap-5 p-0 sm:p-0">
@@ -190,19 +203,36 @@ export function CardDetailSheet({
 
           <section className="grid gap-3">
             <h2 className="text-[18px] font-bold text-fp-ink">Move card</h2>
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              {RESPONSIBILITY_BOARD_LANES.map((lane) => (
-                <Button
+            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+                Destination
+                <select
                   aria-describedby={!onMove ? unavailableMessageId : undefined}
-                  className="justify-between"
-                  disabled={!onMove || lane === card.boardLane}
-                  key={lane}
-                  onClick={() => onMove?.(lane)}
+                  aria-label="Move destination"
+                  className="min-h-10 rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink disabled:opacity-60"
+                  disabled={!onMove}
+                  onChange={(event) =>
+                    setSelectedLane(event.target.value as ResponsibilityBoardLane | "")
+                  }
+                  value={selectedLane}
                 >
-                  Move to {laneLabels[lane]}
-                  <MoveRight aria-hidden="true" size={16} />
-                </Button>
-              ))}
+                  <option value="">Choose lane</option>
+                  {moveOptions.map((lane) => (
+                    <option key={lane} value={lane}>
+                      {laneLabels[lane]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Button
+                aria-describedby={!onMove ? unavailableMessageId : undefined}
+                className="self-end"
+                disabled={!onMove || !selectedLane}
+                onClick={moveSelectedCard}
+              >
+                <MoveRight aria-hidden="true" size={16} />
+                Move
+              </Button>
             </div>
           </section>
         </div>

@@ -85,7 +85,7 @@ describe("AiTaskManager", () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+      screen.getByRole("button", { name: "Ask Greg" })
     );
 
     expect(screen.getByTestId("greg-taskmaster-control")).toHaveClass(
@@ -140,7 +140,7 @@ describe("AiTaskManager", () => {
       />
     );
 
-    expect(screen.getByRole("region", { name: "AI-created cards" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "AI drafts" })).toBeVisible();
     expect(screen.getAllByText("Generating").length).toBeGreaterThan(0);
     expect(screen.getByText("Generation failed")).toBeVisible();
     expect(screen.getAllByText("Completed").length).toBeGreaterThan(0);
@@ -170,7 +170,7 @@ describe("AiTaskManager", () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+      screen.getByRole("button", { name: "Ask Greg" })
     );
     await userEvent.type(
       screen.getByLabelText("Describe the card"),
@@ -204,7 +204,7 @@ describe("AiTaskManager", () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+      screen.getByRole("button", { name: "Ask Greg" })
     );
     await userEvent.type(
       screen.getByLabelText("Describe the card"),
@@ -256,7 +256,7 @@ describe("AiTaskManager", () => {
     render(<AiTaskManager drafts={[]} />);
 
     await userEvent.click(
-      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+      screen.getByRole("button", { name: "Ask Greg" })
     );
     await userEvent.type(
       screen.getByLabelText("Describe the card"),
@@ -517,14 +517,14 @@ describe("AiTaskManager", () => {
 
     await userEvent.clear(screen.getByLabelText("Draft title"));
     await userEvent.type(screen.getByLabelText("Draft title"), "Laundry command center");
-    await userEvent.clear(screen.getByLabelText("Area keys"));
-    await userEvent.type(screen.getByLabelText("Area keys"), "home, kids");
-    await userEvent.clear(screen.getByLabelText("Hidden effort keys"));
+    await userEvent.clear(screen.getByLabelText("Area tags"));
+    await userEvent.type(screen.getByLabelText("Area tags"), "home, kids");
+    await userEvent.clear(screen.getByLabelText("Work type tags"));
     await userEvent.type(
-      screen.getByLabelText("Hidden effort keys"),
+      screen.getByLabelText("Work type tags"),
       "planning, follow_through"
     );
-    await userEvent.selectOptions(screen.getByLabelText("Cadence"), "daily");
+    await userEvent.selectOptions(screen.getByLabelText("Rhythm"), "daily");
     await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() =>

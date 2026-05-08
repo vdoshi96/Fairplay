@@ -77,7 +77,7 @@ describe("CardLibrary", () => {
         "url('/assets/fairplay/generated-ui/backgrounds/library-shelf.png')"
     });
     expect(
-      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+      screen.getByRole("button", { name: "Ask Greg" })
     ).toBeVisible();
     expect(screen.getByTestId("greg-taskmaster-control")).toHaveClass(
       "grid",
@@ -92,7 +92,7 @@ describe("CardLibrary", () => {
       .not.toBeInTheDocument();
     expect(container.querySelector('[data-guide-id="library-ai-task-manager"]'))
       .not.toBeNull();
-    expect(screen.getByRole("region", { name: "AI-created cards" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "AI drafts" })).toBeVisible();
     expect(screen.getByText("Laundry reset")).toBeVisible();
   });
 
@@ -150,8 +150,42 @@ describe("CardLibrary", () => {
     expect(screen.queryByText("Auto")).not.toBeInTheDocument();
     expect(screen.getByText("Laundry reset")).toBeVisible();
     expect(screen.getByRole("article", { name: /homework/i })).toHaveClass(
-      "min-h-[420px]"
+      "min-h-[360px]",
+      "min-w-0",
+      "overflow-hidden"
     );
+  });
+
+  it("keeps long source-card text inside the card frame", () => {
+    const longTitle =
+      "Cleaning conception planning pushing boxes and seasonal storage handoff with a very long title";
+    const longTemplates: CardTemplateSummary[] = [
+      {
+        id: "tpl_long",
+        slug: "long-card",
+        title: longTitle,
+        labels: ["Home", "Daily Grind"],
+        summary:
+          "This deliberately long summary checks that library cards clamp text instead of letting words escape the card frame on desktop or mobile layouts.",
+        coverAssetPath: "/assets/fairplay/cards/auto.png",
+        defaultLane: "not_in_play"
+      }
+    ];
+
+    render(<CardLibrary templates={longTemplates} />);
+
+    const cardArticle = screen.getByRole("article", { name: longTitle });
+    const heading = within(cardArticle).getByRole("heading", { name: longTitle });
+    const action = within(cardArticle).getByRole("button", {
+      name: `Put ${longTitle} in play`
+    });
+
+    expect(cardArticle).toHaveClass("min-w-0", "overflow-hidden");
+    expect(heading).toHaveClass("line-clamp-2", "[overflow-wrap:anywhere]");
+    expect(
+      within(cardArticle).getByText(/deliberately long summary/i)
+    ).toHaveClass("line-clamp-3", "[overflow-wrap:anywhere]");
+    expect(action).toHaveTextContent("Put in play");
   });
 
   it("renders duplicate personal seed cards with Alex and Max display labels", () => {
@@ -214,15 +248,15 @@ describe("CardLibrary", () => {
     expect(screen.getByText("Step 1 of 4")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
     expect(
-      screen.getByText("Next required click: Start dummy Library workflow.")
+      screen.getByText("Next required click: Start practice.")
     ).toBeVisible();
 
     await userEvent.click(
-      screen.getByRole("button", { name: "Start dummy Library workflow" })
+      screen.getByRole("button", { name: "Start practice" })
     );
 
     const practiceRegion = screen.getByRole("region", {
-      name: "Dummy Library practice"
+      name: "Practice a card"
     });
     expect(practiceRegion).toBeVisible();
     expect(practiceRegion).toHaveClass(
@@ -233,13 +267,13 @@ describe("CardLibrary", () => {
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
 
     await userEvent.type(
-      screen.getByLabelText("Dummy card request"),
+      screen.getByLabelText("Practice card request"),
       "Make a card for the weekly backpack reset before school."
     );
     expect(
-      screen.getByText("Next required click: Create dummy draft.")
+      screen.getByText("Next required click: Create practice draft.")
     ).toBeVisible();
-    await userEvent.click(screen.getByRole("button", { name: "Create dummy draft" }));
+    await userEvent.click(screen.getByRole("button", { name: "Create practice draft" }));
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/ai-card-drafts/onboarding-preview",
@@ -251,7 +285,7 @@ describe("CardLibrary", () => {
       })
     );
     expect(
-      screen.getByText("Generating a dummy card preview. This can take a moment.")
+      screen.getByText("Creating a practice draft...")
     ).toBeVisible();
 
     resolvePreview(
@@ -274,11 +308,11 @@ describe("CardLibrary", () => {
       )
     );
 
-    expect(await screen.findByText("Dummy draft created from Greg capture."))
+    expect(await screen.findByText("Practice draft created."))
       .toBeVisible();
-    expect(screen.getByRole("region", { name: "Temporary Library workspace" }))
+    expect(screen.getByRole("region", { name: "Practice workspace" }))
       .toBeVisible();
-    expect(screen.getByText(/temporary workspace keeps mock artifacts/i))
+    expect(screen.getByText(/Temporary drafts stay here/i))
       .toBeVisible();
     expect(screen.getByText("Weekly backpack reset")).toBeVisible();
     expect(
@@ -286,34 +320,34 @@ describe("CardLibrary", () => {
     ).toBeVisible();
     expect(screen.queryByText(/Lunch packing handoff/i)).not.toBeInTheDocument();
     expect(
-      screen.getByText("Next required click: Review dummy draft.")
+      screen.getByText("Next required click: Review practice draft.")
     ).toBeVisible();
 
-    await userEvent.click(screen.getByRole("button", { name: "Review dummy draft" }));
-    expect(screen.getByLabelText("Dummy draft title")).toHaveValue(
+    await userEvent.click(screen.getByRole("button", { name: "Review draft" }));
+    expect(screen.getByLabelText("Practice draft title")).toHaveValue(
       "Weekly backpack reset"
     );
-    expect(screen.getByLabelText("Dummy summary")).toHaveValue(
+    expect(screen.getByLabelText("Practice summary")).toHaveValue(
       "Keep backpacks cleared, signed forms handled, and school items ready."
     );
 
-    await userEvent.clear(screen.getByLabelText("Dummy draft title"));
-    await userEvent.type(screen.getByLabelText("Dummy draft title"), "Backpack launch");
+    await userEvent.clear(screen.getByLabelText("Practice draft title"));
+    await userEvent.type(screen.getByLabelText("Practice draft title"), "Backpack launch");
     expect(
-      screen.getByText("Next required click: Save dummy edits.")
+      screen.getByText("Next required click: Save practice edits.")
     ).toBeVisible();
-    await userEvent.click(screen.getByRole("button", { name: "Save dummy edits" }));
-    expect(screen.getByText("Dummy draft edits saved.")).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "Save edits" }));
+    expect(screen.getByText("Practice edits saved.")).toBeVisible();
     expect(
-      screen.getByText("Next required click: Put dummy card in play.")
+      screen.getByText("Next required click: Preview in Load Map.")
     ).toBeVisible();
 
-    await userEvent.click(screen.getByRole("button", { name: "Put dummy card in play" }));
+    await userEvent.click(screen.getByRole("button", { name: "Preview in Load Map" }));
     expect(
-      screen.getByText("Dummy card is ready for the Load Map. No real card was created.")
+      screen.getByText("Practice card is ready for Load Map. No real card was created.")
     ).toBeVisible();
-    expect(screen.getByText("Mock Load Map artifact")).toBeVisible();
-    expect(screen.getByText("Dummy Library workflow complete.")).toBeVisible();
+    expect(screen.getByText("Load Map preview")).toBeVisible();
+    expect(screen.getByText("Practice complete.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
     expect(onCreateFromTemplate).not.toHaveBeenCalled();
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -324,12 +358,12 @@ describe("CardLibrary", () => {
       );
     });
 
-    await userEvent.click(screen.getByRole("button", { name: "Clean up dummy workspace" }));
-    expect(screen.queryByRole("region", { name: "Temporary Library workspace" }))
+    await userEvent.click(screen.getByRole("button", { name: "Clear practice" }));
+    expect(screen.queryByRole("region", { name: "Practice workspace" }))
       .not.toBeInTheDocument();
-    expect(screen.queryByText("Mock Load Map artifact")).not.toBeInTheDocument();
+    expect(screen.queryByText("Load Map preview")).not.toBeInTheDocument();
     expect(
-      screen.queryByText("Next required click: Put dummy card in play.")
+      screen.queryByText("Next required click: Preview in Load Map.")
     ).not.toBeInTheDocument();
   });
 
@@ -338,28 +372,28 @@ describe("CardLibrary", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "Start dummy Library workflow" })
+      screen.getByRole("button", { name: "Start practice" })
     );
     await userEvent.type(
-      screen.getByLabelText("Dummy card request"),
+      screen.getByLabelText("Practice card request"),
       "Make a card for the weekly backpack reset."
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Skip" }));
 
     expect(
-      screen.queryByRole("region", { name: "Dummy Library practice" })
+      screen.queryByRole("region", { name: "Practice a card" })
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+      screen.getByRole("button", { name: "Ask Greg" })
     ).toBeVisible();
 
     await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "Start dummy Library workflow" })
+      screen.getByRole("button", { name: "Start practice" })
     );
 
-    expect(screen.getByLabelText("Dummy card request")).toHaveValue("");
+    expect(screen.getByLabelText("Practice card request")).toHaveValue("");
     expect(screen.queryByText(/weekly backpack reset/i)).not.toBeInTheDocument();
   });
 
@@ -378,10 +412,10 @@ describe("CardLibrary", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "Start dummy Library workflow" })
+      screen.getByRole("button", { name: "Start practice" })
     );
-    await userEvent.type(screen.getByLabelText("Dummy card request"), "Lunch kits");
-    await userEvent.click(screen.getByRole("button", { name: "Create dummy draft" }));
+    await userEvent.type(screen.getByLabelText("Practice card request"), "Lunch kits");
+    await userEvent.click(screen.getByRole("button", { name: "Create practice draft" }));
     resolvePreview(
       new Response(
         JSON.stringify({
@@ -392,9 +426,9 @@ describe("CardLibrary", () => {
       )
     );
     expect(await screen.findByText("Lunch kits")).toBeVisible();
-    await userEvent.click(screen.getByRole("button", { name: "Review dummy draft" }));
-    await userEvent.click(screen.getByRole("button", { name: "Save dummy edits" }));
-    await userEvent.click(screen.getByRole("button", { name: "Put dummy card in play" }));
+    await userEvent.click(screen.getByRole("button", { name: "Review draft" }));
+    await userEvent.click(screen.getByRole("button", { name: "Save edits" }));
+    await userEvent.click(screen.getByRole("button", { name: "Preview in Load Map" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -402,10 +436,10 @@ describe("CardLibrary", () => {
     await userEvent.click(screen.getByRole("button", { name: "Done" }));
 
     expect(
-      screen.queryByRole("region", { name: "Dummy Library practice" })
+      screen.queryByRole("region", { name: "Practice a card" })
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+      screen.getByRole("button", { name: "Ask Greg" })
     ).toBeVisible();
   });
 });
