@@ -13,11 +13,13 @@ import type { FeatureGuide } from "./guide-content";
 type FeatureGuideLauncherProps = {
   guide: FeatureGuide;
   showDescription?: boolean;
+  showHelper?: boolean;
 };
 
 export function FeatureGuideLauncher({
   guide,
-  showDescription = true
+  showDescription = true,
+  showHelper = true
 }: FeatureGuideLauncherProps) {
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(() => searchParams.get("guide") === guide.id);
@@ -29,7 +31,7 @@ export function FeatureGuideLauncher({
 
   return (
     <div className="flex max-w-full items-center gap-3">
-      <FeatureGuideHelper guideId={guide.id} />
+      {showHelper ? <FeatureGuideHelper guideId={guide.id} /> : null}
       <div className="grid min-w-0 gap-2">
         {showDescription ? (
           <p className="text-[14px] leading-5 text-fp-muted-ink">{guide.description}</p>
