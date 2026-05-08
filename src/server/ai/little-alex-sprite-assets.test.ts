@@ -20,6 +20,13 @@ import {
 } from "./little-alex-sprite-assets";
 
 const littleAlexSkinTones = ["tone_1", "tone_2", "tone_3", "tone_4", "tone_5"];
+const littleAlexHairColors = [
+  "dark_brown",
+  "black",
+  "auburn",
+  "blonde",
+  "silver"
+];
 
 describe("Little Alex sprite asset specs", () => {
   it("defines three source sheets and one cropped transparent PNG spec for each body part", () => {
@@ -164,6 +171,21 @@ describe("Little Alex sprite asset specs", () => {
               `${LITTLE_ALEX_SPRITE_OUTPUT_DIR}/${presentation}-${skinTone}-${part}.png`
             ),
             `${presentation} ${skinTone} ${part} sprite is missing`
+          ).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("has generated hair-color full-body and head assets", () => {
+    for (const presentation of LITTLE_ALEX_SPRITE_PRESENTATIONS) {
+      for (const hairColor of littleAlexHairColors) {
+        for (const kind of ["full", "head"]) {
+          expect(
+            existsSync(
+              `${LITTLE_ALEX_SPRITE_OUTPUT_DIR}/${presentation}-${hairColor}-${kind}-hair.png`
+            ),
+            `${presentation} ${hairColor} ${kind} hair layer is missing`
           ).toBe(true);
         }
       }

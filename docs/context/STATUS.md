@@ -33,7 +33,7 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Your Deck and Board now include concise explanatory subtitles.
 - Mobile overflow navigation now opens from the bottom action area with visible Check-in, Settings, Theory, and Card Library links plus an outside-tap dismiss layer that closes without click-through navigation. The persistent welcome banner is no longer mounted in the protected app shell.
 - Little Alex is desktop-only on protected app routes; mobile and touch-first layouts do not render the helper, and Settings shows a compact mobile note explaining desktop availability.
-- Settings now persists Little Alex hair color per persona and the desktop helper reflects the saved hair color.
+- Settings now persists Little Alex hair color per persona and the desktop helper reflects the saved hair color with sprite-derived transparent hair layers instead of a hand-painted overlay.
 - Deal now shows concise swipe instructions under search, uses safer touch-intent thresholds before locking a card drag, and exposes last-action Undo after assignment.
 - Card detail Fogging Estandards are editable via the existing `householdStandard` persistence field, while long purpose/standards text wraps instead of clipping.
 - Library cards flip in place as the full source catalog. The visible put-in-play/lane-pick workflow has been removed from the Library catalog flow.

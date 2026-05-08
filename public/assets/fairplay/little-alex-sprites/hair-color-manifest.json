@@ -1,0 +1,286 @@
+{
+  "generatedAt": "2026-05-08T20:58:19.030Z",
+  "hairColorColors": {
+    "dark_brown": "#553d33",
+    "black": "#202124",
+    "auburn": "#8f4632",
+    "blonde": "#d7b36f",
+    "silver": "#c8c7bc"
+  },
+  "mode": "generate",
+  "outputDir": "public/assets/fairplay/little-alex-sprites",
+  "referenceSkinTone": "tone_2",
+  "source": "deterministic-sharp-hair-recolor",
+  "outputs": [
+    {
+      "hairColor": "dark_brown",
+      "hairPixels": 37938,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-dark_brown-full-hair.png",
+      "presentation": "neutral",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-full.png"
+    },
+    {
+      "hairColor": "dark_brown",
+      "hairPixels": 39718,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-dark_brown-head-hair.png",
+      "presentation": "neutral",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-head.png"
+    },
+    {
+      "hairColor": "black",
+      "hairPixels": 37938,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-black-full-hair.png",
+      "presentation": "neutral",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-full.png"
+    },
+    {
+      "hairColor": "black",
+      "hairPixels": 39718,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-black-head-hair.png",
+      "presentation": "neutral",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-head.png"
+    },
+    {
+      "hairColor": "auburn",
+      "hairPixels": 37938,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-auburn-full-hair.png",
+      "presentation": "neutral",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-full.png"
+    },
+    {
+      "hairColor": "auburn",
+      "hairPixels": 39718,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-auburn-head-hair.png",
+      "presentation": "neutral",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-head.png"
+    },
+    {
+      "hairColor": "blonde",
+      "hairPixels": 37938,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-blonde-full-hair.png",
+      "presentation": "neutral",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-full.png"
+    },
+    {
+      "hairColor": "blonde",
+      "hairPixels": 39718,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-blonde-head-hair.png",
+      "presentation": "neutral",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-head.png"
+    },
+    {
+      "hairColor": "silver",
+      "hairPixels": 37938,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-silver-full-hair.png",
+      "presentation": "neutral",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-full.png"
+    },
+    {
+      "hairColor": "silver",
+      "hairPixels": 39718,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/neutral-silver-head-hair.png",
+      "presentation": "neutral",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/neutral-tone_2-head.png"
+    },
+    {
+      "hairColor": "dark_brown",
+      "hairPixels": 20862,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-dark_brown-full-hair.png",
+      "presentation": "masculine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-full.png"
+    },
+    {
+      "hairColor": "dark_brown",
+      "hairPixels": 32853,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-dark_brown-head-hair.png",
+      "presentation": "masculine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-head.png"
+    },
+    {
+      "hairColor": "black",
+      "hairPixels": 20862,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-black-full-hair.png",
+      "presentation": "masculine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-full.png"
+    },
+    {
+      "hairColor": "black",
+      "hairPixels": 32853,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-black-head-hair.png",
+      "presentation": "masculine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-head.png"
+    },
+    {
+      "hairColor": "auburn",
+      "hairPixels": 20862,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-auburn-full-hair.png",
+      "presentation": "masculine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-full.png"
+    },
+    {
+      "hairColor": "auburn",
+      "hairPixels": 32853,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-auburn-head-hair.png",
+      "presentation": "masculine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-head.png"
+    },
+    {
+      "hairColor": "blonde",
+      "hairPixels": 20862,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-blonde-full-hair.png",
+      "presentation": "masculine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-full.png"
+    },
+    {
+      "hairColor": "blonde",
+      "hairPixels": 32853,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-blonde-head-hair.png",
+      "presentation": "masculine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-head.png"
+    },
+    {
+      "hairColor": "silver",
+      "hairPixels": 20862,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-silver-full-hair.png",
+      "presentation": "masculine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-full.png"
+    },
+    {
+      "hairColor": "silver",
+      "hairPixels": 32853,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/masculine-silver-head-hair.png",
+      "presentation": "masculine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/masculine-tone_2-head.png"
+    },
+    {
+      "hairColor": "dark_brown",
+      "hairPixels": 58289,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-dark_brown-full-hair.png",
+      "presentation": "feminine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-full.png"
+    },
+    {
+      "hairColor": "dark_brown",
+      "hairPixels": 75816,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-dark_brown-head-hair.png",
+      "presentation": "feminine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-head.png"
+    },
+    {
+      "hairColor": "black",
+      "hairPixels": 58289,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-black-full-hair.png",
+      "presentation": "feminine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-full.png"
+    },
+    {
+      "hairColor": "black",
+      "hairPixels": 75816,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-black-head-hair.png",
+      "presentation": "feminine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-head.png"
+    },
+    {
+      "hairColor": "auburn",
+      "hairPixels": 58289,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-auburn-full-hair.png",
+      "presentation": "feminine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-full.png"
+    },
+    {
+      "hairColor": "auburn",
+      "hairPixels": 75816,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-auburn-head-hair.png",
+      "presentation": "feminine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-head.png"
+    },
+    {
+      "hairColor": "blonde",
+      "hairPixels": 58289,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-blonde-full-hair.png",
+      "presentation": "feminine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-full.png"
+    },
+    {
+      "hairColor": "blonde",
+      "hairPixels": 75816,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-blonde-head-hair.png",
+      "presentation": "feminine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-head.png"
+    },
+    {
+      "hairColor": "silver",
+      "hairPixels": 58289,
+      "kind": "full",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-silver-full-hair.png",
+      "presentation": "feminine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-full.png"
+    },
+    {
+      "hairColor": "silver",
+      "hairPixels": 75816,
+      "kind": "head",
+      "outputPath": "public/assets/fairplay/little-alex-sprites/feminine-silver-head-hair.png",
+      "presentation": "feminine",
+      "skipped": false,
+      "sourcePath": "public/assets/fairplay/little-alex-sprites/feminine-tone_2-head.png"
+    }
+  ]
+}

@@ -1,5 +1,27 @@
 # Fairplay Context Log
 
+## 2026-05-08 - Little Alex Hair Recolor Correction
+
+Requested by the user after visual review: the Little Alex hair color setting must actually recolor the sprite hair, not add a colored blob over the head.
+
+Actions completed:
+
+- Replaced the CSS hair-overlay DOM/CSS with generated transparent PNG hair layers aligned to the full-body and ragdoll head sprites.
+- Added deterministic hair-layer asset generation for all Little Alex gender presentations and configured hair colors.
+- Added regression coverage that requires the sprite-derived hair assets and asserts the old overlay nodes are gone.
+- Rechecked generated full/head composites for neutral, masculine, and feminine Little Alex variants.
+
+Verification:
+
+- `npm run prisma:validate`
+- `npm run lint`
+- `npm run typecheck`
+- `npm test -- --run src/components/little-alex/little-alex-physics.test.tsx src/server/ai/little-alex-sprite-assets.test.ts`
+- `npm test -- --run`
+- `npm run build`
+- `npm run test:e2e` (28 Playwright tests)
+- Rendered Playwright spot check saved Auburn hair and confirmed `little-alex-full-hair-sprite` used `/assets/fairplay/little-alex-sprites/neutral-auburn-full-hair.png` with zero old hair-overlay nodes.
+
 ## 2026-05-08 - Desktop Layout And Learn Cleanup
 
 Requested by the user: polish Ask Greg and Board desktop responsive layouts, add short subtitles for Your Deck and Board, and remove the old "Learn this feature" dummy onboarding workflow without disturbing mobile layouts.
