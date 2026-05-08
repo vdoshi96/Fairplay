@@ -2,7 +2,7 @@
 
 ## Goal
 
-Create a mobile-first household responsibility planning tool that helps two household partners make shared work visible, assign ownership clearly, and revisit decisions through calm recurring check-ins.
+Create a mobile-first household responsibility planning tool that helps two household partners make shared work visible, assign ownership clearly, and keep simple recurring check-in records.
 
 Fairplay v1 is household organization and relationship support. It is not therapy, counseling, diagnosis, legal advice, financial advice, medical advice, or crisis support.
 
@@ -24,7 +24,7 @@ Fairplay v1 is household organization and relationship support. It is not therap
 - Household load map with responsibility overview, ownership state, cadence, review timing, hidden effort dimensions, and status.
 - Responsibility creation and editing using user-authored titles, notes, standards, tags, and cadence.
 - Assignment between Alex and Max using explicit roles such as accountable owner, shared owner, helper, and backup.
-- Guided check-in flow that reviews selected responsibilities and saved agenda items, records decisions, and allows deferring tense topics.
+- Lightweight check-in flow that schedules a check-in, confirms it happened, and saves optional minutes/notes.
 - Persisted household, persona, responsibility, assignment, check-in, decision, event, and snapshot data.
 - Small demo/seed data made from original categories and invented examples only, reviewed before implementation.
 - README deployment instructions for the eventual Vercel app setup.
@@ -60,8 +60,8 @@ Fairplay v1 is household organization and relationship support. It is not therap
 - `/app/home` shows household learning entry points, due reviews, and next check-in.
 - `/app/load-map` lists responsibilities with filters for owner, status, cadence, tag, and review timing.
 - `/app/responsibilities/new` and `/app/responsibilities/[id]` create/edit a responsibility.
-- `/app/check-ins/new` starts a guided check-in.
-- `/app/check-ins/[id]` resumes or reviews a check-in.
+- `/app/check-ins/new` schedules a check-in.
+- `/app/check-ins/[id]` confirms a scheduled check-in or updates completed notes.
 - `/app/settings` manages household name, persona display preferences, logout, and future data controls.
 
 ## Demo Seed Boundaries
@@ -79,5 +79,5 @@ Do not expand this into a source-like deck or catalog. Demo examples must not co
 - Ownership and handoff expectations are explicit.
 - The interface encourages calm review rather than blame.
 - Alex and Max can use the same household credentials, choose their persona, and see a consistent shared household state.
-- Users can defer tense topics, restart learning flows, and record check-in decisions without partner scoring.
+- Users can restart learning flows and keep check-in notes without partner scoring.
 - The domain model and API contracts are reusable by a future iOS client.

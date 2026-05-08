@@ -1,6 +1,6 @@
 # Fairplay Architecture
 
-Last updated: 2026-05-07
+Last updated: 2026-05-08
 
 ## Runtime Shape
 
@@ -24,7 +24,7 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 - `auth`: forms, login/create/persona clients, auth page shell.
 - `library`, `cards`: card library, AI task manager, card detail sheet.
 - `responsibilities`: load map, editor, board lanes.
-- `check-ins`: guided check-in flow.
+- `check-ins`: lightweight schedule, confirmation, and notes flow.
 - `crash-course`, `guide`, `onboarding`, `welcome`: learning and onboarding surfaces.
 - `little-alex`, `settings`, `theme`, `visuals`, `motion`, `ui`: helper, preferences, theme, visual primitives, motion, and shared UI.
 
@@ -44,7 +44,7 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 
 ### Persistence
 
-`prisma/schema.prisma` models households, credentials, personas, onboarding/Little Alex preferences, sessions, responsibilities, assignments, lifecycle notes, templates, AI card drafts, check-ins, check-in items, decisions, responsibility events, load snapshots, and auth throttling.
+`prisma/schema.prisma` models households, credentials, personas, onboarding/Little Alex preferences, sessions, responsibilities, assignments, lifecycle notes, templates, AI card drafts, check-ins, compatibility check-in items/decisions, responsibility events, load snapshots, and auth throttling.
 
 Migrations currently include initial schema, legacy Radar timing/removal history, personal-use redesign, cascade behavior, AI card drafts, and Little Alex preferences.
 

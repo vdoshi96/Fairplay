@@ -31,158 +31,158 @@ export type CrashCourseSceneKey =
 export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
   {
     id: "hidden-load-entry",
-    title: "Start with what no one sees",
+    title: "Start with hidden work",
     concept:
-      "Household work is bigger than the part anyone can watch. A form submitted, meal cooked, or ride given is visible work. Hidden work is the noticing, remembering, comparing options, coordinating timing, emotional care, and follow-through that make the visible moment possible.",
+      "Visible work is the part anyone can see. Hidden work is the noticing, remembering, timing, comparing, emotional care, and follow-through that make the visible part possible.",
     action:
-      "Before moving a card, name what happens before and after the obvious task.",
+      "Name what happens before and after the obvious task.",
     scene: "hidden-load-entry",
     exampleCardTitle: "School forms"
   },
   {
     id: "visible-reminder",
-    title: "Separate the work from the reminder",
+    title: "Split doing from remembering",
     concept:
-      "A task can look evenly split while one person still carries the reminder system. If Alex buys the supplies after Max notices the need, tracks the deadline, and explains the standard, the physical action moved but the cognitive load did not.",
+      "A task can look shared while one person still carries the reminder system. Physical action can move without moving the cognitive load of tracking timing, details, and consequences.",
     action:
-      "Ask who is watching the timing, details, and consequence, not only who does the final action.",
+      "Ask who notices, who decides, and who follows up.",
     scene: "visible-reminder",
     exampleCardTitle: "Birthday gift"
   },
   {
     id: "treadmill-reset",
-    title: "Name the reset",
+    title: "Count the reset",
     concept:
-      "Some responsibilities reset like a treadmill. Dishes, lunches, medicine, laundry, and routines may be small each time, but they return again and again. A finite project can be intense, yet it usually has a clearer finish line.",
+      "Some responsibilities reset like a treadmill. Meals, laundry, medicine, and routines may be small each time, but they return again and again. Finite projects usually have a clearer finish line.",
     action:
-      "Mark whether the card is recurring or finite so the load conversation includes cadence.",
+      "Treat recurring work differently from one-time work.",
     scene: "treadmill-reset",
     exampleCardTitle: "Laundry"
   },
   {
     id: "active-set",
-    title: "Choose what is actually in play",
+    title: "Keep only live responsibilities",
     concept:
-      "Fairness gets foggy when every possible responsibility is treated as active. Some work matters this season, some is paused, and some belongs outside the household plan for now. A smaller active set makes the conversation more honest.",
+      "Fairness gets foggy when every possible responsibility is treated as active. Some work matters this season, some is paused, and some can be dropped for now.",
     action:
-      "Keep active only the cards that need ownership now, and pause work that no longer fits this season.",
+      "Talk about the responsibilities that actually need ownership now.",
     scene: "active-set",
     exampleCardTitle: "Holiday travel"
   },
   {
     id: "helper-owner",
-    title: "Helping is not the same as owning",
+    title: "Helping is not owning",
     concept:
-      "Helping is valuable, but a helper usually completes a piece of someone else's plan. An owner carries the outcome. They notice the need, decide what good enough means, coordinate support, and absorb the follow-through when the plan changes.",
+      "Helping is useful, but a helper usually completes a piece of someone else's plan. An owner carries the outcome: noticing the need, setting the standard, coordinating support, and following through.",
     action:
-      "When support is needed, name the owner first and the helper role second.",
+      "Name the owner first, then name any helper role.",
     scene: "helper-owner",
     exampleCardTitle: "Groceries"
   },
   {
     id: "cpe-outcome",
-    title: "Carry the whole outcome",
+    title: "Own the full path",
     concept:
-      "Full ownership means carrying CPE: conception, planning, and execution. The owner does not need to do every physical step alone, but they keep the responsibility moving from noticing to a completed outcome that the household can rely on.",
+      "Full ownership means carrying CPE: conception, planning, and execution. The owner does not have to do every step alone, but they keep the responsibility moving from need to reliable outcome.",
     action:
-      "Look for split CPE: one person conceives and plans while another only executes.",
+      "Look for split CPE, where one person plans and another only executes.",
     scene: "cpe-outcome",
     exampleCardTitle: "Pet care"
   },
   {
     id: "done-standard",
-    title: "Define done before it matters",
+    title: "Define done well enough",
     concept:
-      "Resentment often grows around standards that were never said out loud. Done well enough is the household's shared answer to what matters, what is flexible, what timing is acceptable, and what care details cannot be skipped.",
+      "Resentment often grows around standards that were never said out loud. Done well enough means the household agrees on the outcome, timing, must-haves, and flexible parts.",
     action:
-      "Write the outcome, one or two non-negotiables, one flexible part, and when to review it.",
+      "Write the outcome, the must-haves, one flexible part, and a review date.",
     scene: "done-standard",
     exampleCardTitle: "Packed lunches"
   },
   {
     id: "standard-autonomy",
-    title: "Keep the standard kind",
+    title: "Leave room for autonomy",
     concept:
-      "A shared standard is not an inspection checklist from the more anxious person, and it is not permission to do the least possible work. It protects the outcome while leaving the owner room to build competence and choose a method.",
+      "A shared standard is not an inspection checklist, and it is not permission to do the least possible work. It protects the outcome while letting the owner choose a method.",
     action:
-      "If the standard feels like control or avoidance, rewrite it around the household outcome.",
+      "If the standard feels like control or avoidance, rewrite it around the outcome.",
     scene: "standard-autonomy",
     exampleCardTitle: "Morning routine"
   },
   {
     id: "handoff-context",
-    title: "Move context with the handoff",
+    title: "Pass context with the handoff",
     concept:
-      "A handoff is not a last-minute dump. When ownership changes, the context has to move too: current state, access, timing, blockers, training or practice needed, the done-well-enough agreement, and a review date.",
+      "A handoff is not a last-minute dump. When ownership changes, the current state, access, timing, blockers, training, done-well note, and review date need to move too.",
     action:
-      "Before moving a card, add the context the next owner would otherwise have to extract by asking.",
+      "Share the context the next owner would otherwise have to extract.",
     scene: "handoff-context",
     exampleCardTitle: "Medical appointments"
   },
   {
     id: "load-map",
-    title: "Read the Load Map as a map",
+    title: "Use maps, not scoreboards",
     concept:
-      "The Load Map is not a scoreboard. It helps the household see concentration, unclear ownership, cadence, and due reviews. Equal card counts can still hide different capacity, time pressure, complexity, or emotional load.",
+      "Fairness is not a scoreboard. A map can show concentration, unclear ownership, recurring load, and due reviews without declaring a winner. Equal counts can still hide time pressure or emotional load.",
     action:
-      "Use the map to find what needs discussion, not to declare a winner.",
+      "Use patterns to choose what needs discussion next.",
     scene: "load-map",
     exampleCardTitle: "Household errands"
   },
   {
     id: "capacity-shift",
-    title: "Adjust for capacity",
+    title: "Fair shifts with capacity",
     concept:
-      "Fairness is dynamic because life is dynamic. Work seasons, health, travel, children, recovery, stress, and emotional bandwidth change what is workable. A fair plan can ask for a different balance this month than last month.",
+      "Fairness is dynamic because life changes. Work seasons, health, travel, caregiving, recovery, stress, and emotional bandwidth all change what is workable.",
     action:
-      "When capacity changes, rebalance the active set and set a review date instead of silently keeping the old plan.",
+      "When capacity changes, rebalance and set a review date.",
     scene: "capacity-shift",
     exampleCardTitle: "After-school pickup"
   },
   {
     id: "check-in-signal",
-    title: "Catch signals in a Check-in",
+    title: "Review while signals are small",
     concept:
-      "Small signals are easier to handle before they harden. A Check-in gives blockers, appreciation, due reviews, unclear standards, and decision points a neutral place to become choices, acknowledgement, deferral, or a next review date.",
+      "Small signals are easier to handle before they harden. Blockers, appreciation, unclear standards, missed reviews, and new capacity limits all need a place to be noticed.",
     action:
-      "Bring one specific signal to a Check-in while it is still small enough to solve calmly.",
+      "Bring one specific signal while it is still easy to discuss.",
     scene: "check-in-signal",
     exampleCardTitle: "Bedtime routine"
   },
   {
     id: "repair-loop",
-    title: "Repair the miss",
+    title: "Repair misses plainly",
     concept:
-      "Missed standards and defensive moments will happen. Repair is part of the system, not proof that the plan failed. A useful repair names what missed, what context changed, what support is needed, and what will be different next time.",
+      "Missed standards and defensive moments will happen. Repair is part of the system. A useful repair names what missed, what changed, what support is needed, and what will be different next time.",
     action:
-      "If a topic feels unsafe, coercive, or likely to escalate, keep notes private for safety, pause the workflow, and choose outside support.",
+      "If a topic feels unsafe or coercive, do not use a household workflow as the fix.",
     scene: "repair-loop",
     exampleCardTitle: "Bill payment"
   },
   {
     id: "next-move",
-    title: "Turn the story into one next move",
+    title: "Try one real card",
     concept:
-      "The course is meant to make the first conversation easier. Start small: find one real responsibility, make the invisible parts visible, choose an owner, define done well enough, and set a review point before the next busy week.",
+      "After the concepts, start small. Pick one real responsibility, name its hidden work, choose an owner, write done well enough, and set a review point.",
     action:
-      "Use the learning path below to move from the story to the Library, Load Map, and Check-ins.",
+      "Use the short path below when you are ready to put it into practice.",
     scene: "next-move",
     exampleCardTitle: "One real card",
     featurePath: [
       {
-        description: "Find the responsibilities that match your household.",
+        description: "Choose one responsibility to practice with.",
         href: "/app/library",
         label: "Browse the Library"
       },
       {
-        description: "Assign owners, preserve context, and review the load.",
+        description: "Assign ownership and review the pattern.",
         href: "/app/load-map",
         label: "Open the Load Map"
       },
       {
-        description: "Turn signals into decisions, deferrals, and repair.",
+        description: "Schedule, confirm, and keep simple notes.",
         href: "/app/check-ins/new",
-        label: "Run a Check-in"
+        label: "Schedule a Check-in"
       }
     ]
   }

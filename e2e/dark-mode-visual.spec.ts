@@ -5,12 +5,12 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 const screenshotDir = "test-results/dark-mode-polish";
 
 const appPages = [
-  { name: "home", path: "/app/home", heading: "Learn Fairplay in layers" },
-  { name: "library", path: "/app/library", heading: "Source deck" },
-  { name: "load-map", path: "/app/load-map", heading: "Responsibility overview" },
-  { name: "check-ins", path: "/app/check-ins/new", heading: "New check-in" },
-  { name: "crash-course", path: "/app/crash-course", heading: "Start with what no one sees" },
-  { name: "settings", path: "/app/settings", heading: "Household settings" }
+  { name: "home", path: "/app/home", heading: "Learn Fairplay" },
+  { name: "library", path: "/app/library", heading: "Library" },
+  { name: "load-map", path: "/app/load-map", heading: "Responsibility board" },
+  { name: "check-ins", path: "/app/check-ins/new", heading: "Schedule check-in" },
+  { name: "crash-course", path: "/app/crash-course", heading: "Concepts first. Tools after." },
+  { name: "settings", path: "/app/settings", heading: "Settings" }
 ] as const;
 
 function uniqueHouseholdSlug() {
@@ -306,8 +306,8 @@ test.describe("dark mode visual QA", () => {
 
       if (appPage.name === "load-map") {
         await expectUnobscured(
-          page.getByText("Owner mix").first(),
-          "load map owner mix summary"
+          page.getByTestId("load-map-signal-owner"),
+          "load map owners summary"
         );
       }
 

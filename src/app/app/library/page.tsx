@@ -52,7 +52,7 @@ export default async function LibraryPage() {
 
   return (
     <section className="grid gap-5">
-      <PageHeader eyebrow="Card library" title="Source deck" />
+      <PageHeader title="Library" />
       <CardLibrary
         aiDrafts={aiDrafts}
         onCreateFromTemplate={createFromTemplate}

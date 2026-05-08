@@ -1,16 +1,16 @@
 # Fairplay Status
 
-Last updated: 2026-05-07
+Last updated: 2026-05-08
 
 ## Current Phase
 
-Learn this feature onboarding fixes have landed through focused implementation PRs. Documentation and final verification are in progress.
+App UX polish is in the final Crash Course and responsive QA branch. Foundation/background/copy, Load Map dashboard polish, Library/card practice polish, and lightweight Check-ins have already merged through ordered PRs.
 
 ## Branch And Working Tree
 
-- Current branch during this docs pass: `codex/onboarding-docs-qa`.
-- Remote tracking before docs edits: local `main` matched `origin/main`.
-- Latest visible implementation merge before docs edits: `471f4a7` merge of `codex/onboarding-click-guidance`.
+- Current branch during this pass: `codex/crash-course-concepts-final-qa`.
+- Local `main` matched `origin/main` at `8c13ae9` before this final branch.
+- Merged UX polish PRs so far: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins.
 
 ## What Exists
 
@@ -22,10 +22,12 @@ Learn this feature onboarding fixes have landed through focused implementation P
 
 ## Recent Product State
 
-- Learn this feature guides across Load Map, Library, Check-ins, and Settings now use viewport-aware card positioning, body-level guide portaling, clearer flow-specific copy, temporary dummy workflows, cleanup on guide exit, and inline next-action guidance.
-- Settings Learn this feature starts the Settings guide directly.
-- Check-ins dummy onboarding clearly previews a temporary agenda and walks through the next dummy action.
-- Library dummy onboarding generates a temporary preview from the learner-entered request through `/api/ai-card-drafts/onboarding-preview` without persisting a real card.
+- Global generated backgrounds are stronger and paired with theme-aware washes so foreground surfaces remain readable.
+- Home and Settings copy is shorter and uses the shared polished background treatment.
+- Load Map has a redesigned dashboard/filter area while preserving the lane board and persisted lane keys.
+- Library cards clamp/wrap long copy, the move action uses one compact destination control, and the practice workflow uses plain field labels.
+- Check-ins is now a lightweight schedule, confirm, and optional notes flow; agenda/decision concepts are no longer visible in the UI.
+- Crash Course has been rewritten as concise concept-first storyboard frames with the app learning path only at the end.
 - Product-surface cleanup retired the Radar page/component from the app navigation surface.
 - This cleanup pass removed the Radar backend/API/model/assets from the active product surface.
 - AI card generation was restored to produce generated cover art for successful text-input drafts.
@@ -52,7 +54,7 @@ Result: requested files are present and non-empty. The trailing-whitespace scan 
 
 ## Known Blockers
 
-- Vercel preview for PR #28 failed before build because `prisma migrate deploy` could not reach `db.prisma.io:5432` (`P1001`). Local tests, typecheck, and lint passed; confirm deployment DB reachability before release.
+- Vercel preview for PR #28 historically failed before build because `prisma migrate deploy` could not reach `db.prisma.io:5432` (`P1001`). Confirm deployment DB reachability before release if that infrastructure has not changed.
 - Live DB-backed verification has historically been blocked when Docker/Postgres is unavailable. Run the DB-backed repository tests and persisted browser flows in a Postgres-capable environment before release.
 - `.env.local` exists locally and is ignored; it was not read.
 - `References/` exists locally and is ignored; it was not read.
@@ -69,6 +71,8 @@ Result: requested files are present and non-empty. The trailing-whitespace scan 
 - Reran `npm run test -- --run`; all 85 test files and 475 tests passed, including `src/server/repositories/persistence.integration.test.ts`.
 - Accepted the board lane recommendation: keep persisted lane keys stable and use UI labels; any rename should be a separate compatibility migration.
 - For the crash-course storyboard refresh, ran `npm run assets:generate-ui -- --skip-existing --delay-ms=0`, `npm run lint`, `npm run typecheck`, `npm test -- --run` with 85 test files and 481 tests passing, `npm run build`, and the targeted Playwright responsive visual check for app pages.
+- For the current Crash Course concept polish, `npm test -- src/components/crash-course/crash-course-flow.test.tsx src/components/crash-course/crash-course-page-client.test.tsx --run` passed with 2 files and 12 tests.
+- Final branch verification passed: `npm run lint`, `npm run typecheck`, `npm test -- --run` (86 files, 498 tests), `npm run prisma:validate`, `npm run build`, `npx playwright test e2e/corrective-responsive-visual.spec.ts --project=chromium`, `npx playwright test e2e/dark-mode-visual.spec.ts e2e/guided-learning.spec.ts --project=chromium` after stale QA assertions were updated, and `npx playwright test e2e/guided-learning.spec.ts --project=chromium`.
 
 ## Suggested Cleanup Plan
 

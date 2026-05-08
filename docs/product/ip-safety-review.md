@@ -117,7 +117,7 @@ Future safety copy should support patterns such as:
 - Keep private drafts visually distinct from shared records at all times.
 - Require confirmation before publishing a private note to a partner-visible or shared household space.
 - Let users save, edit, archive, pause, and mark responsibilities not relevant without framing scope reduction as failure.
-- Make check-ins short, opt-in, and skippable. Users should be able to defer a tense topic.
+- Make check-ins short, opt-in, and skippable. Users should be able to pause a tense topic and keep private notes private.
 - Include appreciation or acknowledgement affordances only if written originally and kept non-performative.
 - Avoid pushy partner-invite flows. Invites should frame participation as optional shared planning, not accusation.
 - Future versions must define export, deletion, household exit, access revocation, and retention before storing real user data at scale.

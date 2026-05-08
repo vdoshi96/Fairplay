@@ -142,7 +142,7 @@ V1 should not ship a full starter library. This entity exists to support a tiny 
 
 ## Check-In and History Entities
 
-Radar was retired before this version of the active model. Check-ins now stand on responsibility-linked and custom agenda items rather than a separate Radar item model.
+Radar was retired before this version of the active model. The visible Check-ins product is now a lightweight schedule, confirmation, and notes record. Legacy item and decision tables remain in the schema for compatibility unless a later migration proves they can be removed safely.
 
 ### `CheckIn`
 
@@ -221,7 +221,7 @@ Snapshots are aggregate household summaries. They must not produce a "bad partne
 - `Cadence`: `daily`, `weekly`, `monthly`, `seasonal`, `event_based`, `as_needed`, `one_time`
 - `HiddenEffortKey`: `noticing`, `planning`, `doing`, `follow_through`, `emotional_attention`
 - `CheckInState`: `draft`, `scheduled`, `active`, `completed`, `skipped`
-- `CheckInItemState`: `queued`, `discussed`, `deferred`, `skipped`
+- `CheckInItemState`: `queued`, `discussed`, `deferred`, `skipped` (compatibility only in the current UI)
 - `DecisionType`: `assign_owner`, `change_role`, `change_standard`, `change_cadence`, `pause`, `mark_not_relevant`, `archive`, `schedule_review`, `custom_note`
 - `ResponsibilityBoardLane`: `cards_of_concern`, `player_1`, `player_2`, `kid_split`, `not_in_play`, `trimmed`
 - `SourceReviewStatus`: `not_reviewed`, `approved_original`, `blocked`, `needs_review`

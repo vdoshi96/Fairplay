@@ -1,5 +1,25 @@
 # Fairplay Context Log
 
+## 2026-05-08 - Ordered App UX Polish
+
+Requested by the user: reduce text overload, strengthen backgrounds, simplify workflows, polish Home/Load Map/Library/Check-ins/Crash Course/Settings, and merge the fixes through ordered PRs.
+
+Actions completed so far:
+
+- Merged UX foundation/background/copy, Load Map dashboard polish, Library/card practice polish, and lightweight Check-ins through PRs #32-#35.
+- Strengthened generated backgrounds and theme-aware washes across the app shell and page hero surfaces.
+- Shortened Home, Settings, Load Map, Library, Check-ins, card practice, and feature guide copy.
+- Replaced the visible Check-ins workflow with scheduling, confirming that the check-in happened, and optional notes/minutes.
+- Reworked Library card containment and replaced the six-tile move action with a compact destination control.
+- Rewrote the Crash Course into concise concept-first storyboard frames with the app learning path only at the end.
+- Updated current memory/wiki/product docs to reflect lightweight Check-ins and the final Crash Course polish.
+
+Verification so far:
+
+- Focused unit/component suites passed on the completed branches.
+- Current Crash Course focused suite passed: 2 files, 12 tests.
+- Full lint, typecheck, Vitest, build, and responsive browser QA are still part of the final merge pass.
+
 ## 2026-05-07 - Learn This Feature Onboarding Fixes
 
 Requested by the user: fix the Learn this feature onboarding workflows across Load Map, Library, Check-ins, and Settings using controller/worker subagents and focused branches.

@@ -1,10 +1,10 @@
 # Fairplay Wiki
 
-Last updated: 2026-05-07
+Last updated: 2026-05-08
 
 ## System Summary
 
-Fairplay is a Next.js App Router household planning app with Prisma/Postgres persistence, server-managed household sessions, persona-aware app state, a mobile-first app shell, a responsibility Load Map, Library/AI draft generation, guided check-ins, learning flows, settings, and Little Alex helper preferences.
+Fairplay is a Next.js App Router household planning app with Prisma/Postgres persistence, server-managed household sessions, persona-aware app state, a mobile-first app shell, a responsibility Load Map, Library/AI draft generation, lightweight check-in records, learning flows, settings, and Little Alex helper preferences.
 
 ## Wiki Pages
 
@@ -17,7 +17,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 - Home and learning: Home learning hub, crash course, feature guides, persistent welcome.
 - Load Map and responsibilities: board lanes, filters, drag/drop, assignment/status/visibility/placement routes, detail editor.
 - Library: template cards, AI draft tracker, generated cover retrieval, put-in-play flow.
-- Check-ins: agenda preview, create/resume/complete, item updates, decisions, summaries.
+- Check-ins: schedule a check-in, confirm it happened, and save optional minutes/notes.
 - Settings: theme mode, persona/Little Alex settings, logout, welcome replay, crash-course restart.
 
 ## Important Context Links
@@ -30,7 +30,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 - `../product/visual-system.md`: visual and motion direction.
 - `../deployment/local-development.md`: local DB and verification workflow.
 - `../agents/manifest.md`: historical agent task registry.
-- `../implementation/2026-05-07-learn-feature-onboarding.md`: current Learn this feature onboarding fixes and QA notes.
+- `../implementation/2026-05-08-crash-course-concept-polish-final-qa.md`: final UX polish notes, Crash Course decisions, and QA status.
 
 ## Current Cleanup Priority
 

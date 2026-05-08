@@ -98,9 +98,9 @@ Use an 8px spacing grid with compact mobile-first density:
 
 ### Check-Ins
 
-- Use a stepper with calm progress, factual summary blocks, and clear defer/skip affordances.
-- Celebrations should be small and warm, like a few floating shapes or sparkles near the completed summary.
-- Appreciation moments are optional and should not look performative or mandatory.
+- Use one compact schedule card, one confirmation state, and one optional notes area.
+- Keep the page practical and quiet; avoid agenda builders, conversation scripts, or step-heavy ceremony.
+- Completed states should feel recorded, not celebrated as a performance.
 
 ### PWA Icon
 
