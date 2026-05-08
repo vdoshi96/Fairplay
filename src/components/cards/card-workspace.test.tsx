@@ -79,6 +79,42 @@ describe("CardWorkspace", () => {
     ).toBeVisible();
   });
 
+  it("keeps the active card available while its move is still pending", async () => {
+    let resolveMove: (() => void) | undefined;
+    const onDistribute = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveMove = resolve;
+        })
+    );
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[card()]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Alex" }));
+
+    await waitFor(() => expect(onDistribute).toHaveBeenCalled());
+    expect(screen.getByRole("button", { name: "School lunch" })).toBeVisible();
+    expect(screen.getByText("Moving...")).toBeVisible();
+    expect(
+      screen.queryByText("No more cards to distribute. Generate more cards when ready.")
+    ).not.toBeInTheDocument();
+
+    resolveMove?.();
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("No more cards to distribute. Generate more cards when ready.")
+      ).toBeVisible()
+    );
+  });
+
   it("shows all available distribution cards and advances after a move", async () => {
     const onDistribute = vi.fn().mockResolvedValue(undefined);
 

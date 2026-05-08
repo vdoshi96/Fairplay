@@ -159,23 +159,18 @@ function DistributeView({
     const card = topCard;
     setPendingId(card.id);
     setError(null);
-    setLastAction(`${card.title} -> ${CARD_BUCKET_LABELS[bucket]}`);
-    setRemovedIds((current) => new Set(current).add(card.id));
-    setSelectedId(null);
     setDrag(null);
-    setFlippedId(null);
 
     try {
       await onDistribute?.({
         bucket,
         responsibilityId: card.id
       });
+      setLastAction(`${card.title} -> ${CARD_BUCKET_LABELS[bucket]}`);
+      setRemovedIds((current) => new Set(current).add(card.id));
+      setSelectedId((current) => (current === card.id ? null : current));
+      setFlippedId((current) => (current === card.id ? null : current));
     } catch {
-      setRemovedIds((current) => {
-        const next = new Set(current);
-        next.delete(card.id);
-        return next;
-      });
       setError("That card could not be moved. Try again.");
     } finally {
       setPendingId(null);
