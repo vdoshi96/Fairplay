@@ -3,11 +3,7 @@ import type { ReactNode } from "react";
 
 import { AppShell } from "@/components/app-shell/app-shell";
 import { getAppSessionView } from "@/components/app-shell/session-view";
-import { PersistentWelcome } from "@/components/welcome/persistent-welcome";
-import {
-  getLittleAlexPreferences,
-  getOnboardingPreferences
-} from "@/server/repositories/preferences";
+import { getLittleAlexPreferences } from "@/server/repositories/preferences";
 
 export default async function AuthenticatedAppLayout({
   children
@@ -24,10 +20,9 @@ export default async function AuthenticatedAppLayout({
     redirect("/choose-persona");
   }
 
-  const [littleAlexPreferences, onboardingPreferences] = await Promise.all([
-    getLittleAlexPreferences(sessionView.selectedPersona.id),
-    getOnboardingPreferences(sessionView.selectedPersona.id)
-  ]);
+  const littleAlexPreferences = await getLittleAlexPreferences(
+    sessionView.selectedPersona.id
+  );
 
   return (
     <AppShell
@@ -35,9 +30,6 @@ export default async function AuthenticatedAppLayout({
       littleAlexPreferences={littleAlexPreferences}
       selectedPersona={sessionView.selectedPersona}
     >
-      <PersistentWelcome
-        dismissed={onboardingPreferences.welcomeDismissedAt !== null}
-      />
       {children}
     </AppShell>
   );

@@ -324,27 +324,13 @@ describe("settings panel", () => {
     expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it("shows the persistent welcome again through the replay API", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({})
-    });
-    vi.stubGlobal("fetch", fetchMock);
+  it("does not offer the retired welcome banner replay action", () => {
     renderSettings();
 
-    fireEvent.click(screen.getByRole("button", { name: "Show welcome again" }));
-
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/preferences/welcome/replay",
-      expect.objectContaining({
-        method: "POST"
-      })
-    );
-    expect(routerRefresh).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Welcome will show again across the app."
-    );
+    expect(
+      screen.queryByRole("button", { name: "Show welcome again" })
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Restart Theory or open the card deck.")).toBeVisible();
   });
 
   it("marks settings guide targets and links back to replay learning", () => {
@@ -406,12 +392,6 @@ describe("settings panel", () => {
       target: { value: "dark" }
     });
     expect(screen.getByText("Dummy appearance mode changed to Dark.")).toBeVisible();
-    expect(
-      screen.getByText("Next required click: Check dummy welcome replay.")
-    ).toBeVisible();
-
-    fireEvent.click(screen.getByRole("button", { name: "Check dummy welcome replay" }));
-    expect(screen.getByText("Dummy welcome replay checked.")).toBeVisible();
     expect(
       screen.getByText("Next required click: Open dummy persona confirmation.")
     ).toBeVisible();
@@ -483,7 +463,6 @@ describe("settings panel", () => {
     fireEvent.change(screen.getByLabelText("Dummy appearance mode"), {
       target: { value: "dark" }
     });
-    fireEvent.click(screen.getByRole("button", { name: "Check dummy welcome replay" }));
     fireEvent.click(
       screen.getByRole("button", { name: "Open dummy persona confirmation" })
     );

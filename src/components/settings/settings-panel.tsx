@@ -82,7 +82,7 @@ export function SettingsPanel({
   const [loggingOut, setLoggingOut] = useState(false);
   const [savingLittleAlex, setSavingLittleAlex] = useState(false);
   const [preferenceAction, setPreferenceAction] = useState<
-    "restart-course" | "show-welcome" | null
+    "restart-course" | null
   >(null);
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [dummyPersonaConfirmOpen, setDummyPersonaConfirmOpen] = useState(false);
@@ -169,29 +169,6 @@ export function SettingsPanel({
       router.refresh();
     } catch {
       setError("Unable to restart Theory right now. Please try again.");
-    } finally {
-      setPreferenceAction(null);
-    }
-  }
-
-  async function showWelcomeAgain() {
-    setPreferenceAction("show-welcome");
-    setActionStatus(null);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/preferences/welcome/replay", {
-        method: "POST"
-      });
-
-      if (!response.ok) {
-        throw new Error("show-welcome");
-      }
-
-      setActionStatus("Welcome will show again across the app.");
-      router.refresh();
-    } catch {
-      setError("Unable to show the welcome again right now. Please try again.");
     } finally {
       setPreferenceAction(null);
     }
@@ -549,12 +526,12 @@ export function SettingsPanel({
             Guided start
           </h2>
           <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
-            Replay welcome or restart Theory.
+            Restart Theory or open the card deck.
           </p>
           <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
             Feature guides stay on their pages.
           </p>
-          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
             <button
               className="min-h-11 rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-70"
               disabled={preferenceAction !== null}
@@ -564,16 +541,6 @@ export function SettingsPanel({
               {preferenceAction === "restart-course"
                 ? "Restarting..."
                 : "Restart Theory"}
-            </button>
-            <button
-              className="min-h-11 rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-70"
-              disabled={preferenceAction !== null}
-              onClick={() => void showWelcomeAgain()}
-              type="button"
-            >
-              {preferenceAction === "show-welcome"
-                ? "Showing welcome..."
-                : "Show welcome again"}
             </button>
             <Link
               className="flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-center text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
@@ -698,7 +665,6 @@ function SettingsPracticeWorkflow({
     "system"
   );
   const [appearanceChanged, setAppearanceChanged] = useState(false);
-  const [welcomeChecked, setWelcomeChecked] = useState(false);
   const [personaConfirmOpened, setPersonaConfirmOpened] = useState(false);
   const [learningHubLocated, setLearningHubLocated] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -750,23 +716,8 @@ function SettingsPracticeWorkflow({
       </PracticeActionGuidance>
       <div className="flex flex-wrap items-start gap-2">
         <PracticeActionGuidance
-          actionLabel="Check dummy welcome replay"
-          active={appearanceChanged && !welcomeChecked}
-        >
-          <button
-            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-            onClick={() => {
-              setWelcomeChecked(true);
-              mark("settings-welcome-replay", "Dummy welcome replay checked.");
-            }}
-            type="button"
-          >
-            Check dummy welcome replay
-          </button>
-        </PracticeActionGuidance>
-        <PracticeActionGuidance
           actionLabel="Open dummy persona confirmation"
-          active={welcomeChecked && !personaConfirmOpened}
+          active={appearanceChanged && !personaConfirmOpened}
         >
           <button
             className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"

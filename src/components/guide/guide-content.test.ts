@@ -33,7 +33,6 @@ describe("feature guide content", () => {
       ],
       settings: [
         "settings-appearance-mode",
-        "settings-welcome-replay",
         "settings-persona-confirm",
         "settings-learning-hub"
       ]
@@ -111,12 +110,13 @@ describe("feature guide content", () => {
     expect(practice?.prompt).toMatch(/notes/i);
   });
 
-  it("keeps settings copy aligned with the learning hub", () => {
+  it("keeps settings copy aligned with the current card deck entry point", () => {
     const guidedStart = FEATURE_GUIDES.settings.steps.find(
       (step) => step.id === "guided-start"
     );
 
-    expect(guidedStart?.body).toMatch(/learning hub/i);
+    expect(guidedStart?.body).toMatch(/card deck/i);
     expect(guidedStart?.body).not.toMatch(/app guide/i);
+    expect(guidedStart?.body).not.toMatch(/welcome/i);
   });
 });
