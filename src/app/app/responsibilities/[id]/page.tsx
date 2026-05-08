@@ -1,14 +1,16 @@
 import { headers } from "next/headers";
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import { NextRequest } from "next/server";
 
 import { getAppSessionView } from "@/components/app-shell/session-view";
 import { CardDetailSheet } from "@/components/cards/card-detail-sheet";
-import { ResponsibilityEditor } from "@/components/responsibilities/responsibility-editor";
+import type { CardDistributionBucket } from "@/components/cards/card-state";
 import { ResponsibilityIdSchema } from "@/domain/ids";
 import { getCurrentSession } from "@/server/auth/current-session";
 import { ResponsibilityServiceError, responsibilityService } from "@/server/responsibilities/service";
+import { distributeResponsibilityCard } from "@/server/responsibilities/card-distribution";
 import { detailCardFor } from "./detail-card";
 
 type ResponsibilityDetailPageProps = {
@@ -25,6 +27,7 @@ export default async function ResponsibilityDetailPage({
   if (!parsedId.success) {
     notFound();
   }
+  const responsibilityId = parsedId.data;
 
   const [sessionView, session] = await Promise.all([
     getAppSessionView(),
@@ -39,30 +42,50 @@ export default async function ResponsibilityDetailPage({
     redirect("/choose-persona");
   }
 
+  async function moveCard(bucket: CardDistributionBucket) {
+    "use server";
+
+    const actionSession = await getPageSession();
+
+    if (!actionSession) {
+      redirect("/login");
+    }
+
+    if (!actionSession.selectedPersonaId) {
+      redirect("/choose-persona");
+    }
+
+    await distributeResponsibilityCard(actionSession, {
+      bucket,
+      responsibilityId
+    });
+    revalidatePath(`/app/responsibilities/${responsibilityId}`);
+    revalidatePath("/app/your-cards");
+    revalidatePath("/app/distribute");
+    revalidatePath("/app/board");
+    redirect("/app/board");
+  }
+
   try {
-    const responsibility = await responsibilityService.get(session, parsedId.data);
+    const responsibility = await responsibilityService.get(session, responsibilityId);
 
     return (
       <div className="grid gap-6">
         <nav aria-label="Responsibility navigation" className="flex flex-wrap gap-2">
           <Link
             className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 py-3 text-[14px] font-bold text-fp-ink"
-            href="/app/library"
+            href="/app/your-cards"
           >
-            Back to library
+            Back to Your Cards
           </Link>
           <Link
             className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 py-3 text-[14px] font-bold text-fp-ink"
-            href="/app/load-map"
+            href="/app/board"
           >
-            Back to Load Map
+            Back to Board
           </Link>
         </nav>
-        <CardDetailSheet card={detailCardFor(responsibility)} />
-        <ResponsibilityEditor
-          initialResponsibility={responsibility}
-          personas={sessionView.personas}
-        />
+        <CardDetailSheet card={detailCardFor(responsibility)} onMove={moveCard} />
       </div>
     );
   } catch (error) {

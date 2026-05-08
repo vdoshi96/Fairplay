@@ -96,7 +96,7 @@ describe("CardLibrary", () => {
     expect(screen.getByText("Laundry reset")).toBeVisible();
   });
 
-  it("searches source cards and starts a household card from a template", async () => {
+  it("searches cards, flips one for purpose, and assigns it to a lane", async () => {
     const onCreateFromTemplate = vi.fn();
     render(
       <CardLibrary
@@ -122,7 +122,7 @@ describe("CardLibrary", () => {
       "src",
       "/assets/fairplay/cards/auto.png"
     );
-    expect(screen.getByRole("button", { name: /put Auto in play/i })).toHaveAttribute(
+    expect(within(autoCard).getByRole("button", { name: "Alex" })).toHaveAttribute(
       "data-guide-id",
       "library-put-in-play"
     );
@@ -131,15 +131,20 @@ describe("CardLibrary", () => {
     expect(screen.queryByText("Homework")).not.toBeInTheDocument();
     expect(screen.getByText("Laundry reset")).toBeVisible();
 
-    await userEvent.click(screen.getByRole("button", { name: /put Auto in play/i }));
+    await userEvent.click(within(autoCard).getByRole("button", { name: /flip auto/i }));
+    expect(within(autoCard).getByText("What is this card for?")).toBeVisible();
+    expect(within(autoCard).getByText("Fogging E-Standards")).toBeVisible();
+    expect(within(autoCard).getByText("Choose lane")).toBeVisible();
 
-    expect(onCreateFromTemplate).toHaveBeenCalledWith("tpl_auto");
+    await userEvent.click(within(autoCard).getByRole("button", { name: "Alex" }));
+
+    expect(onCreateFromTemplate).toHaveBeenCalledWith("tpl_auto", "alex");
   });
 
   it("filters by source label while preserving stable card presentation", async () => {
     render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
 
-    expect(screen.getByLabelText("Source labels")).toHaveAttribute(
+    expect(screen.getByLabelText("Card labels")).toHaveAttribute(
       "data-guide-id",
       "library-labels"
     );
@@ -150,7 +155,7 @@ describe("CardLibrary", () => {
     expect(screen.queryByText("Auto")).not.toBeInTheDocument();
     expect(screen.getByText("Laundry reset")).toBeVisible();
     expect(screen.getByRole("article", { name: /homework/i })).toHaveClass(
-      "min-h-[360px]",
+      "min-h-[430px]",
       "min-w-0",
       "overflow-hidden"
     );
@@ -176,16 +181,14 @@ describe("CardLibrary", () => {
 
     const cardArticle = screen.getByRole("article", { name: longTitle });
     const heading = within(cardArticle).getByRole("heading", { name: longTitle });
-    const action = within(cardArticle).getByRole("button", {
-      name: `Put ${longTitle} in play`
-    });
+    const action = within(cardArticle).getByRole("button", { name: "Alex" });
 
     expect(cardArticle).toHaveClass("min-w-0", "overflow-hidden");
     expect(heading).toHaveClass("line-clamp-2", "[overflow-wrap:anywhere]");
     expect(
       within(cardArticle).getByText(/deliberately long summary/i)
     ).toHaveClass("line-clamp-3", "[overflow-wrap:anywhere]");
-    expect(action).toHaveTextContent("Put in play");
+    expect(action).toHaveTextContent("Alex");
   });
 
   it("renders duplicate personal seed cards with Alex and Max display labels", () => {
@@ -339,14 +342,14 @@ describe("CardLibrary", () => {
     await userEvent.click(screen.getByRole("button", { name: "Save edits" }));
     expect(screen.getByText("Practice edits saved.")).toBeVisible();
     expect(
-      screen.getByText("Next required click: Preview in Load Map.")
+      screen.getByText("Next required click: Preview on Board.")
     ).toBeVisible();
 
-    await userEvent.click(screen.getByRole("button", { name: "Preview in Load Map" }));
+    await userEvent.click(screen.getByRole("button", { name: "Preview on Board" }));
     expect(
-      screen.getByText("Practice card is ready for Load Map. No real card was created.")
+      screen.getByText("Practice card is ready for Board. No real card was created.")
     ).toBeVisible();
-    expect(screen.getByText("Load Map preview")).toBeVisible();
+    expect(screen.getByText("Board preview")).toBeVisible();
     expect(screen.getByText("Practice complete.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
     expect(onCreateFromTemplate).not.toHaveBeenCalled();
@@ -361,9 +364,9 @@ describe("CardLibrary", () => {
     await userEvent.click(screen.getByRole("button", { name: "Clear practice" }));
     expect(screen.queryByRole("region", { name: "Practice workspace" }))
       .not.toBeInTheDocument();
-    expect(screen.queryByText("Load Map preview")).not.toBeInTheDocument();
+    expect(screen.queryByText("Board preview")).not.toBeInTheDocument();
     expect(
-      screen.queryByText("Next required click: Preview in Load Map.")
+      screen.queryByText("Next required click: Preview on Board.")
     ).not.toBeInTheDocument();
   });
 
@@ -428,7 +431,7 @@ describe("CardLibrary", () => {
     expect(await screen.findByText("Lunch kits")).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "Review draft" }));
     await userEvent.click(screen.getByRole("button", { name: "Save edits" }));
-    await userEvent.click(screen.getByRole("button", { name: "Preview in Load Map" }));
+    await userEvent.click(screen.getByRole("button", { name: "Preview on Board" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));

@@ -1,0 +1,91 @@
+import { describe, expect, it } from "vitest";
+
+import type { ResponsibilitySummary } from "@/contracts/responsibilities";
+import {
+  bucketForLane,
+  getCardsForPersona,
+  getDistributableCards,
+  groupCardsByBucket,
+  laneForBucket
+} from "./card-state";
+
+function card(
+  overrides: Partial<ResponsibilitySummary> = {}
+): ResponsibilitySummary {
+  return {
+    id: `550e8400-e29b-41d4-a716-44665544${String(
+      Math.floor(Math.random() * 9999)
+    ).padStart(4, "0")}`,
+    title: "Kitchen reset",
+    areaKeys: ["home"],
+    hiddenEffortKeys: ["planning"],
+    cadence: "daily",
+    relevantDays: [],
+    status: "active",
+    visibility: "shared_household",
+    boardLane: "cards_of_concern",
+    boardSortOrder: 0,
+    currentAssignments: [],
+    nextReviewAt: null,
+    ...overrides
+  };
+}
+
+describe("card state adapter", () => {
+  it("maps stable persisted lanes to product card buckets", () => {
+    expect(bucketForLane("cards_of_concern")).toBe("unassigned");
+    expect(bucketForLane("kid_split")).toBe("unassigned");
+    expect(bucketForLane("player_1")).toBe("alex");
+    expect(bucketForLane("player_2")).toBe("max");
+    expect(bucketForLane("not_in_play")).toBe("savedForLater");
+    expect(bucketForLane("trimmed")).toBe("notApplicable");
+
+    expect(laneForBucket("unassigned")).toBe("cards_of_concern");
+    expect(laneForBucket("alex")).toBe("player_1");
+    expect(laneForBucket("max")).toBe("player_2");
+    expect(laneForBucket("savedForLater")).toBe("not_in_play");
+    expect(laneForBucket("notApplicable")).toBe("trimmed");
+  });
+
+  it("keeps only unassigned cards in the distribution deck", () => {
+    const deck = getDistributableCards([
+      card({ title: "One", boardLane: "cards_of_concern", boardSortOrder: 2 }),
+      card({ title: "Two", boardLane: "player_1" }),
+      card({ title: "Three", boardLane: "kid_split", boardSortOrder: 1 }),
+      card({ title: "Four", boardLane: "not_in_play" })
+    ]);
+
+    expect(deck.map((item) => item.title)).toEqual(["Three", "One"]);
+  });
+
+  it("filters the current persona's assigned cards by bucket", () => {
+    const cards = [
+      card({ title: "Alex card", boardLane: "player_1" }),
+      card({ title: "Max card", boardLane: "player_2" }),
+      card({ title: "Later card", boardLane: "not_in_play" })
+    ];
+
+    expect(getCardsForPersona(cards, "alex").map((item) => item.title)).toEqual([
+      "Alex card"
+    ]);
+    expect(getCardsForPersona(cards, "max").map((item) => item.title)).toEqual([
+      "Max card"
+    ]);
+  });
+
+  it("groups all cards into polished board buckets", () => {
+    const groups = groupCardsByBucket([
+      card({ title: "A", boardLane: "player_1" }),
+      card({ title: "B", boardLane: "player_2" }),
+      card({ title: "C", boardLane: "not_in_play" }),
+      card({ title: "D", boardLane: "trimmed" }),
+      card({ title: "E", boardLane: "cards_of_concern" })
+    ]);
+
+    expect(groups.alex).toHaveLength(1);
+    expect(groups.max).toHaveLength(1);
+    expect(groups.savedForLater).toHaveLength(1);
+    expect(groups.notApplicable).toHaveLength(1);
+    expect(groups.unassigned).toHaveLength(1);
+  });
+});

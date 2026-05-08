@@ -2,7 +2,6 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import AppHomePage from "@/app/app/home/page";
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
 import type { LittleAlexPreferences } from "@/contracts/preferences";
@@ -13,7 +12,7 @@ import { AppShell } from "./app-shell";
 
 const routerPush = vi.hoisted(() => vi.fn());
 const routerReplace = vi.hoisted(() => vi.fn());
-const pathname = vi.hoisted(() => vi.fn(() => "/app/load-map"));
+const pathname = vi.hoisted(() => vi.fn(() => "/app/distribute"));
 
 vi.mock("next/navigation", () => ({
   usePathname: pathname,
@@ -45,8 +44,6 @@ const littleAlexPreferences: LittleAlexPreferences = {
   updatedAt: "2026-05-06T12:00:00.000Z"
 };
 
-const retiredGuideAnchor = ["app", "guide", "101"].join("-");
-const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
 
 function renderProtectedUi(children: ReactNode) {
@@ -81,7 +78,7 @@ function stubReducedMotion(matches: boolean) {
 
 describe("protected app UI", () => {
   afterEach(() => {
-    pathname.mockReturnValue("/app/load-map");
+    pathname.mockReturnValue("/app/distribute");
     routerPush.mockReset();
     routerReplace.mockReset();
     vi.unstubAllGlobals();
@@ -90,121 +87,78 @@ describe("protected app UI", () => {
     document.documentElement.removeAttribute("data-theme-mode");
   });
 
-  it("renders the app shell around the real home page", () => {
-    pathname.mockReturnValue("/app/home");
-
-    const { container } = renderProtectedUi(<AppHomePage />);
-
-    expect(
-      screen.getAllByRole("link", { name: /River Home Fairplay/i })[0]
-    ).toHaveAttribute("href", "/app/home");
-    expect(screen.getAllByRole("link", { name: "Alex" })[0]).toHaveAttribute(
-      "href",
-      "/app/settings"
+  it("renders the card-first app shell without the old homepage", () => {
+    const { container } = renderProtectedUi(
+      <section>
+        <h1>Swipe the next card</h1>
+      </section>
     );
-    expect(screen.getByRole("heading", { name: "Learn Fairplay" })).toBeVisible();
+
+    expect(screen.getByRole("heading", { name: "Swipe the next card" }))
+      .toBeVisible();
+    expect(
+      screen.getAllByRole("link", { name: /River Home/i })[0]
+    ).toHaveAttribute("href", "/app/your-cards");
+    expect(screen.queryByRole("link", { name: /^Home$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Learn Fairplay" }))
+      .not.toBeInTheDocument();
     expect(screen.getByTestId("page-shell")).toHaveAttribute(
       "data-page-shell",
       "foreground"
     );
     expect(screen.getByTestId("page-shell")).toHaveAttribute(
       "data-page-background-id",
-      "home"
+      "distribute"
     );
-    expect(screen.getByTestId("page-shell").className)
-      .not.toContain("overflow-x-clip");
     expect(container.querySelector("[data-page-shell-content]")).toHaveClass(
       "min-w-0"
     );
-    expect(screen.getByTestId("page-shell-background-home")).toHaveAttribute(
-      "aria-hidden",
-      "true"
-    );
-    expect(screen.getByTestId("page-shell-background-home")).toHaveStyle({
+    expect(screen.getByTestId("page-shell-background-distribute")).toHaveStyle({
       backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
+        "url('/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png')"
     });
-    expect(screen.getByTestId("page-shell-background-home")).toHaveClass(
-      "opacity-40"
-    );
-    const homePanel = container.querySelector("[data-home-background]");
-    expect(homePanel).not.toBeNull();
-    expect(homePanel).not.toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
-    });
-    expect(screen.getByTestId("home-learning-studio-background")).toHaveAttribute(
-      "aria-hidden",
-      "true"
-    );
-    expect(screen.getByTestId("home-learning-studio-background")).toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
-    });
-    expect(screen.getByTestId("home-learning-studio-background")).toHaveClass(
-      "opacity-50"
-    );
-    expect(
-      screen
-        .getAllByRole("link", { name: "Crash course" })
-        .some((link) => link.getAttribute("href") === "/app/crash-course")
-    ).toBe(true);
-    expect(
-      screen.queryByRole("link", { name: "Learn a feature" })
-    ).not.toBeInTheDocument();
-    expect(
-      screen
-        .getAllByRole("link", { name: "Library" })
-        .some((link) => link.getAttribute("href") === "/app/library")
-    ).toBe(true);
-    expect(
-      screen.getByRole("heading", { name: "Learn a feature" })
-    ).toHaveAttribute("id", "learn-a-feature-heading");
-    expect(container.querySelector("#learn-a-feature")).not.toBeNull();
-    expect(container.querySelector(`#${retiredGuideAnchor}`)).toBeNull();
-    expect(screen.queryByText(retiredGuideLabel)).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Learn this feature: Load Map" })
-    ).toHaveAttribute("href", "/app/load-map?guide=loadMap");
-    expect(
-      screen.getByRole("link", { name: "Learn this feature: Library" })
-    ).toHaveAttribute("href", "/app/library?guide=library");
-    expect(
-      screen.getByRole("link", { name: "Learn this feature: Check-ins" })
-    ).toHaveAttribute("href", "/app/check-ins/new?guide=checkIns");
-    expect(
-      screen.getByRole("link", { name: "Learn this feature: Settings" })
-    ).toHaveAttribute("href", "/app/settings?guide=settings");
   });
 
-  it("renders premium route chrome with active load map and personal-use entries", () => {
-    renderProtectedUi(<AppHomePage />);
+  it("renders four primary tabs and keeps secondary routes in More", () => {
+    renderProtectedUi(<div>Distribution workspace</div>);
 
     expect(screen.getByTestId("app-main")).toHaveAttribute(
       "data-layout",
       "standard"
     );
-    expect(screen.getByTestId("app-main")).not.toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png')"
-    });
     expect(screen.getAllByRole("navigation", { name: "Primary" })).toHaveLength(2);
-    expect(screen.getAllByRole("link", { name: /Library/i })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "Your Cards" })[0]).toHaveAttribute(
       "href",
-      "/app/library"
+      "/app/your-cards"
     );
-    expect(screen.getAllByRole("link", { name: /Crash course/i })[0]).toHaveAttribute(
-      "href",
-      "/app/crash-course"
-    );
-    expect(screen.getAllByRole("link", { name: /Load map/i })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "Distribute" })[0]).toHaveAttribute(
       "aria-current",
       "page"
     );
+    expect(screen.getAllByRole("link", { name: "Board" })[0]).toHaveAttribute(
+      "href",
+      "/app/board"
+    );
+    expect(screen.getAllByRole("link", { name: "Ask Greg" })[0]).toHaveAttribute(
+      "href",
+      "/app/ask-greg"
+    );
+    expect(screen.getAllByRole("navigation", { name: "More" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "Theory" })[0]).toHaveAttribute(
+      "href",
+      "/app/crash-course"
+    );
+    expect(screen.getAllByRole("link", { name: "Card Library" })[0]).toHaveAttribute(
+      "href",
+      "/app/library"
+    );
+    expect(screen.queryByRole("link", { name: /Load map/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Crash course/i }))
+      .not.toBeInTheDocument();
   });
 
   it("renders Little Alex as a decorative physics object on standard protected pages", () => {
-    renderProtectedUi(<AppHomePage />);
+    renderProtectedUi(<div>Distribution workspace</div>);
 
     const littleAlex = screen.getByTestId("little-alex-horne");
     expect(littleAlex).toHaveAttribute("aria-hidden", "true");
@@ -225,24 +179,24 @@ describe("protected app UI", () => {
     });
   });
 
-  it("uses theme primary tokens for active app navigation items", () => {
-    renderProtectedUi(<AppHomePage />);
+  it("uses theme primary tokens for active bottom and sidebar tab items", () => {
+    renderProtectedUi(<div>Distribution workspace</div>);
 
-    const activeLoadMapLinks = screen
-      .getAllByRole("link", { name: /Load map/i })
+    const activeDistributeLinks = screen
+      .getAllByRole("link", { name: "Distribute" })
       .filter((link) => link.getAttribute("aria-current") === "page");
 
-    expect(activeLoadMapLinks).toHaveLength(2);
-    activeLoadMapLinks.forEach((link) => {
+    expect(activeDistributeLinks).toHaveLength(2);
+    activeDistributeLinks.forEach((link) => {
       expect(link).toHaveClass("bg-fp-primary", "text-fp-on-primary");
       expect(link.className).not.toContain("text-white");
     });
   });
 
-  it("lets the crash course route use the full app canvas", () => {
+  it("lets the Theory route use the full app canvas", () => {
     pathname.mockReturnValue("/app/crash-course");
 
-    renderProtectedUi(<div>Immersive crash course</div>);
+    renderProtectedUi(<div>Immersive theory</div>);
 
     const main = screen.getByTestId("app-main");
     expect(main).toHaveAttribute("data-layout", "immersive");
@@ -252,7 +206,7 @@ describe("protected app UI", () => {
     });
     expect(main.className).toContain("w-full");
     expect(main.className).not.toContain("max-w-6xl");
-    expect(screen.getAllByRole("link", { name: /Crash course/i })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "Theory" })[0]).toHaveAttribute(
       "aria-current",
       "page"
     );
@@ -262,7 +216,7 @@ describe("protected app UI", () => {
   it("settles Little Alex into a draggable-safe static mode for reduced motion", () => {
     stubReducedMotion(true);
 
-    renderProtectedUi(<AppHomePage />);
+    renderProtectedUi(<div>Distribution workspace</div>);
 
     const littleAlex = screen.getByTestId("little-alex-horne");
     expect(littleAlex).toHaveAttribute("data-motion-mode", "reduced");
@@ -272,7 +226,7 @@ describe("protected app UI", () => {
     });
   });
 
-  it("renders onboarding inside the app shell and routes skip to home", () => {
+  it("renders onboarding inside the app shell and routes skip to distribution", () => {
     renderProtectedUi(<OnboardingPageClient />);
 
     expect(
@@ -281,7 +235,7 @@ describe("protected app UI", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Skip for now" }));
 
-    expect(routerPush).toHaveBeenCalledWith("/app/home");
+    expect(routerPush).toHaveBeenCalledWith("/app/distribute");
   });
 
   it("renders settings inside the app shell with household and persona state", () => {

@@ -7,5 +7,5 @@ import { OnboardingGuide } from "./onboarding-guide";
 export function OnboardingPageClient() {
   const router = useRouter();
 
-  return <OnboardingGuide onSkip={() => router.push("/app/home")} />;
+  return <OnboardingGuide onSkip={() => router.push("/app/distribute")} />;
 }

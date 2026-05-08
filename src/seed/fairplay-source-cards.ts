@@ -1549,7 +1549,7 @@ export const FAIRPLAY_SOURCE_CARDS = [
       "Daily Grind"
     ],
     "summary": "If you’re this cardholder, toss the idea of a relaxing night out the window because it’s time to start packing lunch for the kids.",
-    "definition": "If you’re this cardholder, toss the idea of a relaxing night out the window because it’s time to start packing lunch for the kids. Don’t let all the #schoollunch pics on Instagram get you down. Your Fair Play Minimum Standard of Care could be a protein bar, an apple, and a bottle of water if that’s all your kid will eat. And even if your child’s school provides lunch, you still have to take the lead and sign up for this program and provide lunch money to cover pizza Fridays.",
+    "definition": "If you’re this cardholder, toss the idea of a relaxing night out the window because it’s time to start packing lunch for the kids. Don’t let all the #schoollunch pics on Instagram get you down. Your Fogging E-Standards could be a protein bar, an apple, and a bottle of water if that’s all your kid will eat. And even if your child’s school provides lunch, you still have to take the lead and sign up for this program and provide lunch money to cover pizza Fridays.",
     "conception": "MEALS (SCHOOL LUNCH) (DG)",
     "planning": "INSOURCED- Menu and snack planning and purchasing containers (give list of items needed to “home goods and supplies” cardholder or purchase yourself)OUTSOURCED- Log into school portal to order school lunch and/or add money to account (exception: all other school forms go to “school forms” cardholder)",
     "execution": "- Preparing and packing into container (including filling daily water bottle and providing utensils/ice packs)- Staying apprised of what child is eating/not eating",
@@ -2519,7 +2519,7 @@ export const FAIRPLAY_SOURCE_CARDS = [
     "conception": "TUTORING & COACHING",
     "planning": "TUTORING- Evaluating if child needs extra supports (discussing with “teacher communication” cardholder)- Researching school-based options for additional support- Researching/scheduling a consistent time to conduct enrichment/determining if you practice or reinforce with childCOACHING- Appraising child’s/team’s needs (voice, sports etc.)- Researching external coaches- Reviewing weekend schedule (working with calendar keeper to see what periods of time are open for plans)- Checking weather forecast- Asking family members for ideas- Coordinating with friends and family",
     "execution": "TUTORING- Hiring external tutor/signing up for tutoring program/practice or reinforce with child- Purchasing school enrichment materialsCOACHING- Hiring external coaches and or/ signing up/registering/conducting your coaching",
-    "minimumStandard": "If this card is in play, are you up to date and working on progress you want your child to make?",
+    "minimumStandard": "If this card is active, are you up to date and working on progress you want your child to make?",
     "coverAssetPath": "/assets/fairplay/cards/tutoring-and-coaching-kids.png",
     "defaultLane": "not_in_play",
     "defaultCadence": "as_needed",

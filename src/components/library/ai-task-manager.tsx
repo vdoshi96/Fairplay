@@ -167,7 +167,7 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
       if (!response.ok) {
         const apiError = await readSafeApiError(
           response,
-          "The card could not be put in play."
+          "The card could not be added to the Board."
         );
         throw new Error(apiError.message);
       }
@@ -182,7 +182,7 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
         router.push(`/app/responsibilities/${responsibilityId}`);
       }
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "The card could not be put in play.");
+      setError(caught instanceof Error ? caught.message : "The card could not be added to the Board.");
     } finally {
       setPendingAction(null);
     }
@@ -500,7 +500,7 @@ function LibraryPracticeWorkflow() {
         ["Notice", preview.conception],
         ["Plan", preview.planning],
         ["Do", preview.execution],
-        ["Minimum", preview.minimumStandard]
+        ["Fogging E-Standards", preview.minimumStandard]
       ].filter((detail): detail is [string, string] => Boolean(detail[1]?.trim()))
     : [];
 
@@ -515,7 +515,7 @@ function LibraryPracticeWorkflow() {
           Practice a card
         </h3>
         <p className="text-[13px] leading-5 text-fp-muted-ink">
-          Try a Greg draft, edit it, then preview sending it to Load Map. Nothing
+          Try a Greg draft, edit it, then preview sending it to Board. Nothing
           is saved.
         </p>
       </div>
@@ -652,7 +652,7 @@ function LibraryPracticeWorkflow() {
               </button>
             </PracticeActionGuidance>
             <PracticeActionGuidance
-              actionLabel="Preview in Load Map"
+              actionLabel="Preview on Board"
               active={editsSaved && !putInPlayPreviewed}
             >
               <button
@@ -661,19 +661,19 @@ function LibraryPracticeWorkflow() {
                   setPutInPlayPreviewed(true);
                   mark(
                     "library-put-in-play",
-                    "Practice card is ready for Load Map. No real card was created."
+                    "Practice card is ready for Board. No real card was created."
                   );
                 }}
                 type="button"
               >
-                Preview in Load Map
+                Preview on Board
               </button>
             </PracticeActionGuidance>
           </div>
           {putInPlayPreviewed ? (
             <article className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
               <h4 className="text-[14px] font-bold text-fp-ink">
-                Load Map preview
+                Board preview
               </h4>
               <p className="text-[13px] leading-5 text-fp-muted-ink">{title}</p>
               <p className="text-[12px] leading-4 text-fp-muted-ink">
@@ -847,7 +847,7 @@ export function AiCardTracker({
                     variant="primary"
                   >
                     <Send aria-hidden="true" size={16} />
-                    Put in play
+                    Add to Board
                   </Button>
                   <Button
                     disabled={pendingAction === `remove:${draft.id}`}
@@ -1215,7 +1215,7 @@ export function AiCardReviewPanel({
             />
           </div>
           <TextArea
-            label="Minimum standard"
+            label="Fogging E-Standards"
             hint="The smallest acceptable done state."
             onChange={(value) =>
               setForm((current) => ({ ...current, minimumStandard: value }))
@@ -1239,7 +1239,7 @@ export function AiCardReviewPanel({
             </Button>
             <Button disabled={isPuttingInPlay || isSaving} onClick={onPutInPlay}>
               <Send aria-hidden="true" size={16} />
-              Put in play
+              Add to Board
             </Button>
             <Button
               disabled={isRemoving || isSaving}

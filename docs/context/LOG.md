@@ -1,5 +1,30 @@
 # Fairplay Context Log
 
+## 2026-05-08 - Card-First Mobile Rebuild
+
+Requested by the user: rebuild Fairplay as a polished mobile-first card responsibility app centered on swipe distribution, Your Cards, Board, Ask Greg, PWA/mobile safe areas, and simplified flip-card details.
+
+Actions completed:
+
+- Retired the homepage by redirecting `/app` and `/app/home` to Distribute.
+- Added primary tabs: Your Cards, Distribute, Board, and Ask Greg, with Check in, Theory, Settings, and Card Library behind overflow navigation.
+- Added `CardWorkspace` and `card-state` mapping for normalized buckets over stable persisted lanes.
+- Implemented Distribute search, card flip, swipe/arrow/button assignment, natural removal, and empty states.
+- Implemented Your Cards as a card-file view with tap/click flip to assignment, purpose, and Fogging E-Standards.
+- Implemented Board as grouped card buckets.
+- Simplified card detail and Library card backs to purpose, Fogging E-Standards, and lane assignment only.
+- Added PWA icons, manifest fields, viewport-fit cover, safe-area layout variables, and bottom-nav safe-area padding.
+- Updated e2e specs from Home/Load Map expectations to the card-first flow.
+
+Verification:
+
+- `npm test -- --run`: 88 files, 510 tests passed.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `DATABASE_URL=... SESSION_SECRET=... npm run test:e2e`: 27 tests passed.
+- Production iPhone 14 Playwright smoke passed for real auth, API-created cards, search, flip, Alex fallback button, touch swipe right to Max, Your Cards, Board, no document horizontal overflow, and PWA manifest fields.
+
 ## 2026-05-08 - Ordered App UX Polish
 
 Requested by the user: reduce text overload, strengthen backgrounds, simplify workflows, polish Home/Load Map/Library/Check-ins/Crash Course/Settings, and merge the fixes through ordered PRs.

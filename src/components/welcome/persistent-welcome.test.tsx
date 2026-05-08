@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PersistentWelcome } from "./persistent-welcome";
 
-const pathname = vi.hoisted(() => vi.fn(() => "/app/home"));
+const pathname = vi.hoisted(() => vi.fn(() => "/app/your-cards"));
 
 vi.mock("next/navigation", () => ({
   usePathname: pathname
@@ -13,12 +13,12 @@ const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
 
 describe("PersistentWelcome", () => {
   afterEach(() => {
-    pathname.mockReturnValue("/app/home");
+    pathname.mockReturnValue("/app/your-cards");
     vi.unstubAllGlobals();
   });
 
-  it("renders a prominent welcome on the app home route", () => {
-    pathname.mockReturnValue("/app/home");
+  it("renders a prominent welcome on the Your Cards route", () => {
+    pathname.mockReturnValue("/app/your-cards");
 
     render(<PersistentWelcome dismissed={false} />);
 
@@ -38,9 +38,9 @@ describe("PersistentWelcome", () => {
     const welcome = screen.getByRole("dialog", { name: "Welcome to Fairplay" });
     expect(welcome).toHaveAttribute("data-welcome-variant", "compact");
     expect(
-      screen.getByText("Crash course and the card library are nearby.")
+      screen.getByText("Theory and the card library are nearby.")
     ).toBeVisible();
-    expect(screen.getByRole("link", { name: "Start crash course" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open Theory" })).toHaveAttribute(
       "href",
       "/app/crash-course"
     );
@@ -51,7 +51,7 @@ describe("PersistentWelcome", () => {
     );
     const compactActions = screen.getByTestId("welcome-compact-actions");
     expect(compactActions).toContainElement(
-      screen.getByRole("link", { name: "Start crash course" })
+      screen.getByRole("link", { name: "Open Theory" })
     );
     expect(compactActions).toContainElement(
       screen.getByRole("link", { name: "Browse card library" })
@@ -100,7 +100,7 @@ describe("PersistentWelcome", () => {
     const onDismiss = vi.fn();
     render(<PersistentWelcome dismissed={false} onDismiss={onDismiss} />);
 
-    expect(screen.getByRole("link", { name: "Start crash course" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open Theory" })).toHaveAttribute(
       "href",
       "/app/crash-course"
     );
@@ -121,7 +121,7 @@ describe("PersistentWelcome", () => {
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
-    pathname.mockReturnValue("/app/home");
+    pathname.mockReturnValue("/app/your-cards");
     rerender(<PersistentWelcome dismissed />);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });

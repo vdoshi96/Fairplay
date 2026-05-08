@@ -292,10 +292,10 @@ describe("settings panel", () => {
 
     fireEvent.click(continueButton);
 
-    expect(routerPush).toHaveBeenCalledWith("/choose-persona?next=/app/home");
+    expect(routerPush).toHaveBeenCalledWith("/choose-persona?next=/app/distribute");
   });
 
-  it("restarts the crash course through onboarding preferences", async () => {
+  it("restarts Theory through onboarding preferences", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({})
@@ -303,7 +303,7 @@ describe("settings panel", () => {
     vi.stubGlobal("fetch", fetchMock);
     renderSettings();
 
-    fireEvent.click(screen.getByRole("button", { name: "Restart crash course" }));
+    fireEvent.click(screen.getByRole("button", { name: "Restart Theory" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(fetchMock).toHaveBeenCalledWith(
@@ -365,9 +365,9 @@ describe("settings panel", () => {
       container.querySelector('[data-guide-id="settings-guided-start"]')
     ).not.toBeNull();
     expect(container.querySelector('[data-guide-id="settings-logout"]')).not.toBeNull();
-    expect(screen.getByRole("link", { name: "Open learning hub" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open distribute" })).toHaveAttribute(
       "href",
-      "/app/home#learn-a-feature"
+      "/app/distribute"
     );
     expect(screen.queryByText(retiredGuideLabel)).not.toBeInTheDocument();
     expect(
@@ -512,7 +512,7 @@ describe("settings panel", () => {
     const guide = screen.getByRole("dialog", { name: "Settings guide" });
     expect(guide).toBeVisible();
     expect(
-      screen.queryByRole("dialog", { name: "Load Map guide" })
+      screen.queryByRole("dialog", { name: "Board guide" })
     ).not.toBeInTheDocument();
     expect(within(guide).getByText("Step 1 of 4")).toBeVisible();
     expect(

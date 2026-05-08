@@ -24,8 +24,8 @@ export function ChoosePersonaClient() {
   const [personas, setPersonas] = useState<PersonaSummary[]>([]);
   const [activePersonaId, setActivePersonaId] = useState<string | null>(null);
   const nextPath = useMemo(() => {
-    const rawNext = searchParams.get("next") || "/app/home";
-    return rawNext.startsWith("/app/") ? rawNext : "/app/home";
+    const rawNext = searchParams.get("next") || "/app/distribute";
+    return rawNext.startsWith("/app/") ? rawNext : "/app/distribute";
   }, [searchParams]);
 
   useEffect(() => {

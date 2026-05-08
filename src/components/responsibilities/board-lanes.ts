@@ -16,8 +16,8 @@ export const BOARD_LANES: readonly {
 }[] = [
   {
     key: "cards_of_concern",
-    label: "Cards of Concern",
-    shortHelp: "Needs a decision or support.",
+    label: "Unassigned",
+    shortHelp: "Ready for a distribution decision.",
     tone: "concern"
   },
   {
@@ -34,20 +34,20 @@ export const BOARD_LANES: readonly {
   },
   {
     key: "kid_split",
-    label: "Kid Split",
-    shortHelp: "Split by child, season, or subtask.",
+    label: "Unassigned",
+    shortHelp: "Legacy split cards that need review.",
     tone: "kidSplit"
   },
   {
     key: "not_in_play",
-    label: "Not in Play",
-    shortHelp: "Not active yet.",
+    label: "Saved for Later",
+    shortHelp: "Useful, but not ready to assign.",
     tone: "reserve"
   },
   {
     key: "trimmed",
-    label: "Trimmed",
-    shortHelp: "Paused, dropped, or irrelevant.",
+    label: "Not Applicable",
+    shortHelp: "Not part of this household right now.",
     tone: "trimmed"
   }
 ];

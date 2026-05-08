@@ -28,7 +28,7 @@ const recommendedFeaturePath =
 
 export function CrashCourseFlow({
   completed = false,
-  completionContextLabel = "the Fairplay crash course",
+  completionContextLabel = "Fairplay Theory",
   currentStep = 0,
   onProgress,
   onRestart,
@@ -88,13 +88,13 @@ export function CrashCourseFlow({
               />
               <div className="grid gap-2">
                 <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
-                  Course complete
+                  Theory complete
                 </p>
                 <h1
                   id="crash-course-title"
                   className="text-[30px] font-bold leading-[36px] text-fp-ink"
                 >
-                  Crash Course complete
+                  Theory complete
                 </h1>
               </div>
             </div>
@@ -115,7 +115,7 @@ export function CrashCourseFlow({
                 onClick={onRestart}
                 type="button"
               >
-                Restart crash course
+                Restart Theory
               </button>
             ) : null}
           </div>
@@ -126,7 +126,7 @@ export function CrashCourseFlow({
               data-testid="crash-course-page-header"
             >
               <p className="text-[13px] font-semibold text-fp-muted-ink">
-                Crash Course
+                Theory
               </p>
               <h1
                 id="crash-course-title"
@@ -223,7 +223,7 @@ export function CrashCourseFlow({
                       className="min-h-11 rounded-[8px] border border-fp-line px-4 text-[14px] font-bold text-fp-ink outline-none transition hover:bg-[var(--fp-surface-muted)] focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-45"
                       onClick={onSkip}
                     >
-                      Skip crash course
+                      Skip Theory
                     </button>
 
                     <div className="grid grid-cols-2 gap-2">
@@ -241,7 +241,7 @@ export function CrashCourseFlow({
                           className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/25"
                           onClick={onComplete}
                         >
-                          Finish course
+                          Finish Theory
                         </button>
                       ) : (
                         <button
@@ -273,7 +273,7 @@ function StoryIndexTabs({
 }) {
   return (
     <nav
-      aria-label="Crash course storyboard"
+      aria-label="Theory storyboard"
       className="flex gap-1 overflow-x-auto pb-1"
     >
       {CRASH_COURSE_LESSONS.map((lesson, index) => (

@@ -38,7 +38,7 @@ describe("crash course page client", () => {
     await waitFor(() =>
       expect(
         screen.getByRole("heading", {
-          name: "Crash Course complete"
+          name: "Theory complete"
         })
       ).toBeVisible()
     );
@@ -48,7 +48,7 @@ describe("crash course page client", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("restarts a completed crash course from lesson one", async () => {
+  it("restarts completed Theory from lesson one", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce({
@@ -72,7 +72,7 @@ describe("crash course page client", () => {
     render(<CrashCoursePageClient selectedPersona={selectedPersona} />);
 
     await userEvent.click(
-      await screen.findByRole("button", { name: "Restart crash course" })
+      await screen.findByRole("button", { name: "Restart Theory" })
     );
 
     await waitFor(() =>

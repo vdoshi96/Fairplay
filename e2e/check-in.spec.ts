@@ -53,15 +53,19 @@ test("check-in flow schedules, confirms, and updates notes", async ({ page }) =>
   await page.getByLabel("Date and time").fill("2026-05-20T18:30");
   await page.getByRole("button", { name: "Schedule" }).click();
 
-  await expect(page.getByRole("region", { name: "Confirm check-in" })).toBeVisible();
-  await page.getByLabel("Minutes / notes").fill("Discussed summer routines.");
+  const confirmRegion = page.getByRole("region", { name: "Confirm check-in" });
+  await expect(confirmRegion).toBeVisible();
+  await confirmRegion.getByLabel("Minutes / notes").fill("Discussed summer routines.");
   await page.getByRole("button", { name: "Confirm it happened" }).click();
 
-  await expect(page.getByRole("heading", { name: "Check-in record" })).toBeVisible();
+  await expect(page.locator("#title")).toHaveText("Check-in record");
   await expect(page.getByRole("region", { name: "Meeting notes" })).toContainText(
     "Check-in recorded."
   );
-  await page.getByLabel("Minutes / notes").fill("Updated minutes.");
+  await page
+    .getByRole("region", { name: "Meeting notes" })
+    .getByLabel("Minutes / notes")
+    .fill("Updated minutes.");
   await page.getByRole("button", { name: "Update notes" }).click();
   await expect(page.getByRole("region", { name: "Meeting notes" })).toContainText(
     "Notes updated."

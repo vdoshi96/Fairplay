@@ -22,7 +22,7 @@ export function CrashCoursePageClient({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const completionContextLabel = `${selectedPersona.displayName}'s Fairplay crash course`;
+  const completionContextLabel = `${selectedPersona.displayName}'s Fairplay Theory`;
 
   useEffect(() => {
     let mounted = true;
@@ -54,7 +54,7 @@ export function CrashCoursePageClient({
         }
       } catch {
         if (mounted) {
-          setError("Unable to load crash course progress right now.");
+          setError("Unable to load Theory progress right now.");
         }
       } finally {
         if (mounted) {
@@ -98,7 +98,7 @@ export function CrashCoursePageClient({
       setCurrentStep(nextStep);
       setStatus(nextStatus);
     } catch {
-      setError("Unable to save crash course progress right now.");
+      setError("Unable to save Theory progress right now.");
     } finally {
       setSaving(false);
     }
@@ -112,7 +112,7 @@ export function CrashCoursePageClient({
             className="pointer-events-auto rounded-[8px] border border-fp-line bg-white/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
             role="status"
           >
-            Loading saved crash course progress...
+            Loading saved Theory progress...
           </p>
         ) : null}
 
@@ -130,7 +130,7 @@ export function CrashCoursePageClient({
             className="pointer-events-auto rounded-[8px] border border-fp-line bg-white/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
             role="status"
           >
-            Saving crash course progress...
+            Saving Theory progress...
           </p>
         ) : null}
 

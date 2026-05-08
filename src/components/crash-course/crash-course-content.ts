@@ -175,9 +175,9 @@ export const CRASH_COURSE_LESSONS: CrashCourseLesson[] = [
         label: "Browse the Library"
       },
       {
-        description: "Assign ownership and review the pattern.",
-        href: "/app/load-map",
-        label: "Open the Load Map"
+        description: "Assign ownership with the swipe deck.",
+        href: "/app/distribute",
+        label: "Open Distribute"
       },
       {
         description: "Schedule, confirm, and keep simple notes.",

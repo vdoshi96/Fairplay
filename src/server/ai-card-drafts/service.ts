@@ -236,7 +236,7 @@ function assertCanPutInPlay(draft: AiCardDraftDetail) {
   if (draft.status !== "ready") {
     throw new AiCardDraftServiceError(
       "INVALID_INPUT",
-      "Only ready AI card drafts can be put in play."
+      "Only ready AI card drafts can be added to the Board."
     );
   }
 }

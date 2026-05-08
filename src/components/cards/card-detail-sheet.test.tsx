@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -21,7 +21,7 @@ const card = {
 } as const;
 
 describe("CardDetailSheet", () => {
-  it("shows source cover, ownership, CPE, standards, and action hooks", async () => {
+  it("shows source cover, ownership, purpose, Fogging E-Standards, and lane move", async () => {
     const onMove = vi.fn();
     render(
       <CardDetailSheet
@@ -35,24 +35,21 @@ describe("CardDetailSheet", () => {
       "src",
       "/assets/fairplay/cards/auto.png"
     );
-    expect(screen.getByText("Cards of Concern")).toBeVisible();
+    expect(screen.getByText(/Assigned to Cards of Concern/i)).toBeVisible();
+    expect(screen.getByText("Unassigned")).toBeVisible();
     expect(screen.getByText("Out")).toBeVisible();
     expect(screen.getByText("Daily Grind")).toBeVisible();
-
-    const cpe = screen.getByRole("region", { name: /CPE sections/i });
-    expect(within(cpe).getByText("Notice repairs and timing.")).toBeVisible();
-    expect(within(cpe).getByText("Schedule service and arrange transport.")).toBeVisible();
-    expect(within(cpe).getByText("Complete service and follow-through.")).toBeVisible();
+    expect(screen.getByText("What is this card for?")).toBeVisible();
+    expect(screen.getByText("Keep vehicle needs visible and handled.")).toBeVisible();
+    expect(screen.getByText("Fogging E-Standards")).toBeVisible();
     expect(screen.getByText("Vehicle is safe, legal, and available.")).toBeVisible();
-    expect(
-      screen.getByText("Both drivers can use the car safely each weekday.")
-    ).toBeVisible();
-    expect(screen.getByText("Insurance card lives in the glove box.")).toBeVisible();
+    expect(screen.queryByText("CPE")).not.toBeInTheDocument();
+    expect(screen.queryByText("Insurance card lives in the glove box.")).not.toBeInTheDocument();
 
-    await userEvent.selectOptions(screen.getByLabelText("Move destination"), "player_1");
+    await userEvent.selectOptions(screen.getByLabelText("Move destination"), "alex");
     await userEvent.click(screen.getByRole("button", { name: "Move" }));
 
-    expect(onMove).toHaveBeenCalledWith("player_1");
+    expect(onMove).toHaveBeenCalledWith("alex");
   });
 
   it("renders accepted AI-generated cover art as a larger integrated panel", () => {
@@ -68,7 +65,7 @@ describe("CardDetailSheet", () => {
 
     const artPanel = screen.getByTestId("generated-cover-art-panel");
     expect(artPanel).toHaveClass("min-h-[520px]");
-    expect(artPanel).toHaveClass("lg:min-h-[680px]");
+    expect(artPanel).toHaveClass("lg:min-h-[700px]");
     expect(screen.getByRole("img", { name: /dog medicine cover/i })).toHaveAttribute(
       "src",
       "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440099/cover"
@@ -98,17 +95,16 @@ describe("CardDetailSheet", () => {
     );
   });
 
-  it("explains card actions are unavailable when no action hooks are wired", () => {
+  it("keeps lane movement disabled when no move hook is wired", () => {
     render(<CardDetailSheet card={card} />);
 
-    expect(
-      screen.getByText(
-        "Actions are unavailable here. Use the editor or Load Map."
-      )
-    ).toBeVisible();
-    expect(screen.getByRole("button", { name: /schedule check-in/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /^Trim$/i })).toBeDisabled();
+    expect(screen.getByText("What is this card for?")).toBeVisible();
+    expect(screen.getByText("Fogging E-Standards")).toBeVisible();
     expect(screen.getByLabelText("Move destination")).toBeDisabled();
     expect(screen.getByRole("button", { name: "Move" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /schedule check-in/i }))
+      .not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Trim$/i }))
+      .not.toBeInTheDocument();
   });
 });

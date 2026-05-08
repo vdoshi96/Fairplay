@@ -168,7 +168,7 @@ export function SettingsPanel({
       router.push("/app/crash-course");
       router.refresh();
     } catch {
-      setError("Unable to restart the crash course right now. Please try again.");
+      setError("Unable to restart Theory right now. Please try again.");
     } finally {
       setPreferenceAction(null);
     }
@@ -549,7 +549,7 @@ export function SettingsPanel({
             Guided start
           </h2>
           <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
-            Replay welcome or restart the crash course.
+            Replay welcome or restart Theory.
           </p>
           <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
             Feature guides stay on their pages.
@@ -563,7 +563,7 @@ export function SettingsPanel({
             >
               {preferenceAction === "restart-course"
                 ? "Restarting..."
-                : "Restart crash course"}
+                : "Restart Theory"}
             </button>
             <button
               className="min-h-11 rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-70"
@@ -577,9 +577,9 @@ export function SettingsPanel({
             </button>
             <Link
               className="flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-center text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
-              href="/app/home#learn-a-feature"
+              href="/app/distribute"
             >
-              Open learning hub
+              Open distribute
             </Link>
           </div>
           {practiceOpen ? (
@@ -636,7 +636,7 @@ export function SettingsPanel({
             <div className="mt-4 flex gap-3">
               <button
                 className="min-h-11 flex-1 rounded-[8px] bg-fp-primary px-4 text-[14px] font-semibold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/30"
-                onClick={() => router.push("/choose-persona?next=/app/home")}
+                onClick={() => router.push("/choose-persona?next=/app/distribute")}
                 ref={continueButtonRef}
                 type="button"
               >

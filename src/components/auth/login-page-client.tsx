@@ -27,7 +27,7 @@ export function LoginPageClient() {
     >
       <LoginForm
         onAuthenticated={() => {
-          router.push("/choose-persona?next=/app/home");
+          router.push("/choose-persona?next=/app/distribute");
         }}
       />
     </AuthPageShell>

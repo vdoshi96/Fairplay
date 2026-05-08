@@ -13,7 +13,9 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 ### Routes
 
 - Auth pages: `/login`, `/create-household`, `/choose-persona`.
-- App pages: `/app/home`, `/app/load-map`, `/app/library`, `/app/check-ins`, `/app/check-ins/new`, `/app/check-ins/[id]`, `/app/crash-course`, `/app/onboarding`, `/app/responsibilities/new`, `/app/responsibilities/[id]`, `/app/settings`.
+- Primary app pages: `/app/your-cards`, `/app/distribute`, `/app/board`, `/app/ask-greg`.
+- Secondary app pages: `/app/library`, `/app/check-ins`, `/app/check-ins/new`, `/app/check-ins/[id]`, `/app/crash-course`, `/app/onboarding`, `/app/responsibilities/new`, `/app/responsibilities/[id]`, `/app/settings`.
+- Legacy compatibility routes: `/app/home` redirects to Distribute and `/app/load-map` redirects to Board.
 - API routes: auth, personas, preferences, responsibilities, load snapshot, card templates, AI card drafts, and check-ins.
 
 ### UI Components
@@ -22,8 +24,9 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 
 - `app-shell`: navigation, page shell, session view, layout tokens.
 - `auth`: forms, login/create/persona clients, auth page shell.
-- `library`, `cards`: card library, AI task manager, card detail sheet.
-- `responsibilities`: load map, editor, board lanes.
+- `cards`: card-state mapping, card workspace for Your Cards/Distribute/Board, and simplified card detail sheet.
+- `library`: card library and AI task manager.
+- `responsibilities`: legacy load map compatibility, editor, board lane metadata, and service-backed card distribution.
 - `check-ins`: lightweight schedule, confirmation, and notes flow.
 - `crash-course`, `guide`, `onboarding`, `welcome`: learning and onboarding surfaces.
 - `little-alex`, `settings`, `theme`, `visuals`, `motion`, `ui`: helper, preferences, theme, visual primitives, motion, and shared UI.
@@ -54,10 +57,11 @@ Migrations currently include initial schema, legacy Radar timing/removal history
 2. The server stores password/session state through repositories and sets an opaque session cookie.
 3. The user selects a persona through `/api/personas/select`.
 4. Protected pages load `getAppSessionView()`, then service/repository data for the current household/persona.
-5. Client components submit JSON to API route handlers.
-6. Route handlers validate with Zod contracts and call service/repository layers.
-7. Repositories persist through Prisma.
-8. Pages/components refresh or navigate after successful mutation.
+5. Card distribution calls server actions that route through `distributeResponsibilityCard()` and preserve stable persisted lane keys.
+6. Other client components submit JSON to API route handlers.
+7. Route handlers validate with Zod contracts and call service/repository layers.
+8. Repositories persist through Prisma.
+9. Pages/components refresh or navigate after successful mutation.
 
 ## Verification Map
 
@@ -70,6 +74,7 @@ Migrations currently include initial schema, legacy Radar timing/removal history
 ## Architecture Risks
 
 - Board lane enum values are intentionally stable persisted keys; do not rename them without a dedicated compatibility migration.
+- The card-first UI depends on the compatibility mapping in `src/components/cards/card-state.ts`; update tests and docs if persisted lanes ever migrate.
 - Some generated assets/prompts may reference retired surfaces: needs verification.
 - `docs/agents/tasks/` is useful history but very large and not a concise onboarding layer.
 - Full DB-backed behavior was verified locally after the Radar removal migration; production deployment should still run normal migration verification.

@@ -69,9 +69,9 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
     .not.toBeNull();
   await expect(page).toHaveURL(/\/app\/onboarding/);
 
-  await page.goto("/app/home");
+  await page.goto("/app/your-cards");
   await expect(
-    page.getByRole("heading", { name: "Learn Fairplay" })
+    page.getByRole("heading", { name: "Your Cards" })
   ).toBeVisible();
 
   const welcome = page.getByRole("dialog", { name: "Welcome to Fairplay" });
@@ -86,13 +86,6 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   await page.getByRole("button", { name: "Close welcome" }).click();
   await expect(welcome).not.toBeVisible();
 
-  const libraryFeatureLink = page.getByRole("link", {
-    name: "Learn this feature: Library"
-  });
-  await expect(libraryFeatureLink).toHaveAttribute(
-    "href",
-    "/app/library?guide=library"
-  );
   await page.goto("/app/library?guide=library");
   await expect(page).toHaveURL(/\/app\/library\?guide=library/);
 
@@ -113,7 +106,7 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   await page.getByRole("button", { name: "Review draft" }).click();
   await page.getByLabel("Practice draft title").fill("Lunch kit reset");
   await page.getByRole("button", { name: "Save edits" }).click();
-  await page.getByRole("button", { name: "Preview in Load Map" }).click();
+  await page.getByRole("button", { name: "Preview on Board" }).click();
   await expect(page.getByText("Practice complete.")).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Next", exact: true }).click();
   await expect(page.getByText("Search the source deck")).toBeVisible();
@@ -135,7 +128,7 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   await expect(manualGuide).toBeVisible();
   await manualGuide.getByRole("button", { name: "Skip", exact: true }).click();
 
-  await page.goto("/app/home");
+  await page.goto("/app/your-cards");
   await expect(
     page.getByRole("dialog", { name: "Welcome to Fairplay" })
   ).not.toBeVisible();

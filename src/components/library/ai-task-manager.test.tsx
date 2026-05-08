@@ -157,7 +157,7 @@ describe("AiTaskManager", () => {
       within(readyDraft).getByRole("img", { name: "Generated cover for Laundry reset" })
     ).toHaveAttribute("src", `/api/ai-card-drafts/${draftIds.ready}/cover`);
     expect(within(readyDraft).getByRole("button", { name: "Review" })).toBeVisible();
-    expect(within(readyDraft).getByRole("button", { name: "Put in play" })).toBeVisible();
+    expect(within(readyDraft).getByRole("button", { name: "Add to Board" })).toBeVisible();
     expect(within(readyDraft).getByRole("button", { name: "Discard" })).toBeVisible();
   });
 
@@ -511,7 +511,7 @@ describe("AiTaskManager", () => {
     expect(screen.getByLabelText("Execution")).toHaveValue(
       "Wash, dry, fold, and put away."
     );
-    expect(screen.getByLabelText("Minimum standard")).toHaveValue(
+    expect(screen.getByLabelText("Fogging E-Standards")).toHaveValue(
       "Laundry is folded by Sunday."
     );
 
