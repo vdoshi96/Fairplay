@@ -1,7 +1,12 @@
 "use client";
 
 import Matter from "matter-js";
-import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import type {
+  CSSProperties,
+  PointerEvent as ReactPointerEvent,
+  Touch as ReactTouch,
+  TouchEvent as ReactTouchEvent
+} from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { APP_LAYOUT_METRICS } from "@/components/app-shell/layout-tokens";
@@ -62,6 +67,8 @@ type DragState = {
   startPoint: Point;
   velocity: Point;
 };
+
+const TOUCH_DRAG_POINTER_ID_OFFSET = 10_000;
 
 type GazeDirection = "center" | "left" | "right";
 
@@ -1288,6 +1295,42 @@ export function LittleAlexPhysics({
     }, 2_800);
   }, []);
 
+  const beginDrag = useCallback(
+    (point: Point, pointerId: number, timeStamp: number) => {
+      clearRagdollRecoveryTimeout();
+      setRagdollVisualStateNow(reducedMotion ? "settled" : "dragging");
+      setIdleState("active");
+      setIdleStandDelayMs(IDLE_STAND_DELAY_MS);
+      setActivityVersion((current) => current + 1);
+      idleTargetReachedRef.current = false;
+      updateGaze(point);
+
+      const center = reducedMotion
+        ? reducedAnchor
+        : physicsRef.current?.bodies.torso.position ?? reducedAnchor;
+
+      dragRef.current = {
+        lastPoint: point,
+        lastTime: Number.isFinite(timeStamp) ? timeStamp : 0,
+        maxDistance: 0,
+        offset: {
+          x: point.x - center.x,
+          y: point.y - center.y
+        },
+        pointerId,
+        startPoint: point,
+        velocity: { x: 0, y: 0 }
+      };
+    },
+    [
+      clearRagdollRecoveryTimeout,
+      reducedAnchor,
+      reducedMotion,
+      setRagdollVisualStateNow,
+      updateGaze
+    ]
+  );
+
   useEffect(() => {
     if (!motionPreferenceReady || reducedMotion) {
       return undefined;
@@ -1343,38 +1386,50 @@ export function LittleAlexPhysics({
       }
 
       event.currentTarget.setPointerCapture(event.pointerId);
-      clearRagdollRecoveryTimeout();
-      setRagdollVisualStateNow(reducedMotion ? "settled" : "dragging");
-      setIdleState("active");
-      setIdleStandDelayMs(IDLE_STAND_DELAY_MS);
-      setActivityVersion((current) => current + 1);
-      idleTargetReachedRef.current = false;
-      updateGaze(point);
-
-      const center = reducedMotion
-        ? reducedAnchor
-        : physicsRef.current?.bodies.torso.position ?? reducedAnchor;
-
-      dragRef.current = {
-        lastPoint: point,
-        lastTime: Number.isFinite(event.timeStamp) ? event.timeStamp : 0,
-        maxDistance: 0,
-        offset: {
-          x: point.x - center.x,
-          y: point.y - center.y
-        },
-        pointerId: event.pointerId,
-        startPoint: point,
-        velocity: { x: 0, y: 0 }
-      };
+      beginDrag(point, event.pointerId, event.timeStamp);
     },
-    [
-      clearRagdollRecoveryTimeout,
-      reducedAnchor,
-      reducedMotion,
-      setRagdollVisualStateNow,
-      updateGaze
-    ]
+    [beginDrag]
+  );
+
+  const touchPointerId = useCallback((touch: ReactTouch) => {
+    return TOUCH_DRAG_POINTER_ID_OFFSET + touch.identifier;
+  }, []);
+
+  const activeTouchFromEvent = useCallback((event: ReactTouchEvent<HTMLDivElement>) => {
+    const activePointerId = dragRef.current?.pointerId;
+
+    if (activePointerId !== undefined) {
+      const activeIdentifier = activePointerId - TOUCH_DRAG_POINTER_ID_OFFSET;
+      const changedTouch = Array.from(event.changedTouches).find(
+        (touch) => touch.identifier === activeIdentifier
+      );
+      const currentTouch = Array.from(event.touches).find(
+        (touch) => touch.identifier === activeIdentifier
+      );
+
+      return changedTouch ?? currentTouch ?? null;
+    }
+
+    return event.changedTouches[0] ?? event.touches[0] ?? null;
+  }, []);
+
+  const pointerInputFromTouch = useCallback(
+    (
+      touch: ReactTouch,
+      event: ReactTouchEvent<HTMLDivElement>
+    ): PointerInput => ({
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      pageX: touch.pageX,
+      pageY: touch.pageY,
+      pointerId: touchPointerId(touch),
+      preventDefault: () => event.preventDefault(),
+      screenX: touch.screenX,
+      screenY: touch.screenY,
+      stopPropagation: () => event.stopPropagation(),
+      timeStamp: event.timeStamp
+    }),
+    [touchPointerId]
   );
 
   const moveDrag = useCallback(
@@ -1516,6 +1571,57 @@ export function LittleAlexPhysics({
     [reducedMotion, setRagdollVisualStateNow, showChatBubble, syncPhysicsDom, updateGaze]
   );
 
+  const handleTouchStart = useCallback(
+    (event: ReactTouchEvent<HTMLDivElement>) => {
+      if (dragRef.current) {
+        return;
+      }
+
+      const touch = activeTouchFromEvent(event);
+
+      if (!touch) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      const point = pointFromClient(touch);
+
+      if (!point) {
+        return;
+      }
+
+      beginDrag(point, touchPointerId(touch), event.timeStamp);
+    },
+    [activeTouchFromEvent, beginDrag, touchPointerId]
+  );
+
+  const handleTouchMove = useCallback(
+    (event: ReactTouchEvent<HTMLDivElement>) => {
+      const touch = activeTouchFromEvent(event);
+
+      if (!touch) {
+        return;
+      }
+
+      moveDrag(pointerInputFromTouch(touch, event));
+    },
+    [activeTouchFromEvent, moveDrag, pointerInputFromTouch]
+  );
+
+  const handleTouchRelease = useCallback(
+    (event: ReactTouchEvent<HTMLDivElement>) => {
+      const touch = activeTouchFromEvent(event);
+
+      if (!touch) {
+        return;
+      }
+
+      releaseDrag(pointerInputFromTouch(touch, event));
+    },
+    [activeTouchFromEvent, pointerInputFromTouch, releaseDrag]
+  );
+
   useEffect(() => {
     const handleWindowPointerMove = (event: PointerEvent) => {
       moveDrag(event);
@@ -1635,6 +1741,10 @@ export function LittleAlexPhysics({
         className="fp-little-alex-grab-target"
         data-testid="little-alex-grab-target"
         onPointerDown={handlePointerDown}
+        onTouchCancel={handleTouchRelease}
+        onTouchEnd={handleTouchRelease}
+        onTouchMove={handleTouchMove}
+        onTouchStart={handleTouchStart}
         ref={grabTargetRef}
         style={{
           ...grabTargetStyle(reducedAnchor),

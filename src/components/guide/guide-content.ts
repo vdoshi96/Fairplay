@@ -154,7 +154,7 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
   settings: {
     id: "settings",
     title: "Settings",
-    description: "Learn replay controls, persona switching, and session actions.",
+    description: "Learn Theory replay, persona switching, and session actions.",
     steps: [
       {
         id: "overview",
@@ -170,18 +170,17 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
       },
       {
         id: "guided-start",
-        title: "Replay learning whenever you need it",
-        body: "Restart the crash course, show the welcome again, or open the learning hub from here.",
+        title: "Restart Theory whenever you need it",
+        body: "Restart the crash course or open the card deck from here.",
         targetId: "settings-guided-start",
         practice: {
           actionLabel: "Start dummy Settings workflow",
           completionMessage: "Dummy Settings workflow complete.",
           eventId: "settings-practice-start",
           prompt:
-            "Practice appearance, welcome replay, persona confirmation, and learning hub actions without changing account data.",
+            "Practice appearance, persona confirmation, and card-deck actions without changing account data.",
           requiredEventIds: [
             "settings-appearance-mode",
-            "settings-welcome-replay",
             "settings-persona-confirm",
             "settings-learning-hub"
           ]

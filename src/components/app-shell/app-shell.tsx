@@ -67,7 +67,10 @@ export function AppShell({
     : "w-full";
 
   return (
-    <div className="min-h-[100svh] bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[var(--fp-app-sidebar-width)_minmax(0,1fr)]">
+    <div
+      className="min-h-[100svh] w-full max-w-full overflow-x-clip bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[var(--fp-app-sidebar-width)_minmax(0,1fr)]"
+      data-testid="app-shell-root"
+    >
       <LittleAlexPhysics
         chatPhrase={littleAlexPreferences.chatPhrase}
         genderPresentation={littleAlexPreferences.genderPresentation}
@@ -151,8 +154,11 @@ export function AppShell({
         </div>
       </aside>
 
-      <div className="min-w-0 lg:col-start-2">
-        <header className="sticky top-0 z-10 border-b border-fp-line bg-[var(--fp-surface-strong)]/95 px-4 py-3 backdrop-blur sm:px-6 lg:hidden">
+      <div className="min-w-0 max-w-full overflow-x-clip lg:col-start-2">
+        <header
+          className="sticky top-0 z-10 w-full max-w-full overflow-x-clip border-b border-fp-line bg-[var(--fp-surface-strong)]/95 px-4 py-3 backdrop-blur sm:px-6 lg:hidden"
+          data-testid="mobile-app-header"
+        >
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
             <Link
               className="flex min-w-0 items-center gap-3 rounded outline-none focus:ring-2 focus:ring-fp-ink/25"
@@ -171,8 +177,6 @@ export function AppShell({
                 </span>
               </span>
             </Link>
-
-            <OverflowMenu pathname={pathname} />
           </div>
         </header>
 
@@ -190,9 +194,10 @@ export function AppShell({
 
         <nav
           aria-label="Primary"
-          className="fixed inset-x-0 bottom-0 z-10 min-h-[var(--fp-app-bottom-nav-height)] border-t border-fp-line bg-[var(--fp-surface-strong)] px-2 pb-[max(0.5rem,var(--fp-app-safe-area-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,33,36,0.08)] backdrop-blur lg:hidden"
+          className="fixed inset-x-0 bottom-0 z-10 min-h-[var(--fp-app-bottom-nav-height)] w-full max-w-full overflow-x-clip border-t border-fp-line bg-[var(--fp-surface-strong)] px-2 pb-[max(0.5rem,var(--fp-app-safe-area-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,33,36,0.08)] backdrop-blur lg:hidden"
+          data-testid="mobile-bottom-navigation"
         >
-          <div className="mx-auto grid max-w-xl grid-cols-4 gap-1">
+          <div className="mx-auto grid max-w-xl grid-cols-5 gap-1">
             {primaryNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = isActiveRoute(pathname, item.href);
@@ -214,6 +219,7 @@ export function AppShell({
                 </Link>
               );
             })}
+            <OverflowMenu pathname={pathname} placement="bottom" />
           </div>
         </nav>
       </div>
@@ -221,18 +227,39 @@ export function AppShell({
   );
 }
 
-function OverflowMenu({ pathname }: { pathname: string }) {
+function OverflowMenu({
+  pathname,
+  placement = "desktop"
+}: {
+  pathname: string;
+  placement?: "bottom" | "desktop";
+}) {
+  const isBottomPlacement = placement === "bottom";
+
   return (
-    <details className="relative shrink-0">
+    <details className="relative min-w-0 shrink-0">
       <summary
-        aria-label="Open menu"
-        className="grid h-11 w-11 cursor-pointer list-none place-items-center rounded border border-fp-line bg-white text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 [&::-webkit-details-marker]:hidden"
+        aria-label="Open more actions"
+        className={[
+          "grid cursor-pointer list-none place-items-center rounded border border-fp-line bg-white text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 [&::-webkit-details-marker]:hidden",
+          isBottomPlacement
+            ? "min-h-12 w-full gap-1 px-1 text-[11px] font-semibold leading-4 text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
+            : "h-11 w-11"
+        ].join(" ")}
+        role="button"
       >
         <MoreHorizontal aria-hidden className="h-5 w-5" />
+        {isBottomPlacement ? <span className="truncate">More</span> : null}
       </summary>
       <nav
         aria-label="More"
-        className="absolute right-0 top-12 z-30 grid min-w-48 gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-[var(--fp-shadow-elevated)]"
+        className={[
+          "z-30 grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-[var(--fp-shadow-elevated)]",
+          isBottomPlacement
+            ? "absolute bottom-full right-0 mb-2 min-w-52 origin-bottom-right"
+            : "absolute right-0 top-12 min-w-48"
+        ].join(" ")}
+        data-testid={isBottomPlacement ? "mobile-bottom-more-menu" : undefined}
       >
         {overflowNavItems.map((item) => {
           const Icon = item.icon;

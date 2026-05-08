@@ -1017,4 +1017,35 @@ describe("LittleAlexPhysics", () => {
       "i'm little alex horne"
     );
   });
+
+  it("drags from direct touch events when mobile pointer events do not fire", () => {
+    stubReducedMotion(false);
+    stubViewport(390, 720);
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics chatPhrase="touch drag works" />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    fireEvent.touchStart(grabTarget, {
+      changedTouches: [{ clientX: 340, clientY: 520, identifier: 7 }],
+      touches: [{ clientX: 340, clientY: 520, identifier: 7 }]
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "dragging");
+
+    fireEvent.touchMove(grabTarget, {
+      changedTouches: [{ clientX: 220, clientY: 430, identifier: 7 }],
+      touches: [{ clientX: 220, clientY: 430, identifier: 7 }]
+    });
+    fireEvent.touchEnd(grabTarget, {
+      changedTouches: [{ clientX: 220, clientY: 430, identifier: 7 }],
+      touches: []
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "flinging");
+    expect(screen.getByTestId("little-alex-chat-bubble")).toHaveTextContent(
+      "touch drag works"
+    );
+  });
 });
