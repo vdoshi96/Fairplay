@@ -978,24 +978,42 @@ async function littleAlexScreenshotPixelFailures(
   presentation: LittleAlexSpritePresentation,
   screenshotPath: string
 ) {
-  const visiblePng = await page.screenshot({
-    fullPage: false,
-    path: screenshotPath
-  });
-  const hideStyle = await page.addStyleTag({
-    content: `[data-testid="little-alex-horne"] { opacity: 0 !important; transition: none !important; visibility: hidden !important; }`
+  const isolateStyle = await page.addStyleTag({
+    content: `
+      body *:not([data-testid="little-alex-horne"]):not([data-testid="little-alex-horne"] *) {
+        visibility: hidden !important;
+      }
+      [data-testid="little-alex-horne"],
+      [data-testid="little-alex-horne"] * {
+        visibility: visible !important;
+      }
+    `
   });
 
   try {
-    const hiddenPng = await page.screenshot({ fullPage: false });
-
-    return littleAlexPixelQaFailures({
-      hiddenPng,
-      label: presentation,
-      visiblePng
+    const visiblePng = await page.screenshot({
+      fullPage: false,
+      path: screenshotPath
     });
+    const hideStyle = await page.addStyleTag({
+      content: `[data-testid="little-alex-horne"] { opacity: 0 !important; transition: none !important; visibility: hidden !important; }`
+    });
+
+    try {
+      const hiddenPng = await page.screenshot({ fullPage: false });
+
+      return littleAlexPixelQaFailures({
+        hiddenPng,
+        label: presentation,
+        visiblePng
+      });
+    } finally {
+      await hideStyle.evaluate((style) => {
+        style.parentNode?.removeChild(style);
+      });
+    }
   } finally {
-    await hideStyle.evaluate((style) => {
+    await isolateStyle.evaluate((style) => {
       style.parentNode?.removeChild(style);
     });
   }
@@ -1324,15 +1342,21 @@ test.describe("Little Alex physics", () => {
     );
     const before = await torso.boundingBox();
     await dragLittleAlex(page, -180, 80);
-    const after = await torso.boundingBox();
 
     expect(before).not.toBeNull();
-    expect(after).not.toBeNull();
 
-    if (before && after) {
-      expect(Math.abs(after.x - before.x) + Math.abs(after.y - before.y)).toBeGreaterThan(
-        20
-      );
+    if (before) {
+      await expect
+        .poll(async () => {
+          const after = await torso.boundingBox();
+
+          if (!after) {
+            return 0;
+          }
+
+          return Math.abs(after.x - before.x) + Math.abs(after.y - before.y);
+        })
+        .toBeGreaterThan(20);
     }
 
     await expectLittleAlexInViewport(page);

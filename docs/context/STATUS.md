@@ -4,13 +4,15 @@ Last updated: 2026-05-08
 
 ## Current Phase
 
-The focused catalog/deal/board and Little Alex fix is implemented on top of the Deal/Your Deck naming polish. The active product now treats Library source cards and Deal cards as the same catalog-backed set: Deal materializes the full source catalog for a household, Library no longer has a visible put-in-play workflow, and Board shows only cards assigned/categorized to Alex, Max, Save for later, or Not applicable. Little Alex touch dragging now separates grab/drag from ragdoll/fling so mobile hold follows the finger and ragdoll starts only after release behavior.
+The focused catalog/deal/board and Little Alex fix is implemented and merged. The active product now treats Library source cards and Deal cards as the same catalog-backed set: Deal materializes the full source catalog for a household, Library no longer has a visible put-in-play workflow, and Board shows only cards assigned/categorized to Alex, Max, Save for later, or Not applicable. Little Alex touch dragging separates grab/drag from ragdoll/fling so mobile hold follows the finger and ragdoll starts only after release behavior.
+
+The current follow-up stabilizes local verification: Playwright e2e now builds the app and runs against `next start` with explicit local runtime env, and Prisma local migration uses a dedicated `SHADOW_DATABASE_URL` plus a shadow DB setup helper so app roles without `CREATEDB` no longer block `migrate dev`.
 
 ## Branch And Working Tree
 
-- Local `main` has been fast-forwarded through PR #45.
-- The catalog/deal/board and Little Alex fix is being applied on top of the ordered focused patch merges and naming polish.
-- Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, and #45 focused patch QA/docs.
+- Local `main` has been fast-forwarded through PR #47.
+- Active follow-up branch: `codex/stabilize-e2e-and-prisma-local`.
+- Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, #45 focused patch QA/docs, and #47 catalog/deal/board plus Little Alex fix.
 
 ## What Exists
 
@@ -59,10 +61,12 @@ The latest focused patch pass covered Little Alex mobile grab alignment and ragd
 
 The catalog/deal/board and Little Alex fix materialized one active household responsibility per source template, added safe duplicate archival/indexing, removed Library put-in-play controls, removed Board Unassigned, and verified mobile/desktop Little Alex drag/fling behavior. Details are tracked in `docs/implementation/2026-05-08-catalog-deal-board-little-alex.md`.
 
+The local tooling stability pass replaced the flaky `next dev` Playwright server with build-plus-`next start`, injected e2e runtime env, added an explicit Prisma shadow database URL, and added a local shadow DB setup helper. Details are tracked in `docs/implementation/2026-05-08-e2e-prisma-local-stability.md`.
+
 ## Known Blockers
 
 - Vercel preview for PR #28 historically failed before build because `prisma migrate deploy` could not reach `db.prisma.io:5432` (`P1001`). Confirm deployment DB reachability before release if that infrastructure has not changed.
-- Production runtime needs both `DATABASE_URL` and `SESSION_SECRET`; local production smoke failed until those were explicitly provided to `next start`.
+- Production runtime needs both `DATABASE_URL` and `SESSION_SECRET`; local Playwright now provides safe test defaults for its `next start` server, but real deployments still need environment-specific values.
 - `.env.local` exists locally and is ignored; it was not read.
 - `References/` exists locally and is ignored; it was not read.
 
@@ -87,6 +91,7 @@ The catalog/deal/board and Little Alex fix materialized one active household res
 - Final focused patch-run verification passed after the documentation/rendered QA follow-up: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 520 tests), `npm run build`, full `npm run test:e2e` (27 Playwright tests), and rendered Playwright browser QA for the requested Distribute, More menu, and Little Alex flows.
 - Focused Little Alex/Deal/Board/Check-in patch verification passed: `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm test -- --run` (89 files, 530 tests), `npm run build`, targeted Check-in/corrective responsive/Little Alex Playwright, and full `npm run test:e2e` (28 tests).
 - Catalog/deal/board and Little Alex verification passed: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 538 tests), `npm run build`, targeted corrective responsive/Little Alex/guided-learning/auth Playwright specs, and full `npm run test:e2e -- --workers=1` (28 tests). `npm run prisma:migrate -- --skip-seed` hit local shadow DB permission `P3014`; `prisma migrate deploy` applied the catalog identity migration successfully.
+- Local e2e/Prisma stability verification passed: `git diff --check`, `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (90 files, 540 tests), `npm run prisma:migrate -- --skip-seed`, and full `npm run test:e2e` (28 tests). The previous local shadow DB permission `P3014` is resolved by `SHADOW_DATABASE_URL` and `npm run db:shadow`.
 
 ## Suggested Cleanup Plan
 

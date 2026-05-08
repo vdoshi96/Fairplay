@@ -17,7 +17,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 - Card workflow: Your Deck searchable assigned-card gallery, Deal swipe deck plus available-card list, Board bucket sections, Ask Greg card generation.
 - Learning: Theory, feature guides, onboarding.
 - Responsibilities: stable persisted lanes, product bucket mapping, assignment/status/visibility/placement routes, simplified card detail.
-- Library: template cards with flip-to-back details and direct lane assignment.
+- Library: full source catalog cards with flip-to-back details; Deal uses the same catalog-backed dealable pool.
 - Check-ins: schedule a check-in, confirm it happened, and save optional minutes/notes.
 - Settings: theme mode, persona/Little Alex settings, logout, and crash-course restart.
 
@@ -29,7 +29,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 - `../context/SOURCES.md`: source policy and consulted materials.
 - `../product/ip-safety-review.md`: blocking IP/privacy/safety guide.
 - `../product/visual-system.md`: visual and motion direction.
-- `../deployment/local-development.md`: local DB and verification workflow.
+- `../deployment/local-development.md`: local DB, shadow DB, and verification workflow.
 - `../agents/manifest.md`: historical agent task registry.
 - `../product/card-first-mobile-redesign.md`: current card-first redesign rationale, IA, state model, gestures, PWA notes, QA, limitations, and future work.
 - `../implementation/2026-05-08-mobile-card-ui-state-fix.md`: mobile card UI/state fix report, changed files, state flow, PR order, and QA notes.

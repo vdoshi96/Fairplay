@@ -218,27 +218,28 @@ async function expectLittleAlexFullyVisible(page: Page, label: string) {
         );
       })
       .flatMap((element) => {
+        const tolerance = 2;
         const rect = element.getBoundingClientRect();
         const name = element.dataset.part ?? element.dataset.testid ?? "little-alex";
         const partFailures: string[] = [];
 
-        if (rect.left < -1) {
+        if (rect.left < -tolerance) {
           partFailures.push(`${name} left ${rect.left}`);
         }
 
-        if (rect.top < -1) {
+        if (rect.top < -tolerance) {
           partFailures.push(`${name} top ${rect.top}`);
         }
 
-        if (rect.right > viewport.width + 1) {
+        if (rect.right > viewport.width + tolerance) {
           partFailures.push(`${name} right ${rect.right} > ${viewport.width}`);
         }
 
-        if (rect.bottom > viewport.height + 1) {
+        if (rect.bottom > viewport.height + tolerance) {
           partFailures.push(`${name} bottom ${rect.bottom} > ${viewport.height}`);
         }
 
-        if (shellRect && rect.bottom > shellRect.bottom + 1) {
+        if (shellRect && rect.bottom > shellRect.bottom + tolerance) {
           partFailures.push(
             `${name} bottom ${rect.bottom} > shell paint bottom ${shellRect.bottom}`
           );

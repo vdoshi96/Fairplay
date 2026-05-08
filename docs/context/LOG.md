@@ -1,5 +1,30 @@
 # Fairplay Context Log
 
+## 2026-05-08 - Local E2E And Prisma Stability
+
+Requested by the user: fix the test server flakiness and local DB permission issues so they do not block the next pass.
+
+Actions completed:
+
+- Replaced Playwright's flaky `next dev --port 3101` server with build-plus-`next start --port 3101`.
+- Added explicit Playwright web-server env for `APP_BASE_URL`, `DATABASE_URL`, `SHADOW_DATABASE_URL`, and `SESSION_SECRET`.
+- Added `SHADOW_DATABASE_URL` to Prisma schema/env examples and npm Prisma scripts.
+- Added `npm run db:shadow`, backed by `scripts/db/ensure-shadow-db.mjs`, to create/check the local Prisma shadow database before `migrate dev`.
+- Added Docker init SQL so fresh Compose volumes create `fairplay_shadow` alongside the app database.
+- Added developer-tooling regression tests for the e2e server and shadow DB configuration.
+- Hardened two Little Alex Playwright assertions that were flaking due async drag timing, page animation noise in screenshot diffs, and subpixel viewport rounding.
+- Added implementation documentation in `docs/implementation/2026-05-08-e2e-prisma-local-stability.md`.
+
+Verification:
+
+- `git diff --check`
+- `npm run prisma:validate`
+- `npm run typecheck`
+- `npm run lint`
+- `npm test -- --run` (90 files, 540 tests)
+- `npm run prisma:migrate -- --skip-seed`
+- `npm run test:e2e` (28 tests)
+
 ## 2026-05-08 - Catalog Deal Board And Little Alex Fix
 
 Requested by the user: make Library and Deal represent the same underlying card catalog, remove Library put-in-play and Board Unassigned, prevent duplicate catalog cards, normalize existing local/dev duplicate data safely, and fix Little Alex mobile grab/drag/fling behavior without unrelated UI changes.

@@ -16,6 +16,7 @@ services:
       retries: 30
     volumes:
       - fairplay-postgres-data:/var/lib/postgresql/data
+      - ./scripts/db/init:/docker-entrypoint-initdb.d:ro
 
 volumes:
   fairplay-postgres-data:
