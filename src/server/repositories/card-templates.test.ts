@@ -10,6 +10,7 @@ import {
   getCardTemplate,
   listCardTemplates
 } from "./card-templates";
+import { listResponsibilitiesForHousehold } from "./responsibilities";
 
 const createdHouseholdIds = new Set<string>();
 const createdTemplateIds = new Set<string>();
@@ -194,6 +195,14 @@ describe("card template repository", () => {
       sourceDefinition: "Groceries definition",
       sourceCoverAssetPath: "/assets/fairplay/cards/groceries.png"
     });
+
+    const householdCards = await listResponsibilitiesForHousehold(household.id);
+    expect(householdCards).toEqual([
+      expect.objectContaining({
+        id: created.id,
+        sourceCoverAssetPath: "/assets/fairplay/cards/groceries.png"
+      })
+    ]);
   });
 
   it("creates from a stable source card id and uses the source template default lane", async () => {

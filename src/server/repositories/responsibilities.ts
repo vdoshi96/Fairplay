@@ -110,7 +110,8 @@ function toResponsibilitySummary(
     nextReviewAt: nullableIso(responsibility.nextReviewAt),
     householdStandard: responsibility.householdStandard,
     sourceDefinition: responsibility.sourceDefinition,
-    sourceMinimumStandard: responsibility.sourceMinimumStandard
+    sourceMinimumStandard: responsibility.sourceMinimumStandard,
+    sourceCoverAssetPath: responsibility.sourceCoverAssetPath
   };
 }
 
