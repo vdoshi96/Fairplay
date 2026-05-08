@@ -74,17 +74,13 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
     page.getByRole("heading", { name: "Your Cards" })
   ).toBeVisible();
 
-  const welcome = page.getByRole("dialog", { name: "Welcome to Fairplay" });
-  await expect(welcome).toBeVisible();
   await expect(
-    welcome.getByRole("link", { name: "Learn a feature" })
+    page.getByRole("dialog", { name: "Welcome to Fairplay" })
   ).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Learn a feature" })
   ).toHaveCount(0);
   await expect(page.getByText(retiredGuideLabel)).toHaveCount(0);
-  await page.getByRole("button", { name: "Close welcome" }).click();
-  await expect(welcome).not.toBeVisible();
 
   await page.goto("/app/library?guide=library");
   await expect(page).toHaveURL(/\/app\/library\?guide=library/);
@@ -127,11 +123,6 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   const manualGuide = page.getByRole("dialog", { name: "Library guide" });
   await expect(manualGuide).toBeVisible();
   await manualGuide.getByRole("button", { name: "Skip", exact: true }).click();
-
-  await page.goto("/app/your-cards");
-  await expect(
-    page.getByRole("dialog", { name: "Welcome to Fairplay" })
-  ).not.toBeVisible();
 
   await page.goto("/app/crash-course");
   await expect(

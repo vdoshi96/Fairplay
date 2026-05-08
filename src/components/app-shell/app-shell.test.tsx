@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -155,6 +155,52 @@ describe("protected app UI", () => {
     expect(screen.queryByRole("link", { name: /Load map/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Crash course/i }))
       .not.toBeInTheDocument();
+  });
+
+  it("keeps mobile overflow in the bottom action area instead of the top header", () => {
+    renderProtectedUi(<div>Distribution workspace</div>);
+
+    const mobileHeader = screen.getByTestId("mobile-app-header");
+    const bottomNav = screen.getByTestId("mobile-bottom-navigation");
+
+    expect(mobileHeader).not.toContainElement(
+      screen.getByRole("button", { name: "Open more actions" })
+    );
+    expect(bottomNav).toContainElement(
+      screen.getByRole("button", { name: "Open more actions" })
+    );
+    expect(bottomNav.querySelector(".grid")).toHaveClass("grid-cols-5");
+
+    fireEvent.click(screen.getByRole("button", { name: "Open more actions" }));
+
+    const mobileMore = screen.getByTestId("mobile-bottom-more-menu");
+    expect(mobileMore).toHaveAttribute("aria-label", "More");
+    expect(mobileMore).toHaveClass("bottom-full");
+    expect(within(mobileMore).getByRole("link", { name: "Card Library" }))
+      .toHaveAttribute("href", "/app/library");
+  });
+
+  it("keeps shell chrome constrained to the viewport on narrow mobile widths", () => {
+    const { container } = renderProtectedUi(<div>Distribution workspace</div>);
+
+    expect(screen.getByTestId("app-shell-root")).toHaveClass(
+      "w-full",
+      "max-w-full",
+      "overflow-x-clip"
+    );
+    expect(screen.getByTestId("mobile-app-header")).toHaveClass(
+      "w-full",
+      "max-w-full",
+      "overflow-x-clip"
+    );
+    expect(screen.getByTestId("mobile-bottom-navigation")).toHaveClass(
+      "w-full",
+      "max-w-full",
+      "overflow-x-clip"
+    );
+    expect(container.querySelector("[data-page-shell-content]")).toHaveClass(
+      "max-w-full"
+    );
   });
 
   it("renders Little Alex as a decorative physics object on standard protected pages", () => {
