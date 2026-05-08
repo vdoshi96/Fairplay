@@ -1339,8 +1339,13 @@ test.describe("Little Alex physics", () => {
         )
       )
       .toBe("#8f4632");
-    await expect(page.getByTestId("little-alex-full-hair-overlay"))
-      .toHaveAttribute("data-hair-shape", "long-hair");
+    await expect(page.getByTestId("little-alex-full-hair-sprite")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/little-alex-sprites/feminine-auburn-full-hair.png"
+    );
+    await expect(page.getByTestId("little-alex-full-hair-overlay")).toHaveCount(
+      0
+    );
     await expectLittleAlexSpritesLoaded(page, "feminine", "tone_4");
     await dragLittleAlex(page, -180, 120);
     await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(

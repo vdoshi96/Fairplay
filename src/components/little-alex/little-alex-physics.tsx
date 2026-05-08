@@ -242,6 +242,14 @@ function littleAlexFullBodySpritePath(
   return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${skinTone}-full.png`;
 }
 
+function littleAlexHairSpritePath(
+  genderPresentation: LittleAlexGenderPresentation,
+  hairColor: LittleAlexHairColor,
+  kind: "full" | "head"
+) {
+  return `/assets/fairplay/little-alex-sprites/${genderPresentation}-${hairColor}-${kind}-hair.png`;
+}
+
 function littleAlexPartSpritePath(
   genderPresentation: LittleAlexGenderPresentation,
   skinTone: LittleAlexSkinTone,
@@ -2036,16 +2044,16 @@ export function LittleAlexPhysics({
         src={littleAlexFullBodySpritePath(genderPresentation, skinTone)}
         style={fullBodyStyle}
       />
-      <div
-        className="fp-little-alex-full-hair-layer"
+      {/* eslint-disable-next-line @next/next/no-img-element -- Hair color is a sprite-derived transparent layer aligned with the full character art. */}
+      <img
+        alt=""
+        className="fp-little-alex-full-hair-sprite"
         data-hair-shape={hairShape}
-        data-testid="little-alex-full-hair-overlay"
+        data-testid="little-alex-full-hair-sprite"
+        draggable={false}
+        src={littleAlexHairSpritePath(genderPresentation, hairColor, "full")}
         style={fullBodyStyle}
-      >
-        <span
-          className={`fp-little-alex-hair-overlay fp-little-alex-hair-overlay-${hairShape}`}
-        />
-      </div>
+      />
       {partConfigs.map((part) => (
         <div
           className={`fp-little-alex-part ${part.className}`}
@@ -2071,11 +2079,22 @@ export function LittleAlexPhysics({
             src={littleAlexPartSpritePath(genderPresentation, skinTone, part.key)}
           />
           {part.key === "head" ? (
-            <span
-              className={`fp-little-alex-hair-overlay fp-little-alex-hair-overlay-${hairShape}`}
-              data-hair-shape={hairShape}
-              data-testid="little-alex-head-hair-overlay"
-            />
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- Ragdoll head hair uses a sprite-derived recolor layer aligned with the head art. */}
+              <img
+                alt=""
+                className="fp-little-alex-hair-sprite"
+                data-hair-shape={hairShape}
+                data-part={part.key}
+                data-testid="little-alex-head-hair-sprite"
+                draggable={false}
+                src={littleAlexHairSpritePath(
+                  genderPresentation,
+                  hairColor,
+                  "head"
+                )}
+              />
+            </>
           ) : null}
         </div>
       ))}
