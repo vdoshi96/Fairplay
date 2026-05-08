@@ -15,7 +15,7 @@ The current v1 product centers on a two-person household using shared credential
 - Complete onboarding, Theory, and feature-guide learning flows.
 - Land on Deal after login/persona selection and assign cards with swipes, arrow keys, or large fallback buttons.
 - Use Your Deck as the primary assigned-card home with searchable, filterable, image-first assigned cards.
-- Use Board to review all card buckets: Alex, Max, Saved for Later, Not Applicable, and Unassigned.
+- Use Board to review dealt/categorized card buckets: Alex, Max, Saved for Later, and Not Applicable.
 - Browse the Card Library and create AI-assisted responsibility card drafts through Ask Greg.
 - Schedule check-ins, confirm they happened, and add optional minutes/notes.
 - Manage settings, theme preference, crash-course replay, persona preferences, and Little Alex preferences.
@@ -26,7 +26,7 @@ The current v1 product centers on a two-person household using shared credential
 - Styling: Tailwind CSS 3.4 with Fairplay CSS variables in `src/app/globals.css`.
 - Persistence: Prisma 6.7 with Postgres-compatible database.
 - Auth/session: server-managed sessions, opaque cookies, Argon2id password hashing, and auth throttling.
-- Tests: Vitest with jsdom and React Testing Library; Playwright e2e on a local Next dev server.
+- Tests: Vitest with jsdom and React Testing Library; Playwright e2e builds the app and runs against a local `next start` server.
 - AI generation: Qwen primary provider for AI card text/cover generation, optional OpenAI fallback gated by env.
 - Deployment target: Vercel-compatible Next.js app with managed Postgres.
 

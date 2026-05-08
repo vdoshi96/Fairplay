@@ -6,9 +6,8 @@ Fairplay is a Next.js App Router app with Prisma and a Postgres-compatible datab
 
 - Node.js `>=20.9.0`.
 - npm.
-- Docker with Docker Compose for local Postgres verification.
-
-Docker is unavailable in the current implementation workspace, so DB-backed repository tests and end-to-end tests that require a live database were not run here. Run them in a Postgres-capable environment before production readiness.
+- A local or hosted Postgres-compatible database.
+- Docker with Docker Compose is optional for the default local Postgres service.
 
 ## Install
 
@@ -27,6 +26,7 @@ cp .env.example .env.local
 Required variables:
 
 - `DATABASE_URL`: Postgres-compatible connection string. For local Docker, use values matching `compose.yaml`; for hosted environments, use the managed provider connection string.
+- `SHADOW_DATABASE_URL`: separate empty Postgres database used by `prisma migrate dev`. For local Docker defaults, use `postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay_shadow?schema=public`.
 - `SESSION_SECRET`: long random secret used for server-managed session signing/hashing flows. Generate a new value per environment.
 - `AUTH_COOKIE_NAME`: defaults to `fairplay_session`.
 - `APP_BASE_URL`: local app URL, usually `http://localhost:3000`.
@@ -44,7 +44,15 @@ npm run db:up
 npm run db:wait
 ```
 
-The npm Prisma scripts include a fallback connection string for the Docker Compose service when `DATABASE_URL` is not set. For normal development, keep the same connection in `.env.local` so Next.js and Prisma use the selected local database consistently.
+The npm Prisma scripts include fallback connection strings for the Docker Compose service when `DATABASE_URL` or `SHADOW_DATABASE_URL` is not set. For normal development, keep the same connections in `.env.local` so Next.js and Prisma use the selected local database consistently.
+
+The Compose service creates both `fairplay` and `fairplay_shadow` for fresh volumes. If you are using an existing local Postgres where the app user cannot create databases, run the helper once:
+
+```bash
+npm run db:shadow
+```
+
+The helper checks `SHADOW_DATABASE_URL`, creates the shadow database when possible, and falls back to the local OS Postgres admin connection for localhost setups.
 
 Stop the database when finished:
 
@@ -71,6 +79,8 @@ Apply local development migrations:
 ```bash
 npm run prisma:migrate
 ```
+
+`npm run prisma:migrate` runs `npm run db:shadow` first so Prisma does not need to create its own shadow database with the application role.
 
 Seed reviewed original demo content only:
 
@@ -105,4 +115,4 @@ npm run build
 npm run prisma:validate
 ```
 
-`npm run test:e2e` uses Playwright. In this workspace, several protected-route flows are route-mocked because Docker/Postgres is unavailable; run DB-backed end-to-end coverage again in an environment with Postgres before production release.
+`npm run test:e2e` builds the app first and then uses Playwright against `next start` on port 3101. The Playwright web server injects local default `DATABASE_URL`, `SHADOW_DATABASE_URL`, `SESSION_SECRET`, and `APP_BASE_URL` values so the local production server behaves like a real runtime instead of depending on the developer shell.
