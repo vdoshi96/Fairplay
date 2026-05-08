@@ -4,7 +4,7 @@ Last updated: 2026-05-08
 
 ## System Summary
 
-Fairplay is a Next.js App Router household planning app with Prisma/Postgres persistence, server-managed household sessions, persona-aware app state, a mobile-first card app shell, Distribute/Your Cards/Board/Ask Greg primary tabs, lightweight check-in records, learning flows, settings, and Little Alex helper preferences.
+Fairplay is a Next.js App Router household planning app with Prisma/Postgres persistence, server-managed household sessions, persona-aware app state, a mobile-first card app shell, image-first Distribute/Your Cards/Board/Ask Greg primary tabs, lightweight check-in records, learning flows, settings, and Little Alex helper preferences.
 
 ## Wiki Pages
 
@@ -14,12 +14,12 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 ## High-Level Feature Map
 
 - Auth and session: household create/login/logout/me, persona selection, middleware protection, server session refresh.
-- Card workflow: Your Cards assigned-card file, Distribute swipe deck/search, Board bucket view, Ask Greg card generation.
-- Learning: Theory, feature guides, persistent welcome, onboarding.
+- Card workflow: Your Cards searchable assigned-card gallery, Distribute swipe deck plus available-card list, Board bucket sections, Ask Greg card generation.
+- Learning: Theory, feature guides, onboarding.
 - Responsibilities: stable persisted lanes, product bucket mapping, assignment/status/visibility/placement routes, simplified card detail.
 - Library: template cards with flip-to-back details and direct lane assignment.
 - Check-ins: schedule a check-in, confirm it happened, and save optional minutes/notes.
-- Settings: theme mode, persona/Little Alex settings, logout, welcome replay, crash-course restart.
+- Settings: theme mode, persona/Little Alex settings, logout, and crash-course restart.
 
 ## Important Context Links
 
@@ -32,6 +32,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 - `../deployment/local-development.md`: local DB and verification workflow.
 - `../agents/manifest.md`: historical agent task registry.
 - `../product/card-first-mobile-redesign.md`: current card-first redesign rationale, IA, state model, gestures, PWA notes, QA, limitations, and future work.
+- `../implementation/2026-05-08-mobile-card-ui-state-fix.md`: mobile card UI/state fix report, changed files, state flow, PR order, and QA notes.
 
 ## Current Cleanup Priority
 

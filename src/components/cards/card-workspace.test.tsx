@@ -226,6 +226,27 @@ describe("CardWorkspace", () => {
     );
   });
 
+  it("uses an accessible fallback cover without duplicating the visible card title", () => {
+    render(
+      <CardWorkspace
+        responsibilities={[
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440012",
+            sourceCoverAssetPath: null,
+            title: "Lunch",
+            boardLane: "player_1"
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="yourCards"
+      />
+    );
+
+    expect(screen.getByRole("img", { name: "Lunch cover" })).toBeVisible();
+    expect(screen.getByText("Card cover")).toBeVisible();
+    expect(screen.getAllByText("Lunch")).toHaveLength(1);
+  });
+
   it("flips a Your Cards item without opening the old detail flow", () => {
     render(
       <CardWorkspace

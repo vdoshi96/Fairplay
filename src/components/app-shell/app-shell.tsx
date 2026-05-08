@@ -237,7 +237,7 @@ function OverflowMenu({
   const isBottomPlacement = placement === "bottom";
 
   return (
-    <details className="relative min-w-0 shrink-0">
+    <details className="fp-overflow-menu relative min-w-0 shrink-0">
       <summary
         aria-label="Open more actions"
         className={[
@@ -254,7 +254,7 @@ function OverflowMenu({
       <nav
         aria-label="More"
         className={[
-          "z-30 grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-[var(--fp-shadow-elevated)]",
+          "fp-overflow-menu-panel z-30 grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-[var(--fp-shadow-elevated)]",
           isBottomPlacement
             ? "absolute bottom-full right-0 mb-2 min-w-52 origin-bottom-right"
             : "absolute right-0 top-12 min-w-48"

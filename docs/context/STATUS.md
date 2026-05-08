@@ -4,13 +4,13 @@ Last updated: 2026-05-08
 
 ## Current Phase
 
-Card-first mobile rebuild is implemented on the local feature branch. The active product now lands signed-in users on Distribute, uses Your Cards as the effective home after assignment, replaces Load Map with Board, and keeps Settings, Check in, Theory, and Card Library in overflow navigation.
+The card-first mobile fix pass has been merged through PRs #38, #39, and #40. The active product lands signed-in users on Distribute, uses Your Cards as the effective home after assignment, replaces Load Map with Board, and keeps Settings, Check in, Theory, and Card Library in overflow navigation. Card images from the Library now flow into Distribute, Your Cards, and Board.
 
 ## Branch And Working Tree
 
-- Current branch during this pass: `codex/card-first-mobile-rebuild`.
-- This pass has not been merged to `main` yet.
-- Earlier merged UX polish PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins.
+- Local `main` has been fast-forwarded through PR #40.
+- This documentation/QA pass is being finalized after the ordered merges.
+- Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, and #40 image-first card workspace.
 
 ## What Exists
 
@@ -24,9 +24,11 @@ Card-first mobile rebuild is implemented on the local feature branch. The active
 
 - Global generated backgrounds are stronger and paired with theme-aware washes so foreground surfaces remain readable.
 - The previous homepage is retired. Root, login, and persona selection land on Distribute for signed-in selected-persona sessions.
-- Cards are the primary interaction model: Distribution supports search, tap/click flip, swipe left/right/up/down, arrow keys, and large fallback buttons.
-- Your Cards is a card-file style assigned-card view; tapping a card flips it to show assignment, purpose, and Fogging E-Standards.
-- Board groups cards by Alex, Max, Saved for Later, Not Applicable, and Unassigned using card components instead of table-like panels.
+- Cards are the primary interaction model: Distribution supports search, an available-card list, tap/click flip, swipe left/right/up/down, arrow keys, and large fallback buttons.
+- Your Cards is a searchable, cadence-filterable, image-first assigned-card gallery; tapping a card flips it to show assignment, purpose, and Fogging E-Standards.
+- Board groups cards by Alex, Max, Saved for Later, Not Applicable, and Unassigned using stacked/collapsible card sections on mobile instead of horizontal page-level lane scrolling.
+- Mobile overflow navigation now opens from the bottom action area. The persistent welcome banner is no longer mounted in the protected app shell.
+- Little Alex has touch fallback dragging for mobile browsers while preserving desktop mouse/pointer behavior.
 - Library cards also flip in place and create cards directly into a selected lane; old "put in play" copy is removed from visible card flows.
 - Ask Greg is a main tab for drafting more cards.
 - Check-ins is now a lightweight schedule, confirm, and optional notes flow; agenda/decision concepts are no longer visible in the UI.
@@ -40,17 +42,15 @@ Card-first mobile rebuild is implemented on the local feature branch. The active
 
 ## Verification From This Pass
 
-Card-first rebuild verification passed:
+Card-first mobile fix branch verification passed:
 
 ```bash
 npm test -- --run
 npm run typecheck
 npm run lint
-npm run build
-DATABASE_URL=postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public SESSION_SECRET=fairplay-e2e-secret npm run test:e2e
 ```
 
-Additional production smoke verification used `next start` on port 3020 with local DB/session env and a Playwright iPhone 14 profile. It created a throwaway household, created two cards, verified Distribute search, card flip, Alex button assignment, touch swipe right to Max, Your Cards flip, Board rendering, no document-level horizontal overflow, and manifest `start_url`/maskable icon fields.
+PR-specific focused suites also covered responsibility distribution state, card workspace rendering, app shell overflow placement, Settings welcome removal, and Little Alex touch handling. Final integrated build/e2e/mobile smoke passed and is tracked in `docs/implementation/2026-05-08-mobile-card-ui-state-fix.md`.
 
 ## Known Blockers
 
@@ -74,6 +74,8 @@ Additional production smoke verification used `next start` on port 3020 with loc
 - For the current Crash Course concept polish, `npm test -- src/components/crash-course/crash-course-flow.test.tsx src/components/crash-course/crash-course-page-client.test.tsx --run` passed with 2 files and 12 tests.
 - Final branch verification passed: `npm run lint`, `npm run typecheck`, `npm test -- --run` (86 files, 498 tests), `npm run prisma:validate`, `npm run build`, `npx playwright test e2e/corrective-responsive-visual.spec.ts --project=chromium`, `npx playwright test e2e/dark-mode-visual.spec.ts e2e/guided-learning.spec.ts --project=chromium` after stale QA assertions were updated, and `npx playwright test e2e/guided-learning.spec.ts --project=chromium`.
 - Card-first rebuild verification passed: Vitest 88 files / 510 tests, full Playwright e2e 27 tests, typecheck, lint, build, and mobile production smoke.
+- Mobile card UI/state fix branch verification passed before merge: PR #38 focused tests/full Vitest/typecheck/lint, PR #39 focused tests/full Vitest/typecheck/lint, and PR #40 focused tests/full Vitest/typecheck/lint.
+- Final integrated mobile card UI/state verification passed: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 517 tests), `npm run build`, `npx playwright test e2e/corrective-responsive-visual.spec.ts --project=chromium`, and full `npm run test:e2e` (27 tests). Responsive visual QA now includes 320px, 390px, 768px, 1024px, 1280px, and 1366px widths.
 
 ## Suggested Cleanup Plan
 

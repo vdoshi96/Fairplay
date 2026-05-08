@@ -24,11 +24,11 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 
 - `app-shell`: navigation, page shell, session view, layout tokens.
 - `auth`: forms, login/create/persona clients, auth page shell.
-- `cards`: card-state mapping, card workspace for Your Cards/Distribute/Board, and simplified card detail sheet.
+- `cards`: card-state mapping, image-first card workspace for Your Cards/Distribute/Board, and simplified card detail sheet.
 - `library`: card library and AI task manager.
 - `responsibilities`: legacy load map compatibility, editor, board lane metadata, and service-backed card distribution.
 - `check-ins`: lightweight schedule, confirmation, and notes flow.
-- `crash-course`, `guide`, `onboarding`, `welcome`: learning and onboarding surfaces.
+- `crash-course`, `guide`, `onboarding`: active learning and onboarding surfaces. `welcome` remains as retired compatibility code and is not mounted in the protected app shell.
 - `little-alex`, `settings`, `theme`, `visuals`, `motion`, `ui`: helper, preferences, theme, visual primitives, motion, and shared UI.
 
 ### Contracts And Domain
@@ -62,6 +62,8 @@ Migrations currently include initial schema, legacy Radar timing/removal history
 7. Route handlers validate with Zod contracts and call service/repository layers.
 8. Repositories persist through Prisma.
 9. Pages/components refresh or navigate after successful mutation.
+
+Card cover art flows from Library source templates into responsibility summaries as `sourceCoverAssetPath`. Distribute, Your Cards, and Board all render from `responsibilityService.listOverview(session)` through `CardWorkspace`, so assignment movement and cover art stay consistent across tabs.
 
 ## Verification Map
 

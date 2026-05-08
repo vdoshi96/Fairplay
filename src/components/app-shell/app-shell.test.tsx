@@ -170,6 +170,9 @@ describe("protected app UI", () => {
       screen.getByRole("button", { name: "Open more actions" })
     );
     expect(bottomNav.querySelector(".grid")).toHaveClass("grid-cols-5");
+    expect(screen.getByTestId("mobile-bottom-more-menu")).toHaveClass(
+      "fp-overflow-menu-panel"
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Open more actions" }));
 
