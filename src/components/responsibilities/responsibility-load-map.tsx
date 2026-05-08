@@ -17,7 +17,13 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  RotateCcw,
+  Search
+} from "lucide-react";
 import Link from "next/link";
 import {
   useCallback,
@@ -220,6 +226,25 @@ export function ResponsibilityLoadMap({
     );
   });
 
+  const activeFilterCount = [
+    owner !== "all",
+    status !== "all",
+    cadence !== "all",
+    area !== "all",
+    hiddenEffort !== "all",
+    reviewTiming !== "all",
+    searchText.trim().length > 0
+  ].filter(Boolean).length;
+  const resetFilters = useCallback(() => {
+    setOwner("all");
+    setStatus("all");
+    setCadence("all");
+    setArea("all");
+    setHiddenEffort("all");
+    setReviewTiming("all");
+    setSearchText("");
+  }, []);
+
   const responsibilitiesByLane = useMemo(() => {
     const groups = new Map<ResponsibilityBoardLane, ResponsibilitySummary[]>();
 
@@ -300,60 +325,57 @@ export function ResponsibilityLoadMap({
       data-testid="load-map-dashboard-shell"
     >
       <div
-        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
-        data-testid="load-map-hero-visual"
-      >
-        <DecorativeBackgroundLayer
-          className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.52)_50%,rgba(0,0,0,0.1)_100%)]"
-          src={loadMapWorkbenchBackground}
-          testId="load-map-hero-background"
-          washClassName="bg-white/80"
-        />
-        <div className="fp-generated-surface-wash relative z-10 flex flex-col gap-3 p-3 backdrop-blur-[1px] sm:flex-row sm:items-end sm:justify-between sm:p-4">
-          <div className="grid min-w-0 gap-1">
-            <p className="text-[13px] font-semibold text-fp-muted-ink">Load map</p>
-            <h1 className="text-[26px] font-bold leading-[32px] text-fp-ink sm:text-[28px] sm:leading-[34px]">
-              Responsibility overview
-            </h1>
-          </div>
-          <div className="flex min-w-0 flex-wrap items-start gap-2 sm:justify-end">
-            <FeatureGuideLauncher
-              guide={FEATURE_GUIDES.loadMap}
-              showDescription={false}
-            />
-            {responsibilities.length > 0 ? (
-              <Link
-                className="inline-flex min-h-10 items-center justify-center rounded-[8px] bg-fp-primary px-3 text-[14px] font-bold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/25"
-                href="/app/responsibilities/new"
-              >
-                Add responsibility
-              </Link>
-            ) : null}
-          </div>
-        </div>
-      </div>
-
-      <div
-        className="relative min-w-0 overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink p-2 shadow-[var(--fp-shadow-soft)] sm:p-3"
+        className="relative min-w-0 overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
         data-testid="load-map-dashboard"
       >
         <DecorativeBackgroundLayer
-          className="opacity-32 [mask-image:linear-gradient(125deg,black_0%,rgba(0,0,0,0.68)_42%,rgba(0,0,0,0.16)_100%)]"
+          className="opacity-50 [mask-image:linear-gradient(115deg,black_0%,rgba(0,0,0,0.68)_52%,rgba(0,0,0,0.2)_100%)]"
           src={loadMapWorkbenchBackground}
-          testId="load-map-dashboard-background"
-          washClassName="bg-white/82"
+          testId="load-map-hero-background"
+          washClassName="fp-page-hero-wash"
         />
         <div
           aria-hidden="true"
           className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--fp-alex),var(--fp-shared),var(--fp-max),var(--fp-helper))]"
         />
-        <div className="relative z-10 grid min-w-0 gap-2 sm:gap-3">
+        <div
+          className="fp-generated-surface-wash relative z-10 grid min-w-0 gap-4 p-3 backdrop-blur-[1px] md:grid-cols-[minmax(0,1.05fr)_minmax(18rem,0.95fr)] md:p-4"
+          data-testid="load-map-hero-visual"
+        >
+          <div className="flex min-w-0 flex-col justify-between gap-4">
+            <div className="grid min-w-0 gap-2">
+              <p className="text-[13px] font-semibold text-fp-muted-ink">Load Map</p>
+              <h1 className="text-[26px] font-bold leading-[32px] text-fp-ink sm:text-[30px] sm:leading-[36px]">
+                Responsibility board
+              </h1>
+              <p className="max-w-[44rem] text-[14px] leading-6 text-fp-muted-ink">
+                {filteredResponsibilities.length} of {responsibilities.length} cards
+                shown
+              </p>
+            </div>
+            <div className="flex min-w-0 flex-wrap items-start gap-2">
+              <FeatureGuideLauncher
+                guide={FEATURE_GUIDES.loadMap}
+                showDescription={false}
+                showHelper={false}
+              />
+              {responsibilities.length > 0 ? (
+                <Link
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] bg-fp-primary px-3 text-[14px] font-bold text-fp-on-primary outline-none focus:ring-2 focus:ring-fp-primary/25"
+                  href="/app/responsibilities/new"
+                >
+                  <Plus aria-hidden className="h-4 w-4" />
+                  Add
+                </Link>
+              ) : null}
+            </div>
+          </div>
           <div
-            className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))] gap-2"
+            className="grid min-w-0 grid-cols-2 gap-2 rounded-[8px] border border-white/75 bg-[var(--fp-surface-strong)] p-2 shadow-sm"
             data-testid="load-map-diagnostics"
           >
             <Signal
-              label="Owner mix"
+              label="Owners"
               testId="load-map-signal-owner"
               tone="owner"
               value={ownerMix(loadSnapshot.ownerDistribution)}
@@ -372,99 +394,99 @@ export function ResponsibilityLoadMap({
               value={String(loadSnapshot.sharedDistribution.shared ?? 0)}
             />
             <Signal
-              label="Due review"
+              label="Due"
               testId="load-map-signal-review"
               tone="review"
               value={String(loadSnapshot.reviewDueCount)}
             />
             <Signal
-              label="Paused or out"
+              label="Paused/out"
               testId="load-map-signal-reserve"
               tone="reserve"
               value={String(loadSnapshot.pausedOrNotRelevantCount)}
             />
-            <Signal
-              label="High frequency"
-              testId="load-map-signal-cadence"
-              tone="cadence"
-              value={String(
-                (loadSnapshot.cadenceDistribution.daily ?? 0) +
-                  (loadSnapshot.cadenceDistribution.weekly ?? 0)
-              )}
-            />
-            <Signal
-              label="Area mix"
-              testId="load-map-signal-area"
-              tone="area"
-              value={summaryMix(loadSnapshot.areaDistribution)}
-            />
-            <Signal
-              label="Hidden effort mix"
-              testId="load-map-signal-effort"
-              tone="effort"
-              value={summaryMix(loadSnapshot.hiddenEffortMix)}
-            />
           </div>
+        </div>
+      </div>
 
-          <div
-            className="grid min-w-0 gap-2 rounded-[8px] border border-white/70 bg-white/88 p-2 backdrop-blur-[1px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]"
-            data-guide-id="load-map-filters"
-          >
-            <FilterGroup legend="Ownership">
-              <Select
-                label="Owner"
-                onChange={setOwner}
-                options={ownerOptions}
-                value={owner}
-              />
-              <Select
-                label="Hidden effort"
-                onChange={setHiddenEffort}
-                options={hiddenEffortOptions}
-                value={hiddenEffort}
-              />
-            </FilterGroup>
-            <FilterGroup columns="three" legend="Card details">
-              <Select
-                label="Status"
-                onChange={setStatus}
-                options={statusOptions}
-                value={status}
-              />
-              <Select
-                label="Cadence"
-                onChange={setCadence}
-                options={cadenceOptions}
-                value={cadence}
-              />
-              <Select
-                label="Area"
-                onChange={setArea}
-                options={areaOptions}
-                value={area}
-              />
-            </FilterGroup>
-            <FilterGroup legend="Attention">
-              <Select
-                label="Review timing"
-                onChange={setReviewTiming}
-                options={["all", "due", "upcoming", "none"] as const}
-                value={reviewTiming}
-              />
-            </FilterGroup>
-            <FilterGroup legend="Find">
-              <label className="grid min-w-0 gap-1 text-[13px] font-semibold text-fp-muted-ink">
-                Search
-                <input
-                  aria-label="Search responsibilities"
-                  className="min-h-10 w-full min-w-0 rounded-[8px] border border-fp-line bg-white px-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
-                  onChange={(event) => setSearchText(event.target.value)}
-                  type="search"
-                  value={searchText}
-                />
-              </label>
-            </FilterGroup>
+      <div
+        className="grid min-w-0 gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 shadow-[var(--fp-shadow-soft)]"
+        data-guide-id="load-map-filters"
+        data-testid="load-map-filters"
+      >
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h2 className="text-[16px] font-bold leading-6 text-fp-ink">Focus</h2>
+            <p className="text-[13px] leading-5 text-fp-muted-ink">
+              {activeFilterCount === 0
+                ? "All cards shown."
+                : `${activeFilterCount} filter${activeFilterCount === 1 ? "" : "s"} on.`}
+            </p>
           </div>
+          {activeFilterCount > 0 ? (
+            <button
+              className="inline-flex min-h-9 items-center justify-center gap-2 rounded-[8px] border border-fp-line bg-white px-3 text-[13px] font-bold text-fp-ink outline-none transition hover:bg-fp-surface focus:ring-2 focus:ring-fp-ink/20"
+              onClick={resetFilters}
+              type="button"
+            >
+              <RotateCcw aria-hidden className="h-4 w-4" />
+              Reset
+            </button>
+          ) : null}
+        </div>
+        <div className="grid min-w-0 gap-2 lg:grid-cols-[minmax(14rem,1.2fr)_minmax(0,2fr)]">
+          <label className="relative grid min-w-0 gap-1 text-[13px] font-semibold text-fp-muted-ink">
+            Search
+            <Search
+              aria-hidden
+              className="pointer-events-none absolute bottom-3 left-3 h-4 w-4 text-fp-muted-ink"
+            />
+            <input
+              aria-label="Search responsibilities"
+              className="min-h-10 w-full min-w-0 rounded-[8px] border border-fp-line bg-white py-2 pl-9 pr-3 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+              onChange={(event) => setSearchText(event.target.value)}
+              type="search"
+              value={searchText}
+            />
+          </label>
+          <FilterGroup legend="Filters">
+            <Select
+              label="Owner"
+              onChange={setOwner}
+              options={ownerOptions}
+              value={owner}
+            />
+            <Select
+              label="Status"
+              onChange={setStatus}
+              options={statusOptions}
+              value={status}
+            />
+            <Select
+              label="Cadence"
+              onChange={setCadence}
+              options={cadenceOptions}
+              value={cadence}
+            />
+            <Select
+              label="Area"
+              onChange={setArea}
+              options={areaOptions}
+              value={area}
+            />
+            <Select
+              label="Effort"
+              onChange={setHiddenEffort}
+              options={hiddenEffortOptions}
+              value={hiddenEffort}
+            />
+            <Select
+              label="Review"
+              onChange={setReviewTiming}
+              options={["all", "due", "upcoming", "none"] as const}
+              value={reviewTiming}
+            />
+          </FilterGroup>
         </div>
       </div>
 
@@ -483,7 +505,7 @@ export function ResponsibilityLoadMap({
             <div className="grid gap-3">
               <h2 className="text-[18px] font-bold">No responsibilities mapped yet.</h2>
               <p className="text-[14px] leading-6 text-fp-muted-ink">
-                Add one household responsibility and decide what needs attention first.
+                Add one card to start mapping the work.
               </p>
               <Link
                 className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-bold sm:w-fit"
@@ -515,7 +537,7 @@ export function ResponsibilityLoadMap({
                   Lane board
                 </h2>
                 <p className="text-[13px] leading-5 text-fp-muted-ink">
-                  Slide the lane board to compare every responsibility bucket.
+                  Slide to compare lanes.
                 </p>
               </div>
               <div className="flex shrink-0 gap-1">
@@ -995,44 +1017,18 @@ function ownerMix(distribution: Record<string, number>) {
   return `A ${distribution.alex ?? 0} / M ${distribution.max ?? 0}`;
 }
 
-function summaryMix(distribution: Record<string, number>) {
-  const visibleEntries = Object.entries(distribution).filter(
-    ([, value]) => value > 0
-  );
-
-  if (visibleEntries.length === 0) {
-    return "None";
-  }
-
-  return visibleEntries
-    .map(([key, value]) => `${label(key)} ${value}`)
-    .join(" / ");
-}
-
 function FilterGroup({
   children,
-  columns = "two",
   legend
 }: {
   children: ReactNode;
-  columns?: "two" | "three";
   legend: string;
 }) {
-  const columnClass =
-    columns === "three"
-      ? "sm:grid-cols-3"
-      : "sm:grid-cols-2 xl:grid-cols-1";
-
   return (
     <fieldset
-      className={[
-        "grid min-w-0 content-start gap-2 rounded-[8px] border border-fp-line bg-white/90 p-2.5",
-        columnClass
-      ].join(" ")}
+      className="grid min-w-0 content-start gap-2 sm:grid-cols-2 xl:grid-cols-3"
     >
-      <legend className="px-1 text-[12px] font-bold uppercase tracking-normal text-fp-muted-ink">
-        {legend}
-      </legend>
+      <legend className="sr-only">{legend}</legend>
       {children}
     </fieldset>
   );

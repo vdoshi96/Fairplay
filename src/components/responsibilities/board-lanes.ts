@@ -17,37 +17,37 @@ export const BOARD_LANES: readonly {
   {
     key: "cards_of_concern",
     label: "Cards of Concern",
-    shortHelp: "Needs discussion, standards, support, or review.",
+    shortHelp: "Needs a decision or support.",
     tone: "concern"
   },
   {
     key: "player_1",
     label: "Alex",
-    shortHelp: "Owned by Alex, with context visible to the household.",
+    shortHelp: "Owned by Alex.",
     tone: "playerOne"
   },
   {
     key: "player_2",
     label: "Max",
-    shortHelp: "Owned by Max, with context visible to the household.",
+    shortHelp: "Owned by Max.",
     tone: "playerTwo"
   },
   {
     key: "kid_split",
     label: "Kid Split",
-    shortHelp: "Split by child, context, season, or sub-responsibility.",
+    shortHelp: "Split by child, season, or subtask.",
     tone: "kidSplit"
   },
   {
     key: "not_in_play",
     label: "Not in Play",
-    shortHelp: "Reserve cards that are not active yet.",
+    shortHelp: "Not active yet.",
     tone: "reserve"
   },
   {
     key: "trimmed",
     label: "Trimmed",
-    shortHelp: "Paused, dropped, or irrelevant for this household.",
+    shortHelp: "Paused, dropped, or irrelevant.",
     tone: "trimmed"
   }
 ];

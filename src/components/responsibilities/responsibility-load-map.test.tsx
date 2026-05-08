@@ -91,7 +91,7 @@ describe("ResponsibilityLoadMap", () => {
     );
   });
 
-  it("filters by owner, status, cadence, area, hidden effort, and review timing", () => {
+  it("filters by owner, status, cadence, area, effort, and review timing", () => {
     render(
       <ResponsibilityLoadMap
         loadSnapshot={loadSnapshot}
@@ -126,10 +126,10 @@ describe("ResponsibilityLoadMap", () => {
     fireEvent.change(screen.getByLabelText("Area"), {
       target: { value: "home_base" }
     });
-    fireEvent.change(screen.getByLabelText("Hidden effort"), {
+    fireEvent.change(screen.getByLabelText("Effort"), {
       target: { value: "doing" }
     });
-    fireEvent.change(screen.getByLabelText("Review timing"), {
+    fireEvent.change(screen.getByLabelText("Review"), {
       target: { value: "upcoming" }
     });
 
@@ -137,7 +137,7 @@ describe("ResponsibilityLoadMap", () => {
     expect(screen.queryByText("Weekly meal outline")).not.toBeInTheDocument();
   });
 
-  it("groups filters into cleaner ownership, details, and attention sections", () => {
+  it("keeps filters in one compact focus section", () => {
     render(
       <ResponsibilityLoadMap
         loadSnapshot={loadSnapshot}
@@ -145,19 +145,32 @@ describe("ResponsibilityLoadMap", () => {
       />
     );
 
-    const ownership = screen.getByRole("group", { name: "Ownership" });
-    const details = screen.getByRole("group", { name: "Card details" });
-    const attention = screen.getByRole("group", { name: "Attention" });
+    const filters = screen.getByRole("group", { name: "Filters" });
 
-    expect(ownership).toContainElement(screen.getByLabelText("Owner"));
-    expect(ownership).toContainElement(screen.getByLabelText("Hidden effort"));
-    expect(details).toContainElement(screen.getByLabelText("Status"));
-    expect(details).toContainElement(screen.getByLabelText("Cadence"));
-    expect(details).toContainElement(screen.getByLabelText("Area"));
-    expect(attention).toContainElement(screen.getByLabelText("Review timing"));
-    expect(screen.getByTestId("load-map-diagnostics")).toContainElement(
-      screen.getByText("Hidden effort mix")
+    expect(screen.getByRole("heading", { name: "Focus" })).toBeVisible();
+    expect(screen.getByText("All cards shown.")).toBeVisible();
+    expect(filters).toContainElement(screen.getByLabelText("Owner"));
+    expect(filters).toContainElement(screen.getByLabelText("Status"));
+    expect(filters).toContainElement(screen.getByLabelText("Cadence"));
+    expect(filters).toContainElement(screen.getByLabelText("Area"));
+    expect(filters).toContainElement(screen.getByLabelText("Effort"));
+    expect(filters).toContainElement(screen.getByLabelText("Review"));
+    expect(screen.getByTestId("load-map-filters")).toHaveClass(
+      "bg-[var(--fp-surface-strong)]"
     );
+    const diagnostics = within(screen.getByTestId("load-map-diagnostics"));
+
+    expect(diagnostics.getByText("Owners")).toBeVisible();
+    expect(diagnostics.getByText("Due")).toBeVisible();
+
+    fireEvent.change(screen.getByLabelText("Owner"), {
+      target: { value: "alex" }
+    });
+
+    expect(screen.getByText("1 filter on.")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+    expect(screen.getByText("All cards shown.")).toBeVisible();
+    expect(screen.getByLabelText("Owner")).toHaveDisplayValue("All");
   });
 
   it("keeps the page shell unclipped while exposing an intentional lane scroller", async () => {
@@ -174,7 +187,7 @@ describe("ResponsibilityLoadMap", () => {
       "max-w-full"
     );
     expect(screen.getByTestId("load-map-dashboard")).toContainElement(
-      screen.getByTestId("load-map-dashboard-background")
+      screen.getByTestId("load-map-hero-background")
     );
     expect(
       document.querySelector('[data-guide-id="load-map-filters"]')
@@ -213,32 +226,7 @@ describe("ResponsibilityLoadMap", () => {
     expect(scrollBy).toHaveBeenCalledWith({ left: -320 });
   });
 
-  it("wraps long diagnostic values inside compact signal tiles", () => {
-    render(
-      <ResponsibilityLoadMap
-        loadSnapshot={{
-          ...loadSnapshot,
-          areaDistribution: {
-            school_transition_after_care_lunchbox_emotional_follow_through: 2
-          },
-          hiddenEffortMix: {
-            emotional_attention_follow_through_planning_backup: 3
-          }
-        }}
-        responsibilities={[responsibility()]}
-      />
-    );
-
-    expect(screen.getByTestId("load-map-signal-area")).toHaveClass("min-w-0");
-    expect(screen.getByTestId("load-map-signal-area-value")).toHaveClass(
-      "break-words"
-    );
-    expect(screen.getByTestId("load-map-signal-effort-value")).toHaveClass(
-      "[overflow-wrap:anywhere]"
-    );
-  });
-
-  it("shows area and hidden effort summary signals from the snapshot", () => {
+  it("wraps diagnostic values inside compact signal tiles", () => {
     render(
       <ResponsibilityLoadMap
         loadSnapshot={loadSnapshot}
@@ -246,10 +234,27 @@ describe("ResponsibilityLoadMap", () => {
       />
     );
 
-    expect(screen.getByText("Area mix")).toBeVisible();
-    expect(screen.getByText("Food Flow 1 / Home Base 1")).toBeVisible();
-    expect(screen.getByText("Hidden effort mix")).toBeVisible();
-    expect(screen.getByText("Planning 1 / Doing 1")).toBeVisible();
+    expect(screen.getByTestId("load-map-signal-owner")).toHaveClass("min-w-0");
+    expect(screen.getByTestId("load-map-signal-owner-value")).toHaveClass(
+      "break-words"
+    );
+    expect(screen.getByTestId("load-map-signal-reserve-value")).toHaveClass(
+      "[overflow-wrap:anywhere]"
+    );
+  });
+
+  it("keeps area and effort as compact filter fields", () => {
+    render(
+      <ResponsibilityLoadMap
+        loadSnapshot={loadSnapshot}
+        responsibilities={[responsibility()]}
+      />
+    );
+
+    expect(screen.getByLabelText("Area")).toHaveDisplayValue("All");
+    expect(screen.getByRole("option", { name: "Food Flow" })).toBeVisible();
+    expect(screen.getByLabelText("Effort")).toHaveDisplayValue("All");
+    expect(screen.getByRole("option", { name: "Planning" })).toBeVisible();
   });
 
   it("renders Trello board lanes with counts and Alex/Max explanations", () => {
@@ -298,7 +303,7 @@ describe("ResponsibilityLoadMap", () => {
       within(reserveLane).getByRole("heading", { name: "Not in Play" })
     ).toBeVisible();
     expect(within(reserveLane).getByText("1 card")).toBeVisible();
-    expect(within(reserveLane).getByText(/reserve cards/i)).toBeVisible();
+    expect(within(reserveLane).getByText("Not active yet.")).toBeVisible();
     expect(within(concernLane).getByText("1 card")).toBeVisible();
     expect(within(alexLane).getByText("1 card")).toBeVisible();
     expect(within(alexLane).getByText(/owned by Alex/i)).toBeVisible();
