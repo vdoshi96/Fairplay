@@ -69,6 +69,20 @@ type DragState = {
 };
 
 const TOUCH_DRAG_POINTER_ID_OFFSET = 10_000;
+const TOUCH_DRAG_DISTANCE_THRESHOLD = 18;
+const TOUCH_PRESS_HOLD_DELAY_MS = 260;
+const TOUCH_SCROLL_DISTANCE_THRESHOLD = 10;
+const TOUCH_SCROLL_DOMINANCE_RATIO = 1.15;
+
+type PendingDragState = {
+  holdTimeout: number | null;
+  lastPoint: Point;
+  pointerId: number;
+  source: "pointer" | "touch";
+  startPoint: Point;
+  startTime: number;
+  target: HTMLElement | null;
+};
 
 type GazeDirection = "center" | "left" | "right";
 
@@ -828,6 +842,38 @@ function releaseShouldShowBubble(drag: DragState, releasePoint: Point) {
   );
 }
 
+function touchIntentForMovement(startPoint: Point, point: Point) {
+  const deltaX = Math.abs(point.x - startPoint.x);
+  const deltaY = Math.abs(point.y - startPoint.y);
+  const distance = Math.hypot(deltaX, deltaY);
+
+  if (
+    deltaY >= TOUCH_SCROLL_DISTANCE_THRESHOLD &&
+    deltaY > deltaX * TOUCH_SCROLL_DOMINANCE_RATIO
+  ) {
+    return "scroll";
+  }
+
+  if (distance >= TOUCH_DRAG_DISTANCE_THRESHOLD) {
+    return "drag";
+  }
+
+  return "pending";
+}
+
+function capturePointerForDrag(target: HTMLElement | null, pointerId: number) {
+  if (!target || typeof target.setPointerCapture !== "function") {
+    return;
+  }
+
+  try {
+    target.setPointerCapture(pointerId);
+  } catch {
+    // Some touch fallback paths use synthetic ids; pointer capture only applies
+    // when the browser has an active PointerEvent for this target.
+  }
+}
+
 function setBodyPose(body: Matter.Body, position: Point, angle: number) {
   Matter.Body.setPosition(body, position);
   Matter.Body.setAngle(body, angle);
@@ -1000,6 +1046,7 @@ export function LittleAlexPhysics({
     turnsInDirection: 0
   });
   const physicsRef = useRef<PhysicsWorld | null>(null);
+  const pendingDragRef = useRef<PendingDragState | null>(null);
   const ragdollRecoveryTimeoutRef = useRef<number | null>(null);
   const ragdollVisualStateRef = useRef<RagdollVisualState>("settled");
 
@@ -1295,8 +1342,19 @@ export function LittleAlexPhysics({
     }, 2_800);
   }, []);
 
+  const clearPendingDrag = useCallback(() => {
+    const pending = pendingDragRef.current;
+
+    if (pending?.holdTimeout !== null && pending?.holdTimeout !== undefined) {
+      window.clearTimeout(pending.holdTimeout);
+    }
+
+    pendingDragRef.current = null;
+  }, []);
+
   const beginDrag = useCallback(
     (point: Point, pointerId: number, timeStamp: number) => {
+      clearPendingDrag();
       clearRagdollRecoveryTimeout();
       setRagdollVisualStateNow(reducedMotion ? "settled" : "dragging");
       setIdleState("active");
@@ -1323,12 +1381,55 @@ export function LittleAlexPhysics({
       };
     },
     [
+      clearPendingDrag,
       clearRagdollRecoveryTimeout,
       reducedAnchor,
       reducedMotion,
       setRagdollVisualStateNow,
       updateGaze
     ]
+  );
+
+  const startPendingTouchDrag = useCallback(
+    ({
+      point,
+      pointerId,
+      source,
+      target,
+      timeStamp
+    }: {
+      point: Point;
+      pointerId: number;
+      source: PendingDragState["source"];
+      target: HTMLElement | null;
+      timeStamp: number;
+    }) => {
+      clearPendingDrag();
+
+      const pending: PendingDragState = {
+        holdTimeout: null,
+        lastPoint: point,
+        pointerId,
+        source,
+        startPoint: point,
+        startTime: Number.isFinite(timeStamp) ? timeStamp : 0,
+        target
+      };
+
+      pending.holdTimeout = window.setTimeout(() => {
+        if (pendingDragRef.current !== pending) {
+          return;
+        }
+
+        if (pending.source === "pointer") {
+          capturePointerForDrag(pending.target, pending.pointerId);
+        }
+        beginDrag(pending.startPoint, pending.pointerId, pending.startTime);
+      }, TOUCH_PRESS_HOLD_DELAY_MS);
+      pendingDragRef.current = pending;
+      updateGaze(point);
+    },
+    [beginDrag, clearPendingDrag, updateGaze]
   );
 
   useEffect(() => {
@@ -1377,18 +1478,30 @@ export function LittleAlexPhysics({
 
   const handlePointerDown = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
       const point = pointFromClient(event);
 
       if (!point) {
         return;
       }
 
-      event.currentTarget.setPointerCapture(event.pointerId);
+      if (event.pointerType === "touch") {
+        event.stopPropagation();
+        startPendingTouchDrag({
+          point,
+          pointerId: event.pointerId,
+          source: "pointer",
+          target: event.currentTarget,
+          timeStamp: event.timeStamp
+        });
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      capturePointerForDrag(event.currentTarget, event.pointerId);
       beginDrag(point, event.pointerId, event.timeStamp);
     },
-    [beginDrag]
+    [beginDrag, startPendingTouchDrag]
   );
 
   const touchPointerId = useCallback((touch: ReactTouch) => {
@@ -1396,7 +1509,8 @@ export function LittleAlexPhysics({
   }, []);
 
   const activeTouchFromEvent = useCallback((event: ReactTouchEvent<HTMLDivElement>) => {
-    const activePointerId = dragRef.current?.pointerId;
+    const activePointerId =
+      dragRef.current?.pointerId ?? pendingDragRef.current?.pointerId;
 
     if (activePointerId !== undefined) {
       const activeIdentifier = activePointerId - TOUCH_DRAG_POINTER_ID_OFFSET;
@@ -1434,7 +1548,41 @@ export function LittleAlexPhysics({
 
   const moveDrag = useCallback(
     (event: PointerInput) => {
-      const drag = dragRef.current;
+      let drag = dragRef.current;
+
+      if (!drag) {
+        const pending = pendingDragRef.current;
+
+        if (!pending || pending.pointerId !== event.pointerId) {
+          return;
+        }
+
+        const pendingPoint = pointFromClient(event, pending.lastPoint);
+
+        if (!pendingPoint) {
+          return;
+        }
+
+        pending.lastPoint = pendingPoint;
+        updateGaze(pendingPoint);
+
+        const intent = touchIntentForMovement(pending.startPoint, pendingPoint);
+
+        if (intent === "scroll") {
+          clearPendingDrag();
+          return;
+        }
+
+        if (intent === "pending") {
+          return;
+        }
+
+        if (pending.source === "pointer") {
+          capturePointerForDrag(pending.target, pending.pointerId);
+        }
+        beginDrag(pending.startPoint, pending.pointerId, pending.startTime);
+        drag = dragRef.current;
+      }
 
       if (!drag || drag.pointerId !== event.pointerId) {
         return;
@@ -1494,7 +1642,7 @@ export function LittleAlexPhysics({
       containBodiesInPlayArea(physics.bodies);
       syncPhysicsDom();
     },
-    [reducedMotion, syncPhysicsDom, updateGaze]
+    [beginDrag, clearPendingDrag, reducedMotion, syncPhysicsDom, updateGaze]
   );
 
   const releaseDrag = useCallback(
@@ -1502,6 +1650,9 @@ export function LittleAlexPhysics({
       const drag = dragRef.current;
 
       if (!drag || drag.pointerId !== event.pointerId) {
+        if (pendingDragRef.current?.pointerId === event.pointerId) {
+          clearPendingDrag();
+        }
         return;
       }
 
@@ -1568,12 +1719,19 @@ export function LittleAlexPhysics({
         showChatBubble();
       }
     },
-    [reducedMotion, setRagdollVisualStateNow, showChatBubble, syncPhysicsDom, updateGaze]
+    [
+      clearPendingDrag,
+      reducedMotion,
+      setRagdollVisualStateNow,
+      showChatBubble,
+      syncPhysicsDom,
+      updateGaze
+    ]
   );
 
   const handleTouchStart = useCallback(
     (event: ReactTouchEvent<HTMLDivElement>) => {
-      if (dragRef.current) {
+      if (dragRef.current || pendingDragRef.current) {
         return;
       }
 
@@ -1583,17 +1741,21 @@ export function LittleAlexPhysics({
         return;
       }
 
-      event.preventDefault();
-      event.stopPropagation();
       const point = pointFromClient(touch);
 
       if (!point) {
         return;
       }
 
-      beginDrag(point, touchPointerId(touch), event.timeStamp);
+      startPendingTouchDrag({
+        point,
+        pointerId: touchPointerId(touch),
+        source: "touch",
+        target: event.currentTarget,
+        timeStamp: event.timeStamp
+      });
     },
-    [activeTouchFromEvent, beginDrag, touchPointerId]
+    [activeTouchFromEvent, startPendingTouchDrag, touchPointerId]
   );
 
   const handleTouchMove = useCallback(
@@ -1646,9 +1808,10 @@ export function LittleAlexPhysics({
       if (bubbleTimeoutRef.current) {
         window.clearTimeout(bubbleTimeoutRef.current);
       }
+      clearPendingDrag();
       clearRagdollRecoveryTimeout();
     },
-    [clearRagdollRecoveryTimeout]
+    [clearPendingDrag, clearRagdollRecoveryTimeout]
   );
 
   return (
@@ -1748,7 +1911,8 @@ export function LittleAlexPhysics({
         ref={grabTargetRef}
         style={{
           ...grabTargetStyle(reducedAnchor),
-          pointerEvents: "auto"
+          pointerEvents: "auto",
+          touchAction: "pan-y"
         }}
       />
     </div>
