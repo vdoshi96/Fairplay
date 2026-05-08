@@ -110,10 +110,10 @@ export const PageShell = forwardRef<HTMLElement, PageShellProps>(
       >
         {background ? (
           <DecorativeBackgroundLayer
-            className="opacity-20 [background-position:center_top] [mask-image:linear-gradient(125deg,black_0%,rgba(0,0,0,0.52)_46%,rgba(0,0,0,0.12)_100%)]"
+            className="opacity-40 [background-position:center_top] [mask-image:linear-gradient(125deg,black_0%,rgba(0,0,0,0.72)_48%,rgba(0,0,0,0.28)_100%)]"
             src={background.src}
             testId={background.testId}
-            washClassName="bg-white/70"
+            washClassName="fp-page-background-wash"
           />
         ) : null}
         <div

@@ -285,17 +285,14 @@ export function SettingsPanel({
           data-testid="settings-preferences-visual"
         >
           <DecorativeBackgroundLayer
-            className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.5)_48%,rgba(0,0,0,0.08)_100%)]"
+            className="opacity-50 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.72)_48%,rgba(0,0,0,0.24)_100%)]"
             src={settingsPreferencesBackground}
             testId="settings-preferences-background"
-            washClassName="bg-white/80"
+            washClassName="fp-page-hero-wash"
           />
           <div className="fp-generated-surface-wash relative z-10 grid gap-2 p-4 backdrop-blur-[1px]">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
-              Settings
-            </p>
             <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-              Household settings
+              Settings
             </h1>
             <div className="mt-2">
               <FeatureGuideLauncher
@@ -425,7 +422,7 @@ export function SettingsPanel({
             Persona
           </h2>
           <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
-            Switching changes the active view for this session.
+            Switch the active view for this session.
           </p>
           <button
             className="mt-4 min-h-11 rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
@@ -444,7 +441,7 @@ export function SettingsPanel({
                 Little Alex
               </h2>
               <p className="text-[14px] leading-5 text-fp-muted-ink">
-                Customizes the small assistant for {selectedPersona.displayName}.
+                Customize assistant for {selectedPersona.displayName}.
               </p>
             </div>
 
@@ -552,11 +549,10 @@ export function SettingsPanel({
             Guided start
           </h2>
           <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
-            Replay the welcome splash or start the crash course from the first
-            lesson for the active persona.
+            Replay welcome or restart the crash course.
           </p>
           <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
-            Replay feature tours from each feature page using Learn this feature.
+            Feature guides stay on their pages.
           </p>
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <button
@@ -598,8 +594,8 @@ export function SettingsPanel({
             Data controls
           </h2>
           <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
-            Export, deletion, household exit, and access revocation controls are
-            planned after v1 privacy review.
+            Export, deletion, and access controls are planned after v1 privacy
+            review.
           </p>
         </section>
 

@@ -102,9 +102,7 @@ describe("protected app UI", () => {
       "href",
       "/app/settings"
     );
-    expect(
-      screen.getByRole("heading", { name: "Learn Fairplay in layers" })
-    ).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Learn Fairplay" })).toBeVisible();
     expect(screen.getByTestId("page-shell")).toHaveAttribute(
       "data-page-shell",
       "foreground"
@@ -126,6 +124,9 @@ describe("protected app UI", () => {
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
     });
+    expect(screen.getByTestId("page-shell-background-home")).toHaveClass(
+      "opacity-40"
+    );
     const homePanel = container.querySelector("[data-home-background]");
     expect(homePanel).not.toBeNull();
     expect(homePanel).not.toHaveStyle({
@@ -140,6 +141,9 @@ describe("protected app UI", () => {
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
     });
+    expect(screen.getByTestId("home-learning-studio-background")).toHaveClass(
+      "opacity-50"
+    );
     expect(
       screen
         .getAllByRole("link", { name: "Crash course" })
@@ -148,10 +152,11 @@ describe("protected app UI", () => {
     expect(
       screen.queryByRole("link", { name: "Learn a feature" })
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Card library" })).toHaveAttribute(
-      "href",
-      "/app/library"
-    );
+    expect(
+      screen
+        .getAllByRole("link", { name: "Library" })
+        .some((link) => link.getAttribute("href") === "/app/library")
+    ).toBe(true);
     expect(
       screen.getByRole("heading", { name: "Learn a feature" })
     ).toHaveAttribute("id", "learn-a-feature-heading");
@@ -290,7 +295,7 @@ describe("protected app UI", () => {
       />
     );
 
-    expect(screen.getByRole("heading", { name: "Household settings" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Settings" })).toBeVisible();
     expect(screen.getByTestId("page-shell")).toHaveAttribute(
       "data-page-background-id",
       "settings"

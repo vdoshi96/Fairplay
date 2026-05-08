@@ -11,7 +11,7 @@ const primaryActions = [
   },
   {
     href: "/app/library",
-    label: "Card library"
+    label: "Library"
   }
 ] as const;
 
@@ -25,25 +25,25 @@ const featureCards: Array<{
   title: string;
 }> = [
   {
-    body: "See what is in play, what needs attention, and who owns each responsibility.",
+    body: "See what is active, what needs attention, and who owns it.",
     guideHref: "/app/load-map?guide=loadMap",
     guideId: "loadMap",
     title: "Load Map"
   },
   {
-    body: "Create AI draft cards with greg, then browse source cards before deciding what belongs in your household system.",
+    body: "Browse templates or draft a card with Greg.",
     guideHref: "/app/library?guide=library",
     guideId: "library",
     title: "Library"
   },
   {
-    body: "Turn decisions into a short agenda with clear outcomes and next steps.",
+    body: "Schedule a check-in and keep notes.",
     guideHref: "/app/check-ins/new?guide=checkIns",
     guideId: "checkIns",
     title: "Check-ins"
   },
   {
-    body: "Replay welcome moments, switch personas, and restart learning surfaces.",
+    body: "Replay learning, switch personas, and tune preferences.",
     guideHref: "/app/settings?guide=settings",
     guideId: "settings",
     title: "Settings"
@@ -53,28 +53,26 @@ const featureCards: Array<{
 export default function AppHomePage() {
   return (
     <section
-      className="relative grid gap-6 overflow-hidden rounded-[8px] border border-fp-line bg-white p-4 shadow-[var(--fp-shadow-soft)] sm:p-5"
+      className="relative grid gap-6 overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink p-4 shadow-[var(--fp-shadow-soft)] sm:p-5"
       data-home-background
     >
       <DecorativeBackgroundLayer
-        className="opacity-30 [mask-image:linear-gradient(115deg,black_0%,rgba(0,0,0,0.62)_48%,rgba(0,0,0,0.16)_100%)]"
+        className="opacity-50 [background-position:center] [mask-image:linear-gradient(115deg,black_0%,rgba(0,0,0,0.82)_48%,rgba(0,0,0,0.34)_100%)]"
         src={HOME_BACKGROUND}
         testId="home-learning-studio-background"
-        washClassName="bg-white/70"
+        washClassName="fp-page-hero-wash"
       />
       <div className="relative z-10 grid gap-6">
-        <div className="grid gap-5 rounded-[8px] border border-white/70 bg-white/72 p-4 backdrop-blur-[1px] sm:p-5">
+        <div className="fp-generated-surface-wash grid gap-5 rounded-[8px] border border-white/70 p-4 backdrop-blur-[1px] sm:p-5">
           <div className="grid max-w-2xl gap-2">
             <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
               Learning hub
             </p>
             <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
-              Learn Fairplay in layers
+              Learn Fairplay
             </h1>
             <p className="text-[15px] leading-6 text-fp-muted-ink">
-              Start with the big picture, then revisit each feature when the moment
-              is real. The guide links open short tours on the pages where the work
-              happens.
+              Start with the crash course, then open short guides on each page.
             </p>
           </div>
 
@@ -92,7 +90,7 @@ export default function AppHomePage() {
         </div>
 
         <section
-          className="relative z-10 grid scroll-mt-24 gap-3 rounded-[8px] border border-white/70 bg-white/82 p-4 backdrop-blur-[1px]"
+          className="fp-generated-surface-wash relative z-10 grid scroll-mt-24 gap-3 rounded-[8px] border border-white/70 p-4 backdrop-blur-[1px]"
           id="learn-a-feature"
         >
           <div className="grid gap-1">
@@ -103,15 +101,14 @@ export default function AppHomePage() {
               Learn a feature
             </h2>
             <p className="text-[14px] leading-5 text-fp-muted-ink">
-              Pick a feature, learn the page, and come back here whenever you want
-              the map again.
+              Pick a page and learn by doing.
             </p>
           </div>
 
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {featureCards.map((feature) => (
               <article
-                className="grid gap-3 rounded-[8px] border border-fp-line bg-white/95 p-4 shadow-sm"
+                className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-sm"
                 key={feature.title}
               >
                 <div className="flex items-start gap-3">
