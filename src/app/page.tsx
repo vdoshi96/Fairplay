@@ -13,5 +13,5 @@ export default async function Home() {
     redirect("/choose-persona");
   }
 
-  redirect("/app/home");
+  redirect("/app/distribute");
 }

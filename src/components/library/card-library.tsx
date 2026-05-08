@@ -9,17 +9,26 @@ import type {
   CardTemplateSummary
 } from "@/contracts/card-templates";
 import { CARD_TEMPLATE_LABELS } from "@/contracts/card-templates";
+import type { CardDistributionBucket } from "@/components/cards/card-state";
+import { CARD_BUCKET_LABELS, type CardBucket } from "@/components/cards/card-state";
 import { FEATURE_GUIDES } from "@/components/guide/guide-content";
 import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import { AiTaskManager } from "@/components/library/ai-task-manager";
-import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { DecorativeBackgroundLayer } from "@/components/visuals/fairplay-visuals";
 
+export type LibraryCardTemplate = CardTemplateSummary & {
+  definition?: string | null;
+  minimumStandard?: string | null;
+};
+
 type CardLibraryProps = {
-  templates: CardTemplateSummary[];
+  templates: LibraryCardTemplate[];
   aiDrafts?: AiCardDraftSummary[];
-  onCreateFromTemplate?: (templateId: string) => void;
+  onCreateFromTemplate?: (
+    templateId: string,
+    bucket: CardDistributionBucket
+  ) => void;
 };
 
 const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> = {
@@ -36,6 +45,7 @@ const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> =
 
 const libraryShelfBackground =
   "/assets/fairplay/generated-ui/backgrounds/library-shelf.png";
+const assignBuckets = ["alex", "max", "savedForLater", "notApplicable"] as const;
 
 export function CardLibrary({
   aiDrafts = [],
@@ -46,6 +56,7 @@ export function CardLibrary({
   const [selectedLabel, setSelectedLabel] = useState<CardTemplateLabel | "all">(
     "all"
   );
+  const [flippedIds, setFlippedIds] = useState<Set<string>>(() => new Set());
 
   const filteredTemplates = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -108,7 +119,7 @@ export function CardLibrary({
       </div>
 
       <div
-        aria-label="Source labels"
+        aria-label="Card labels"
         className="flex flex-wrap gap-2 pb-1"
         data-guide-id="library-labels"
       >
@@ -136,47 +147,62 @@ export function CardLibrary({
           {filteredTemplates.map((template, index) => (
             <article
               aria-label={template.title}
-              className="grid min-h-[360px] min-w-0 grid-rows-[168px_1fr_auto] overflow-hidden rounded border border-fp-line bg-white shadow-[var(--fp-shadow-soft)]"
+              className="grid min-h-[430px] min-w-0 grid-rows-[1fr_auto] overflow-hidden rounded-[8px] border border-fp-line bg-white shadow-[var(--fp-shadow-soft)]"
               key={template.id}
             >
-              <div className="relative overflow-hidden bg-fp-surface">
-                <Image
-                  alt={`${template.title} cover`}
-                  className="h-full w-full object-contain p-3"
-                  height={700}
-                  src={template.coverAssetPath}
-                  unoptimized
-                  width={500}
-                />
-              </div>
-              <div className="grid min-w-0 content-start gap-3 overflow-hidden p-4">
-                <div className="flex flex-wrap gap-2">
-                  {template.labels.map((label) => (
-                    <Chip key={label} tone={labelTone[label]}>
-                      {label}
-                    </Chip>
+              <button
+                aria-label={
+                  flippedIds.has(template.id)
+                    ? `Show front of ${template.title}`
+                    : `Flip ${template.title}`
+                }
+                aria-pressed={flippedIds.has(template.id)}
+                className="grid min-w-0 text-left outline-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--fp-focus)]"
+                onClick={() =>
+                  setFlippedIds((current) => {
+                    const next = new Set(current);
+                    if (next.has(template.id)) {
+                      next.delete(template.id);
+                    } else {
+                      next.add(template.id);
+                    }
+                    return next;
+                  })
+                }
+                type="button"
+              >
+                {flippedIds.has(template.id) ? (
+                  <LibraryCardBack template={template} />
+                ) : (
+                  <LibraryCardFront template={template} />
+                )}
+              </button>
+
+              <div className="grid gap-2 border-t border-fp-line bg-[var(--fp-surface-strong)] p-3">
+                <p className="text-[12px] font-bold text-fp-muted-ink">
+                  Choose lane
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {assignBuckets.map((bucket, bucketIndex) => (
+                    <button
+                      className="min-h-11 rounded-[8px] border border-fp-line bg-white px-2 text-[12px] font-bold text-fp-ink shadow-sm transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-55"
+                      data-guide-id={
+                        index === 0 && bucketIndex === 0
+                          ? "library-put-in-play"
+                          : undefined
+                      }
+                      disabled={!onCreateFromTemplate}
+                      key={bucket}
+                      onClick={() => onCreateFromTemplate?.(template.id, bucket)}
+                      type="button"
+                    >
+                      {CARD_BUCKET_LABELS[bucket]}
+                    </button>
                   ))}
                 </div>
-                <div className="grid gap-2">
-                  <h2 className="line-clamp-2 text-[18px] font-bold leading-6 text-fp-ink [overflow-wrap:anywhere]">
-                    {template.title}
-                  </h2>
-                  <p className="line-clamp-3 text-[14px] leading-6 text-fp-muted-ink [overflow-wrap:anywhere]">
-                    {template.summary}
-                  </p>
-                </div>
-              </div>
-              <div className="border-t border-fp-line p-4">
-                <Button
-                  aria-label={`Put ${template.title} in play`}
-                  className="w-full"
-                  data-guide-id={index === 0 ? "library-put-in-play" : undefined}
-                  disabled={!onCreateFromTemplate}
-                  onClick={() => onCreateFromTemplate?.(template.id)}
-                  variant="primary"
-                >
-                  Put in play
-                </Button>
+                <p className="text-[12px] font-semibold leading-5 text-fp-muted-ink">
+                  Tap the card for purpose and Fogging E-Standards.
+                </p>
               </div>
             </article>
           ))}
@@ -188,6 +214,104 @@ export function CardLibrary({
       )}
     </section>
   );
+}
+
+function LibraryCardFront({ template }: { template: LibraryCardTemplate }) {
+  return (
+    <div className="grid min-h-[286px] grid-rows-[168px_1fr]">
+      <div className="relative overflow-hidden bg-fp-surface">
+        <Image
+          alt={`${template.title} cover`}
+          className="h-full w-full object-contain p-3"
+          height={700}
+          src={template.coverAssetPath}
+          unoptimized
+          width={500}
+        />
+      </div>
+      <div className="grid min-w-0 content-start gap-3 overflow-hidden p-4">
+        <div className="flex flex-wrap gap-2">
+          {template.labels.map((label) => (
+            <Chip key={label} tone={labelTone[label]}>
+              {label}
+            </Chip>
+          ))}
+        </div>
+        <div className="grid gap-2">
+          <h2 className="line-clamp-2 text-[18px] font-bold leading-6 text-fp-ink [overflow-wrap:anywhere]">
+            {template.title}
+          </h2>
+          <p className="line-clamp-3 text-[14px] leading-6 text-fp-muted-ink [overflow-wrap:anywhere]">
+            {template.summary}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LibraryCardBack({ template }: { template: LibraryCardTemplate }) {
+  return (
+    <div className="grid min-h-[286px] content-start gap-3 bg-[var(--fp-surface-strong)] p-4">
+      <header className="grid gap-2">
+        <p className="text-[12px] font-bold uppercase text-fp-muted-ink">
+          Card back
+        </p>
+        <h2 className="line-clamp-2 text-[20px] font-bold leading-7 text-fp-ink [overflow-wrap:anywhere]">
+          {template.title}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {template.labels.slice(0, 3).map((label) => (
+            <Chip key={label} tone={labelTone[label]}>
+              {label}
+            </Chip>
+          ))}
+          <span className="rounded-full border border-fp-line bg-white px-3 py-1 text-[12px] font-bold text-fp-muted-ink">
+            {CARD_BUCKET_LABELS[bucketForTemplateLane(template.defaultLane)]}
+          </span>
+        </div>
+      </header>
+
+      <section className="grid gap-1 rounded-[8px] border border-fp-line bg-white p-3">
+        <h3 className="text-[13px] font-bold text-fp-ink">
+          What is this card for?
+        </h3>
+        <p className="line-clamp-5 text-[13px] leading-5 text-fp-muted-ink">
+          {template.definition ?? template.summary}
+        </p>
+      </section>
+
+      <section className="grid gap-1 rounded-[8px] border border-fp-line bg-white p-3">
+        <h3 className="text-[13px] font-bold text-fp-ink">
+          Fogging E-Standards
+        </h3>
+        <p className="line-clamp-4 text-[13px] leading-5 text-fp-muted-ink">
+          {template.minimumStandard ??
+            "Agree on a lightweight standard before assigning this card."}
+        </p>
+      </section>
+    </div>
+  );
+}
+
+function bucketForTemplateLane(lane: CardTemplateSummary["defaultLane"]): CardBucket {
+  if (lane === "player_1") {
+    return "alex";
+  }
+
+  if (lane === "player_2") {
+    return "max";
+  }
+
+  if (lane === "trimmed") {
+    return "notApplicable";
+  }
+
+  if (lane === "not_in_play") {
+    return "savedForLater";
+  }
+
+  return "unassigned";
 }
 
 function filterButtonClass(active: boolean) {

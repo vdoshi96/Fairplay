@@ -344,7 +344,7 @@ export function ResponsibilityLoadMap({
         >
           <div className="flex min-w-0 flex-col justify-between gap-4">
             <div className="grid min-w-0 gap-2">
-              <p className="text-[13px] font-semibold text-fp-muted-ink">Load Map</p>
+              <p className="text-[13px] font-semibold text-fp-muted-ink">Board</p>
               <h1 className="text-[26px] font-bold leading-[32px] text-fp-ink sm:text-[30px] sm:leading-[36px]">
                 Responsibility board
               </h1>

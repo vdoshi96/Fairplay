@@ -4,12 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import {
+  BookOpen,
   CalendarCheck,
-  Home,
-  LayoutDashboard,
+  CreditCard,
+  Layers3,
   Library,
+  MessageCircle,
+  MoreHorizontal,
+  Send,
   Settings,
-  Sparkles
 } from "lucide-react";
 
 import type { HouseholdSummary } from "@/contracts/auth";
@@ -26,17 +29,22 @@ type AppShellProps = {
   selectedPersona: PersonaSummary;
 };
 
-const navItems = [
-  { href: "/app/home", icon: Home, label: "Home" },
-  { href: "/app/load-map", icon: LayoutDashboard, label: "Load Map" },
-  { href: "/app/library", icon: Library, label: "Library" },
-  { href: "/app/check-ins", icon: CalendarCheck, label: "Check-ins" },
-  { href: "/app/crash-course", icon: Sparkles, label: "Crash course" },
-  { href: "/app/settings", icon: Settings, label: "Settings" }
+const primaryNavItems = [
+  { href: "/app/your-cards", icon: CreditCard, label: "Your Cards" },
+  { href: "/app/distribute", icon: Send, label: "Distribute" },
+  { href: "/app/board", icon: Layers3, label: "Board" },
+  { href: "/app/ask-greg", icon: MessageCircle, label: "Ask Greg" }
+] as const;
+
+const overflowNavItems = [
+  { href: "/app/check-ins/new", icon: CalendarCheck, label: "Check in" },
+  { href: "/app/crash-course", icon: BookOpen, label: "Theory" },
+  { href: "/app/settings", icon: Settings, label: "Settings" },
+  { href: "/app/library", icon: Library, label: "Card Library" }
 ] as const;
 
 function isActiveRoute(pathname: string, href: string) {
-  if (href === "/app/home") {
+  if (href === "/app/your-cards") {
     return pathname === href;
   }
 
@@ -59,7 +67,7 @@ export function AppShell({
     : "w-full";
 
   return (
-    <div className="min-h-screen bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[var(--fp-app-sidebar-width)_minmax(0,1fr)]">
+    <div className="min-h-[100svh] bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[var(--fp-app-sidebar-width)_minmax(0,1fr)]">
       <LittleAlexPhysics
         chatPhrase={littleAlexPreferences.chatPhrase}
         genderPresentation={littleAlexPreferences.genderPresentation}
@@ -69,7 +77,7 @@ export function AppShell({
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-[var(--fp-app-sidebar-width)] border-r border-fp-line bg-[var(--fp-surface-strong)] px-4 py-5 shadow-[var(--fp-shadow-soft)] backdrop-blur lg:flex lg:flex-col">
         <Link
           className="flex min-w-0 items-center gap-3 rounded outline-none focus:ring-2 focus:ring-fp-ink/25"
-          href="/app/home"
+          href="/app/your-cards"
         >
           <FairplayMark
             className="h-11 w-11 shrink-0 rounded border border-fp-line bg-white"
@@ -86,7 +94,7 @@ export function AppShell({
         </Link>
 
         <nav aria-label="Primary" className="mt-8 grid gap-1">
-          {navItems.map((item) => {
+          {primaryNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = isActiveRoute(pathname, item.href);
 
@@ -109,17 +117,38 @@ export function AppShell({
           })}
         </nav>
 
-        <Link
-          className="mt-auto flex min-h-12 items-center gap-3 rounded border border-fp-line bg-[var(--fp-surface)] px-3 text-[13px] font-semibold outline-none transition hover:bg-[var(--fp-surface-strong)] focus:ring-2 focus:ring-fp-ink/25"
-          href="/app/settings"
-        >
+        <nav aria-label="More" className="mt-6 grid gap-1 border-t border-fp-line pt-4">
+          {overflowNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = isActiveRoute(pathname, item.href);
+
+            return (
+              <Link
+                aria-current={isActive ? "page" : undefined}
+                className={[
+                  "flex min-h-10 items-center gap-3 rounded px-3 text-[13px] font-semibold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
+                  isActive
+                    ? "bg-[var(--fp-surface)] text-fp-ink"
+                    : "text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
+                ].join(" ")}
+                href={item.href}
+                key={item.href}
+              >
+                <Icon aria-hidden className="h-4 w-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="mt-auto flex min-h-12 items-center gap-3 rounded border border-fp-line bg-[var(--fp-surface)] px-3 text-[13px] font-semibold">
           <PersonaAvatar
             className="fp-motion-persona-bob h-8 w-8 shrink-0 rounded-full"
             decorative
             persona={selectedPersona.key === "max" ? "max" : "alex"}
           />
           <span className="truncate">{selectedPersona.displayName}</span>
-        </Link>
+        </div>
       </aside>
 
       <div className="min-w-0 lg:col-start-2">
@@ -127,7 +156,7 @@ export function AppShell({
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
             <Link
               className="flex min-w-0 items-center gap-3 rounded outline-none focus:ring-2 focus:ring-fp-ink/25"
-              href="/app/home"
+              href="/app/your-cards"
             >
               <FairplayMark
                 className="h-10 w-10 shrink-0 rounded border border-fp-line bg-white"
@@ -138,22 +167,12 @@ export function AppShell({
                   {household.name}
                 </span>
                 <span className="block text-[12px] font-semibold text-fp-muted-ink">
-                  Fairplay
+                  {selectedPersona.displayName}
                 </span>
               </span>
             </Link>
 
-            <Link
-              className="flex min-h-11 shrink-0 items-center gap-2 rounded border border-fp-line bg-white px-3 text-[13px] font-semibold outline-none focus:ring-2 focus:ring-fp-ink/25"
-              href="/app/settings"
-            >
-              <PersonaAvatar
-                className="fp-motion-persona-bob h-7 w-7 shrink-0 rounded-full"
-                decorative
-                persona={selectedPersona.key === "max" ? "max" : "alex"}
-              />
-              {selectedPersona.displayName}
-            </Link>
+            <OverflowMenu pathname={pathname} />
           </div>
         </header>
 
@@ -173,8 +192,8 @@ export function AppShell({
           aria-label="Primary"
           className="fixed inset-x-0 bottom-0 z-10 min-h-[var(--fp-app-bottom-nav-height)] border-t border-fp-line bg-[var(--fp-surface-strong)] px-2 pb-[max(0.5rem,var(--fp-app-safe-area-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,33,36,0.08)] backdrop-blur lg:hidden"
         >
-          <div className="flex gap-1 overflow-x-auto">
-            {navItems.map((item) => {
+          <div className="mx-auto grid max-w-xl grid-cols-4 gap-1">
+            {primaryNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = isActiveRoute(pathname, item.href);
 
@@ -182,7 +201,7 @@ export function AppShell({
                 <Link
                   aria-current={isActive ? "page" : undefined}
                   className={[
-                    "grid min-h-12 min-w-[4.8rem] place-items-center gap-1 rounded px-2 text-center text-[11px] font-semibold leading-4 outline-none transition focus:ring-2 focus:ring-fp-ink/20",
+                    "grid min-h-12 min-w-0 place-items-center gap-1 rounded px-1 text-center text-[11px] font-semibold leading-4 outline-none transition focus:ring-2 focus:ring-fp-ink/20",
                     isActive
                       ? "bg-fp-primary text-fp-on-primary"
                       : "text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
@@ -199,5 +218,44 @@ export function AppShell({
         </nav>
       </div>
     </div>
+  );
+}
+
+function OverflowMenu({ pathname }: { pathname: string }) {
+  return (
+    <details className="relative shrink-0">
+      <summary
+        aria-label="Open menu"
+        className="grid h-11 w-11 cursor-pointer list-none place-items-center rounded border border-fp-line bg-white text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 [&::-webkit-details-marker]:hidden"
+      >
+        <MoreHorizontal aria-hidden className="h-5 w-5" />
+      </summary>
+      <nav
+        aria-label="More"
+        className="absolute right-0 top-12 z-30 grid min-w-48 gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-[var(--fp-shadow-elevated)]"
+      >
+        {overflowNavItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = isActiveRoute(pathname, item.href);
+
+          return (
+            <Link
+              aria-current={isActive ? "page" : undefined}
+              className={[
+                "flex min-h-11 items-center gap-3 rounded-[8px] px-3 text-[14px] font-bold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
+                isActive
+                  ? "bg-fp-primary text-fp-on-primary"
+                  : "text-fp-ink hover:bg-[var(--fp-surface)]"
+              ].join(" ")}
+              href={item.href}
+              key={item.href}
+            >
+              <Icon aria-hidden className="h-4 w-4 shrink-0" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </details>
   );
 }

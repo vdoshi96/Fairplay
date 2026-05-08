@@ -5,9 +5,10 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 const screenshotDir = "test-results/dark-mode-polish";
 
 const appPages = [
-  { name: "home", path: "/app/home", heading: "Learn Fairplay" },
-  { name: "library", path: "/app/library", heading: "Library" },
-  { name: "load-map", path: "/app/load-map", heading: "Responsibility board" },
+  { name: "your-cards", path: "/app/your-cards", heading: "Your Cards" },
+  { name: "distribute", path: "/app/distribute", heading: "Swipe the next card" },
+  { name: "board", path: "/app/board", heading: "Card board" },
+  { name: "ask-greg", path: "/app/ask-greg", heading: "Make more cards" },
   { name: "check-ins", path: "/app/check-ins/new", heading: "Schedule check-in" },
   { name: "crash-course", path: "/app/crash-course", heading: "Concepts first. Tools after." },
   { name: "settings", path: "/app/settings", heading: "Settings" }
@@ -301,13 +302,6 @@ test.describe("dark mode visual QA", () => {
         await expectUnobscured(
           page.getByRole("button", { name: "Dark" }),
           "settings dark theme override"
-        );
-      }
-
-      if (appPage.name === "load-map") {
-        await expectUnobscured(
-          page.getByTestId("load-map-signal-owner"),
-          "load map owners summary"
         );
       }
 

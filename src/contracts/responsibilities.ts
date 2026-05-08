@@ -42,6 +42,7 @@ export const ResponsibilitySummarySchema = z
   .object({
     id: ResponsibilityIdSchema,
     title: z.string().trim().min(1).max(140),
+    summary: z.string().trim().max(500).nullable().optional(),
     areaKeys: z.array(AreaKeySchema),
     hiddenEffortKeys: z.array(HiddenEffortKeySchema),
     cadence: CadenceSchema,
@@ -51,7 +52,10 @@ export const ResponsibilitySummarySchema = z
     boardLane: ResponsibilityBoardLaneSchema,
     boardSortOrder: z.number().int().nonnegative(),
     currentAssignments: z.array(ResponsibilityAssignmentSummarySchema),
-    nextReviewAt: NullableIsoDateTimeSchema
+    nextReviewAt: NullableIsoDateTimeSchema,
+    householdStandard: z.string().trim().max(2000).nullable().optional(),
+    sourceDefinition: SourceCardTextSchema.optional(),
+    sourceMinimumStandard: SourceCardTextSchema.optional()
   })
   .strict();
 

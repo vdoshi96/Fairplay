@@ -89,13 +89,13 @@ async function mockProtectedRouteHandoffs(page: Page) {
   await page.route("**/app/onboarding**", async (route) => {
     await route.fulfill({
       contentType: "text/html",
-      body: `<main><h1>Set up your household rhythm</h1><a href="/app/home">Skip to home</a></main>`
+      body: `<main><h1>Set up your household rhythm</h1><a href="/app/distribute">Skip to distribute</a></main>`
     });
   });
-  await page.route("**/app/home**", async (route) => {
+  await page.route("**/app/distribute**", async (route) => {
     await route.fulfill({
       contentType: "text/html",
-      body: `<main><h1>Home</h1><p>River Home</p><button>Log out</button></main>`
+      body: `<main><h1>Swipe the next card</h1><p>River Home</p><button>Log out</button></main>`
     });
   });
 }
@@ -114,7 +114,7 @@ async function tabUntilFocused(
 }
 
 test.describe("auth and onboarding", () => {
-  test("create household -> choose persona -> onboarding -> home", async ({ page }) => {
+  test("create household -> choose persona -> onboarding -> distribute", async ({ page }) => {
     await mockAuthApis(page);
     await mockProtectedRouteHandoffs(page);
 
@@ -130,12 +130,12 @@ test.describe("auth and onboarding", () => {
     await expect(
       page.getByRole("heading", { name: "Set up your household rhythm" })
     ).toBeVisible();
-    await page.getByRole("link", { name: "Skip to home" }).click();
-    await expect(page).toHaveURL(/\/app\/home/);
-    await expect(page.getByRole("heading", { name: "Home" })).toBeVisible();
+    await page.getByRole("link", { name: "Skip to distribute" }).click();
+    await expect(page).toHaveURL(/\/app\/distribute/);
+    await expect(page.getByRole("heading", { name: "Swipe the next card" })).toBeVisible();
   });
 
-  test("logout -> login -> choose persona -> home", async ({ page }) => {
+  test("logout -> login -> choose persona -> distribute", async ({ page }) => {
     await mockAuthApis(page);
     await mockProtectedRouteHandoffs(page);
     await page.route("**/api/auth/logout", async (route) => {
@@ -156,9 +156,9 @@ test.describe("auth and onboarding", () => {
     await page.getByLabel("Household username").fill("river-home");
     await page.getByLabel("Household password").fill("correct horse battery staple");
     await page.getByRole("button", { name: "Log in" }).click();
-    await expect(page).toHaveURL(/\/choose-persona\?next=(%2F|\/)app(%2F|\/)home/);
+    await expect(page).toHaveURL(/\/choose-persona\?next=(%2F|\/)app(%2F|\/)distribute/);
     await page.getByRole("button", { name: /choose Alex/i }).click();
-    await expect(page).toHaveURL(/\/app\/home/);
+    await expect(page).toHaveURL(/\/app\/distribute/);
   });
 
   test("Enter in the login username field submits like the button", async ({ page }) => {
@@ -170,7 +170,7 @@ test.describe("auth and onboarding", () => {
     await page.getByLabel("Household username").fill("river-home");
     await page.getByLabel("Household username").press("Enter");
 
-    await expect(page).toHaveURL(/\/choose-persona\?next=(%2F|\/)app(%2F|\/)home/);
+    await expect(page).toHaveURL(/\/choose-persona\?next=(%2F|\/)app(%2F|\/)distribute/);
   });
 
   test("Enter in the login password field submits like the button", async ({ page }) => {
@@ -182,7 +182,7 @@ test.describe("auth and onboarding", () => {
     await page.getByLabel("Household password").fill("correct horse battery staple");
     await page.getByLabel("Household password").press("Enter");
 
-    await expect(page).toHaveURL(/\/choose-persona\?next=(%2F|\/)app(%2F|\/)home/);
+    await expect(page).toHaveURL(/\/choose-persona\?next=(%2F|\/)app(%2F|\/)distribute/);
   });
 
   test("cleared cookie redirects app home to login", async ({ page, context }) => {

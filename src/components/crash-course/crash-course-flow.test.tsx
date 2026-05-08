@@ -84,7 +84,7 @@ describe("crash course flow", () => {
     expect(lessonsWithFeaturePath).toHaveLength(1);
     expect(finalLesson.featurePath?.map((item) => item.label)).toEqual([
       "Browse the Library",
-      "Open the Load Map",
+      "Open Distribute",
       "Schedule a Check-in"
     ]);
   });
@@ -147,8 +147,8 @@ describe("crash course flow", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Skip crash course" }));
-    fireEvent.click(screen.getByRole("button", { name: "Finish course" }));
+    fireEvent.click(screen.getByRole("button", { name: "Skip Theory" }));
+    fireEvent.click(screen.getByRole("button", { name: "Finish Theory" }));
 
     expect(onSkip).toHaveBeenCalledTimes(1);
     expect(onComplete).toHaveBeenCalledTimes(1);
@@ -158,17 +158,17 @@ describe("crash course flow", () => {
     render(
       <CrashCourseFlow
         completed
-        completionContextLabel="Alex's Fairplay crash course"
+        completionContextLabel="Alex's Fairplay Theory"
         currentStep={CRASH_COURSE_LESSONS.length - 1}
       />
     );
 
     expect(
       screen.getByRole("heading", {
-        name: "Crash Course complete"
+        name: "Theory complete"
       })
     ).toBeVisible();
-    expect(screen.getByText("Finished for Alex's Fairplay crash course."))
+    expect(screen.getByText("Finished for Alex's Fairplay Theory."))
       .toBeVisible();
     expect(
       screen.getByText(
@@ -186,13 +186,13 @@ describe("crash course flow", () => {
       "/assets/fairplay/generated-ui/crash-course/completion-celebration.png"
     );
     expect(
-      screen.getByRole("link", { name: "Open the Load Map" })
-    ).toHaveAttribute("href", "/app/load-map");
+      screen.getByRole("link", { name: "Open Distribute" })
+    ).toHaveAttribute("href", "/app/distribute");
     expect(
-      screen.queryByRole("button", { name: "Finish course" })
+      screen.queryByRole("button", { name: "Finish Theory" })
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Skip crash course" })
+      screen.queryByRole("button", { name: "Skip Theory" })
     ).not.toBeInTheDocument();
   });
 
@@ -201,13 +201,13 @@ describe("crash course flow", () => {
     render(
       <CrashCourseFlow
         completed
-        completionContextLabel="Alex's Fairplay crash course"
+        completionContextLabel="Alex's Fairplay Theory"
         currentStep={CRASH_COURSE_LESSONS.length - 1}
         onRestart={onRestart}
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Restart crash course" }));
+    fireEvent.click(screen.getByRole("button", { name: "Restart Theory" }));
 
     expect(onRestart).toHaveBeenCalledTimes(1);
   });

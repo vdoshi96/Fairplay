@@ -3,12 +3,14 @@ import { forwardRef, type ReactNode } from "react";
 import { DecorativeBackgroundLayer } from "@/components/visuals/fairplay-visuals";
 
 export type PageShellBackgroundId =
+  | "askGreg"
   | "app"
+  | "board"
   | "checkIns"
-  | "home"
+  | "distribute"
   | "library"
-  | "loadMap"
-  | "settings";
+  | "settings"
+  | "yourCards";
 
 export type PageShellBackground = {
   id: PageShellBackgroundId;
@@ -44,36 +46,58 @@ export const PAGE_SHELL_BACKGROUNDS = {
     src: "/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png",
     testId: "page-shell-background-app"
   },
+  askGreg: {
+    id: "askGreg",
+    src: "/assets/fairplay/generated-ui/backgrounds/library-shelf.png",
+    testId: "page-shell-background-askGreg"
+  },
+  board: {
+    id: "board",
+    src: "/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png",
+    testId: "page-shell-background-board"
+  },
   checkIns: {
     id: "checkIns",
     src: "/assets/fairplay/generated-ui/backgrounds/check-in-table.png",
     testId: "page-shell-background-checkIns"
   },
-  home: {
-    id: "home",
-    src: "/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png",
-    testId: "page-shell-background-home"
+  distribute: {
+    id: "distribute",
+    src: "/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png",
+    testId: "page-shell-background-distribute"
   },
   library: {
     id: "library",
     src: "/assets/fairplay/generated-ui/backgrounds/library-shelf.png",
     testId: "page-shell-background-library"
   },
-  loadMap: {
-    id: "loadMap",
-    src: "/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png",
-    testId: "page-shell-background-loadMap"
-  },
   settings: {
     id: "settings",
     src: "/assets/fairplay/generated-ui/backgrounds/settings-preferences.png",
     testId: "page-shell-background-settings"
+  },
+  yourCards: {
+    id: "yourCards",
+    src: "/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png",
+    testId: "page-shell-background-yourCards"
   }
 } satisfies Record<PageShellBackgroundId, PageShellBackground>;
 
 export function pageShellBackgroundForPathname(pathname: string) {
-  if (pathname === "/app/home") {
-    return PAGE_SHELL_BACKGROUNDS.home;
+  if (pathname.startsWith("/app/your-cards")) {
+    return PAGE_SHELL_BACKGROUNDS.yourCards;
+  }
+
+  if (pathname.startsWith("/app/distribute")) {
+    return PAGE_SHELL_BACKGROUNDS.distribute;
+  }
+
+  if (pathname.startsWith("/app/board") || pathname.startsWith("/app/load-map")) {
+    return PAGE_SHELL_BACKGROUNDS.board;
+  }
+
+  if (pathname.startsWith("/app/ask-greg")) {
+    return PAGE_SHELL_BACKGROUNDS.askGreg;
   }
 
   if (pathname.startsWith("/app/library")) {
@@ -86,10 +110,6 @@ export function pageShellBackgroundForPathname(pathname: string) {
 
   if (pathname.startsWith("/app/settings")) {
     return PAGE_SHELL_BACKGROUNDS.settings;
-  }
-
-  if (pathname.startsWith("/app/load-map")) {
-    return PAGE_SHELL_BACKGROUNDS.loadMap;
   }
 
   return PAGE_SHELL_BACKGROUNDS.app;

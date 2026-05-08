@@ -4,7 +4,7 @@ Last updated: 2026-05-08
 
 ## Product Intent
 
-Fairplay is a mobile-first household responsibility planning app. It helps a household make shared work visible, decide who owns what, surface hidden coordination load, and keep lightweight check-in records.
+Fairplay is a mobile-first, card-centered household responsibility planning app. It helps a household make shared work visible, distribute responsibility cards between Alex and Max, save or remove cards that do not fit, and keep lightweight check-in records.
 
 The current v1 product centers on a two-person household using shared credentials and default personas Alex and Max. It is household organization and practical relationship support, not therapy, crisis support, legal advice, medical advice, financial advice, diagnosis, or a partner-scoring system.
 
@@ -12,10 +12,11 @@ The current v1 product centers on a two-person household using shared credential
 
 - Create a household with one household username and password.
 - Log in with shared credentials, then choose Alex or Max for the session.
-- Complete onboarding, crash-course, and feature-guide learning flows.
-- Use the Home learning hub to reach the core app surfaces.
-- Manage the Load Map board and responsibility details.
-- Browse the Library and create AI-assisted responsibility card drafts.
+- Complete onboarding, Theory, and feature-guide learning flows.
+- Land on Distribute after login/persona selection and assign cards with swipes, arrow keys, or large fallback buttons.
+- Use Your Cards as the primary assigned-card home.
+- Use Board to review all card buckets: Alex, Max, Saved for Later, Not Applicable, and Unassigned.
+- Browse the Card Library and create AI-assisted responsibility card drafts through Ask Greg.
 - Schedule check-ins, confirm they happened, and add optional minutes/notes.
 - Manage settings, theme preference, welcome replay, crash-course replay, persona preferences, and Little Alex preferences.
 
@@ -54,7 +55,7 @@ The current v1 product centers on a two-person household using shared credential
 
 - No therapy, diagnosis, crisis support, partner scoring, blame ledgers, moral grades, or winner/loser framing.
 - No email auth, social auth, magic links, billing, subscriptions, public sharing, exports, deletion workflows, household exit, or revocation in current v1.
-- No full starter deck, source-like card library, copied assessment, copied source flow, copied template catalog, or private reference ingestion.
+- No copied assessment, copied source flow, private reference ingestion, or source-like expansion beyond existing approved seed/template material.
 - No active Radar product area, API, model, or generated asset set after the 2026-05-07 cleanup pass.
 - No broad file reorganization until the repo has a verified map and cleanup plan.
 

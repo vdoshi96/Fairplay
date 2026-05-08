@@ -63,7 +63,7 @@ describe("feature guide content", () => {
     expect(FEATURE_GUIDES.library.steps[0].body).toMatch(/Nothing permanent/i);
   });
 
-  it("explains what learners practice and why in the Load Map first step", () => {
+  it("explains what learners practice and why in the Board first step", () => {
     expect(FEATURE_GUIDES.loadMap.steps[0].title).toBe("About this feature");
     expect(FEATURE_GUIDES.loadMap.steps[0].body).toMatch(/practice/i);
     expect(FEATURE_GUIDES.loadMap.steps[0].body).toMatch(/why/i);

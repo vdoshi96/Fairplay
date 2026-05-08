@@ -14,7 +14,7 @@ const welcomeLinks = [
   {
     href: "/app/crash-course",
     icon: Sparkles,
-    label: "Start crash course"
+    label: "Open Theory"
   },
   {
     href: "/app/library",
@@ -28,7 +28,7 @@ export function PersistentWelcome({
   onDismiss
 }: PersistentWelcomeProps) {
   const pathname = usePathname();
-  const variant = pathname === "/app/home" ? "prominent" : "compact";
+  const variant = pathname === "/app/your-cards" ? "prominent" : "compact";
   const [hidden, setHidden] = useState(dismissed);
   const [closing, setClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +84,7 @@ export function PersistentWelcome({
               Welcome resources
             </h2>
             <p className="text-[13px] leading-5 text-fp-muted-ink">
-              Crash course and the card library are nearby.
+              Theory and the card library are nearby.
             </p>
           </div>
 
@@ -148,8 +148,8 @@ export function PersistentWelcome({
             Welcome to Fairplay
           </h2>
           <p className="max-w-3xl text-[15px] leading-6 text-fp-muted-ink">
-            Start with the course, browse the full card library, or learn one
-            feature at a time. This welcome stays here until you close it.
+            Start with Theory, browse the full card library, or jump into the
+            distribution deck. This welcome stays here until you close it.
           </p>
         </div>
 

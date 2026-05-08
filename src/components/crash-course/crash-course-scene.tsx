@@ -60,7 +60,7 @@ const SCENE_DETAILS: Record<CrashCourseSceneKey, SceneDetail> = {
   },
   "load-map": {
     composition: "load-map-room",
-    label: "Load Map learning scene",
+    label: "Board learning scene",
     src: "/assets/fairplay/generated-ui/crash-course/load-map.png"
   },
   "capacity-shift": {

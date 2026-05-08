@@ -14,7 +14,7 @@ type HelperSceneConfig = {
 
 const helperScenes = {
   loadMap: {
-    label: "Load Map helper scene",
+    label: "Board helper scene",
     scene: "lane-board",
     src: "/assets/fairplay/generated-ui/feature-guide/load-map.png"
   },

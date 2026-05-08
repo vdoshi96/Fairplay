@@ -25,7 +25,7 @@ export function AuthPageShell({
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden bg-fp-paper bg-cover bg-center px-4 py-6 text-fp-ink sm:px-6"
+      className="relative min-h-[100svh] overflow-hidden bg-fp-paper bg-cover bg-center px-4 py-6 text-fp-ink sm:px-6"
       data-auth-background
       style={{ backgroundImage: `url('${AUTH_BACKGROUND}')` }}
     >
@@ -36,8 +36,8 @@ export function AuthPageShell({
       <section
         className={
           hasVisual
-            ? "relative mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-5xl content-center gap-8 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-center"
-            : "relative mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-md content-center gap-6"
+            ? "relative mx-auto grid min-h-[calc(100svh-3rem)] w-full max-w-5xl content-center gap-8 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-center"
+            : "relative mx-auto grid min-h-[calc(100svh-3rem)] w-full max-w-md content-center gap-6"
         }
       >
         <div className="grid gap-6">

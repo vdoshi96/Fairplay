@@ -1258,28 +1258,28 @@ test.describe("Little Alex physics", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ height: 720, width: 390 });
     await createHouseholdAndChooseAlex(page);
-    await page.goto("/app/home");
+    await page.goto("/app/distribute");
 
     await expect(page.getByTestId("little-alex-horne")).toHaveCSS("z-index", "9");
 
     const mobileNav = page.getByRole("navigation", { name: "Primary" });
-    const libraryLink = mobileNav.getByRole("link", { name: "Library" });
-    const libraryBox = await libraryLink.boundingBox();
+    const distributeLink = mobileNav.getByRole("link", { name: "Distribute" });
+    const distributeBox = await distributeLink.boundingBox();
 
-    expect(libraryBox).not.toBeNull();
+    expect(distributeBox).not.toBeNull();
 
-    if (!libraryBox) {
+    if (!distributeBox) {
       return;
     }
 
     await dragLittleAlexTo(
       page,
-      libraryBox.x + libraryBox.width / 2,
-      libraryBox.y + libraryBox.height / 2
+      distributeBox.x + distributeBox.width / 2,
+      distributeBox.y + distributeBox.height / 2
     );
 
-    await libraryLink.click();
-    await expect(page).toHaveURL(/\/app\/library/);
+    await distributeLink.click();
+    await expect(page).toHaveURL(/\/app\/distribute/);
   });
 
   test("uses a static draggable-safe mode with reduced motion", async ({ page }) => {

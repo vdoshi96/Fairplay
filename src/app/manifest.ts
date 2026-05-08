@@ -4,9 +4,10 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Fairplay",
     short_name: "Fairplay",
+    id: "/app/distribute",
     description:
-      "A calm household planning app for shared responsibilities and check-ins.",
-    start_url: "/",
+      "A mobile-first responsibility card app for shared household work.",
+    start_url: "/app/distribute",
     scope: "/",
     display: "standalone",
     background_color: "#FFFDF8",
@@ -14,19 +15,25 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait-primary",
     icons: [
       {
-        src: "/icon",
+        src: "/icons/fairplay-icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any"
+      },
+      {
+        src: "/icons/fairplay-icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any"
       },
       {
-        src: "/icon",
+        src: "/icons/fairplay-maskable-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable"
       },
       {
-        src: "/apple-icon",
+        src: "/icons/apple-touch-icon.png",
         sizes: "180x180",
         type: "image/png",
         purpose: "any"

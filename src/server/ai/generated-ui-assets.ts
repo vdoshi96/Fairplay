@@ -122,7 +122,7 @@ const crashCourseSceneSpecs = [
     courseText:
       "fairness is clearer when only current-season responsibilities are treated as active",
     promptSubject:
-      "choosing the household responsibilities that are actually in play",
+      "choosing the household responsibilities that are actually active",
     slug: "crash-course-active-set"
   },
   {
@@ -176,11 +176,11 @@ const crashCourseSceneSpecs = [
     slug: "crash-course-handoff-context"
   },
   {
-    alt: "Load Map storyboard background",
+    alt: "Board storyboard background",
     composition:
       "an airy room-scale abstract map of rounded responsibility lanes, owner dots, cadence markers, blank review flags, and concentration paths; no title, no headings, no words, no tiny writing",
     courseText:
-      "the Load Map shows concentration, cadence, unclear ownership, and due reviews without becoming a scoreboard",
+      "the Board shows concentration, cadence, unclear ownership, and due reviews without becoming a scoreboard",
     promptSubject:
       "a silent household responsibility map used for discussion instead of scoring",
     slug: "crash-course-load-map"
@@ -422,11 +422,11 @@ export const GENERATED_UI_ASSETS: GeneratedUiAssetSpec[] = [
   })),
   ...professionalPageBackgroundSpecs,
   {
-    alt: "Load Map guide thumbnail",
+    alt: "Board guide thumbnail",
     composition:
       "soft lane-like zones made from abstract rounded panels, two balanced persona dots, shared orbit path, and a helper spark",
     outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/feature-guide/load-map.png`,
-    promptSubject: "household load map helper thumbnail",
+    promptSubject: "household board helper thumbnail",
     ratio: "4:3",
     size: "1024*768",
     slug: "feature-guide-load-map"

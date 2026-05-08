@@ -15,7 +15,7 @@ describe("FeatureGuideLauncher", () => {
     queryValue.value = "";
   });
 
-  it("starts a user-triggered feature guide with a load map helper scene", () => {
+  it("starts a user-triggered feature guide with a board helper scene", () => {
     render(<FeatureGuideLauncher guide={FEATURE_GUIDES.loadMap} />);
 
     expect(screen.getByTestId("feature-guide-helper-loadMap")).toHaveAttribute(
@@ -25,7 +25,7 @@ describe("FeatureGuideLauncher", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
 
-    expect(screen.getByRole("dialog", { name: "Load Map guide" })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "Board guide" })).toBeVisible();
   });
 
   it("does not auto-start before the user taps the guide", () => {
@@ -53,7 +53,7 @@ describe("FeatureGuideLauncher", () => {
     expect(screen.getByRole("dialog", { name: "Library guide" })).toBeVisible();
   });
 
-  it("starts the Settings guide from the settings query without opening Load Map", () => {
+  it("starts the Settings guide from the settings query without opening Board", () => {
     queryValue.value = "guide=settings";
 
     render(
@@ -66,7 +66,7 @@ describe("FeatureGuideLauncher", () => {
     const settingsGuide = screen.getByRole("dialog", { name: "Settings guide" });
     expect(settingsGuide).toBeVisible();
     expect(
-      screen.queryByRole("dialog", { name: "Load Map guide" })
+      screen.queryByRole("dialog", { name: "Board guide" })
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "About this feature" })

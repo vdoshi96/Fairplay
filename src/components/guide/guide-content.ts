@@ -30,19 +30,19 @@ export type FeatureGuide = {
 export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
   loadMap: {
     id: "loadMap",
-    title: "Load Map",
-    description: "Learn lanes, in-play cards, owner lanes, filters, and moving cards.",
+    title: "Board",
+    description: "Learn buckets, assigned cards, filters, and moving cards.",
     steps: [
       {
         id: "board",
         title: "About this feature",
-        body: "Practice reading lanes, ownership, and card movement so you know why the Load Map turns household work into visible agreements instead of a scoreboard.",
+        body: "Practice reading buckets, ownership, and card movement so you know why the Board turns household work into visible agreements instead of a scoreboard.",
         targetId: "load-map-board"
       },
       {
         id: "lanes",
-        title: "Lanes describe the card's current state",
-        body: "Cards of Concern need attention, owner lanes show accountable ownership, Not in Play is reserve, and Trimmed is intentionally out.",
+        title: "Buckets describe each card's current state",
+        body: "Unassigned cards need attention, Alex and Max show accountable ownership, Saved for Later is reserve, and Not Applicable is intentionally out.",
         targetId: "load-map-lanes"
       },
       {
@@ -51,7 +51,7 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
         body: "Drag cards or use the move menu. Moving a card should mean the lane now reflects the real agreement.",
         targetId: "load-map-move-target",
         practice: {
-          actionLabel: "Start dummy Load Map workflow",
+          actionLabel: "Start dummy Board workflow",
           completionMessage: "Dummy card moved, edited, trimmed, and deleted.",
           eventId: "load-map-practice-start",
           prompt:
@@ -75,12 +75,12 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
   library: {
     id: "library",
     title: "Library",
-    description: "Learn drafts, search, labels, and putting a card in play.",
+    description: "Learn drafts, search, labels, and adding cards to the Board.",
     steps: [
       {
         id: "ai-task-manager",
         title: "Practice first",
-        body: "Try a temporary Greg draft, edit it, and preview Load Map. Nothing permanent is created.",
+        body: "Try a temporary Greg draft, edit it, and preview the Board. Nothing permanent is created.",
         targetId: "library-ai-task-manager",
         practice: {
           actionLabel: "Start practice",
@@ -104,13 +104,13 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
       {
         id: "labels",
         title: "Labels group related work",
-        body: "Labels are not assignments. They are ways to browse kinds of household work before deciding what is in play.",
+        body: "Labels are not assignments. They are ways to browse kinds of household work before deciding what belongs on the Board.",
         targetId: "library-labels"
       },
       {
         id: "put-in-play",
-        title: "Putting a card in play creates a responsibility",
-        body: "In play means this source card becomes part of your household operating system and appears on the Load Map.",
+        title: "Adding a card creates a responsibility",
+        body: "Adding a source card makes it part of your household operating system and places it on the Board.",
         targetId: "library-put-in-play"
       }
     ]

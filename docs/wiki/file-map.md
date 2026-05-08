@@ -18,11 +18,15 @@ This is a practical index, not a reorganization plan.
 ## App Source
 
 - `src/app/layout.tsx`: root metadata, font, theme init script, global provider.
-- `src/app/page.tsx`: redirects users to login, persona selection, or app home.
+- `src/app/page.tsx`: redirects users to login, persona selection, or Distribute.
 - `src/app/(auth)/`: auth route pages.
 - `src/app/app/layout.tsx`: protected app layout and app shell wrapper.
-- `src/app/app/home/page.tsx`: learning hub.
-- `src/app/app/load-map/page.tsx`: responsibility/load map page.
+- `src/app/app/home/page.tsx`: legacy redirect to Distribute.
+- `src/app/app/your-cards/page.tsx`: assigned-card file home for the selected persona.
+- `src/app/app/distribute/page.tsx`: searchable swipe distribution deck.
+- `src/app/app/board/page.tsx`: grouped card bucket board.
+- `src/app/app/ask-greg/page.tsx`: card generation/advisor surface.
+- `src/app/app/load-map/page.tsx`: legacy redirect to Board.
 - `src/app/app/library/page.tsx`: library and AI draft page.
 - `src/app/app/check-ins/`: check-in list/new/detail pages.
 - `src/app/app/crash-course/page.tsx`: immersive crash-course route.
@@ -37,9 +41,9 @@ This is a practical index, not a reorganization plan.
 
 - `src/components/app-shell/`: desktop/sidebar/mobile nav shell, page shell, session view.
 - `src/components/auth/`: create/login/persona UI and auth helpers.
-- `src/components/cards/`: card detail sheet.
+- `src/components/cards/`: card state mapping, card workspace, and simplified card detail sheet.
 - `src/components/library/`: card library and AI Task Manager.
-- `src/components/responsibilities/`: Load Map board, editor, lane metadata.
+- `src/components/responsibilities/`: legacy Load Map compatibility, editor, and lane metadata.
 - `src/components/check-ins/`: check-in flow.
 - `src/components/crash-course/`: crash course content, scene, and flow.
 - `src/components/guide/`: feature guides and practice workflows.
@@ -77,7 +81,7 @@ This is a practical index, not a reorganization plan.
 
 - `src/**/*.test.ts(x)`: Vitest unit/component/service/route/repository tests.
 - `src/server/repositories/persistence.integration.test.ts`: DB-backed integration test requiring Postgres.
-- `e2e/*.spec.ts`: Playwright tests for auth/onboarding, check-ins, guided learning, visual responsive behavior, root redirects, Little Alex, and Load Map.
+- `e2e/*.spec.ts`: Playwright tests for auth/onboarding, check-ins, guided learning, visual responsive behavior, root redirects, Little Alex, Board, and legacy Load Map compatibility.
 - `e2e/helpers/`: Playwright helper utilities.
 
 ## Docs
@@ -122,3 +126,4 @@ This is a practical index, not a reorganization plan.
 
 - `ResponsibilityBoardLane` values are persisted API/database keys. Keep `cards_of_concern`, `player_1`, `player_2`, and `kid_split` stable unless a later PR performs an explicit compatibility migration.
 - User-facing labels and help text live in `src/components/responsibilities/board-lanes.ts`.
+- Card-first bucket labels and lane conversion helpers live in `src/components/cards/card-state.ts`.

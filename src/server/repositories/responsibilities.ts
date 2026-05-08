@@ -97,6 +97,7 @@ function toResponsibilitySummary(
   return {
     id: responsibility.id,
     title: responsibility.title,
+    summary: responsibility.summary,
     areaKeys: responsibility.areaKeys,
     hiddenEffortKeys: responsibility.hiddenEffortKeys,
     cadence: responsibility.cadence,
@@ -106,7 +107,10 @@ function toResponsibilitySummary(
     boardLane: responsibility.boardLane,
     boardSortOrder: responsibility.boardSortOrder,
     currentAssignments: currentAssignments(responsibility.assignments),
-    nextReviewAt: nullableIso(responsibility.nextReviewAt)
+    nextReviewAt: nullableIso(responsibility.nextReviewAt),
+    householdStandard: responsibility.householdStandard,
+    sourceDefinition: responsibility.sourceDefinition,
+    sourceMinimumStandard: responsibility.sourceMinimumStandard
   };
 }
 

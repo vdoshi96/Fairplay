@@ -277,8 +277,8 @@ describe("ResponsibilityLoadMap", () => {
       />
     );
 
-    const reserveLane = screen.getByRole("region", { name: "Not in Play" });
-    const concernLane = screen.getByRole("region", { name: "Cards of Concern" });
+    const reserveLane = screen.getByRole("region", { name: "Saved for Later" });
+    const concernLane = screen.getAllByRole("region", { name: "Unassigned" })[0];
     const alexLane = screen.getByRole("region", { name: "Alex" });
 
     expect(
@@ -300,18 +300,20 @@ describe("ResponsibilityLoadMap", () => {
     expect(document.querySelectorAll('[data-guide-id="load-map-move-target"]'))
       .toHaveLength(1);
     expect(
-      within(reserveLane).getByRole("heading", { name: "Not in Play" })
+      within(reserveLane).getByRole("heading", { name: "Saved for Later" })
     ).toBeVisible();
     expect(within(reserveLane).getByText("1 card")).toBeVisible();
-    expect(within(reserveLane).getByText("Not active yet.")).toBeVisible();
+    expect(
+      within(reserveLane).getByText("Useful, but not ready to assign.")
+    ).toBeVisible();
     expect(within(concernLane).getByText("1 card")).toBeVisible();
     expect(within(alexLane).getByText("1 card")).toBeVisible();
     expect(within(alexLane).getByText(/owned by Alex/i)).toBeVisible();
     expect(screen.getByRole("heading", { name: "Max" })).toBeVisible();
     expect(screen.getByText(/owned by Max/i)).toBeVisible();
     expect(screen.queryByText(/Player 1|Player 2/)).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Kid Split" })).toBeVisible();
-    expect(screen.getByRole("heading", { name: "Trimmed" })).toBeVisible();
+    expect(screen.getAllByRole("heading", { name: "Unassigned" })).toHaveLength(2);
+    expect(screen.getByRole("heading", { name: "Not Applicable" })).toBeVisible();
   });
 
   it("keeps dummy move targets hidden when filters hide every real card", () => {
@@ -370,16 +372,16 @@ describe("ResponsibilityLoadMap", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
 
-    expect(screen.getByRole("dialog", { name: "Load Map guide" })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "Board guide" })).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
     expect(
-      screen.getByText("Next required click: Start dummy Load Map workflow.")
+      screen.getByText("Next required click: Start dummy Board workflow.")
     ).toBeVisible();
 
     await userEvent.click(
-      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+      screen.getByRole("button", { name: "Start dummy Board workflow" })
     );
     expect(screen.getByTestId("load-map-practice-board")).toBeVisible();
     expect(screen.getByTestId("load-map-practice-board")).toHaveClass(
@@ -439,7 +441,7 @@ describe("ResponsibilityLoadMap", () => {
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+      screen.getByRole("button", { name: "Start dummy Board workflow" })
     );
 
     expect(screen.getByTestId("load-map-practice-board")).toBeVisible();
@@ -477,7 +479,7 @@ describe("ResponsibilityLoadMap", () => {
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+      screen.getByRole("button", { name: "Start dummy Board workflow" })
     );
     expect(screen.getByTestId("load-map-practice-board")).toBeVisible();
 
@@ -508,7 +510,7 @@ describe("ResponsibilityLoadMap", () => {
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+      screen.getByRole("button", { name: "Start dummy Board workflow" })
     );
     await userEvent.click(screen.getByRole("button", { name: "Open dummy move menu" }));
     await userEvent.click(screen.getByRole("menuitem", { name: "Alex" }));
@@ -536,7 +538,7 @@ describe("ResponsibilityLoadMap", () => {
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(
-      screen.getByRole("button", { name: "Start dummy Load Map workflow" })
+      screen.getByRole("button", { name: "Start dummy Board workflow" })
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Open dummy move menu" }));
