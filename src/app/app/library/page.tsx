@@ -1,21 +1,12 @@
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { NextRequest } from "next/server";
 
 import { PageHeader } from "@/components/app-shell/page-shell";
-import {
-  getDistributableCards,
-  type CardDistributionBucket
-} from "@/components/cards/card-state";
 import { CardLibrary, type LibraryCardTemplate } from "@/components/library/card-library";
 import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import { FAIRPLAY_SOURCE_CARDS } from "@/seed/fairplay-source-cards";
 import { aiCardDraftService } from "@/server/ai-card-drafts/service";
 import { getCurrentSession } from "@/server/auth/current-session";
-import { createResponsibilityFromTemplate } from "@/server/repositories/card-templates";
-import { distributeResponsibilityCard } from "@/server/responsibilities/card-distribution";
-import { responsibilityService } from "@/server/responsibilities/service";
 
 export default async function LibraryPage() {
   const templates: LibraryCardTemplate[] = FAIRPLAY_SOURCE_CARDS.map((card) => ({
@@ -33,62 +24,11 @@ export default async function LibraryPage() {
   const aiDrafts: AiCardDraftSummary[] = session?.selectedPersonaId
     ? await aiCardDraftService.list(session)
     : [];
-  const availableCards = session?.selectedPersonaId
-    ? getDistributableCards(
-        (await responsibilityService.listOverview(session)).responsibilities
-      )
-    : [];
-
-  async function createFromTemplate(
-    templateId: string,
-    bucket: CardDistributionBucket
-  ) {
-    "use server";
-
-    const session = await getPageSession();
-
-    if (!session) {
-      redirect("/login");
-    }
-
-    if (!session.selectedPersonaId) {
-      redirect("/choose-persona");
-    }
-
-    const created = await createResponsibilityFromTemplate({
-      householdId: session.householdId,
-      actorPersonaId: session.selectedPersonaId,
-      templateId,
-      lane: "cards_of_concern"
-    });
-
-    await distributeResponsibilityCard(session, {
-      bucket,
-      responsibilityId: created.id
-    });
-
-    revalidatePath("/app/library");
-    revalidatePath("/app/distribute");
-    revalidatePath("/app/your-cards");
-    revalidatePath("/app/board");
-    redirect(
-      bucket === "unassigned"
-        ? "/app/distribute"
-        : bucket === "alex"
-          ? "/app/your-cards"
-          : "/app/board"
-    );
-  }
 
   return (
     <section className="grid gap-5">
       <PageHeader title="Library" />
-      <CardLibrary
-        aiDrafts={aiDrafts}
-        availableCards={availableCards}
-        onCreateFromTemplate={createFromTemplate}
-        templates={templates}
-      />
+      <CardLibrary aiDrafts={aiDrafts} templates={templates} />
     </section>
   );
 }

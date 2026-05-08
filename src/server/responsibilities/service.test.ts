@@ -299,8 +299,10 @@ describe("responsibility service", () => {
   });
 
   it("returns load snapshot aggregate fields without scores or comparison labels", async () => {
+    const ensureCatalogResponsibilities = vi.fn().mockResolvedValue(undefined);
     const service = createResponsibilityService(
       makeDeps({
+        ensureCatalogResponsibilities,
         listResponsibilities: vi.fn().mockResolvedValue([
           summary({
             currentAssignments: [
@@ -332,6 +334,10 @@ describe("responsibility service", () => {
     });
     const serialized = JSON.stringify(overview.loadSnapshot);
 
+    expect(ensureCatalogResponsibilities).toHaveBeenCalledWith({
+      actorPersonaId: session.selectedPersonaId,
+      householdId: session.householdId
+    });
     expect(overview.loadSnapshot.ownerDistribution).toMatchObject({
       alex: 1,
       max: 1

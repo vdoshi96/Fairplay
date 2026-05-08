@@ -57,13 +57,13 @@ Migrations currently include initial schema, legacy Radar timing/removal history
 2. The server stores password/session state through repositories and sets an opaque session cookie.
 3. The user selects a persona through `/api/personas/select`.
 4. Protected pages load `getAppSessionView()`, then service/repository data for the current household/persona.
-5. Card distribution calls server actions that route through `distributeResponsibilityCard()` and preserve stable persisted lane keys.
+5. Responsibility overview reads materialize the household source-card catalog first, then card distribution calls server actions that route through `distributeResponsibilityCard()` and preserve stable persisted lane keys.
 6. Other client components submit JSON to API route handlers.
 7. Route handlers validate with Zod contracts and call service/repository layers.
 8. Repositories persist through Prisma.
 9. Pages/components refresh or navigate after successful mutation.
 
-Card cover art flows from Library source templates into responsibility summaries as `sourceCoverAssetPath`. Deal, Your Deck, and Board all render from `responsibilityService.listOverview(session)` through `CardWorkspace`, so assignment movement and cover art stay consistent across tabs.
+Card cover art flows from Library source templates into responsibility summaries as `sourceCoverAssetPath`. Deal, Your Deck, and Board all render from `responsibilityService.listOverview(session)` through `CardWorkspace`, so assignment movement and cover art stay consistent across tabs. Library and Deal represent the same source catalog; `templateId` is the stable card identity when present, and Board display is derived from assignment/categorization rather than duplicated card objects. The Board intentionally excludes the internal unassigned/dealable-pool bucket.
 
 ## Verification Map
 
@@ -76,7 +76,8 @@ Card cover art flows from Library source templates into responsibility summaries
 ## Architecture Risks
 
 - Board lane enum values are intentionally stable persisted keys; do not rename them without a dedicated compatibility migration.
-- The card-first UI depends on the compatibility mapping in `src/components/cards/card-state.ts`; update tests and docs if persisted lanes ever migrate.
+- The card-first UI depends on the compatibility mapping and dedupe helpers in `src/components/cards/card-state.ts`; update tests and docs if persisted lanes or catalog identity ever migrate.
+- Active household catalog responsibilities are protected by a partial `(householdId, templateId)` unique index. Migration/seed changes must preserve the distinction between duplicate rows for the same template and distinct source cards that happen to have similar titles.
 - Some generated assets/prompts may reference retired surfaces: needs verification.
 - `docs/agents/tasks/` is useful history but very large and not a concise onboarding layer.
 - Full DB-backed behavior was verified locally after the Radar removal migration; production deployment should still run normal migration verification.

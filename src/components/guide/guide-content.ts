@@ -42,7 +42,7 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
       {
         id: "lanes",
         title: "Buckets describe each card's current state",
-        body: "Unassigned cards need attention, Alex and Max show accountable ownership, Saved for Later is reserve, and Not Applicable is intentionally out.",
+        body: "Alex and Max show accountable ownership, Saved for Later is reserve, and Not Applicable is intentionally out.",
         targetId: "load-map-lanes"
       },
       {
@@ -91,7 +91,7 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
             "library-capture-filled",
             "library-draft-reviewed",
             "library-draft-edited",
-            "library-put-in-play"
+            "library-board-preview"
           ]
         }
       },
@@ -107,12 +107,6 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
         body: "Labels are not assignments. They are ways to browse kinds of household work before deciding what belongs on the Board.",
         targetId: "library-labels"
       },
-      {
-        id: "put-in-play",
-        title: "Adding a card creates a responsibility",
-        body: "Adding a source card makes it part of your household operating system and places it on the Board.",
-        targetId: "library-put-in-play"
-      }
     ]
   },
   checkIns: {

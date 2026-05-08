@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { AiCardDraftSummary } from "@/contracts/ai-card-drafts";
 import type { CardTemplateSummary } from "@/contracts/card-templates";
-import type { ResponsibilitySummary } from "@/contracts/responsibilities";
 import { FAIRPLAY_SOURCE_CARDS } from "@/seed/fairplay-source-cards";
 import { CardLibrary } from "./card-library";
 
@@ -57,27 +56,6 @@ const aiDrafts: AiCardDraftSummary[] = [
   }
 ];
 
-function availableCard(
-  overrides: Partial<ResponsibilitySummary> = {}
-): ResponsibilitySummary {
-  return {
-    id: "550e8400-e29b-41d4-a716-446655440090",
-    title: "School lunch",
-    areaKeys: ["kids", "food"],
-    hiddenEffortKeys: ["planning"],
-    cadence: "daily",
-    relevantDays: [],
-    status: "unassigned",
-    visibility: "shared_household",
-    boardLane: "cards_of_concern",
-    boardSortOrder: 0,
-    currentAssignments: [],
-    nextReviewAt: null,
-    sourceCoverAssetPath: "/assets/fairplay/cards/homework.png",
-    ...overrides
-  };
-}
-
 describe("CardLibrary", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -118,12 +96,10 @@ describe("CardLibrary", () => {
     expect(screen.getByText("Laundry reset")).toBeVisible();
   });
 
-  it("searches cards, flips one for purpose, and assigns it to a lane", async () => {
-    const onCreateFromTemplate = vi.fn();
+  it("searches cards and flips one for purpose without offering a Library put-in-play workflow", async () => {
     render(
       <CardLibrary
         aiDrafts={aiDrafts}
-        onCreateFromTemplate={onCreateFromTemplate}
         templates={templates}
       />
     );
@@ -144,41 +120,26 @@ describe("CardLibrary", () => {
       "src",
       "/assets/fairplay/cards/auto.png"
     );
-    expect(within(autoCard).getByRole("button", { name: "Alex" })).toHaveAttribute(
-      "data-guide-id",
-      "library-put-in-play"
-    );
+    expect(within(autoCard).queryByRole("button", { name: "Alex" }))
+      .not.toBeInTheDocument();
     expect(document.querySelectorAll('[data-guide-id="library-put-in-play"]'))
-      .toHaveLength(1);
+      .toHaveLength(0);
     expect(screen.queryByText("Homework")).not.toBeInTheDocument();
     expect(screen.getByText("Laundry reset")).toBeVisible();
 
     await userEvent.click(within(autoCard).getByRole("button", { name: /flip auto/i }));
     expect(within(autoCard).getByText("What is this card for?")).toBeVisible();
     expect(within(autoCard).getByText("Fogging E-Standards")).toBeVisible();
-    expect(within(autoCard).getByText("Choose lane")).toBeVisible();
-
-    await userEvent.click(within(autoCard).getByRole("button", { name: "Alex" }));
-
-    expect(onCreateFromTemplate).toHaveBeenCalledWith("tpl_auto", "alex");
+    expect(within(autoCard).queryByText("Choose lane")).not.toBeInTheDocument();
   });
 
-  it("browses the same unclassified card pool used by Deal", () => {
-    render(
-      <CardLibrary
-        availableCards={[availableCard()]}
-        aiDrafts={aiDrafts}
-        templates={templates}
-      />
-    );
+  it("shows the full catalog without a separate unclassified-card shelf", () => {
+    render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
 
-    const shelf = screen.getByRole("region", { name: "Cards ready to deal" });
-
-    expect(within(shelf).getByText("1 unclassified card")).toBeVisible();
-    expect(within(shelf).getByRole("article", { name: "School lunch" }))
-      .toBeVisible();
-    expect(within(shelf).getByRole("link", { name: "Open Deal" }))
-      .toHaveAttribute("href", "/app/distribute");
+    expect(screen.getByRole("article", { name: "Auto" })).toBeVisible();
+    expect(screen.getByRole("article", { name: "Homework" })).toBeVisible();
+    expect(screen.queryByRole("region", { name: "Cards ready to deal" }))
+      .not.toBeInTheDocument();
   });
 
   it("filters by source label while preserving stable card presentation", async () => {
@@ -221,14 +182,13 @@ describe("CardLibrary", () => {
 
     const cardArticle = screen.getByRole("article", { name: longTitle });
     const heading = within(cardArticle).getByRole("heading", { name: longTitle });
-    const action = within(cardArticle).getByRole("button", { name: "Alex" });
 
     expect(cardArticle).toHaveClass("min-w-0", "overflow-hidden");
     expect(heading).toHaveClass("line-clamp-2", "[overflow-wrap:anywhere]");
     expect(
       within(cardArticle).getByText(/deliberately long summary/i)
     ).toHaveClass("line-clamp-3", "[overflow-wrap:anywhere]");
-    expect(action).toHaveTextContent("Alex");
+    expect(within(cardArticle).queryByText("Choose lane")).not.toBeInTheDocument();
   });
 
   it("renders duplicate personal seed cards with Alex and Max display labels", () => {
@@ -268,7 +228,6 @@ describe("CardLibrary", () => {
   });
 
   it("generates a temporary dummy Library preview from the user request without creating a real card", async () => {
-    const onCreateFromTemplate = vi.fn();
     let resolvePreview: (response: Response) => void = () => undefined;
     const fetchMock = vi.fn(
       () =>
@@ -280,7 +239,6 @@ describe("CardLibrary", () => {
     render(
       <CardLibrary
         aiDrafts={aiDrafts}
-        onCreateFromTemplate={onCreateFromTemplate}
         templates={templates}
       />
     );
@@ -288,7 +246,7 @@ describe("CardLibrary", () => {
     await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
 
     expect(screen.getByRole("dialog", { name: "Library guide" })).toBeVisible();
-    expect(screen.getByText("Step 1 of 4")).toBeVisible();
+    expect(screen.getByText("Step 1 of 3")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
     expect(
       screen.getByText("Next required click: Start practice.")
@@ -392,7 +350,6 @@ describe("CardLibrary", () => {
     expect(screen.getByText("Board preview")).toBeVisible();
     expect(screen.getByText("Practice complete.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
-    expect(onCreateFromTemplate).not.toHaveBeenCalled();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     await waitFor(() => {
       expect(fetchMock).not.toHaveBeenCalledWith(
@@ -472,7 +429,6 @@ describe("CardLibrary", () => {
     await userEvent.click(screen.getByRole("button", { name: "Review draft" }));
     await userEvent.click(screen.getByRole("button", { name: "Save edits" }));
     await userEvent.click(screen.getByRole("button", { name: "Preview on Board" }));
-    await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
     await userEvent.click(screen.getByRole("button", { name: "Next" }));
 

@@ -1,12 +1,14 @@
 # Fairplay Decisions
 
-Last updated: 2026-05-07
+Last updated: 2026-05-08
 
 ## Decision Log
 
 | Date | Decision | Rationale | Status |
 | --- | --- | --- | --- |
 | 2026-05-08 | Make cards the primary product surface and retire the homepage. | The user requested a full mobile-first product rethink around card distribution; direct action beats a learning/dashboard landing page. | Accepted |
+| 2026-05-08 | Treat Library and Deal as the same source catalog, with assignment/status stored separately. | The user rejected the put-in-play workflow and duplicate card instances; source template identity should be stable while Board display is derived from assignment/categorization. | Accepted |
+| 2026-05-08 | Enforce one active household responsibility per source template. | A partial unique index plus duplicate archival migration prevents repeated Library/Deal actions from creating duplicate catalog cards while preserving distinct source cards with similar titles. | Accepted |
 | 2026-05-08 | Keep persisted board-lane keys but normalize product buckets in the UI/service layer. | Avoids a database compatibility migration while enabling `unassigned`, `alex`, `max`, `savedForLater`, and `notApplicable` behavior. | Accepted |
 | 2026-05-08 | Rename visible card standards copy to Fogging E-Standards. | The user explicitly requested the new label and removal of old minimum-standard card-detail clutter. | Accepted |
 | 2026-05-08 | Use PWA/safe-area metadata and fixed mobile bottom tabs for the core app shell. | Mobile Safari and Add to Home Screen are primary targets for this redesign. | Accepted |
@@ -26,5 +28,6 @@ Last updated: 2026-05-07
 ## Naming And Compatibility Notes
 
 - Database and contract board lane enums intentionally keep persisted keys such as `cards_of_concern`, `player_1`, `player_2`, and `kid_split`; use UI label mapping for display and defer any rename to a dedicated migration.
-- Card-first product buckets live in `src/components/cards/card-state.ts`; `kid_split` remains legacy-compatible and displays as Unassigned.
+- Card-first product buckets live in `src/components/cards/card-state.ts`; `unassigned` remains an internal dealable-pool bucket, while Board renders only Alex, Max, Saved for Later, and Not Applicable.
+- Catalog card identity is `Responsibility.templateId` when present. Do not dedupe source cards by title; there are intentional same-title variants such as Alex/Max source cards.
 - Deprecated AI routes and media fields may be compatibility scaffolding: needs verification before removal.

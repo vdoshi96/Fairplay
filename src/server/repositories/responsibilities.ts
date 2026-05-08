@@ -96,6 +96,7 @@ function toResponsibilitySummary(
 ): ResponsibilitySummary {
   return {
     id: responsibility.id,
+    templateId: responsibility.templateId,
     title: responsibility.title,
     summary: responsibility.summary,
     areaKeys: responsibility.areaKeys,
@@ -384,6 +385,7 @@ export async function listResponsibilitiesForHousehold(
 ): Promise<ResponsibilitySummary[]> {
   const responsibilities = await prisma.responsibility.findMany({
     where: {
+      archivedAt: null,
       householdId
     },
     include: responsibilityInclude,

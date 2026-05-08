@@ -1,5 +1,31 @@
 # Fairplay Context Log
 
+## 2026-05-08 - Catalog Deal Board And Little Alex Fix
+
+Requested by the user: make Library and Deal represent the same underlying card catalog, remove Library put-in-play and Board Unassigned, prevent duplicate catalog cards, normalize existing local/dev duplicate data safely, and fix Little Alex mobile grab/drag/fling behavior without unrelated UI changes.
+
+Actions completed:
+
+- Materialized the full Fairplay source-card catalog into one active household responsibility per source template before responsibility overview reads.
+- Added safe duplicate cleanup that archives duplicate active rows by `templateId`, plus a partial unique index on active `(householdId, templateId)` rows.
+- Preserved distinct real source cards with similar titles by deduping on stable template identity rather than card title.
+- Removed visible Library put-in-play/lane-selection controls and updated Library guide/practice expectations.
+- Kept Deal search and one-by-one browsing backed by the full catalog-derived dealable pool.
+- Removed the Board Unassigned section and kept remove-from-board behavior only for Alex, Max, Save for later, and Not applicable categories.
+- Separated Little Alex touch grab/drag state from ragdoll state, including pointer capture, touch cancellation, release velocity, and mobile/desktop regression coverage.
+- Added implementation documentation in `docs/implementation/2026-05-08-catalog-deal-board-little-alex.md`.
+
+Verification:
+
+- `npm run prisma:validate`
+- `npm run typecheck`
+- `npm run lint`
+- `npm test -- --run` (89 files, 538 tests)
+- `npm run build`
+- Targeted Playwright for corrective responsive, Little Alex physics, guided learning, and auth-onboarding.
+- Full `npm run test:e2e -- --workers=1` (28 tests).
+- Local migration deploy applied `20260508120000_catalog_card_identity`; `prisma migrate dev --skip-seed` was blocked by local shadow DB permission `P3014`.
+
 ## 2026-05-08 - Deal And Deck Naming Polish
 
 Requested by the user: consider calling Distribute "Deal" as in dealing cards, and Your Cards "Your Deck."

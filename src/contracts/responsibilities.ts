@@ -41,6 +41,7 @@ export const ResponsibilityAssignmentSummarySchema = z
 export const ResponsibilitySummarySchema = z
   .object({
     id: ResponsibilityIdSchema,
+    templateId: z.string().trim().min(1).nullable().optional(),
     title: z.string().trim().min(1).max(140),
     summary: z.string().trim().max(500).nullable().optional(),
     areaKeys: z.array(AreaKeySchema),

@@ -660,7 +660,7 @@ function LibraryPracticeWorkflow() {
                 onClick={() => {
                   setPutInPlayPreviewed(true);
                   mark(
-                    "library-put-in-play",
+                    "library-board-preview",
                     "Practice card is ready for Board. No real card was created."
                   );
                 }}

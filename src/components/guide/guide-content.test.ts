@@ -24,7 +24,7 @@ describe("feature guide content", () => {
         "library-capture-filled",
         "library-draft-reviewed",
         "library-draft-edited",
-        "library-put-in-play"
+        "library-board-preview"
       ],
       checkIns: [
         "check-in-scheduled",
@@ -50,7 +50,7 @@ describe("feature guide content", () => {
   });
 
   it("teaches temporary feature practice before source-card browsing in the Library guide", () => {
-    expect(FEATURE_GUIDES.library.steps).toHaveLength(4);
+    expect(FEATURE_GUIDES.library.steps).toHaveLength(3);
     expect(FEATURE_GUIDES.library.steps[0]).toMatchObject({
       targetId: "library-ai-task-manager",
       title: "Practice first",
@@ -60,6 +60,19 @@ describe("feature guide content", () => {
     });
     expect(FEATURE_GUIDES.library.steps[0].body).toMatch(/temporary/i);
     expect(FEATURE_GUIDES.library.steps[0].body).toMatch(/Nothing permanent/i);
+  });
+
+  it("does not teach Library put-in-play as a catalog workflow", () => {
+    expect(
+      FEATURE_GUIDES.library.steps.map((step) => [
+        step.id,
+        step.title,
+        step.body,
+        step.targetId
+      ].join(" "))
+    ).not.toEqual(
+      expect.arrayContaining([expect.stringMatching(/put[- ]in[- ]play/i)])
+    );
   });
 
   it("explains what learners practice and why in the Board first step", () => {

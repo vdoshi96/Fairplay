@@ -140,6 +140,7 @@ function dispatchPointer(
     clientX: number;
     clientY: number;
     pointerId?: number;
+    pointerType?: string;
     timeStamp?: number;
   }
 ) {
@@ -153,6 +154,10 @@ function dispatchPointer(
   Object.defineProperty(event, "pointerId", {
     configurable: true,
     value: init.pointerId ?? 1
+  });
+  Object.defineProperty(event, "pointerType", {
+    configurable: true,
+    value: init.pointerType ?? "mouse"
   });
 
   if (init.timeStamp !== undefined) {
@@ -403,7 +408,7 @@ describe("LittleAlexPhysics", () => {
     expect(bubble.style.transform).toContain("translate3d");
   });
 
-  it("enters fling ragdoll visual state only after a real non-reduced fling", () => {
+  it("keeps ragdoll settled while grabbed and enters fling ragdoll visual state only after release", () => {
     stubReducedMotion(false);
     stubPointerCapture();
     vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
@@ -421,7 +426,8 @@ describe("LittleAlexPhysics", () => {
       timeStamp: 0
     });
 
-    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "dragging");
+    expect(littleAlex).toHaveAttribute("data-grab-state", "dragging");
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
 
     dispatchPointer(grabTarget, "pointermove", {
       clientX: 820,
@@ -1039,12 +1045,15 @@ describe("LittleAlexPhysics", () => {
       vi.advanceTimersByTime(260);
     });
 
-    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "dragging");
+    expect(littleAlex).toHaveAttribute("data-grab-state", "dragging");
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
 
     fireEvent.touchMove(grabTarget, {
       changedTouches: [{ clientX: 220, clientY: 430, identifier: 7 }],
       touches: [{ clientX: 220, clientY: 430, identifier: 7 }]
     });
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
+
     fireEvent.touchEnd(grabTarget, {
       changedTouches: [{ clientX: 220, clientY: 430, identifier: 7 }],
       touches: []
@@ -1054,6 +1063,71 @@ describe("LittleAlexPhysics", () => {
     expect(screen.getByTestId("little-alex-chat-bubble")).toHaveTextContent(
       "touch drag works"
     );
+  });
+
+  it("does not fling or ragdoll from touch hold duration alone", () => {
+    vi.useFakeTimers();
+    stubReducedMotion(false);
+    stubViewport(390, 720);
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics chatPhrase="not yet" />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    fireEvent.touchStart(grabTarget, {
+      changedTouches: [{ clientX: 340, clientY: 520, identifier: 7 }],
+      touches: [{ clientX: 340, clientY: 520, identifier: 7 }]
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-grab-state", "dragging");
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
+
+    fireEvent.touchEnd(grabTarget, {
+      changedTouches: [{ clientX: 340, clientY: 520, identifier: 7 }],
+      touches: []
+    });
+
+    expect(littleAlex).toHaveAttribute("data-grab-state", "idle");
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
+    expect(screen.queryByTestId("little-alex-chat-bubble")).not.toBeInTheDocument();
+  });
+
+  it("cancels touch grabs without treating cancellation as a fling release", () => {
+    vi.useFakeTimers();
+    stubReducedMotion(false);
+    stubViewport(390, 720);
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics chatPhrase="cancelled" />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    fireEvent.touchStart(grabTarget, {
+      changedTouches: [{ clientX: 340, clientY: 520, identifier: 7 }],
+      touches: [{ clientX: 340, clientY: 520, identifier: 7 }]
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(260);
+    });
+
+    fireEvent.touchMove(grabTarget, {
+      changedTouches: [{ clientX: 260, clientY: 470, identifier: 7 }],
+      touches: [{ clientX: 260, clientY: 470, identifier: 7 }]
+    });
+    fireEvent.touchCancel(grabTarget, {
+      changedTouches: [{ clientX: 260, clientY: 470, identifier: 7 }],
+      touches: []
+    });
+
+    expect(littleAlex).toHaveAttribute("data-grab-state", "idle");
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
+    expect(screen.queryByTestId("little-alex-chat-bubble")).not.toBeInTheDocument();
   });
 
   it("keeps the mobile grab target aligned with the visible scaled sprite after physics sync", () => {
@@ -1106,7 +1180,7 @@ describe("LittleAlexPhysics", () => {
       vi.advanceTimersByTime(1);
     });
 
-    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "dragging");
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
     expect(littleAlex).toHaveAttribute("data-grab-state", "dragging");
   });
 
