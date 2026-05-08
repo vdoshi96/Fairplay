@@ -1,5 +1,25 @@
 # Fairplay Context Log
 
+## 2026-05-08 - Focused Patch Run
+
+Requested by the user: patch only the Distribute availability bug, the mobile More menu, and Little Alex intentional drag behavior; avoid broad Home/Board/Greg redesign; use subagents and separate branches where possible; merge fixes through ordered PRs; and confirm local/GitHub main alignment.
+
+Actions completed:
+
+- Merged PR #42 to keep the active Distribute card visible while a server move is pending and preserve remaining cards until they are assigned to Alex, Max, Saved for Later, or Not Applicable.
+- Merged PR #44 to make the More menu a controlled visible menu with Check-in, Settings, Theory, and Card Library links, fixed mobile placement, and an outside-tap dismiss layer.
+- Merged PR #43 to add Little Alex touch-intent gates, pointer-capture-safe drag activation, scroll cancellation, and helper-system documentation.
+- Final rendered QA found and fixed leftover More-menu browser issues: a stale `[open]` CSS rule hid the controlled panel, bottom-nav blur constrained fixed overlay geometry, and pointerdown dismissal allowed click-through navigation.
+- Added implementation/QA documentation at `docs/implementation/2026-05-08-focused-patch-run.md`.
+
+Verification:
+
+- Baseline `npm test -- --run` passed on main before patching: 89 files, 517 tests.
+- PR #42 focused Vitest, typecheck, and lint passed.
+- PR #44 focused Vitest, typecheck, and lint passed.
+- PR #43 focused Vitest, typecheck, and lint passed.
+- Final integrated verification passed after rendered QA follow-up: Prisma validate, typecheck, lint, full Vitest (89 files, 520 tests), build, full Playwright e2e (27 tests), and rendered QA for Distribute, More, and Little Alex.
+
 ## 2026-05-08 - Mobile Card UI And State Fix Pass
 
 Requested by the user: make the app revolve around the real Library card images across Distribute, Your Cards, and Board; fix mobile layout overflow; move the mobile Library overflow action to the bottom; remove the unnecessary welcome banner; make Little Alex grabbable on mobile; verify state movement across tabs; and use ordered sub-agent/PR workflow.
@@ -27,7 +47,7 @@ Requested by the user: rebuild Fairplay as a polished mobile-first card responsi
 Actions completed:
 
 - Retired the homepage by redirecting `/app` and `/app/home` to Distribute.
-- Added primary tabs: Your Cards, Distribute, Board, and Ask Greg, with Check in, Theory, Settings, and Card Library behind overflow navigation.
+- Added primary tabs: Your Cards, Distribute, Board, and Ask Greg, with Check-in, Theory, Settings, and Card Library behind overflow navigation.
 - Added `CardWorkspace` and `card-state` mapping for normalized buckets over stable persisted lanes.
 - Implemented Distribute search, card flip, swipe/arrow/button assignment, natural removal, and empty states.
 - Implemented Your Cards as a card-file view with tap/click flip to assignment, purpose, and Fogging E-Standards.

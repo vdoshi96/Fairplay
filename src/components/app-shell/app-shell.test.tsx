@@ -194,6 +194,10 @@ describe("protected app UI", () => {
 
     fireEvent.pointerDown(screen.getByTestId("mobile-more-menu-dismiss-layer"));
 
+    expect(moreTrigger).toHaveAttribute("aria-expanded", "true");
+
+    fireEvent.click(screen.getByTestId("mobile-more-menu-dismiss-layer"));
+
     expect(moreTrigger).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByTestId("mobile-bottom-more-menu")).not.toBeInTheDocument();
   });
@@ -214,7 +218,10 @@ describe("protected app UI", () => {
     expect(screen.getByTestId("mobile-bottom-navigation")).toHaveClass(
       "w-full",
       "max-w-full",
-      "overflow-x-clip"
+      "overflow-visible"
+    );
+    expect(screen.getByTestId("mobile-bottom-navigation")).not.toHaveClass(
+      "backdrop-blur"
     );
     expect(container.querySelector("[data-page-shell-content]")).toHaveClass(
       "max-w-full"

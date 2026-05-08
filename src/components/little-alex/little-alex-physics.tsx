@@ -266,7 +266,8 @@ const FULL_BODY_CENTER_OFFSET_Y =
   characterBounds.minY + FULL_BODY_DISPLAY_HEIGHT / 2;
 const FULL_BODY_VISUAL_BOTTOM_PADDING = 12;
 const MOBILE_FULL_BODY_VISUAL_SCALE = 0.32;
-const MOBILE_FULL_BODY_VISUAL_INLINE_NUDGE = 31;
+const MOBILE_FULL_BODY_VISUAL_INLINE_NUDGE = 45;
+const MOBILE_GRAB_TARGET_SIZE = 44;
 
 function cssLengthToPx(value: string | undefined, rootFontSizePx = 16) {
   const trimmed = value?.trim();
@@ -453,6 +454,35 @@ function fullBodyVisualInlineNudge(viewport = viewportSize()) {
     : 0;
 }
 
+function fullBodyVisualPlacement(
+  anchor: Point,
+  angle = 0,
+  viewport = viewportSize()
+) {
+  const bounds = playAreaBounds(viewport);
+  const clampedAnchor = clampFullBodyAnchor(anchor, angle, bounds);
+  const scale = fullBodyVisualScale(viewport);
+  const inlineNudge = fullBodyVisualInlineNudge(viewport);
+  const halfExtents = fullBodyVisualHalfExtents(angle);
+  const visualHalfWidth = halfExtents.x * scale;
+  const visualCenterX = clampToViewportRange(
+    clampedAnchor.x + inlineNudge,
+    bounds.minX + visualHalfWidth + 1,
+    bounds.maxX - visualHalfWidth - 1
+  );
+
+  return {
+    centerX: visualCenterX,
+    centerY:
+      clampedAnchor.y +
+      characterBounds.maxY -
+      (FULL_BODY_DISPLAY_HEIGHT * scale) / 2,
+    clampedAnchor,
+    inlineNudge: visualCenterX - clampedAnchor.x,
+    scale
+  };
+}
+
 function clampFullBodyAnchor(
   anchor: Point,
   angle = 0,
@@ -484,9 +514,11 @@ function fullBodySpriteStyle(
   ragdollState: RagdollVisualState = "settled",
   viewport = viewportSize()
 ): CSSProperties {
-  const clampedAnchor = clampFullBodyAnchor(anchor, angle, playAreaBounds(viewport));
-  const scale = fullBodyVisualScale(viewport);
-  const inlineNudge = fullBodyVisualInlineNudge(viewport);
+  const { clampedAnchor, inlineNudge, scale } = fullBodyVisualPlacement(
+    anchor,
+    angle,
+    viewport
+  );
 
   return {
     height: FULL_BODY_DISPLAY_HEIGHT,
@@ -499,7 +531,19 @@ function fullBodySpriteStyle(
   };
 }
 
-function grabTargetStyle(anchor: Point): CSSProperties {
+function grabTargetStyle(anchor: Point, viewport = viewportSize()): CSSProperties {
+  if (viewport.width < APP_LAYOUT_METRICS.desktopBreakpointPx) {
+    const visualPlacement = fullBodyVisualPlacement(anchor, 0, viewport);
+
+    return {
+      height: MOBILE_GRAB_TARGET_SIZE,
+      transform: `translate3d(${visualPlacement.centerX - MOBILE_GRAB_TARGET_SIZE / 2}px, ${
+        visualPlacement.centerY - MOBILE_GRAB_TARGET_SIZE / 2
+      }px, 0)`,
+      width: MOBILE_GRAB_TARGET_SIZE
+    };
+  }
+
   return {
     height: 96,
     transform: `translate3d(${anchor.x - 48}px, ${anchor.y - 72}px, 0)`,
@@ -1910,7 +1954,10 @@ export function LittleAlexPhysics({
         onTouchStart={handleTouchStart}
         ref={grabTargetRef}
         style={{
-          ...grabTargetStyle(reducedAnchor),
+          ...grabTargetStyle(
+            reducedAnchor,
+            motionPreferenceReady ? viewportSize() : { height: 768, width: 1024 }
+          ),
           pointerEvents: "auto",
           touchAction: "pan-y"
         }}
