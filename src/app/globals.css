@@ -455,10 +455,6 @@ a {
   animation: fp-panel-enter 180ms ease-out both;
 }
 
-.fp-overflow-menu:not([open]) > .fp-overflow-menu-panel {
-  display: none;
-}
-
 .fp-little-alex-shell {
   contain: layout paint;
   inset: 0 0 var(--fp-little-alex-bottom-reserve) 0;

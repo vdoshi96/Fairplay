@@ -194,7 +194,7 @@ export function AppShell({
 
         <nav
           aria-label="Primary"
-          className="fixed inset-x-0 bottom-0 z-10 min-h-[var(--fp-app-bottom-nav-height)] w-full max-w-full overflow-x-clip border-t border-fp-line bg-[var(--fp-surface-strong)] px-2 pb-[max(0.5rem,var(--fp-app-safe-area-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,33,36,0.08)] backdrop-blur lg:hidden"
+          className="fixed inset-x-0 bottom-0 z-10 min-h-[var(--fp-app-bottom-nav-height)] w-full max-w-full overflow-visible border-t border-fp-line bg-[var(--fp-surface-strong)] px-2 pb-[max(0.5rem,var(--fp-app-safe-area-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,33,36,0.08)] lg:hidden"
           data-testid="mobile-bottom-navigation"
         >
           <div className="mx-auto grid max-w-xl grid-cols-5 gap-1">
@@ -291,9 +291,14 @@ function OverflowMenu({
               aria-label="Close more actions"
               className="fixed inset-0 z-20 cursor-default bg-transparent"
               data-testid="mobile-more-menu-dismiss-layer"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setIsOpen(false);
+              }}
               onPointerDown={(event) => {
                 event.preventDefault();
-                setIsOpen(false);
+                event.stopPropagation();
               }}
               type="button"
             />

@@ -4,13 +4,13 @@ Last updated: 2026-05-08
 
 ## Current Phase
 
-The card-first mobile fix pass has been merged through PRs #38, #39, and #40. The active product lands signed-in users on Distribute, uses Your Cards as the effective home after assignment, replaces Load Map with Board, and keeps Settings, Check in, Theory, and Card Library in overflow navigation. Card images from the Library now flow into Distribute, Your Cards, and Board.
+The focused patch run has merged the Distribute availability, mobile More menu, and Little Alex touch-intent fixes through PRs #42, #44, and #43. The follow-up documentation/QA branch also fixes rendered-browser More-menu clipping and click-through discovered during final QA. The active product lands signed-in users on Distribute, uses Your Cards as the effective home after assignment, replaces Load Map with Board, and keeps Check-in, Settings, Theory, and Card Library in overflow navigation. Card images from the Library now flow into Distribute, Your Cards, and Board.
 
 ## Branch And Working Tree
 
-- Local `main` has been fast-forwarded through PR #40.
-- This documentation/QA pass is being finalized after the ordered merges.
-- Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, and #40 image-first card workspace.
+- Local `main` has been fast-forwarded through PR #43.
+- This documentation/QA pass is being finalized after the ordered focused patch merges and includes the rendered More-menu follow-up.
+- Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, and #43 Little Alex touch intent.
 
 ## What Exists
 
@@ -27,8 +27,8 @@ The card-first mobile fix pass has been merged through PRs #38, #39, and #40. Th
 - Cards are the primary interaction model: Distribution supports search, an available-card list, tap/click flip, swipe left/right/up/down, arrow keys, and large fallback buttons.
 - Your Cards is a searchable, cadence-filterable, image-first assigned-card gallery; tapping a card flips it to show assignment, purpose, and Fogging E-Standards.
 - Board groups cards by Alex, Max, Saved for Later, Not Applicable, and Unassigned using stacked/collapsible card sections on mobile instead of horizontal page-level lane scrolling.
-- Mobile overflow navigation now opens from the bottom action area. The persistent welcome banner is no longer mounted in the protected app shell.
-- Little Alex has touch fallback dragging for mobile browsers while preserving desktop mouse/pointer behavior.
+- Mobile overflow navigation now opens from the bottom action area with visible Check-in, Settings, Theory, and Card Library links plus an outside-tap dismiss layer that closes without click-through navigation. The persistent welcome banner is no longer mounted in the protected app shell.
+- Little Alex has intentional touch fallback dragging for mobile browsers while preserving immediate desktop mouse/pointer behavior.
 - Library cards also flip in place and create cards directly into a selected lane; old "put in play" copy is removed from visible card flows.
 - Ask Greg is a main tab for drafting more cards.
 - Check-ins is now a lightweight schedule, confirm, and optional notes flow; agenda/decision concepts are no longer visible in the UI.
@@ -51,6 +51,8 @@ npm run lint
 ```
 
 PR-specific focused suites also covered responsibility distribution state, card workspace rendering, app shell overflow placement, Settings welcome removal, and Little Alex touch handling. Final integrated build/e2e/mobile smoke passed and is tracked in `docs/implementation/2026-05-08-mobile-card-ui-state-fix.md`.
+
+Focused patch-run verification covered Distribute pending card availability, mobile More menu visibility/dismiss behavior, and Little Alex touch intent. Rendered browser QA also confirmed a four-card distribution flow, visible mobile/desktop More links, outside-tap close without navigation, and deliberate Little Alex touch dragging. Details are tracked in `docs/implementation/2026-05-08-focused-patch-run.md`.
 
 ## Known Blockers
 
@@ -76,6 +78,8 @@ PR-specific focused suites also covered responsibility distribution state, card 
 - Card-first rebuild verification passed: Vitest 88 files / 510 tests, full Playwright e2e 27 tests, typecheck, lint, build, and mobile production smoke.
 - Mobile card UI/state fix branch verification passed before merge: PR #38 focused tests/full Vitest/typecheck/lint, PR #39 focused tests/full Vitest/typecheck/lint, and PR #40 focused tests/full Vitest/typecheck/lint.
 - Final integrated mobile card UI/state verification passed: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 517 tests), `npm run build`, `npx playwright test e2e/corrective-responsive-visual.spec.ts --project=chromium`, and full `npm run test:e2e` (27 tests). Responsive visual QA now includes 320px, 390px, 768px, 1024px, 1280px, and 1366px widths.
+- Focused patch run before the final documentation PR passed a baseline `npm test -- --run` on main (89 files, 517 tests), plus focused Vitest/typecheck/lint on PRs #42, #44, and #43.
+- Final focused patch-run verification passed after the documentation/rendered QA follow-up: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 520 tests), `npm run build`, full `npm run test:e2e` (27 Playwright tests), and rendered Playwright browser QA for the requested Distribute, More menu, and Little Alex flows.
 
 ## Suggested Cleanup Plan
 

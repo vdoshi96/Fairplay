@@ -19,7 +19,7 @@ Primary tabs:
 
 Overflow menu:
 
-- Check in
+- Check-in
 - Theory
 - Settings
 - Card Library
