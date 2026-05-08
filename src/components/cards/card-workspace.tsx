@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowDown,
@@ -8,7 +9,6 @@ import {
   ArrowUp,
   Archive,
   CheckCircle2,
-  MoreHorizontal,
   Search,
   Sparkles
 } from "lucide-react";
@@ -45,6 +45,7 @@ type CardWorkspaceCard = ResponsibilitySummary & {
   householdStandard?: string | null;
   sourceDefinition?: string | null;
   sourceMinimumStandard?: string | null;
+  sourceCoverAssetPath?: string | null;
   summary?: string | null;
 };
 
@@ -134,6 +135,7 @@ function DistributeView({
   const [lastAction, setLastAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const deckRef = useRef<HTMLDivElement | null>(null);
   const allDeck = useMemo(
     () =>
@@ -143,7 +145,8 @@ function DistributeView({
     [removedIds, responsibilities]
   );
   const deck = useMemo(() => searchCards(allDeck, query), [allDeck, query]);
-  const topCard = deck[0] ?? null;
+  const topCard =
+    deck.find((card) => card.id === selectedId) ?? deck[0] ?? null;
   const dragOffset = drag ? { x: drag.x - drag.startX, y: drag.y - drag.startY } : null;
   const previewBucket = dragOffset ? bucketFromOffset(dragOffset.x, dragOffset.y) : null;
   const hasSearch = query.trim().length > 0;
@@ -158,6 +161,7 @@ function DistributeView({
     setError(null);
     setLastAction(`${card.title} -> ${CARD_BUCKET_LABELS[bucket]}`);
     setRemovedIds((current) => new Set(current).add(card.id));
+    setSelectedId(null);
     setDrag(null);
     setFlippedId(null);
 
@@ -260,29 +264,39 @@ function DistributeView({
       </label>
 
       {topCard ? (
-        <div
-          aria-label="Responsibility swipe deck"
-          className="relative grid min-h-[28rem] place-items-center outline-none sm:min-h-[32rem]"
-          data-testid="swipe-deck"
-          onKeyDown={handleKeyDown}
-          ref={deckRef}
-          tabIndex={0}
-        >
-          <div aria-hidden className="absolute inset-x-8 top-10 h-[24rem] rounded-[8px] border border-fp-line bg-white/60 shadow-[var(--fp-shadow-soft)] rotate-[-3deg]" />
-          <div aria-hidden className="absolute inset-x-6 top-8 h-[24rem] rounded-[8px] border border-fp-line bg-white/80 shadow-[var(--fp-shadow-soft)] rotate-[2deg]" />
-          <SwipeCard
-            card={topCard}
-            flipped={flippedId === topCard.id}
-            onFlip={() =>
-              setFlippedId((current) => (current === topCard.id ? null : topCard.id))
-            }
-            onPointerCancel={handlePointerEnd}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerEnd}
-            pending={pendingId === topCard.id}
-            previewBucket={previewBucket}
-            style={styleForDrag(dragOffset)}
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
+          <div
+            aria-label="Responsibility swipe deck"
+            className="relative grid min-h-[28rem] place-items-center outline-none sm:min-h-[32rem]"
+            data-testid="swipe-deck"
+            onKeyDown={handleKeyDown}
+            ref={deckRef}
+            tabIndex={0}
+          >
+            <div aria-hidden className="absolute inset-x-8 top-10 h-[24rem] rounded-[8px] border border-fp-line bg-white/60 shadow-[var(--fp-shadow-soft)] rotate-[-3deg]" />
+            <div aria-hidden className="absolute inset-x-6 top-8 h-[24rem] rounded-[8px] border border-fp-line bg-white/80 shadow-[var(--fp-shadow-soft)] rotate-[2deg]" />
+            <SwipeCard
+              card={topCard}
+              flipped={flippedId === topCard.id}
+              onFlip={() =>
+                setFlippedId((current) => (current === topCard.id ? null : topCard.id))
+              }
+              onPointerCancel={handlePointerEnd}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerEnd}
+              pending={pendingId === topCard.id}
+              previewBucket={previewBucket}
+              style={styleForDrag(dragOffset)}
+            />
+          </div>
+          <AvailableCardList
+            cards={deck}
+            onSelect={(cardId) => {
+              setSelectedId(cardId);
+              setFlippedId(null);
+            }}
+            selectedId={topCard.id}
           />
         </div>
       ) : hasSearch && allDeck.length > 0 ? (
@@ -326,7 +340,21 @@ function YourCardsView({
   responsibilities,
   selectedPersona
 }: Pick<CardWorkspaceProps, "responsibilities" | "selectedPersona">) {
+  const [query, setQuery] = useState("");
+  const [cadenceFilter, setCadenceFilter] = useState<string>("all");
   const cards = getCardsForPersona(responsibilities, selectedPersona.key);
+  const cadenceOptions = useMemo(
+    () => ["all", ...Array.from(new Set(cards.map((card) => card.cadence)))],
+    [cards]
+  );
+  const filteredCards = useMemo(
+    () =>
+      searchCards(cards, query).filter(
+        (card) => cadenceFilter === "all" || card.cadence === cadenceFilter
+      ),
+    [cadenceFilter, cards, query]
+  );
+  const hasFilter = query.trim().length > 0 || cadenceFilter !== "all";
 
   return (
     <section className="grid gap-4">
@@ -340,14 +368,80 @@ function YourCardsView({
       </header>
 
       {cards.length > 0 ? (
-        <div
-          className="grid max-h-[calc(100svh_-_12rem)] gap-3 overflow-y-auto pr-1"
-          data-testid="your-card-file"
-        >
-          {cards.map((card, index) => (
-            <CardFileItem card={card} index={index} key={card.id} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 shadow-[var(--fp-shadow-soft)]">
+            <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+              Search your cards
+              <span className="relative">
+                <Search
+                  aria-hidden
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fp-muted-ink"
+                />
+                <input
+                  aria-label="Search your cards"
+                  className="min-h-11 w-full rounded-[8px] border border-fp-line bg-white py-2.5 pl-10 pr-3 text-[16px] font-semibold text-fp-ink outline-none transition focus:border-fp-ink"
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search by title, area, standard"
+                  type="search"
+                  value={query}
+                />
+              </span>
+            </label>
+            <div
+              aria-label="Card cadence filters"
+              className="flex flex-wrap gap-2"
+            >
+              {cadenceOptions.map((cadence) => (
+                <button
+                  className={[
+                    "min-h-10 rounded-[8px] border px-3 text-[13px] font-bold",
+                    cadenceFilter === cadence
+                      ? "border-fp-primary bg-fp-primary text-fp-on-primary"
+                      : "border-fp-line bg-white text-fp-ink"
+                  ].join(" ")}
+                  key={cadence}
+                  onClick={() => setCadenceFilter(cadence)}
+                  type="button"
+                >
+                  {cadence === "all" ? "All" : humanize(cadence)}
+                </button>
+              ))}
+            </div>
+            <p className="text-[12px] font-bold text-fp-muted-ink">
+              {filteredCards.length} of {cards.length} card
+              {cards.length === 1 ? "" : "s"}
+            </p>
+          </div>
+          {filteredCards.length > 0 ? (
+            <div
+              className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-3"
+              data-testid="your-card-gallery"
+            >
+              {filteredCards.map((card) => (
+                <CardFileItem card={card} key={card.id} />
+              ))}
+            </div>
+          ) : (
+            <section className="grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-5 text-center shadow-[var(--fp-shadow-soft)]">
+              <Archive aria-hidden className="mx-auto h-9 w-9 text-fp-muted-ink" />
+              <h2 className="text-[18px] font-bold text-fp-ink">
+                No assigned cards match these filters.
+              </h2>
+              {hasFilter ? (
+                <button
+                  className="mx-auto inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold text-fp-ink"
+                  onClick={() => {
+                    setQuery("");
+                    setCadenceFilter("all");
+                  }}
+                  type="button"
+                >
+                  Clear filters
+                </button>
+              ) : null}
+            </section>
+          )}
+        </>
       ) : (
         <section className="grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-5 text-center shadow-[var(--fp-shadow-soft)]">
           <Archive aria-hidden className="mx-auto h-9 w-9 text-fp-muted-ink" />
@@ -382,18 +476,19 @@ function BoardView({
       </header>
 
       <div
-        className="grid max-w-full gap-3 overflow-x-auto pb-2 lg:grid-cols-5 lg:overflow-visible"
+        className="grid max-w-full gap-3 md:grid-cols-2 xl:grid-cols-5"
         data-testid="card-board"
       >
         {boardOrder.map((bucket) => (
-          <section
+          <details
+            open
             className={[
-              "grid min-w-[17rem] content-start gap-3 rounded-[8px] border p-3 shadow-[var(--fp-shadow-soft)] lg:min-w-0",
+              "grid min-w-0 content-start gap-3 rounded-[8px] border p-3 shadow-[var(--fp-shadow-soft)] [&>summary::-webkit-details-marker]:hidden",
               CARD_BUCKET_TONES[bucket]
             ].join(" ")}
             key={bucket}
           >
-            <div className="flex items-start justify-between gap-3">
+            <summary className="flex cursor-pointer list-none items-start justify-between gap-3 rounded-[8px] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]">
               <div>
                 <h2 className="text-[16px] font-bold leading-6 text-fp-ink">
                   {CARD_BUCKET_LABELS[bucket]}
@@ -405,8 +500,8 @@ function BoardView({
               <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-[12px] font-bold text-fp-ink">
                 {groups[bucket].length}
               </span>
-            </div>
-            <div className="grid gap-2">
+            </summary>
+            <div className="mt-3 grid gap-2">
               {groups[bucket].map((card) => (
                 <CompactCard
                   bucket={bucket}
@@ -421,7 +516,7 @@ function BoardView({
                 </p>
               ) : null}
             </div>
-          </section>
+          </details>
         ))}
       </div>
     </section>
@@ -468,34 +563,29 @@ function SwipeCard({
       {flipped ? (
         <CardBack card={card} className="p-5" />
       ) : (
-        <div className="grid content-between gap-3 p-5">
-          <div className="grid gap-3">
-            <div className="flex items-center justify-between gap-3">
+        <div className="grid grid-rows-[minmax(0,1fr)_auto]">
+          <CardCoverImage card={card} className="min-h-0 bg-fp-surface p-3" />
+          <div className="grid gap-3 p-4">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-fp-line bg-[var(--fp-surface)] px-3 py-1 text-[12px] font-bold text-fp-muted-ink">
                 {card.cadence.replaceAll("_", " ")}
               </span>
-              <MoreHorizontal aria-hidden className="h-5 w-5 text-fp-muted-ink" />
+              {card.areaKeys.slice(0, 1).map((area) => (
+                <span
+                  className="rounded-full border border-fp-line bg-[var(--fp-surface)] px-3 py-1 text-[12px] font-bold text-fp-muted-ink"
+                  key={area}
+                >
+                  {humanize(area)}
+                </span>
+              ))}
             </div>
-            <div className="grid gap-2">
+            <div className="grid gap-1">
               <h2 className="text-[30px] font-bold leading-9 text-fp-ink [overflow-wrap:anywhere]">
                 {card.title}
               </h2>
               <p className="text-[14px] font-semibold leading-6 text-fp-muted-ink">
                 {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
               </p>
-            </div>
-          </div>
-
-          <div className="grid gap-3">
-            <div className="grid grid-cols-2 gap-2">
-              {card.hiddenEffortKeys.slice(0, 4).map((key) => (
-                <span
-                  className="rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 py-2 text-[12px] font-bold text-fp-muted-ink"
-                  key={key}
-                >
-                  {humanize(key)}
-                </span>
-              ))}
             </div>
             <p className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-[14px] font-bold text-fp-ink">
               Tap to flip
@@ -519,11 +609,9 @@ function SwipeCard({
 }
 
 function CardFileItem({
-  card,
-  index
+  card
 }: {
   card: CardWorkspaceCard;
-  index: number;
 }) {
   const [flipped, setFlipped] = useState(false);
 
@@ -531,7 +619,7 @@ function CardFileItem({
     <article
       aria-label={card.title}
       aria-pressed={flipped}
-      className="grid min-h-[13.5rem] gap-3 rounded-[8px] border border-fp-line bg-white text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]"
+      className="grid min-h-[20rem] overflow-hidden rounded-[8px] border border-fp-line bg-white text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]"
       onClick={() => setFlipped((current) => !current)}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -540,28 +628,25 @@ function CardFileItem({
         }
       }}
       role="button"
-      style={{
-        marginLeft: `${(index % 3) * 8}px`
-      }}
       tabIndex={0}
     >
       {flipped ? (
         <CardBack card={card} className="p-4" />
       ) : (
-        <div className="grid content-between gap-3 p-4">
-          <div className="flex items-start justify-between gap-3">
-            <h2 className="text-[21px] font-bold leading-7 [overflow-wrap:anywhere]">
-              {card.title}
-            </h2>
-            <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-[var(--fp-alex)]" />
+        <div className="grid grid-rows-[minmax(0,1fr)_auto]">
+          <CardCoverImage card={card} className="min-h-0 bg-fp-surface p-2" />
+          <div className="grid gap-2 p-3">
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-[18px] font-bold leading-6 [overflow-wrap:anywhere]">
+                {card.title}
+              </h2>
+              <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-[var(--fp-alex)]" />
+            </div>
+            <p className="line-clamp-2 text-[12px] font-semibold leading-5 text-fp-muted-ink">
+              {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
+            </p>
+            <p className="text-[12px] font-bold text-fp-muted-ink">Tap to flip</p>
           </div>
-          <p className="text-[13px] font-semibold leading-5 text-fp-muted-ink">
-            {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
-          </p>
-          <p className="text-[13px] leading-5 text-fp-muted-ink">
-            {card.hiddenEffortKeys.map(humanize).slice(0, 3).join(", ")}
-          </p>
-          <p className="text-[12px] font-bold text-fp-muted-ink">Tap to flip</p>
         </div>
       )}
     </article>
@@ -636,14 +721,23 @@ function CompactCard({
   );
 
   return (
-    <article className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 shadow-sm">
-      <Link className="grid gap-1" href={`/app/responsibilities/${card.id}`}>
-        <h3 className="text-[14px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
-          {card.title}
-        </h3>
-        <p className="text-[12px] font-semibold leading-4 text-fp-muted-ink">
-          {card.cadence.replaceAll("_", " ")}
-        </p>
+    <article className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-sm">
+      <Link
+        className="grid grid-cols-[4.75rem_minmax(0,1fr)] gap-3"
+        href={`/app/responsibilities/${card.id}`}
+      >
+        <CardCoverImage
+          card={card}
+          className="aspect-[5/7] rounded-[8px] border border-fp-line bg-white p-1"
+        />
+        <span className="grid min-w-0 content-start gap-1">
+          <span className="text-[14px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
+            {card.title}
+          </span>
+          <span className="text-[12px] font-semibold leading-4 text-fp-muted-ink">
+            {card.cadence.replaceAll("_", " ")}
+          </span>
+        </span>
       </Link>
       {onDistribute ? (
         <div className="grid grid-cols-2 gap-1">
@@ -665,6 +759,102 @@ function CompactCard({
         </div>
       ) : null}
     </article>
+  );
+}
+
+function AvailableCardList({
+  cards,
+  onSelect,
+  selectedId
+}: {
+  cards: CardWorkspaceCard[];
+  onSelect: (cardId: string) => void;
+  selectedId: string;
+}) {
+  return (
+    <section
+      aria-label="Available cards to distribute"
+      className="grid content-start gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 shadow-[var(--fp-shadow-soft)]"
+      data-testid="distribution-card-list"
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-[16px] font-bold text-fp-ink">
+          Available cards
+        </h2>
+        <span className="text-[12px] font-bold text-fp-muted-ink">
+          {cards.length}
+        </span>
+      </div>
+      <div className="grid max-h-[min(38rem,70svh)] gap-2 overflow-y-auto pr-1">
+        {cards.map((card) => {
+          const selected = card.id === selectedId;
+
+          return (
+            <button
+              aria-pressed={selected}
+              className={[
+                "grid min-w-0 grid-cols-[4rem_minmax(0,1fr)] gap-3 rounded-[8px] border p-2 text-left outline-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
+                selected
+                  ? "border-fp-primary bg-white shadow-[var(--fp-shadow-soft)]"
+                  : "border-fp-line bg-white/70"
+              ].join(" ")}
+              key={card.id}
+              onClick={() => onSelect(card.id)}
+              type="button"
+            >
+              <CardCoverImage
+                card={card}
+                className="aspect-[5/7] rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-1"
+              />
+              <span className="grid min-w-0 content-center gap-1">
+                <span className="line-clamp-2 text-[13px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
+                  {card.title}
+                </span>
+                <span className="text-[11px] font-semibold text-fp-muted-ink">
+                  {card.areaKeys.map(humanize).slice(0, 2).join(" / ") || "Household"}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function CardCoverImage({
+  card,
+  className
+}: {
+  card: CardWorkspaceCard;
+  className?: string;
+}) {
+  if (!card.sourceCoverAssetPath) {
+    return (
+      <div
+        aria-label={`${card.title} cover`}
+        className={[
+          "grid place-items-center overflow-hidden text-center text-[12px] font-bold text-fp-muted-ink",
+          className ?? ""
+        ].join(" ")}
+        role="img"
+      >
+        <span className="px-2">{card.title}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={["overflow-hidden", className ?? ""].join(" ")}>
+      <Image
+        alt={`${card.title} cover`}
+        className="h-full w-full object-contain"
+        height={700}
+        src={card.sourceCoverAssetPath}
+        unoptimized
+        width={500}
+      />
+    </div>
   );
 }
 

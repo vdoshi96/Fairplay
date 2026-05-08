@@ -28,6 +28,7 @@ function card(
     boardSortOrder: 0,
     currentAssignments: [],
     nextReviewAt: null,
+    sourceCoverAssetPath: "/assets/fairplay/cards/meals-kids-school-lunch.png",
     sourceDefinition: "Pack and keep lunch ready for the school day.",
     sourceMinimumStandard: "Lunch is packed before school starts.",
     ...overrides
@@ -76,6 +77,50 @@ describe("CardWorkspace", () => {
     expect(
       screen.getByText("No more cards to distribute. Generate more cards when ready.")
     ).toBeVisible();
+  });
+
+  it("shows all available distribution cards and advances after a move", async () => {
+    const onDistribute = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({ id: "550e8400-e29b-41d4-a716-446655440030", title: "Lunch", boardSortOrder: 0 }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440031",
+            title: "Bills",
+            boardSortOrder: 1,
+            sourceCoverAssetPath: "/assets/fairplay/cards/cash-and-bills.png"
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const availableCards = screen.getByTestId("distribution-card-list");
+    expect(within(availableCards).getByRole("button", { name: /Lunch/i }))
+      .toBeVisible();
+    expect(within(availableCards).getByRole("button", { name: /Bills/i }))
+      .toBeVisible();
+    expect(within(availableCards).getByAltText("Lunch cover")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/cards/meals-kids-school-lunch.png"
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Alex" }));
+
+    await waitFor(() =>
+      expect(onDistribute).toHaveBeenCalledWith({
+        bucket: "alex",
+        responsibilityId: "550e8400-e29b-41d4-a716-446655440030"
+      })
+    );
+    expect(screen.getByRole("heading", { name: "Bills" })).toBeVisible();
+    expect(
+      screen.queryByText("No more cards to distribute. Generate more cards when ready.")
+    ).not.toBeInTheDocument();
   });
 
   it("supports arrow keys as desktop gesture fallbacks", async () => {
@@ -153,11 +198,15 @@ describe("CardWorkspace", () => {
     expect(screen.getByText(/Assigned to Unassigned/i)).toBeVisible();
   });
 
-  it("renders the current persona's cards as a card file", () => {
+  it("renders the current persona's cards as a filterable image-first gallery", () => {
     render(
       <CardWorkspace
         responsibilities={[
-          card({ id: "550e8400-e29b-41d4-a716-446655440010", title: "Lunch", boardLane: "player_1" }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440010",
+            title: "Lunch",
+            boardLane: "player_1"
+          }),
           card({ id: "550e8400-e29b-41d4-a716-446655440011", title: "Bills", boardLane: "player_2" })
         ]}
         selectedPersona={selectedPersona}
@@ -168,7 +217,13 @@ describe("CardWorkspace", () => {
     expect(screen.getByRole("heading", { name: "Your Cards" })).toBeVisible();
     expect(screen.getByText("Lunch")).toBeVisible();
     expect(screen.queryByText("Bills")).not.toBeInTheDocument();
-    expect(screen.getByTestId("your-card-file")).toHaveClass("overflow-y-auto");
+    expect(screen.getByRole("searchbox", { name: /search your cards/i }))
+      .toBeVisible();
+    expect(screen.getByTestId("your-card-gallery")).toHaveClass("grid");
+    expect(screen.getByAltText("Lunch cover")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/cards/meals-kids-school-lunch.png"
+    );
   });
 
   it("flips a Your Cards item without opening the old detail flow", () => {
@@ -216,11 +271,16 @@ describe("CardWorkspace", () => {
     );
 
     const board = screen.getByTestId("card-board");
+    expect(board.className).not.toContain("overflow-x-auto");
     expect(within(board).getByRole("heading", { name: "Alex" })).toBeVisible();
     expect(within(board).getByRole("heading", { name: "Max" })).toBeVisible();
     expect(within(board).getByRole("heading", { name: "Saved for Later" })).toBeVisible();
     expect(within(board).getByRole("heading", { name: "Not Applicable" })).toBeVisible();
     expect(within(board).getByRole("heading", { name: "Unassigned" })).toBeVisible();
+    expect(within(board).getByAltText("Lunch cover")).toHaveAttribute(
+      "src",
+      "/assets/fairplay/cards/meals-kids-school-lunch.png"
+    );
     expect(board.className).not.toContain("table");
   });
 });
