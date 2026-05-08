@@ -143,6 +143,8 @@ describe("protected app UI", () => {
       "href",
       "/app/ask-greg"
     );
+    expect(screen.getAllByRole("navigation", { name: "More" })).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Open more actions" }));
     expect(screen.getAllByRole("navigation", { name: "More" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: "Theory" })[0]).toHaveAttribute(
       "href",
@@ -170,17 +172,30 @@ describe("protected app UI", () => {
       screen.getByRole("button", { name: "Open more actions" })
     );
     expect(bottomNav.querySelector(".grid")).toHaveClass("grid-cols-5");
-    expect(screen.getByTestId("mobile-bottom-more-menu")).toHaveClass(
-      "fp-overflow-menu-panel"
-    );
+    expect(screen.queryByTestId("mobile-bottom-more-menu")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Open more actions" }));
+    const moreTrigger = screen.getByRole("button", { name: "Open more actions" });
+    expect(moreTrigger).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.click(moreTrigger);
 
     const mobileMore = screen.getByTestId("mobile-bottom-more-menu");
+    expect(moreTrigger).toHaveAttribute("aria-expanded", "true");
+    expect(mobileMore).toBeVisible();
     expect(mobileMore).toHaveAttribute("aria-label", "More");
-    expect(mobileMore).toHaveClass("bottom-full");
+    expect(mobileMore).toHaveClass("fixed");
+    expect(mobileMore).not.toHaveClass("absolute");
+    expect(within(mobileMore).getByRole("link", { name: "Check-in" }))
+      .toHaveAttribute("href", "/app/check-ins/new");
+    expect(within(mobileMore).getByRole("link", { name: "Settings" }))
+      .toHaveAttribute("href", "/app/settings");
     expect(within(mobileMore).getByRole("link", { name: "Card Library" }))
       .toHaveAttribute("href", "/app/library");
+
+    fireEvent.pointerDown(screen.getByTestId("mobile-more-menu-dismiss-layer"));
+
+    expect(moreTrigger).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByTestId("mobile-bottom-more-menu")).not.toBeInTheDocument();
   });
 
   it("keeps shell chrome constrained to the viewport on narrow mobile widths", () => {
