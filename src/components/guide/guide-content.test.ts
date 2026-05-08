@@ -27,11 +27,9 @@ describe("feature guide content", () => {
         "library-put-in-play"
       ],
       checkIns: [
-        "check-in-agenda-previewed",
-        "check-in-topic-assigned",
-        "check-in-decision-recorded",
-        "check-in-item-deferred",
-        "check-in-complete"
+        "check-in-scheduled",
+        "check-in-complete",
+        "check-in-notes-updated"
       ],
       settings: [
         "settings-appearance-mode",
@@ -94,22 +92,23 @@ describe("feature guide content", () => {
     expect(FEATURE_GUIDES.settings.steps[0].body).toMatch(/learning/i);
   });
 
-  it("starts Check-ins on a clear overview and makes dummy practice actionable", () => {
+  it("keeps Check-ins focused on scheduling, confirmation, and notes", () => {
     expect(FEATURE_GUIDES.checkIns.steps[0]).toMatchObject({
       id: "overview",
       targetId: "check-in-overview",
       title: "About this feature"
     });
     expect(FEATURE_GUIDES.checkIns.steps[0].body).toMatch(/check-ins/i);
-    expect(FEATURE_GUIDES.checkIns.steps[0].body).toMatch(/agenda/i);
-    expect(FEATURE_GUIDES.checkIns.steps[0].body).toMatch(/next step/i);
+    expect(FEATURE_GUIDES.checkIns.steps[0].body).toMatch(/schedule/i);
+    expect(FEATURE_GUIDES.checkIns.steps[0].body).toMatch(/notes/i);
 
     const practice = FEATURE_GUIDES.checkIns.steps.find(
       (step) => step.practice
     )?.practice;
-    expect(practice?.prompt).toMatch(/temporary/i);
-    expect(practice?.prompt).toMatch(/Preview dummy agenda/i);
-    expect(practice?.prompt).toMatch(/next/i);
+    expect(practice?.actionLabel).toBe("Start practice");
+    expect(practice?.prompt).toMatch(/scheduling/i);
+    expect(practice?.prompt).toMatch(/confirming/i);
+    expect(practice?.prompt).toMatch(/notes/i);
   });
 
   it("keeps settings copy aligned with the learning hub", () => {

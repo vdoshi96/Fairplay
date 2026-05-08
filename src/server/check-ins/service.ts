@@ -145,6 +145,7 @@ export type CreateCheckInInput = {
   maxItems?: number;
   responsibilityIds?: ResponsibilityId[];
   includeAcknowledgement?: boolean;
+  scheduledFor?: string | null;
 };
 
 export type CheckInServiceDeps = {
@@ -167,7 +168,8 @@ export type CheckInServiceDeps = {
   createCheckIn: (input: {
     householdId: HouseholdId;
     facilitatorPersonaId: PersonaId;
-    state: "active" | "draft";
+    state: "active" | "draft" | "scheduled";
+    scheduledFor?: string | null;
     items: AgendaDraftItem[];
   }) => Promise<GuidedCheckIn>;
   updateItem: (input: {
@@ -357,21 +359,27 @@ export function createCheckInService(deps: CheckInServiceDeps) {
       }
 
       const active = await deps.getActiveCheckIn({ householdId: session.householdId });
-      if (active) {
+      if (active && !input.scheduledFor) {
         return active;
       }
 
-      const sources = await deps.listAgendaSources({
-        householdId: session.householdId,
-        selectedPersonaId,
-        asOf: new Date()
-      });
-      const items = buildSuggestedAgenda(sources, input);
+      const scheduledFor = input.scheduledFor ?? null;
+      const items = scheduledFor
+        ? []
+        : buildSuggestedAgenda(
+            await deps.listAgendaSources({
+              householdId: session.householdId,
+              selectedPersonaId,
+              asOf: new Date()
+            }),
+            input
+          );
 
       return deps.createCheckIn({
         householdId: session.householdId,
         facilitatorPersonaId: selectedPersonaId,
-        state: "active",
+        state: scheduledFor ? "scheduled" : "active",
+        scheduledFor,
         items
       });
     },
@@ -642,6 +650,7 @@ export const checkInService = createCheckInService({
         householdId: input.householdId,
         facilitatorPersonaId: input.facilitatorPersonaId,
         state: input.state,
+        scheduledFor: input.scheduledFor ? new Date(input.scheduledFor) : null,
         startedAt: input.state === "active" ? new Date() : null,
         items: {
           create: input.items.map((item, index) => ({

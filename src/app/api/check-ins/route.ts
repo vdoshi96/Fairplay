@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { ResponsibilityIdSchema } from "@/domain/ids";
+import { NullableIsoDateTimeSchema } from "@/domain/time";
 import { getCurrentSession } from "@/server/auth/current-session";
 import { MAX_AGENDA_ITEMS } from "@/server/check-ins/agenda";
 import { checkInService } from "@/server/check-ins/service";
@@ -13,7 +14,8 @@ const CreateCheckInSchema = z
   .object({
     maxItems: z.number().int().min(1).max(MAX_AGENDA_ITEMS).optional(),
     responsibilityIds: z.array(ResponsibilityIdSchema).optional(),
-    includeAcknowledgement: z.boolean().optional()
+    includeAcknowledgement: z.boolean().optional(),
+    scheduledFor: NullableIsoDateTimeSchema.optional()
   })
   .strict();
 

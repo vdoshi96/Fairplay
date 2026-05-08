@@ -118,43 +118,34 @@ export const FEATURE_GUIDES: Record<FeatureGuideId, FeatureGuide> = {
   checkIns: {
     id: "checkIns",
     title: "Check-ins",
-    description: "Learn agenda preview, decisions, deferrals, and completion summaries.",
+    description: "Learn scheduling, confirmation, and notes.",
     steps: [
       {
         id: "overview",
         title: "About this feature",
-        body: "Check-ins help the household preview an agenda, talk through review-due work, and leave with a clear next step. Use this guide to see what gets previewed, recorded, deferred, or completed.",
+        body: "Check-ins are lightweight records: schedule one, confirm it happened, and keep notes.",
         targetId: "check-in-overview"
       },
       {
-        id: "agenda",
-        title: "Review the agenda before you begin",
-        body: "The agenda shows the topics ready for attention. Remove anything that can wait so the check-in stays focused on useful next steps.",
-        targetId: "check-in-agenda"
-      },
-      {
-        id: "decision",
-        title: "Record the decision, not the argument",
-        body: "Capture what changed, who owns the outcome, and when the household should review it.",
-        targetId: "check-in-decision"
+        id: "schedule",
+        title: "Schedule the reminder",
+        body: "Pick the date and time. That is the whole setup.",
+        targetId: "check-in-schedule"
       },
       {
         id: "complete",
-        title: "Complete with a clear next step",
-        body: "Completion summarizes decisions and keeps the board from becoming a memory test.",
+        title: "Confirm and keep notes",
+        body: "After the meeting, confirm it happened. Notes are optional and can be updated later.",
         targetId: "check-in-complete-action",
         practice: {
-          actionLabel: "Start dummy Check-in workflow",
-          completionMessage: "Dummy Check-in workflow complete.",
+          actionLabel: "Start practice",
+          completionMessage: "Practice complete.",
           eventId: "check-in-practice-start",
-          prompt:
-            "Start a temporary practice workflow. First click Preview dummy agenda, then follow the next actions to assign a topic, record a decision, defer an item, and complete the dummy check-in. Nothing is saved.",
+          prompt: "Practice scheduling, confirming, and saving notes. Nothing is saved.",
           requiredEventIds: [
-            "check-in-agenda-previewed",
-            "check-in-topic-assigned",
-            "check-in-decision-recorded",
-            "check-in-item-deferred",
-            "check-in-complete"
+            "check-in-scheduled",
+            "check-in-complete",
+            "check-in-notes-updated"
           ]
         }
       }

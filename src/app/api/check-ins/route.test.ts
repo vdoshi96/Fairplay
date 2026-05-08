@@ -44,13 +44,17 @@ describe("/api/check-ins", () => {
     });
   });
 
-  it("creates or resumes a guided check-in for the active session", async () => {
+  it("creates a scheduled check-in for the active session", async () => {
     const { POST } = await import("./route");
 
-    const response = await POST(request({ maxItems: 5 }));
+    const response = await POST(
+      request({ scheduledFor: "2026-05-20T23:30:00.000Z" })
+    );
 
     expect(response.status).toBe(201);
-    expect(create).toHaveBeenCalledWith(session, { maxItems: 5 });
+    expect(create).toHaveBeenCalledWith(session, {
+      scheduledFor: "2026-05-20T23:30:00.000Z"
+    });
   });
 
   it("rejects agenda sizes above five", async () => {
