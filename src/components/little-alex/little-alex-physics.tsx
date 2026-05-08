@@ -10,9 +10,13 @@ import type {
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { APP_LAYOUT_METRICS } from "@/components/app-shell/layout-tokens";
-import { LITTLE_ALEX_SKIN_TONE_COLORS } from "@/contracts/little-alex";
+import {
+  LITTLE_ALEX_HAIR_COLOR_COLORS,
+  LITTLE_ALEX_SKIN_TONE_COLORS
+} from "@/contracts/little-alex";
 import {
   type LittleAlexGenderPresentation,
+  type LittleAlexHairColor,
   type LittleAlexSkinTone
 } from "@/contracts/preferences";
 
@@ -20,6 +24,7 @@ const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const DEFAULT_CHAT_PHRASE = "i'm little alex horne";
 const DEFAULT_GENDER_PRESENTATION: LittleAlexGenderPresentation = "neutral";
 const DEFAULT_SKIN_TONE: LittleAlexSkinTone = "tone_2";
+const DEFAULT_HAIR_COLOR: LittleAlexHairColor = "dark_brown";
 const PHYSICS_SPEED_MULTIPLIER = 1.1;
 const IDLE_STAND_DELAY_MS = 5_000;
 const IDLE_RELEASE_STAND_DELAY_MS = 6_500;
@@ -137,6 +142,7 @@ type PhysicsWorld = {
 type LittleAlexPhysicsProps = {
   chatPhrase?: string;
   genderPresentation?: LittleAlexGenderPresentation;
+  hairColor?: LittleAlexHairColor;
   skinTone?: LittleAlexSkinTone;
 };
 
@@ -1060,6 +1066,7 @@ function setIdlePose(
 export function LittleAlexPhysics({
   chatPhrase = DEFAULT_CHAT_PHRASE,
   genderPresentation = DEFAULT_GENDER_PRESENTATION,
+  hairColor = DEFAULT_HAIR_COLOR,
   skinTone = DEFAULT_SKIN_TONE
 }: LittleAlexPhysicsProps) {
   const [motionPreferenceReady, setMotionPreferenceReady] = useState(false);
@@ -1082,6 +1089,7 @@ export function LittleAlexPhysics({
     ragdollVisualState,
     motionPreferenceReady ? viewportSize() : { height: 768, width: 1024 }
   );
+  const hairShape = appearanceDetails[genderPresentation].hair;
   const bodyRefs = useRef<Partial<Record<PartKey, HTMLDivElement>>>({});
   const bubbleRef = useRef<HTMLDivElement | null>(null);
   const bubbleTimeoutRef = useRef<number | null>(null);
@@ -1977,6 +1985,7 @@ export function LittleAlexPhysics({
         appearanceDetails[genderPresentation].silhouette
       }
       data-gender-presentation={genderPresentation}
+      data-hair-color={hairColor}
       data-gaze-direction={gaze.direction}
       data-idle-state={
         motionPreferenceReady && reducedMotion ? "static" : idleState
@@ -1996,6 +2005,7 @@ export function LittleAlexPhysics({
         {
           "--little-alex-gaze-x": gaze.x.toString(),
           "--little-alex-gaze-y": gaze.y.toString(),
+          "--little-alex-hair": LITTLE_ALEX_HAIR_COLOR_COLORS[hairColor],
           "--little-alex-skin": LITTLE_ALEX_SKIN_TONE_COLORS[skinTone],
           pointerEvents: "none"
         } as CSSProperties
@@ -2019,13 +2029,23 @@ export function LittleAlexPhysics({
           genderPresentation,
           skinTone
         )}
-        data-sprite-hair={appearanceDetails[genderPresentation].hair}
+        data-sprite-hair={hairShape}
         data-testid="little-alex-full-sprite"
         draggable={false}
         ref={fullBodySpriteRef}
         src={littleAlexFullBodySpritePath(genderPresentation, skinTone)}
         style={fullBodyStyle}
       />
+      <div
+        className="fp-little-alex-full-hair-layer"
+        data-hair-shape={hairShape}
+        data-testid="little-alex-full-hair-overlay"
+        style={fullBodyStyle}
+      >
+        <span
+          className={`fp-little-alex-hair-overlay fp-little-alex-hair-overlay-${hairShape}`}
+        />
+      </div>
       {partConfigs.map((part) => (
         <div
           className={`fp-little-alex-part ${part.className}`}
@@ -2050,6 +2070,13 @@ export function LittleAlexPhysics({
             draggable={false}
             src={littleAlexPartSpritePath(genderPresentation, skinTone, part.key)}
           />
+          {part.key === "head" ? (
+            <span
+              className={`fp-little-alex-hair-overlay fp-little-alex-hair-overlay-${hairShape}`}
+              data-hair-shape={hairShape}
+              data-testid="little-alex-head-hair-overlay"
+            />
+          ) : null}
         </div>
       ))}
       <div

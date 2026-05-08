@@ -12,11 +12,14 @@ import { useRouter } from "next/navigation";
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
 import {
+  LITTLE_ALEX_HAIR_COLORS,
+  LITTLE_ALEX_HAIR_COLOR_COLORS,
   LITTLE_ALEX_SKIN_TONES,
   LITTLE_ALEX_SKIN_TONE_COLORS
 } from "@/contracts/little-alex";
 import {
   type LittleAlexGenderPresentation,
+  type LittleAlexHairColor,
   type LittleAlexPreferences,
   type LittleAlexSkinTone
 } from "@/contracts/preferences";
@@ -54,6 +57,19 @@ const littleAlexSkinOptions: Array<{
   value
 }));
 
+const littleAlexHairOptions: Array<{
+  label: string;
+  swatch: string;
+  value: LittleAlexHairColor;
+}> = LITTLE_ALEX_HAIR_COLORS.map((value) => ({
+  label:
+    value === "dark_brown"
+      ? "Dark brown"
+      : value.charAt(0).toUpperCase() + value.slice(1),
+  swatch: LITTLE_ALEX_HAIR_COLOR_COLORS[value],
+  value
+}));
+
 const settingsPreferencesBackground =
   "/assets/fairplay/generated-ui/backgrounds/settings-preferences.png";
 
@@ -67,7 +83,8 @@ export function SettingsPanel({
   const [littleAlexDraft, setLittleAlexDraft] = useState({
     genderPresentation: littleAlexPreferences.genderPresentation,
     chatPhrase: littleAlexPreferences.chatPhrase,
-    skinTone: littleAlexPreferences.skinTone
+    skinTone: littleAlexPreferences.skinTone,
+    hairColor: littleAlexPreferences.hairColor
   });
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -188,7 +205,8 @@ export function SettingsPanel({
       setLittleAlexDraft({
         genderPresentation: saved.genderPresentation,
         chatPhrase: saved.chatPhrase,
-        skinTone: saved.skinTone
+        skinTone: saved.skinTone,
+        hairColor: saved.hairColor
       });
       setActionStatus(`Little Alex updated for ${selectedPersona.displayName}.`);
       router.refresh();
@@ -460,6 +478,48 @@ export function SettingsPanel({
                         setLittleAlexDraft((current) => ({
                           ...current,
                           skinTone: option.value
+                        }))
+                      }
+                      type="button"
+                    >
+                      <span
+                        aria-hidden
+                        className="h-4 w-4 rounded-full border border-fp-ink/30"
+                        style={{ background: option.swatch }}
+                      />
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <span className="text-[13px] font-semibold text-fp-muted-ink">
+                Hair color
+              </span>
+              <div
+                aria-label="Little Alex hair color"
+                className="flex flex-wrap gap-2"
+                role="group"
+              >
+                {littleAlexHairOptions.map((option) => {
+                  const selected = option.value === littleAlexDraft.hairColor;
+
+                  return (
+                    <button
+                      aria-pressed={selected}
+                      className={[
+                        "inline-flex min-h-10 items-center gap-2 rounded-[8px] border px-3 text-[13px] font-bold outline-none focus:ring-2 focus:ring-fp-ink/25",
+                        selected
+                          ? "border-fp-ink bg-fp-primary text-fp-on-primary"
+                          : "border-fp-line bg-[var(--fp-surface)] text-fp-ink"
+                      ].join(" ")}
+                      key={option.value}
+                      onClick={() =>
+                        setLittleAlexDraft((current) => ({
+                          ...current,
+                          hairColor: option.value
                         }))
                       }
                       type="button"

@@ -116,7 +116,8 @@ describe("Little Alex preference repository", () => {
       personaId: persona.id,
       genderPresentation: "neutral",
       chatPhrase: "i'm little alex horne",
-      skinTone: "tone_2"
+      skinTone: "tone_2",
+      hairColor: "dark_brown"
     });
     expect(new Date(preferences.updatedAt).toString()).not.toBe("Invalid Date");
   });
@@ -144,14 +145,16 @@ describe("Little Alex preference repository", () => {
     const updated = await updateLittleAlexPreferences(persona.id, {
       genderPresentation: "masculine",
       chatPhrase: "hello from alex",
-      skinTone: "tone_5"
+      skinTone: "tone_5",
+      hairColor: "black"
     });
 
     expect(updated).toMatchObject({
       personaId: persona.id,
       genderPresentation: "masculine",
       chatPhrase: "hello from alex",
-      skinTone: "tone_5"
+      skinTone: "tone_5",
+      hairColor: "black"
     });
   });
 });

@@ -15,3 +15,22 @@ export const LITTLE_ALEX_SKIN_TONE_COLORS = {
   tone_4: "#b7795f",
   tone_5: "#8f5f45"
 } as const satisfies Record<LittleAlexSkinToneValue, string>;
+
+export const LITTLE_ALEX_HAIR_COLORS = [
+  "dark_brown",
+  "black",
+  "auburn",
+  "blonde",
+  "silver"
+] as const;
+
+export type LittleAlexHairColorValue =
+  (typeof LITTLE_ALEX_HAIR_COLORS)[number];
+
+export const LITTLE_ALEX_HAIR_COLOR_COLORS = {
+  dark_brown: "#553d33",
+  black: "#202124",
+  auburn: "#8f4632",
+  blonde: "#d7b36f",
+  silver: "#c8c7bc"
+} as const satisfies Record<LittleAlexHairColorValue, string>;

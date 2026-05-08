@@ -50,6 +50,7 @@ function toLittleAlexPreferences(
     genderPresentation: preferences.genderPresentation,
     chatPhrase: preferences.chatPhrase,
     skinTone: preferences.skinTone,
+    hairColor: preferences.hairColor,
     updatedAt: preferences.updatedAt.toISOString()
   };
 }
@@ -115,7 +116,8 @@ export async function updateLittleAlexPreferences(
     update: {
       genderPresentation: input.genderPresentation,
       chatPhrase: input.chatPhrase,
-      skinTone: input.skinTone
+      skinTone: input.skinTone,
+      hairColor: input.hairColor
     },
     create: {
       personaId,

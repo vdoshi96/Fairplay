@@ -300,7 +300,7 @@ test.describe("dark mode visual QA", () => {
           "settings system theme switch"
         );
         await expectUnobscured(
-          page.getByRole("button", { name: "Dark" }),
+          page.getByRole("button", { exact: true, name: "Dark" }),
           "settings dark theme override"
         );
       }

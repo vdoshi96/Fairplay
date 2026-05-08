@@ -34,7 +34,7 @@ export default async function AskGregPage() {
               Describe a responsibility and Greg will draft a card you can add to the Board.
             </p>
           </header>
-          <AiTaskManager drafts={aiDrafts} />
+          <AiTaskManager drafts={aiDrafts} showGregAvatar={false} />
         </div>
         <div className="hidden min-w-0 items-end justify-items-center overflow-hidden rounded-[8px] border border-fp-line bg-white/70 p-2 lg:grid lg:min-h-[26rem] xl:min-h-[30rem]">
           <Image

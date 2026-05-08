@@ -46,18 +46,21 @@ describe("Little Alex preferences contracts", () => {
       genderPresentation: "feminine",
       chatPhrase: "i'm little alex horne",
       skinTone: "tone_4",
+      hairColor: "auburn",
       updatedAt: "2026-05-06T12:00:00.000Z"
     });
 
     expect(preferences.chatPhrase).toBe("i'm little alex horne");
     expect(preferences.skinTone).toBe("tone_4");
+    expect(preferences.hairColor).toBe("auburn");
   });
 
   it("defaults Little Alex to the required catchphrase and neutral appearance", () => {
     expect(LITTLE_ALEX_DEFAULT_PREFERENCES).toEqual({
       genderPresentation: "neutral",
       chatPhrase: "i'm little alex horne",
-      skinTone: "tone_2"
+      skinTone: "tone_2",
+      hairColor: "dark_brown"
     });
   });
 
@@ -66,9 +69,10 @@ describe("Little Alex preferences contracts", () => {
       LittleAlexPreferencesMutationSchema.parse({
         genderPresentation: "masculine",
         chatPhrase: "taskmaster",
-        skinTone: "tone_5"
+        skinTone: "tone_5",
+        hairColor: "silver"
       })
-    ).toMatchObject({ chatPhrase: "taskmaster" });
+    ).toMatchObject({ chatPhrase: "taskmaster", hairColor: "silver" });
 
     expect(() =>
       LittleAlexPreferencesMutationSchema.parse({
@@ -79,6 +83,12 @@ describe("Little Alex preferences contracts", () => {
     expect(() =>
       LittleAlexPreferencesMutationSchema.parse({
         chatPhrase: ""
+      })
+    ).toThrow();
+
+    expect(() =>
+      LittleAlexPreferencesMutationSchema.parse({
+        hairColor: "purple"
       })
     ).toThrow();
   });

@@ -118,6 +118,13 @@ describe("AiTaskManager", () => {
     expect(screen.getByRole("button", { name: "Create draft" })).toBeDisabled();
   });
 
+  it("can hide the built-in Greg avatar when the page already renders Greg", () => {
+    render(<AiTaskManager drafts={[]} showGregAvatar={false} />);
+
+    expect(screen.getByRole("button", { name: "Ask Greg" })).toBeVisible();
+    expect(screen.queryByTestId("greg-taskmaster-avatar")).not.toBeInTheDocument();
+  });
+
   it("wraps long Ask Greg draft content instead of forcing mobile overflow", () => {
     const longTitle =
       "SupercalifragilisticexpialidociousSchoolLunchPlanningWithoutSpaces";

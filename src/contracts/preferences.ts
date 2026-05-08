@@ -3,16 +3,24 @@ import { z } from "zod";
 import { PersonaIdSchema } from "../domain/ids";
 import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from "../domain/time";
 import {
+  LITTLE_ALEX_HAIR_COLORS,
+  LITTLE_ALEX_HAIR_COLOR_COLORS,
   LITTLE_ALEX_SKIN_TONES,
   LITTLE_ALEX_SKIN_TONE_COLORS
 } from "./little-alex";
 
-export { LITTLE_ALEX_SKIN_TONES, LITTLE_ALEX_SKIN_TONE_COLORS };
+export {
+  LITTLE_ALEX_HAIR_COLORS,
+  LITTLE_ALEX_HAIR_COLOR_COLORS,
+  LITTLE_ALEX_SKIN_TONES,
+  LITTLE_ALEX_SKIN_TONE_COLORS
+};
 
 export const LITTLE_ALEX_DEFAULT_PREFERENCES = {
   genderPresentation: "neutral",
   chatPhrase: "i'm little alex horne",
-  skinTone: "tone_2"
+  skinTone: "tone_2",
+  hairColor: "dark_brown"
 } as const;
 
 export const LittleAlexGenderPresentationSchema = z.enum([
@@ -22,6 +30,7 @@ export const LittleAlexGenderPresentationSchema = z.enum([
 ]);
 
 export const LittleAlexSkinToneSchema = z.enum(LITTLE_ALEX_SKIN_TONES);
+export const LittleAlexHairColorSchema = z.enum(LITTLE_ALEX_HAIR_COLORS);
 
 export const OnboardingPreferencesSchema = z
   .object({
@@ -51,6 +60,7 @@ export const LittleAlexPreferencesSchema = z
     genderPresentation: LittleAlexGenderPresentationSchema,
     chatPhrase: z.string().trim().min(1).max(30),
     skinTone: LittleAlexSkinToneSchema,
+    hairColor: LittleAlexHairColorSchema,
     updatedAt: IsoDateTimeSchema
   })
   .strict();
@@ -59,7 +69,8 @@ export const LittleAlexPreferencesMutationSchema = z
   .object({
     genderPresentation: LittleAlexGenderPresentationSchema.optional(),
     chatPhrase: z.string().trim().min(1).max(30).optional(),
-    skinTone: LittleAlexSkinToneSchema.optional()
+    skinTone: LittleAlexSkinToneSchema.optional(),
+    hairColor: LittleAlexHairColorSchema.optional()
   })
   .strict();
 
@@ -73,6 +84,7 @@ export type LittleAlexGenderPresentation = z.infer<
   typeof LittleAlexGenderPresentationSchema
 >;
 export type LittleAlexSkinTone = z.infer<typeof LittleAlexSkinToneSchema>;
+export type LittleAlexHairColor = z.infer<typeof LittleAlexHairColorSchema>;
 export type LittleAlexPreferences = z.infer<typeof LittleAlexPreferencesSchema>;
 export type LittleAlexPreferencesMutation = z.infer<
   typeof LittleAlexPreferencesMutationSchema
