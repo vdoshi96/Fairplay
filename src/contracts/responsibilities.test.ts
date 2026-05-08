@@ -30,9 +30,13 @@ describe("responsibility JSON contracts", () => {
         currentAssignments: [
           { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
         ],
-        nextReviewAt: "2026-06-01T00:00:00.000Z"
+        nextReviewAt: "2026-06-01T00:00:00.000Z",
+        sourceCoverAssetPath: "/assets/fairplay/cards/auto.png"
       })
-    ).toMatchObject({ title: "Evening kitchen reset" });
+    ).toMatchObject({
+      title: "Evening kitchen reset",
+      sourceCoverAssetPath: "/assets/fairplay/cards/auto.png"
+    });
   });
 
   it("accepts detail, create, update, archive, pause, assignment, and load snapshot contracts", () => {

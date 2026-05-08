@@ -85,7 +85,8 @@ function summary(
     boardLane: full.boardLane,
     boardSortOrder: full.boardSortOrder,
     currentAssignments: full.currentAssignments,
-    nextReviewAt: full.nextReviewAt
+    nextReviewAt: full.nextReviewAt,
+    sourceCoverAssetPath: full.sourceCoverAssetPath
   };
 }
 
