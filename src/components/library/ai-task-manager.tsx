@@ -196,10 +196,10 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
       >
         <div className="grid min-w-0 gap-1">
           <p className="text-[13px] font-semibold text-fp-muted-ink">
-            AI-created cards
+            AI cards
           </p>
           <h2 className="text-[20px] font-bold leading-6 text-fp-ink">
-            Draft tracker
+            Drafts
           </h2>
         </div>
         <div
@@ -209,7 +209,7 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
           <GregTaskmasterAvatar />
           <Button onClick={() => setCaptureOpen((open) => !open)} variant="primary">
             <Sparkles aria-hidden="true" size={16} />
-            Greg - The Taskmaster
+            Ask Greg
           </Button>
         </div>
       </div>
@@ -449,7 +449,7 @@ function LibraryPracticeWorkflow() {
     setPreview(null);
     setEditsSaved(false);
     setPutInPlayPreviewed(false);
-    setStatus("Dummy Library workspace cleaned up.");
+    setStatus("Practice cleared.");
   }
 
   async function createDummyDraft() {
@@ -459,7 +459,7 @@ function LibraryPracticeWorkflow() {
     }
 
     setIsGenerating(true);
-    setStatus("Generating a dummy card preview. This can take a moment.");
+    setStatus("Creating a practice draft...");
     setDraftCreated(false);
     setReviewOpen(false);
     setEditsSaved(false);
@@ -475,7 +475,7 @@ function LibraryPracticeWorkflow() {
       });
 
       if (!response.ok) {
-        throw new Error("The dummy card preview could not be generated.");
+        throw new Error("The practice draft could not be created.");
       }
 
       const generated = await response.json() as OnboardingPreviewCard;
@@ -483,12 +483,12 @@ function LibraryPracticeWorkflow() {
       setTitle(generated.title);
       setSummary(generated.summary);
       setDraftCreated(true);
-      mark("library-capture-filled", "Dummy draft created from Greg capture.");
+      mark("library-capture-filled", "Practice draft created.");
     } catch {
       setPreview(null);
       setTitle("");
       setSummary("");
-      setStatus("Dummy draft preview could not be generated. Try a shorter request.");
+      setStatus("Practice draft failed. Try a shorter request.");
     } finally {
       setIsGenerating(false);
     }
@@ -496,47 +496,45 @@ function LibraryPracticeWorkflow() {
 
   const previewDetails = preview
     ? [
-        ["Definition", preview.definition],
-        ["Conception", preview.conception],
-        ["Planning", preview.planning],
-        ["Execution", preview.execution],
-        ["Minimum standard", preview.minimumStandard]
+        ["Purpose", preview.definition],
+        ["Notice", preview.conception],
+        ["Plan", preview.planning],
+        ["Do", preview.execution],
+        ["Minimum", preview.minimumStandard]
       ].filter((detail): detail is [string, string] => Boolean(detail[1]?.trim()))
     : [];
 
   return (
     <section
-      aria-label="Dummy Library practice"
+      aria-label="Practice a card"
       className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-4 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
       data-guide-practice-surface
     >
       <div className="grid gap-1">
         <h3 className="text-[16px] font-bold text-fp-ink">
-          Dummy Library practice
+          Practice a card
         </h3>
         <p className="text-[13px] leading-5 text-fp-muted-ink">
-          About this feature: practice Greg capture, draft review, text edits,
-          and putting a card in play. Demo data is temporary; nothing permanent
-          is created.
+          Try a Greg draft, edit it, then preview sending it to Load Map. Nothing
+          is saved.
         </p>
       </div>
 
       <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-          Dummy card request
+          What should the card cover?
           <textarea
-            aria-label="Dummy card request"
+            aria-label="Practice card request"
             className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
             onChange={(event) => setRequest(event.target.value)}
             value={request}
           />
           <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
-            Type the responsibility you want Greg to structure. This only feeds
-            the temporary workspace below.
+            Name the work, timing, and what done looks like.
           </span>
         </label>
         <PracticeActionGuidance
-          actionLabel="Create dummy draft"
+          actionLabel="Create practice draft"
           active={
             request.trim().length > 0 &&
             !draftCreated &&
@@ -550,34 +548,33 @@ function LibraryPracticeWorkflow() {
             onClick={createDummyDraft}
             type="button"
           >
-            {isGenerating ? "Creating dummy draft" : "Create dummy draft"}
+            {isGenerating ? "Creating draft" : "Create practice draft"}
           </button>
         </PracticeActionGuidance>
       </div>
 
       {draftCreated ? (
         <section
-          aria-label="Temporary Library workspace"
+          aria-label="Practice workspace"
           className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3"
         >
           <div className="grid gap-1">
             <h4 className="text-[14px] font-bold text-fp-ink">
-              Temporary Library workspace
+              Practice workspace
             </h4>
             <p className="text-[13px] leading-5 text-fp-muted-ink">
-              This temporary workspace keeps mock artifacts visible while
-              onboarding is open. Clean it up when you are done practicing.
+              Temporary drafts stay here while the guide is open.
             </p>
           </div>
           <div className="grid gap-1">
             <p className="text-[13px] font-bold text-fp-ink">{title}</p>
             <p className="text-[13px] leading-5 text-fp-muted-ink">{summary}</p>
             <p className="text-[12px] leading-4 text-fp-muted-ink">
-              Mock artifact: Greg draft, not a household card.
+              Practice draft, not a household card.
             </p>
           </div>
           <PracticeActionGuidance
-            actionLabel="Review dummy draft"
+            actionLabel="Review practice draft"
             active={!reviewOpen}
             wrapperClassName="sm:w-fit"
           >
@@ -585,11 +582,11 @@ function LibraryPracticeWorkflow() {
               className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
               onClick={() => {
                 setReviewOpen(true);
-                mark("library-draft-reviewed", "Dummy draft opened for review.");
+                mark("library-draft-reviewed", "Practice draft opened.");
               }}
               type="button"
             >
-              Review dummy draft
+              Review draft
             </button>
           </PracticeActionGuidance>
         </section>
@@ -599,32 +596,31 @@ function LibraryPracticeWorkflow() {
         <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
           <div className="grid gap-3 md:grid-cols-[minmax(9rem,14rem)_1fr]">
             <div className="grid min-h-40 place-items-center rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-center text-[13px] font-bold text-fp-muted-ink">
-              Dummy text card preview
+              Practice preview
             </div>
             <div className="grid gap-3">
               <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-                Dummy draft title
+                Title
                 <input
-                  aria-label="Dummy draft title"
+                  aria-label="Practice draft title"
                   className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
                   onChange={(event) => setTitle(event.target.value)}
                   value={title}
                 />
                 <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
-                  This is the card name learners would confirm before saving.
+                  The card name.
                 </span>
               </label>
               <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-                Dummy summary
+                Summary
                 <textarea
-                  aria-label="Dummy summary"
+                  aria-label="Practice summary"
                   className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
                   onChange={(event) => setSummary(event.target.value)}
                   value={summary}
                 />
                 <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
-                  This explains the expected outcome before the card is put in
-                  play.
+                  What done should mean.
                 </span>
               </label>
               {previewDetails.length > 0 ? (
@@ -641,22 +637,22 @@ function LibraryPracticeWorkflow() {
           </div>
           <div className="flex flex-wrap items-start gap-2">
             <PracticeActionGuidance
-              actionLabel="Save dummy edits"
+              actionLabel="Save practice edits"
               active={!editsSaved}
             >
               <button
                 className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary"
                 onClick={() => {
                   setEditsSaved(true);
-                  mark("library-draft-edited", "Dummy draft edits saved.");
+                  mark("library-draft-edited", "Practice edits saved.");
                 }}
                 type="button"
               >
-                Save dummy edits
+                Save edits
               </button>
             </PracticeActionGuidance>
             <PracticeActionGuidance
-              actionLabel="Put dummy card in play"
+              actionLabel="Preview in Load Map"
               active={editsSaved && !putInPlayPreviewed}
             >
               <button
@@ -665,24 +661,23 @@ function LibraryPracticeWorkflow() {
                   setPutInPlayPreviewed(true);
                   mark(
                     "library-put-in-play",
-                    "Dummy card is ready for the Load Map. No real card was created."
+                    "Practice card is ready for Load Map. No real card was created."
                   );
                 }}
                 type="button"
               >
-                Put dummy card in play
+                Preview in Load Map
               </button>
             </PracticeActionGuidance>
           </div>
           {putInPlayPreviewed ? (
             <article className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
               <h4 className="text-[14px] font-bold text-fp-ink">
-                Mock Load Map artifact
+                Load Map preview
               </h4>
               <p className="text-[13px] leading-5 text-fp-muted-ink">{title}</p>
               <p className="text-[12px] leading-4 text-fp-muted-ink">
-                Preview only. It persists during onboarding and is removed by
-                cleanup.
+                Preview only. Clear practice to remove it.
               </p>
             </article>
           ) : null}
@@ -695,7 +690,7 @@ function LibraryPracticeWorkflow() {
           onClick={cleanUpWorkspace}
           type="button"
         >
-          Clean up dummy workspace
+          Clear practice
         </button>
       ) : null}
 
@@ -745,7 +740,7 @@ export function AiCardTracker({
 }) {
   return (
     <section
-      aria-label="AI-created cards"
+      aria-label="AI drafts"
       className="grid gap-3 rounded border border-fp-line bg-white p-4 shadow-[var(--fp-shadow-soft)]"
     >
       {drafts.length > 0 ? (
@@ -869,7 +864,7 @@ export function AiCardTracker({
         </div>
       ) : (
         <p className="rounded border border-dashed border-fp-line bg-fp-surface p-4 text-[14px] font-semibold text-fp-muted-ink">
-          No AI-created cards yet.
+          No drafts yet.
         </p>
       )}
     </section>
@@ -906,7 +901,7 @@ export function AiCardCaptureSheet({
         <div className="grid gap-1">
           <h3 className="text-[18px] font-bold text-fp-ink">Capture a card</h3>
           <p className="text-[14px] leading-6 text-fp-muted-ink">
-            Describe the work Greg should turn into a structured text card.
+            Describe the responsibility.
           </p>
         </div>
         <Button aria-label="Close capture" onClick={cancel} variant="ghost">
@@ -920,7 +915,7 @@ export function AiCardCaptureSheet({
           aria-label="Describe the card"
           className="min-h-28 rounded border border-fp-line bg-white px-3 py-2 text-[15px] leading-6 text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
           onChange={(event) => setInputText(event.target.value)}
-          placeholder="What needs to happen, who notices it, and what done looks like..."
+          placeholder="What needs doing, when, and what done means"
           value={inputText}
         />
       </label>
@@ -1150,9 +1145,9 @@ export function AiCardReviewPanel({
               value={form.title}
             />
             <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
-              Cadence
+              Rhythm
               <select
-                aria-label="Cadence"
+                aria-label="Rhythm"
                 className="min-h-10 rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, cadence: event.target.value }))
@@ -1162,25 +1157,31 @@ export function AiCardReviewPanel({
                 <option value="">Not set</option>
                 {CADENCES.map((cadence) => (
                   <option key={cadence} value={cadence}>
-                    {cadence}
+                    {formatDraftOption(cadence)}
                   </option>
                 ))}
               </select>
+              <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+                How often the work repeats.
+              </span>
             </label>
           </div>
           <TextArea
             label="Summary"
+            hint="The outcome in one or two lines."
             onChange={(value) => setForm((current) => ({ ...current, summary: value }))}
             value={form.summary}
           />
           <div className="grid gap-3 md:grid-cols-2">
             <TextInput
-              label="Area keys"
+              hint="Comma-separated areas, like meals or school."
+              label="Area tags"
               onChange={(value) => setForm((current) => ({ ...current, areaKeys: value }))}
               value={form.areaKeys}
             />
             <TextInput
-              label="Hidden effort keys"
+              hint="Comma-separated work types, like planning or follow-through."
+              label="Work type tags"
               onChange={(value) =>
                 setForm((current) => ({ ...current, hiddenEffortKeys: value }))
               }
@@ -1189,28 +1190,33 @@ export function AiCardReviewPanel({
           </div>
           <TextArea
             label="Definition"
+            hint="What this card is responsible for."
             onChange={(value) => setForm((current) => ({ ...current, definition: value }))}
             value={form.definition}
           />
           <div className="grid gap-3 md:grid-cols-3">
             <TextArea
               label="Conception"
+              hint="What someone needs to notice."
               onChange={(value) => setForm((current) => ({ ...current, conception: value }))}
               value={form.conception}
             />
             <TextArea
               label="Planning"
+              hint="What needs to be prepared."
               onChange={(value) => setForm((current) => ({ ...current, planning: value }))}
               value={form.planning}
             />
             <TextArea
               label="Execution"
+              hint="What gets done."
               onChange={(value) => setForm((current) => ({ ...current, execution: value }))}
               value={form.execution}
             />
           </div>
           <TextArea
             label="Minimum standard"
+            hint="The smallest acceptable done state."
             onChange={(value) =>
               setForm((current) => ({ ...current, minimumStandard: value }))
             }
@@ -1308,6 +1314,13 @@ function commaSeparatedValues(value: string) {
 function nullableText(value: string) {
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
+}
+
+function formatDraftOption(value: string) {
+  return value
+    .split("_")
+    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function createClientDraftId() {
@@ -1433,10 +1446,12 @@ async function readSafeApiError(response: Response, fallback: string) {
 }
 
 function TextInput({
+  hint,
   label,
   onChange,
   value
 }: {
+  hint?: string;
   label: string;
   onChange: (value: string) => void;
   value: string;
@@ -1450,15 +1465,22 @@ function TextInput({
         onChange={(event) => onChange(event.target.value)}
         value={value}
       />
+      {hint ? (
+        <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+          {hint}
+        </span>
+      ) : null}
     </label>
   );
 }
 
 function TextArea({
+  hint,
   label,
   onChange,
   value
 }: {
+  hint?: string;
   label: string;
   onChange: (value: string) => void;
   value: string;
@@ -1472,6 +1494,11 @@ function TextArea({
         onChange={(event) => onChange(event.target.value)}
         value={value}
       />
+      {hint ? (
+        <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
+          {hint}
+        </span>
+      ) : null}
     </label>
   );
 }

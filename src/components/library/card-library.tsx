@@ -72,10 +72,10 @@ export function CardLibrary({
         data-testid="library-shelf-visual"
       >
         <DecorativeBackgroundLayer
-          className="opacity-35 [mask-image:linear-gradient(90deg,black_0%,rgba(0,0,0,0.5)_50%,rgba(0,0,0,0.12)_100%)]"
+          className="opacity-50 [mask-image:linear-gradient(115deg,black_0%,rgba(0,0,0,0.68)_52%,rgba(0,0,0,0.2)_100%)]"
           src={libraryShelfBackground}
           testId="library-shelf-background"
-          washClassName="bg-white/75"
+          washClassName="fp-page-hero-wash"
         />
         <div className="fp-generated-surface-wash relative z-10 p-4 backdrop-blur-[1px]">
           <AiTaskManager drafts={aiDrafts} />
@@ -84,21 +84,25 @@ export function CardLibrary({
 
       <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_auto] lg:items-end">
         <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
-          Search cards
+          Search
           <input
             aria-label="Search cards"
             className="min-h-11 rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
             data-guide-id="library-search"
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Auto, school, meals..."
+            placeholder="Meals, school, auto"
             type="search"
             value={query}
           />
         </label>
         <div className="grid gap-3 lg:justify-items-end">
-          <FeatureGuideLauncher guide={FEATURE_GUIDES.library} showDescription={false} />
+          <FeatureGuideLauncher
+            guide={FEATURE_GUIDES.library}
+            showDescription={false}
+            showHelper={false}
+          />
           <p className="text-[13px] font-semibold text-fp-muted-ink">
-            {filteredTemplates.length} of {templates.length} cards
+            {filteredTemplates.length} / {templates.length} cards
           </p>
         </div>
       </div>
@@ -132,7 +136,7 @@ export function CardLibrary({
           {filteredTemplates.map((template, index) => (
             <article
               aria-label={template.title}
-              className="grid min-h-[420px] grid-rows-[192px_1fr_auto] overflow-hidden rounded border border-fp-line bg-white shadow-[var(--fp-shadow-soft)]"
+              className="grid min-h-[360px] min-w-0 grid-rows-[168px_1fr_auto] overflow-hidden rounded border border-fp-line bg-white shadow-[var(--fp-shadow-soft)]"
               key={template.id}
             >
               <div className="relative overflow-hidden bg-fp-surface">
@@ -145,7 +149,7 @@ export function CardLibrary({
                   width={500}
                 />
               </div>
-              <div className="grid content-start gap-3 p-4">
+              <div className="grid min-w-0 content-start gap-3 overflow-hidden p-4">
                 <div className="flex flex-wrap gap-2">
                   {template.labels.map((label) => (
                     <Chip key={label} tone={labelTone[label]}>
@@ -154,23 +158,24 @@ export function CardLibrary({
                   ))}
                 </div>
                 <div className="grid gap-2">
-                  <h2 className="line-clamp-2 text-[20px] font-bold leading-6 text-fp-ink">
+                  <h2 className="line-clamp-2 text-[18px] font-bold leading-6 text-fp-ink [overflow-wrap:anywhere]">
                     {template.title}
                   </h2>
-                  <p className="line-clamp-4 text-[14px] leading-6 text-fp-muted-ink">
+                  <p className="line-clamp-3 text-[14px] leading-6 text-fp-muted-ink [overflow-wrap:anywhere]">
                     {template.summary}
                   </p>
                 </div>
               </div>
               <div className="border-t border-fp-line p-4">
                 <Button
+                  aria-label={`Put ${template.title} in play`}
                   className="w-full"
                   data-guide-id={index === 0 ? "library-put-in-play" : undefined}
                   disabled={!onCreateFromTemplate}
                   onClick={() => onCreateFromTemplate?.(template.id)}
                   variant="primary"
                 >
-                  Put {template.title} in play
+                  Put in play
                 </Button>
               </div>
             </article>
