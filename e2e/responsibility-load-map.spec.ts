@@ -6,7 +6,7 @@ async function mockResponsibilityFlow(page: Page) {
       contentType: "text/html",
       body: `
         <main>
-          <h1>Responsibility overview</h1>
+          <h1>Responsibility board</h1>
           <a href="/app/responsibilities/new">Add responsibility</a>
           <section id="items"></section>
         </main>

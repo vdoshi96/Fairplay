@@ -50,7 +50,7 @@ Session behavior:
 Safety behavior:
 
 - The app reminds users not to use shared notes or check-ins if doing so could create risk.
-- Tense topics can be saved privately, deferred, or removed from a check-in.
+- Tense topics can be saved privately, paused, or left out of check-in notes.
 
 ## Load Map and Responsibility Overview
 
@@ -78,20 +78,17 @@ States:
 - Not relevant: out of household scope.
 - Archived: retained for history but hidden from daily views.
 
-## Guided Check-In
+## Check-In Record
 
-1. User starts or resumes a check-in.
-2. App suggests a short agenda from due reviews, recent changes, and optionally one appreciation/acknowledgement item.
-3. User chooses which items to discuss and can skip any item.
-4. For each selected item, the app captures what changed, what is blocked, what expectation needs clarification, who carries the outcome until next review, and the revisit date.
-5. Decisions can update responsibility owner, cadence, status, standard, visibility, or review date.
-6. App completes the check-in with a calm summary of decisions, deferred topics, and next review dates.
+1. User schedules a check-in date and time.
+2. After the meeting, the user confirms it happened.
+3. User may add or update optional minutes/notes.
 
 Check-in history:
 
-- Summaries are factual and decision-focused.
-- History supports trust and continuity, not a grievance archive.
-- Skipped/deferred items are allowed and not treated as failure.
+- Notes are factual and short.
+- History supports continuity, not a grievance archive.
+- The flow is a reminder and record, not a guided conversation script.
 
 ## Settings and Data Controls
 

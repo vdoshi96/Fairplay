@@ -147,7 +147,7 @@ async function mockVisualRoutes(page: Page) {
         <main>
           <section class="grid two">
             <div class="grid">
-              <h1>Responsibility overview</h1>
+              <h1>Responsibility board</h1>
               <p>Owner mix and review timing stay scanable.</p>
             </div>
             <img class="hero-visual" src="/assets/fairplay/generated-ui/helper-mascot.png" alt="" aria-hidden="true" />
@@ -167,8 +167,8 @@ async function mockVisualRoutes(page: Page) {
         <main>
           <section class="grid two">
             <div class="grid">
-              <h1>New check-in</h1>
-              <p>Preview a short agenda and keep decisions clear.</p>
+              <h1>Schedule check-in</h1>
+              <p>Pick a time, confirm it happened, and keep notes.</p>
             </div>
             <img class="hero-visual" src="/assets/fairplay/generated-ui/check-in-spark.png" alt="Check-in spark" />
           </section>

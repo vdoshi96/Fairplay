@@ -1,10 +1,10 @@
 # Fairplay Project Context
 
-Last updated: 2026-05-07
+Last updated: 2026-05-08
 
 ## Product Intent
 
-Fairplay is a mobile-first household responsibility planning app. It helps a household make shared work visible, decide who owns what, surface hidden coordination load, and revisit decisions through calm check-ins.
+Fairplay is a mobile-first household responsibility planning app. It helps a household make shared work visible, decide who owns what, surface hidden coordination load, and keep lightweight check-in records.
 
 The current v1 product centers on a two-person household using shared credentials and default personas Alex and Max. It is household organization and practical relationship support, not therapy, crisis support, legal advice, medical advice, financial advice, diagnosis, or a partner-scoring system.
 
@@ -16,7 +16,7 @@ The current v1 product centers on a two-person household using shared credential
 - Use the Home learning hub to reach the core app surfaces.
 - Manage the Load Map board and responsibility details.
 - Browse the Library and create AI-assisted responsibility card drafts.
-- Start, preview, complete, and review guided check-ins.
+- Schedule check-ins, confirm they happened, and add optional minutes/notes.
 - Manage settings, theme preference, welcome replay, crash-course replay, persona preferences, and Little Alex preferences.
 
 ## Current Stack

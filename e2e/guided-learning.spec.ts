@@ -71,7 +71,7 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
 
   await page.goto("/app/home");
   await expect(
-    page.getByRole("heading", { name: "Learn Fairplay in layers" })
+    page.getByRole("heading", { name: "Learn Fairplay" })
   ).toBeVisible();
 
   const welcome = page.getByRole("dialog", { name: "Welcome to Fairplay" });
@@ -100,28 +100,28 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
   await expect(linkedGuide).toBeVisible();
   await expect(page.getByText("Step 1 of 4")).toBeVisible();
   await expect(
-    linkedGuide.getByRole("heading", { name: "About this feature" })
+    linkedGuide.getByRole("heading", { name: "Practice first" })
   ).toBeVisible();
   await expect(page.getByTestId("guide-highlight")).toBeVisible();
   await expect(linkedGuide.getByRole("button", { name: "Next", exact: true }))
     .toBeDisabled();
 
-  await linkedGuide.getByRole("button", { name: "Start dummy Library workflow" }).click();
-  await page.getByLabel("Dummy card request").fill("Make a lunch packing handoff card.");
-  await page.getByRole("button", { name: "Create dummy draft" }).click();
-  await expect(page.getByText("Dummy draft created from Greg capture.")).toBeVisible();
-  await page.getByRole("button", { name: "Review dummy draft" }).click();
-  await page.getByLabel("Dummy draft title").fill("Lunch kit reset");
-  await page.getByRole("button", { name: "Save dummy edits" }).click();
-  await page.getByRole("button", { name: "Put dummy card in play" }).click();
-  await expect(page.getByText("Dummy Library workflow complete.")).toBeVisible();
+  await linkedGuide.getByRole("button", { name: "Start practice" }).click();
+  await page.getByLabel("Practice card request").fill("Make a lunch packing handoff card.");
+  await page.getByRole("button", { name: "Create practice draft" }).click();
+  await expect(page.getByText("Practice draft created.")).toBeVisible();
+  await page.getByRole("button", { name: "Review draft" }).click();
+  await page.getByLabel("Practice draft title").fill("Lunch kit reset");
+  await page.getByRole("button", { name: "Save edits" }).click();
+  await page.getByRole("button", { name: "Preview in Load Map" }).click();
+  await expect(page.getByText("Practice complete.")).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Next", exact: true }).click();
   await expect(page.getByText("Search the source deck")).toBeVisible();
   await page.getByLabel("Guided tour backdrop").click();
   await expect(linkedGuide).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Back", exact: true }).click();
   await expect(
-    linkedGuide.getByRole("heading", { name: "About this feature" })
+    linkedGuide.getByRole("heading", { name: "Practice first" })
   ).toBeVisible();
   await linkedGuide.getByRole("button", { name: "Skip", exact: true }).click();
   await expect(linkedGuide).not.toBeVisible();

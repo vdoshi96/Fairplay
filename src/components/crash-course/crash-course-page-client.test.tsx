@@ -38,7 +38,7 @@ describe("crash course page client", () => {
     await waitFor(() =>
       expect(
         screen.getByRole("heading", {
-          name: "Hooray! Congrats on finishing Alex's Fairplay crash course."
+          name: "Crash Course complete"
         })
       ).toBeVisible()
     );
@@ -91,7 +91,7 @@ describe("crash course page client", () => {
       crashCourseSkippedAt: null
     });
     expect(
-      await screen.findByRole("heading", { name: "Start with what no one sees" })
+      await screen.findByRole("heading", { name: "Start with hidden work" })
     ).toBeVisible();
   });
 });

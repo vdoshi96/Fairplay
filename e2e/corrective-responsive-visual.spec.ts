@@ -5,12 +5,12 @@ import { expect, test, type Page } from "@playwright/test";
 const screenshotDir = "test-results/corrective-responsive-visual";
 
 const appPages = [
-  { name: "home", path: "/app/home", heading: "Learn Fairplay in layers" },
-  { name: "load-map", path: "/app/load-map", heading: "Responsibility overview" },
-  { name: "library", path: "/app/library", heading: "Source deck" },
-  { name: "check-ins", path: "/app/check-ins/new", heading: "New check-in" },
-  { name: "settings", path: "/app/settings", heading: "Household settings" },
-  { name: "crash-course", path: "/app/crash-course", heading: "Start with what no one sees" }
+  { name: "home", path: "/app/home", heading: "Learn Fairplay" },
+  { name: "load-map", path: "/app/load-map", heading: "Responsibility board" },
+  { name: "library", path: "/app/library", heading: "Library" },
+  { name: "check-ins", path: "/app/check-ins/new", heading: "Schedule check-in" },
+  { name: "settings", path: "/app/settings", heading: "Settings" },
+  { name: "crash-course", path: "/app/crash-course", heading: "Concepts first. Tools after." }
 ] as const;
 
 const viewports = [
@@ -597,7 +597,7 @@ test.describe("corrective responsive visual QA", () => {
       await page.goto("/app/load-map");
       await closeWelcomeIfPresent(page);
       await expect(
-        page.getByRole("heading", { name: "Responsibility overview" })
+        page.getByRole("heading", { name: "Responsibility board" })
       ).toBeVisible();
       await expectNoDocumentHorizontalOverflow(
         page,

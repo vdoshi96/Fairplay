@@ -62,7 +62,7 @@ This is a practical index, not a reorganization plan.
 - `src/server/db/`: Prisma client and repository error helpers.
 - `src/server/repositories/`: Prisma repository functions.
 - `src/server/responsibilities/`: responsibility service and load snapshot.
-- `src/server/check-ins/`: agenda, service, and summary logic.
+- `src/server/check-ins/`: check-in scheduling/completion service plus compatibility item/decision logic.
 - `src/server/ai-card-drafts/`: AI draft service.
 - `src/server/ai/`: AI provider adapters, diagnostics, generated asset metadata.
 - `src/test/`: shared test setup and factories.

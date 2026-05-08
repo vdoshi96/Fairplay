@@ -7,20 +7,20 @@ import { CrashCourseFlow } from "./crash-course-flow";
 describe("crash course flow", () => {
   it("breaks the course into a storyboard of short source-safe frames", () => {
     expect(CRASH_COURSE_LESSONS.map((lesson) => lesson.title)).toEqual([
-      "Start with what no one sees",
-      "Separate the work from the reminder",
-      "Name the reset",
-      "Choose what is actually in play",
-      "Helping is not the same as owning",
-      "Carry the whole outcome",
-      "Define done before it matters",
-      "Keep the standard kind",
-      "Move context with the handoff",
-      "Read the Load Map as a map",
-      "Adjust for capacity",
-      "Catch signals in a Check-in",
-      "Repair the miss",
-      "Turn the story into one next move"
+      "Start with hidden work",
+      "Split doing from remembering",
+      "Count the reset",
+      "Keep only live responsibilities",
+      "Helping is not owning",
+      "Own the full path",
+      "Define done well enough",
+      "Leave room for autonomy",
+      "Pass context with the handoff",
+      "Use maps, not scoreboards",
+      "Fair shifts with capacity",
+      "Review while signals are small",
+      "Repair misses plainly",
+      "Try one real card"
     ]);
   });
 
@@ -33,26 +33,26 @@ describe("crash course flow", () => {
     const wordCount = lessonText.split(/\s+/).filter(Boolean).length;
 
     expect(CRASH_COURSE_LESSONS).toHaveLength(14);
-    expect(wordCount).toBeGreaterThanOrEqual(800);
-    expect(wordCount).toBeLessThanOrEqual(1500);
+    expect(wordCount).toBeGreaterThanOrEqual(500);
+    expect(wordCount).toBeLessThanOrEqual(950);
     expect(lessonText).toContain("visible work");
     expect(lessonText).toContain("hidden work");
     expect(lessonText).toContain("owner");
     expect(lessonText).toContain("helper");
     expect(lessonText).toContain("cpe");
-    expect(lessonText).toContain("good enough");
+    expect(lessonText).toContain("done well enough");
     expect(lessonText).toContain("physical");
     expect(lessonText).toContain("cognitive");
     expect(lessonText).toContain("emotional");
     expect(lessonText).toContain("treadmill");
     expect(lessonText).toContain("finite");
     expect(lessonText).toContain("training");
-    expect(lessonText).toContain("check-in");
+    expect(lessonText).toContain("review");
     expect(lessonText).toContain("dynamic");
     expect(lessonText).toContain("appreciation");
     expect(lessonText).toContain("repair");
-    expect(lessonText).toContain("deferral");
-    expect(lessonText).toContain("safety");
+    expect(lessonText).toContain("unsafe");
+    expect(lessonText).toContain("scoreboard");
     expect(lessonText).not.toContain("minimum standard of care");
     expect(lessonText).not.toContain("share meeting");
   });
@@ -67,8 +67,8 @@ describe("crash course flow", () => {
         .split(/\s+/)
         .filter(Boolean).length;
 
-      expect(wordCount).toBeGreaterThanOrEqual(45);
-      expect(wordCount).toBeLessThanOrEqual(115);
+      expect(wordCount).toBeGreaterThanOrEqual(25);
+      expect(wordCount).toBeLessThanOrEqual(75);
       expect(lesson.action).toMatch(/[.!]$/);
     }
   });
@@ -85,7 +85,7 @@ describe("crash course flow", () => {
     expect(finalLesson.featurePath?.map((item) => item.label)).toEqual([
       "Browse the Library",
       "Open the Load Map",
-      "Run a Check-in"
+      "Schedule a Check-in"
     ]);
   });
 
@@ -105,9 +105,14 @@ describe("crash course flow", () => {
     expect(stage.className).toContain("relative");
     expect(stage.className).toContain("bg-fp-paper");
     expect(stage.className).toContain("pb-32");
-    expect(stage.className).toContain("lg:pr-44");
+    expect(stage.className).toContain("lg:pr-56");
     expect(shell.className).toContain("mx-auto");
-    expect(shell.className).toContain("items-end");
+    expect(shell.className).toContain("content-start");
+    expect(screen.getByTestId("crash-course-background").className).toContain(
+      "opacity-50"
+    );
+    expect(screen.getByRole("heading", { name: "Concepts first. Tools after." }))
+      .toBeVisible();
     expect(storyboardFrame).toContainElement(scene);
     expect(storyboardFrame).toContainElement(subtitlePanel);
     expect(subtitlePanel.className).toContain("backdrop-blur-md");
@@ -160,12 +165,14 @@ describe("crash course flow", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "Hooray! Congrats on finishing Alex's Fairplay crash course."
+        name: "Crash Course complete"
       })
     ).toBeVisible();
+    expect(screen.getByText("Finished for Alex's Fairplay crash course."))
+      .toBeVisible();
     expect(
       screen.getByText(
-        "You now know how Fairplay treats hidden load, ownership, planning, standards, handoffs, check-ins, repair, and safety."
+        "Core ideas covered: hidden work, ownership, CPE, done standards, handoffs, reviews, and repair."
       )
     ).toBeVisible();
     expect(screen.getByRole("heading", { name: "Recommended learning path" }))
@@ -209,7 +216,7 @@ describe("crash course flow", () => {
     render(<CrashCourseFlow currentStep={6} />);
 
     const prompt = screen.getByLabelText(
-      "Rewrite a household minimum standard in your own words"
+      "Write a done-well note in your own words"
     );
     fireEvent.change(prompt, {
       target: {
