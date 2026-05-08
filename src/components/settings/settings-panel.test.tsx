@@ -102,6 +102,9 @@ describe("settings panel", () => {
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/settings-preferences.png')"
     });
+    expect(screen.getByTestId("settings-preferences-background")).toHaveClass(
+      "opacity-50"
+    );
     const systemSwitch = screen.getByRole("switch", {
       name: "Follow system settings"
     });
@@ -368,9 +371,7 @@ describe("settings panel", () => {
     );
     expect(screen.queryByText(retiredGuideLabel)).not.toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Replay feature tours from each feature page using Learn this feature."
-      )
+      screen.getByText("Feature guides stay on their pages.")
     ).toBeVisible();
   });
 

@@ -100,6 +100,36 @@ html[data-theme="dark"] {
 }
 
 @layer utilities {
+  .fp-page-background-wash {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(247, 243, 236, 0.56),
+        rgba(247, 243, 236, 0.42) 44%,
+        rgba(247, 243, 236, 0.24)
+      ),
+      radial-gradient(
+        circle at 22% 18%,
+        rgba(255, 255, 255, 0.42),
+        transparent 42%
+      );
+  }
+
+  .fp-page-hero-wash {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.9),
+        rgba(255, 255, 255, 0.74) 54%,
+        rgba(255, 255, 255, 0.5)
+      ),
+      radial-gradient(
+        circle at 82% 20%,
+        rgba(255, 255, 255, 0.24),
+        transparent 34%
+      );
+  }
+
   .fp-generated-surface-wash {
     background-color: rgba(255, 255, 255, 0.92);
     background-image: linear-gradient(
@@ -118,6 +148,36 @@ html[data-theme="dark"] {
       rgba(45, 41, 35, 0.92) 58%,
       rgba(45, 41, 35, 0.72)
     );
+  }
+
+  html[data-theme="dark"] .fp-page-background-wash {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(22, 20, 17, 0.5),
+        rgba(22, 20, 17, 0.36) 44%,
+        rgba(22, 20, 17, 0.2)
+      ),
+      radial-gradient(
+        circle at 22% 18%,
+        rgba(244, 239, 231, 0.1),
+        transparent 42%
+      );
+  }
+
+  html[data-theme="dark"] .fp-page-hero-wash {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(45, 41, 35, 0.9),
+        rgba(45, 41, 35, 0.76) 54%,
+        rgba(45, 41, 35, 0.52)
+      ),
+      radial-gradient(
+        circle at 82% 20%,
+        rgba(244, 239, 231, 0.1),
+        transparent 34%
+      );
   }
 
   html[data-theme="dark"] :is(.bg-white, .hover\:bg-white:hover) {
