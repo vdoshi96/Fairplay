@@ -110,7 +110,6 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
     <section className="mx-auto grid w-full max-w-2xl gap-4">
       <div
         className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
-        data-guide-id="check-in-overview"
         data-testid={completed ? "check-in-complete-visual" : "check-in-active-visual"}
       >
         <DecorativeBackgroundLayer
@@ -162,7 +161,6 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
         <section
           aria-label={completed ? "Meeting notes" : "Confirm check-in"}
           className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-[var(--fp-shadow-soft)]"
-          data-guide-id="check-in-notes"
         >
           <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
             Minutes / notes
@@ -175,7 +173,6 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
           </label>
           <button
             className="min-h-11 rounded-[8px] bg-fp-primary px-3 text-[14px] font-bold text-fp-on-primary transition hover:bg-fp-primary-hover disabled:opacity-60 sm:w-fit"
-            data-guide-id="check-in-complete-action"
             disabled={pending}
             onClick={() => saveCompletion(completed ? undefined : new Date().toISOString())}
             type="button"
@@ -241,7 +238,6 @@ export function NewCheckInLauncher({
     >
       <div
         className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
-        data-guide-id="check-in-overview"
         data-testid="check-in-new-visual"
       >
         <DecorativeBackgroundLayer
@@ -280,7 +276,6 @@ export function NewCheckInLauncher({
       <section
         aria-label="Schedule a check-in"
         className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-[var(--fp-shadow-soft)]"
-        data-guide-id="check-in-schedule"
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">

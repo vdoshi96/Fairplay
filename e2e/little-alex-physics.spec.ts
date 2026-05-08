@@ -1042,16 +1042,133 @@ async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
     return;
   }
 
-  const startX = box.x + box.width / 2;
-  const startY = box.y + box.height / 2;
+  let startPoint = "";
+  await expect
+    .poll(async () => {
+      startPoint = await page.evaluate(({ height, width, x, y }) => {
+        const viewport = {
+          height: window.innerHeight,
+          width: window.innerWidth
+        };
+        const candidateRatios = [
+          [0.5, 0.5],
+          [0.35, 0.5],
+          [0.65, 0.5],
+          [0.5, 0.35],
+          [0.5, 0.65],
+          [0.2, 0.5],
+          [0.8, 0.5]
+        ];
+        const hit = candidateRatios
+          .map(([xRatio, yRatio]) => ({
+            x: x + width * xRatio,
+            y: y + height * yRatio
+          }))
+          .find((point) => {
+            if (
+              point.x < 0 ||
+              point.y < 0 ||
+              point.x >= viewport.width ||
+              point.y >= viewport.height
+            ) {
+              return false;
+            }
+
+            return (
+              document
+                .elementFromPoint(point.x, point.y)
+                ?.closest('[data-testid="little-alex-grab-target"]') !== null
+            );
+          });
+
+        return hit ? `${hit.x},${hit.y}` : "";
+      }, box);
+
+      return startPoint;
+    })
+    .not.toBe("");
+  const [startX, startY] = startPoint.split(",").map(Number);
 
   await page.mouse.move(startX, startY);
   await page.mouse.down();
+  const mouseCapturedDrag = await expect
+    .poll(
+      () =>
+        page
+          .getByTestId("little-alex-horne")
+          .evaluate((element) => element.getAttribute("data-grab-state")),
+      { timeout: 500 }
+    )
+    .toBe("dragging")
+    .then(
+      () => true,
+      () => false
+    );
+
+  if (!mouseCapturedDrag) {
+    await page.mouse.up();
+    await dispatchLittleAlexPointerDrag(page, startX, startY, deltaX, deltaY);
+    return;
+  }
+
   await page.mouse.move(startX + deltaX * 0.45, startY + deltaY * 0.45, {
     steps: 4
   });
   await page.mouse.move(startX + deltaX, startY + deltaY, { steps: 4 });
   await page.mouse.up();
+}
+
+async function dispatchLittleAlexPointerDrag(
+  page: Page,
+  startX: number,
+  startY: number,
+  deltaX: number,
+  deltaY: number
+) {
+  await page.evaluate(
+    ({ deltaX, deltaY, startX, startY }) => {
+      const target = document.querySelector<HTMLElement>(
+        '[data-testid="little-alex-grab-target"]'
+      );
+
+      if (!target) {
+        return;
+      }
+
+      const pointerId = 77;
+      const dispatch = (
+        eventTarget: EventTarget,
+        type: "pointerdown" | "pointermove" | "pointerup",
+        x: number,
+        y: number
+      ) => {
+        eventTarget.dispatchEvent(
+          new PointerEvent(type, {
+            bubbles: true,
+            button: 0,
+            buttons: type === "pointerup" ? 0 : 1,
+            cancelable: true,
+            clientX: x,
+            clientY: y,
+            pointerId,
+            pointerType: "mouse"
+          })
+        );
+      };
+
+      dispatch(target, "pointerdown", startX, startY);
+      [0.25, 0.45, 0.7, 1].forEach((ratio) => {
+        dispatch(
+          window,
+          "pointermove",
+          startX + deltaX * ratio,
+          startY + deltaY * ratio
+        );
+      });
+      dispatch(window, "pointerup", startX + deltaX, startY + deltaY);
+    },
+    { deltaX, deltaY, startX, startY }
+  );
 }
 
 test.describe("Little Alex physics", () => {

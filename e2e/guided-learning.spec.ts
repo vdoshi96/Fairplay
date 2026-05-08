@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 function uniqueHouseholdSlug() {
   return `guide-${Date.now().toString(36)}-${Math.random()
@@ -8,35 +8,17 @@ function uniqueHouseholdSlug() {
 
 const retiredGuideLabel = ["App", "Guide", "101"].join(" ");
 
-async function mockOnboardingPreviewRoute(page: Page) {
-  await page.route("**/api/ai-card-drafts/onboarding-preview", async (route) => {
-    const request = route.request();
-    const body = request.postDataJSON() as { inputText?: string };
-
-    await route.fulfill({
-      contentType: "application/json",
-      json: {
-        title: "Lunch packing handoff",
-        summary:
-          body.inputText?.trim() ||
-          "Make a lunch packing handoff card.",
-        definition: "Pack lunches and return the kit to the same place.",
-        conception: "Decide what counts as ready before the school morning.",
-        planning: "Check supplies and assign the next visible step.",
-        execution: "Pack, label, and reset the lunch kit.",
-        minimumStandard: "Lunches are ready before departure."
-      },
-      status: 200
-    });
-  });
-}
-
-test("guided learning surfaces are persistent, skippable, and user-triggered", async ({
+test("learning surfaces do not expose retired feature guides", async ({
   context,
   page
 }) => {
   await context.clearCookies();
-  await mockOnboardingPreviewRoute(page);
+  const previewRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/api/ai-card-drafts/onboarding-preview")) {
+      previewRequests.push(request.url());
+    }
+  });
 
   await page.goto("/login");
   await expect(
@@ -84,45 +66,31 @@ test("guided learning surfaces are persistent, skippable, and user-triggered", a
 
   await page.goto("/app/library?guide=library");
   await expect(page).toHaveURL(/\/app\/library\?guide=library/);
-
-  const linkedGuide = page.getByRole("dialog", { name: "Library guide" });
-  await expect(linkedGuide).toBeVisible();
-  await expect(page.getByText("Step 1 of 3")).toBeVisible();
-  await expect(
-    linkedGuide.getByRole("heading", { name: "Practice first" })
-  ).toBeVisible();
-  await expect(page.getByTestId("guide-highlight")).toBeVisible();
-  await expect(linkedGuide.getByRole("button", { name: "Next", exact: true }))
-    .toBeDisabled();
-
-  await linkedGuide.getByRole("button", { name: "Start practice" }).click();
-  await page.getByLabel("Practice card request").fill("Make a lunch packing handoff card.");
-  await page.getByRole("button", { name: "Create practice draft" }).click();
-  await expect(page.getByText("Practice draft created.")).toBeVisible();
-  await page.getByRole("button", { name: "Review draft" }).click();
-  await page.getByLabel("Practice draft title").fill("Lunch kit reset");
-  await page.getByRole("button", { name: "Save edits" }).click();
-  await page.getByRole("button", { name: "Preview on Board" }).click();
-  await expect(page.getByText("Practice complete.")).toBeVisible();
-  await linkedGuide.getByRole("button", { name: "Next", exact: true }).click();
-  await expect(page.getByText("Search the source deck")).toBeVisible();
-  await page.getByLabel("Guided tour backdrop").click();
-  await expect(linkedGuide).toBeVisible();
-  await linkedGuide.getByRole("button", { name: "Back", exact: true }).click();
-  await expect(
-    linkedGuide.getByRole("heading", { name: "Practice first" })
-  ).toBeVisible();
-  await linkedGuide.getByRole("button", { name: "Skip", exact: true }).click();
-  await expect(linkedGuide).not.toBeVisible();
+  await expect(page.getByRole("heading", { name: "Library" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Library guide" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Learn this feature" }))
+    .toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Ask Greg" })).toBeVisible();
+  await expect(page.getByText("Practice a card")).toHaveCount(0);
 
   await page.goto("/app/library");
-  await expect(
-    page.getByRole("dialog", { name: "Library guide" })
-  ).not.toBeVisible();
-  await page.getByRole("button", { name: "Learn this feature" }).click();
-  const manualGuide = page.getByRole("dialog", { name: "Library guide" });
-  await expect(manualGuide).toBeVisible();
-  await manualGuide.getByRole("button", { name: "Skip", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Library guide" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Learn this feature" }))
+    .toHaveCount(0);
+
+  await page.goto("/app/settings?guide=settings");
+  await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Settings guide" }))
+    .toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Learn this feature" }))
+    .toHaveCount(0);
+
+  await page.goto("/app/check-ins");
+  await expect(page.getByRole("heading", { name: "Schedule check-in" }))
+    .toBeVisible();
+  await expect(page.getByRole("button", { name: "Learn this feature" }))
+    .toHaveCount(0);
+  expect(previewRequests).toEqual([]);
 
   await page.goto("/app/crash-course");
   await expect(

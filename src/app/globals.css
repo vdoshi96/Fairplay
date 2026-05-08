@@ -462,7 +462,7 @@ a {
   user-select: none;
   --little-alex-head-radius: 999px;
   --little-alex-torso-clip: polygon(8% 0, 92% 0, 86% 100%, 14% 100%);
-  z-index: 9;
+  z-index: 15;
 }
 
 .fp-little-alex-presentation-neutral {

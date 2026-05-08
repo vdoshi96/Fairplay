@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { HouseholdSummary } from "@/contracts/auth";
@@ -345,7 +345,7 @@ describe("settings panel", () => {
     expect(screen.getByText("Restart Theory or open the card deck.")).toBeVisible();
   });
 
-  it("marks settings guide targets and links back to replay learning", () => {
+  it("links back to cards without old guide targets", () => {
     const { container } = render(
       <ThemeProvider>
         <SettingsPanel
@@ -356,161 +356,47 @@ describe("settings panel", () => {
       </ThemeProvider>
     );
 
-    expect(container.querySelector('[data-guide-id="settings-appearance"]')).not.toBeNull();
-    expect(container.querySelector('[data-guide-id="settings-overview"]')).not.toBeNull();
-    expect(container.querySelector('[data-guide-id="settings-persona"]')).not.toBeNull();
-    expect(
-      container.querySelector('[data-guide-id="settings-guided-start"]')
-    ).not.toBeNull();
-    expect(container.querySelector('[data-guide-id="settings-logout"]')).not.toBeNull();
+    expect(container.querySelector("[data-guide-id]")).toBeNull();
     expect(screen.getByRole("link", { name: "Deal cards" })).toHaveAttribute(
       "href",
       "/app/distribute"
     );
     expect(screen.queryByText(retiredGuideLabel)).not.toBeInTheDocument();
     expect(
-      screen.getByText("Feature guides stay on their pages.")
-    ).toBeVisible();
+      screen.queryByText("Feature guides stay on their pages.")
+    ).not.toBeInTheDocument();
   });
 
-  it("walks through local dummy settings practice without changing account data", () => {
+  it("does not show the retired Learn feature button or dummy settings practice", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     renderSettings();
 
-    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
     expect(
-      screen.getByText("Next required click: Start dummy Settings workflow.")
-    ).toBeVisible();
-
-    fireEvent.click(screen.getByRole("button", { name: "Start dummy Settings workflow" }));
-    const practiceRegion = screen.getByRole("region", {
-      name: "Dummy Settings practice"
-    });
-    expect(practiceRegion).toBeVisible();
-    expect(practiceRegion).toHaveClass(
-      "z-[60]",
-      "bg-[var(--fp-surface-strong)]"
-    );
-    expect(practiceRegion.className).not.toContain("bg-white");
-    expect(
-      screen.getByText("Next required action: Choose a dummy appearance mode.")
-    ).toBeVisible();
-
-    fireEvent.change(screen.getByLabelText("Dummy appearance mode"), {
-      target: { value: "dark" }
-    });
-    expect(screen.getByText("Dummy appearance mode changed to Dark.")).toBeVisible();
-    expect(
-      screen.getByText("Next required click: Open dummy persona confirmation.")
-    ).toBeVisible();
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Open dummy persona confirmation" })
-    );
-    expect(
-      screen.getByRole("dialog", { name: "Dummy persona switch confirmation" })
-    ).toBeVisible();
-    expect(
-      screen.getByText("Next required click: Stay in settings.")
-    ).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "Stay in settings" }));
-    expect(
-      screen.getByText("Next required click: Locate dummy learning hub.")
-    ).toBeVisible();
-
-    fireEvent.click(screen.getByRole("button", { name: "Locate dummy learning hub" }));
-    expect(screen.getByText("Dummy Settings workflow complete.")).toBeVisible();
-    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(routerPush).not.toHaveBeenCalled();
-    expect(routerRefresh).not.toHaveBeenCalled();
-    expect(routerReplace).not.toHaveBeenCalled();
-  });
-
-  it("closes dummy settings practice and persona confirmation on guide Skip", () => {
-    const fetchMock = vi.fn();
-    vi.stubGlobal("fetch", fetchMock);
-    renderSettings();
-
-    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    fireEvent.click(screen.getByRole("button", { name: "Start dummy Settings workflow" }));
-    fireEvent.click(
-      screen.getByRole("button", { name: "Open dummy persona confirmation" })
-    );
-
-    fireEvent.click(
-      within(screen.getByRole("dialog", { name: "Settings guide" })).getByRole(
-        "button",
-        { name: "Skip" }
-      )
-    );
-
+      screen.queryByRole("button", { name: "Learn this feature" })
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("region", { name: "Dummy Settings practice" })
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("dialog", { name: "Dummy persona switch confirmation" })
     ).not.toBeInTheDocument();
+    expect(screen.queryByText(/Start dummy Settings workflow/i))
+      .not.toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
     expect(routerPush).not.toHaveBeenCalled();
     expect(routerRefresh).not.toHaveBeenCalled();
     expect(routerReplace).not.toHaveBeenCalled();
   });
 
-  it("closes dummy settings practice after guide Done without routing or fetch mutations", () => {
-    const fetchMock = vi.fn();
-    vi.stubGlobal("fetch", fetchMock);
-    renderSettings();
-
-    fireEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    fireEvent.click(screen.getByRole("button", { name: "Start dummy Settings workflow" }));
-    fireEvent.change(screen.getByLabelText("Dummy appearance mode"), {
-      target: { value: "dark" }
-    });
-    fireEvent.click(
-      screen.getByRole("button", { name: "Open dummy persona confirmation" })
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Locate dummy learning hub" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-
-    fireEvent.click(screen.getByRole("button", { name: "Done" }));
-
-    expect(
-      screen.queryByRole("region", { name: "Dummy Settings practice" })
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("dialog", { name: "Dummy persona switch confirmation" })
-    ).not.toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(routerPush).not.toHaveBeenCalled();
-    expect(routerRefresh).not.toHaveBeenCalled();
-    expect(routerReplace).not.toHaveBeenCalled();
-  });
-
-  it("opens the settings-specific guide from the route query on the overview step", () => {
+  it("ignores the retired settings guide query", () => {
     queryValue.value = "guide=settings";
 
     renderSettings();
 
-    const guide = screen.getByRole("dialog", { name: "Settings guide" });
-    expect(guide).toBeVisible();
     expect(
-      screen.queryByRole("dialog", { name: "Board guide" })
+      screen.queryByRole("dialog", { name: "Settings guide" })
     ).not.toBeInTheDocument();
-    expect(within(guide).getByText("Step 1 of 4")).toBeVisible();
-    expect(
-      within(guide).getByRole("heading", { name: "About this feature" })
-    ).toBeVisible();
-    expect(within(guide).getByTestId("guide-dialog-body")).toHaveTextContent(
-      /settings/i
-    );
+    expect(screen.getByRole("heading", { name: "Settings" })).toBeVisible();
   });
 });

@@ -561,6 +561,9 @@ describe("CardWorkspace", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Your Deck" })).toBeVisible();
+    expect(
+      screen.getByText("Find the cards that have been played to you here.")
+    ).toBeVisible();
     expect(screen.getByText("Lunch")).toBeVisible();
     expect(screen.queryByText("Bills")).not.toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: /search your deck/i }))
@@ -639,6 +642,15 @@ describe("CardWorkspace", () => {
 
     const board = screen.getByTestId("card-board");
     expect(board.className).not.toContain("overflow-x-auto");
+    expect(
+      screen.getByText("Organize assigned cards by person or status.")
+    ).toBeVisible();
+    expect(screen.getByTestId("primary-board-lanes")).toHaveClass(
+      "lg:grid-cols-2"
+    );
+    expect(screen.getByTestId("secondary-board-lanes")).toHaveClass(
+      "xl:grid-cols-1"
+    );
     expect(within(board).getByRole("heading", { name: "Alex" })).toBeVisible();
     expect(within(board).getByRole("heading", { name: "Max" })).toBeVisible();
     expect(within(board).getByRole("heading", { name: "Saved for Later" })).toBeVisible();

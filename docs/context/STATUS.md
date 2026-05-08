@@ -4,14 +4,14 @@ Last updated: 2026-05-08
 
 ## Current Phase
 
-The mobile UX/card workflow pass is implemented locally. The active product treats Library source cards and Deal cards as the same catalog-backed set, keeps Board focused on cards assigned/categorized to Alex, Max, Save for later, or Not applicable, and now has safer Deal gestures with Undo, desktop-only Little Alex, a tighter Ask Greg mobile layout, editable Fogging Estandards, and unclipped card detail text.
+The desktop layout and Learn cleanup pass is implemented locally. The active product treats Library source cards and Deal cards as the same catalog-backed set, keeps Board focused on cards assigned/categorized to Alex, Max, Save for later, or Not applicable, has safer Deal gestures with Undo, desktop-only Little Alex, tighter Ask Greg desktop/mobile layout, editable Fogging Estandards, unclipped card detail text, and no active "Learn this feature" guide workflow.
 
 The previous tooling follow-up stabilized local verification: Playwright e2e now builds the app and runs against `next start` with explicit local runtime env, and Prisma local migration uses a dedicated `SHADOW_DATABASE_URL` plus a shadow DB setup helper so app roles without `CREATEDB` no longer block `migrate dev`.
 
 ## Branch And Working Tree
 
 - Local `main` has been fast-forwarded through PR #47.
-- Active follow-up branch: `codex/mobile-ux-card-workflow`.
+- Active follow-up branch: `codex/desktop-layout-onboarding-cleanup`.
 - Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, #45 focused patch QA/docs, and #47 catalog/deal/board plus Little Alex fix.
 
 ## What Exists
@@ -29,6 +29,8 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Cards are the primary interaction model: Distribution supports search, an available-card list, tap/click flip, swipe left/right/up/down, arrow keys, and large fallback buttons.
 - Your Deck is a searchable, cadence-filterable, image-first assigned-card gallery; tapping a card flips it to show assignment, purpose, and Fogging Estandards.
 - Board groups only real dealt/categorized cards: Alex, Max, Saved for Later, and Not Applicable. Unassigned is now an internal dealable-pool state, not a Board lane.
+- Board desktop now treats Alex and Max as primary lanes, with Save for Later and Not Applicable as secondary responsive buckets. Board cards use image-first styling aligned with Your Deck card polish.
+- Your Deck and Board now include concise explanatory subtitles.
 - Mobile overflow navigation now opens from the bottom action area with visible Check-in, Settings, Theory, and Card Library links plus an outside-tap dismiss layer that closes without click-through navigation. The persistent welcome banner is no longer mounted in the protected app shell.
 - Little Alex is desktop-only on protected app routes; mobile and touch-first layouts do not render the helper, and Settings shows a compact mobile note explaining desktop availability.
 - Deal now shows concise swipe instructions under search, uses safer touch-intent thresholds before locking a card drag, and exposes last-action Undo after assignment.
@@ -36,6 +38,7 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Library cards flip in place as the full source catalog. The visible put-in-play/lane-pick workflow has been removed from the Library catalog flow.
 - Deal shows the full catalog-backed dealable pool and dedupes by stable template identity; Board removal clears categorization back into that pool without creating duplicate cards.
 - Ask Greg is a main tab for drafting more cards.
+- Ask Greg desktop now uses a cohesive two-column panel with a larger Greg asset and tighter header/action/draft spacing.
 - Check-ins is now a lightweight schedule, confirm, optional notes, and persisted history flow; agenda/decision concepts and the visible feature guide launcher are no longer visible in the UI.
 - Crash Course has been rewritten as concise concept-first storyboard frames with the app learning path only at the end.
 - Product-surface cleanup retired the Radar page/component from the app navigation surface.
@@ -44,6 +47,7 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Crash course now uses a 14-frame storyboard with subtitle-style course text attached to the image frame.
 - Crash-course storyboard art was regenerated with Qwen into 14 textless 3:2 PNGs under `public/assets/fairplay/generated-ui/crash-course/`.
 - Corrective QA on the latest integration branch reported passing Vitest, lint, typecheck, Prisma validate, build, and Playwright e2e.
+- Active feature-guide launchers, guide practice components, generated UI registry entries, Library/Settings dummy workflows, and the onboarding-preview AI route are removed from active code.
 
 ## Verification From This Pass
 
@@ -73,6 +77,21 @@ PR-specific focused suites also covered responsibility distribution state, card 
 Focused patch-run verification covered Distribute pending card availability, mobile More menu visibility/dismiss behavior, and Little Alex touch intent. Rendered browser QA also confirmed a four-card distribution flow, visible mobile/desktop More links, outside-tap close without navigation, and deliberate Little Alex touch dragging. Details are tracked in `docs/implementation/2026-05-08-focused-patch-run.md`.
 
 The latest focused patch pass covered Little Alex mobile grab alignment and ragdoll hand mapping, Deal/Library/Board card-state normalization, Board removal back to the unclassified pool, consistent Check-in scheduling, and persisted Check-in history. Details are tracked in `docs/implementation/2026-05-08-focused-patch-alex-deal-checkins.md`.
+
+Desktop layout and Learn cleanup verification passed:
+
+```bash
+git diff --check
+npm run prisma:validate
+npm run lint
+npm run typecheck
+npm test -- --run
+npm run build
+npx playwright test e2e/little-alex-physics.spec.ts --project=chromium --grep "uses a static draggable-safe mode with reduced motion"
+npm run test:e2e
+```
+
+Rendered QA covered Ask Greg and Board at 1440x900, 1024x768, 390x844, and 320x740, plus Library/Settings guide-query checks confirming no active "Learn this feature" workflow remains accessible. Details are tracked in `docs/implementation/2026-05-08-desktop-layout-learn-cleanup.md`.
 
 The catalog/deal/board and Little Alex fix materialized one active household responsibility per source template, added safe duplicate archival/indexing, removed Library put-in-play controls, removed Board Unassigned, and verified mobile/desktop Little Alex drag/fling behavior. Details are tracked in `docs/implementation/2026-05-08-catalog-deal-board-little-alex.md`.
 

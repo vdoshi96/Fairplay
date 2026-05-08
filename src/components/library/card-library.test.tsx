@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -91,7 +91,7 @@ describe("CardLibrary", () => {
     expect(screen.queryByTestId("little-alex-horne-sidekick-image"))
       .not.toBeInTheDocument();
     expect(container.querySelector('[data-guide-id="library-ai-task-manager"]'))
-      .not.toBeNull();
+      .toBeNull();
     expect(screen.getByRole("region", { name: "AI drafts" })).toBeVisible();
     expect(screen.getByText("Laundry reset")).toBeVisible();
   });
@@ -105,12 +105,10 @@ describe("CardLibrary", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: "Learn this feature" })
-    ).toBeVisible();
-    expect(screen.getByRole("searchbox", { name: /search cards/i })).toHaveAttribute(
-      "data-guide-id",
-      "library-search"
-    );
+      screen.queryByRole("button", { name: "Learn this feature" })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: /search cards/i }))
+      .not.toHaveAttribute("data-guide-id");
 
     await userEvent.type(screen.getByRole("searchbox", { name: /search cards/i }), "auto");
 
@@ -145,9 +143,8 @@ describe("CardLibrary", () => {
   it("filters by source label while preserving stable card presentation", async () => {
     render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
 
-    expect(screen.getByLabelText("Card labels")).toHaveAttribute(
-      "data-guide-id",
-      "library-labels"
+    expect(screen.getByLabelText("Card labels")).not.toHaveAttribute(
+      "data-guide-id"
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Kids" }));
@@ -227,159 +224,10 @@ describe("CardLibrary", () => {
     );
   });
 
-  it("generates a temporary dummy Library preview from the user request without creating a real card", async () => {
-    let resolvePreview: (response: Response) => void = () => undefined;
-    const fetchMock = vi.fn(
-      () =>
-        new Promise<Response>((resolve) => {
-          resolvePreview = resolve;
-        })
-    );
+  it("does not expose the old dummy Library guide or onboarding preview workflow", async () => {
+    const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    render(
-      <CardLibrary
-        aiDrafts={aiDrafts}
-        templates={templates}
-      />
-    );
-
-    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
-
-    expect(screen.getByRole("dialog", { name: "Library guide" })).toBeVisible();
-    expect(screen.getByText("Step 1 of 3")).toBeVisible();
-    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
-    expect(
-      screen.getByText("Next required click: Start practice.")
-    ).toBeVisible();
-
-    await userEvent.click(
-      screen.getByRole("button", { name: "Start practice" })
-    );
-
-    const practiceRegion = screen.getByRole("region", {
-      name: "Practice a card"
-    });
-    expect(practiceRegion).toBeVisible();
-    expect(practiceRegion).toHaveClass(
-      "z-[60]",
-      "bg-[var(--fp-surface-strong)]"
-    );
-    expect(practiceRegion.className).not.toContain("bg-white");
-    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
-
-    await userEvent.type(
-      screen.getByLabelText("Practice card request"),
-      "Make a card for the weekly backpack reset before school."
-    );
-    expect(
-      screen.getByText("Next required click: Create practice draft.")
-    ).toBeVisible();
-    await userEvent.click(screen.getByRole("button", { name: "Create practice draft" }));
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/ai-card-drafts/onboarding-preview",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({
-          inputText: "Make a card for the weekly backpack reset before school."
-        })
-      })
-    );
-    expect(
-      screen.getByText("Creating a practice draft...")
-    ).toBeVisible();
-
-    resolvePreview(
-      new Response(
-        JSON.stringify({
-          title: "Weekly backpack reset",
-          summary: "Keep backpacks cleared, signed forms handled, and school items ready.",
-          definition: "Reset each backpack before the next school day.",
-          conception: "Notice forms, supplies, and items that need attention.",
-          planning: "Pick a reset window and place needed items nearby.",
-          execution: "Empty the bag, handle papers, and repack essentials.",
-          minimumStandard: "Backpacks are ready before school starts."
-        }),
-        {
-          headers: {
-            "content-type": "application/json"
-          },
-          status: 200
-        }
-      )
-    );
-
-    expect(await screen.findByText("Practice draft created."))
-      .toBeVisible();
-    expect(screen.getByRole("region", { name: "Practice workspace" }))
-      .toBeVisible();
-    expect(screen.getByText(/Temporary drafts stay here/i))
-      .toBeVisible();
-    expect(screen.getByText("Weekly backpack reset")).toBeVisible();
-    expect(
-      screen.getByText("Keep backpacks cleared, signed forms handled, and school items ready.")
-    ).toBeVisible();
-    expect(screen.queryByText(/Lunch packing handoff/i)).not.toBeInTheDocument();
-    expect(
-      screen.getByText("Next required click: Review practice draft.")
-    ).toBeVisible();
-
-    await userEvent.click(screen.getByRole("button", { name: "Review draft" }));
-    expect(screen.getByLabelText("Practice draft title")).toHaveValue(
-      "Weekly backpack reset"
-    );
-    expect(screen.getByLabelText("Practice summary")).toHaveValue(
-      "Keep backpacks cleared, signed forms handled, and school items ready."
-    );
-
-    await userEvent.clear(screen.getByLabelText("Practice draft title"));
-    await userEvent.type(screen.getByLabelText("Practice draft title"), "Backpack launch");
-    expect(
-      screen.getByText("Next required click: Save practice edits.")
-    ).toBeVisible();
-    await userEvent.click(screen.getByRole("button", { name: "Save edits" }));
-    expect(screen.getByText("Practice edits saved.")).toBeVisible();
-    expect(
-      screen.getByText("Next required click: Preview on Board.")
-    ).toBeVisible();
-
-    await userEvent.click(screen.getByRole("button", { name: "Preview on Board" }));
-    expect(
-      screen.getByText("Practice card is ready for Board. No real card was created.")
-    ).toBeVisible();
-    expect(screen.getByText("Board preview")).toBeVisible();
-    expect(screen.getByText("Practice complete.")).toBeVisible();
-    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    await waitFor(() => {
-      expect(fetchMock).not.toHaveBeenCalledWith(
-        expect.stringMatching(/put-in-play|card-templates/),
-        expect.anything()
-      );
-    });
-
-    await userEvent.click(screen.getByRole("button", { name: "Clear practice" }));
-    expect(screen.queryByRole("region", { name: "Practice workspace" }))
-      .not.toBeInTheDocument();
-    expect(screen.queryByText("Board preview")).not.toBeInTheDocument();
-    expect(
-      screen.queryByText("Next required click: Preview on Board.")
-    ).not.toBeInTheDocument();
-  });
-
-  it("closes and resets dummy Library practice after guide Skip", async () => {
     render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
-
-    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
-    await userEvent.click(
-      screen.getByRole("button", { name: "Start practice" })
-    );
-    await userEvent.type(
-      screen.getByLabelText("Practice card request"),
-      "Make a card for the weekly backpack reset."
-    );
-
-    await userEvent.click(screen.getByRole("button", { name: "Skip" }));
 
     expect(
       screen.queryByRole("region", { name: "Practice a card" })
@@ -387,58 +235,10 @@ describe("CardLibrary", () => {
     expect(
       screen.getByRole("button", { name: "Ask Greg" })
     ).toBeVisible();
-
-    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
-    await userEvent.click(
-      screen.getByRole("button", { name: "Start practice" })
-    );
-
-    expect(screen.getByLabelText("Practice card request")).toHaveValue("");
-    expect(screen.queryByText(/weekly backpack reset/i)).not.toBeInTheDocument();
-  });
-
-  it("closes dummy Library practice after guide completion without hiding Greg", async () => {
-    let resolvePreview: (response: Response) => void = () => undefined;
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(
-        () =>
-          new Promise<Response>((resolve) => {
-            resolvePreview = resolve;
-          })
-      )
-    );
-    render(<CardLibrary aiDrafts={aiDrafts} templates={templates} />);
-
-    await userEvent.click(screen.getByRole("button", { name: "Learn this feature" }));
-    await userEvent.click(
-      screen.getByRole("button", { name: "Start practice" })
-    );
-    await userEvent.type(screen.getByLabelText("Practice card request"), "Lunch kits");
-    await userEvent.click(screen.getByRole("button", { name: "Create practice draft" }));
-    resolvePreview(
-      new Response(
-        JSON.stringify({
-          title: "Lunch kits",
-          summary: "Keep lunch supplies ready."
-        }),
-        { headers: { "content-type": "application/json" }, status: 200 }
-      )
-    );
-    expect(await screen.findByText("Lunch kits")).toBeVisible();
-    await userEvent.click(screen.getByRole("button", { name: "Review draft" }));
-    await userEvent.click(screen.getByRole("button", { name: "Save edits" }));
-    await userEvent.click(screen.getByRole("button", { name: "Preview on Board" }));
-    await userEvent.click(screen.getByRole("button", { name: "Next" }));
-    await userEvent.click(screen.getByRole("button", { name: "Next" }));
-
-    await userEvent.click(screen.getByRole("button", { name: "Done" }));
-
     expect(
-      screen.queryByRole("region", { name: "Practice a card" })
+      screen.queryByRole("dialog", { name: "Library guide" })
     ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Ask Greg" })
-    ).toBeVisible();
+    expect(screen.queryByText(/Practice draft/i)).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

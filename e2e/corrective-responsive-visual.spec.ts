@@ -283,66 +283,6 @@ async function expectLittleAlexFullyVisible(page: Page, label: string) {
   expect(failures, `${label} should keep Little Alex inside the viewport`).toEqual([]);
 }
 
-async function expectFeatureGuideButtonInsideViewport(page: Page, label: string) {
-  const learnButtons = page.getByRole("button", { name: "Learn this feature" });
-
-  if ((await learnButtons.count()) === 0) {
-    return;
-  }
-
-  const box = await learnButtons.first().boundingBox();
-  expect(box, `${label} Learn this feature button should have layout`).not.toBeNull();
-
-  if (!box) {
-    return;
-  }
-
-  expect(box.x, `${label} Learn this feature x`).toBeGreaterThanOrEqual(0);
-  expect(box.x + box.width, `${label} Learn this feature right edge`)
-    .toBeLessThanOrEqual(page.viewportSize()?.width ?? box.x + box.width);
-  expect(box.y, `${label} Learn this feature y`).toBeGreaterThanOrEqual(0);
-  expect(box.y + box.height, `${label} Learn this feature bottom edge`)
-    .toBeLessThanOrEqual(page.viewportSize()?.height ?? box.y + box.height);
-
-  const failures = await learnButtons.first().evaluate((button) => {
-    const rect = button.getBoundingClientRect();
-    const center = {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2
-    };
-    const hit = document.elementFromPoint(center.x, center.y);
-    const visibleBottomNav = Array.from(
-      document.querySelectorAll<HTMLElement>('nav[aria-label="Primary"]')
-    ).find((nav) => {
-      const style = getComputedStyle(nav);
-      const navRect = nav.getBoundingClientRect();
-
-      return (
-        style.position === "fixed" &&
-        style.display !== "none" &&
-        style.visibility !== "hidden" &&
-        navRect.width > 0 &&
-        navRect.height > 0 &&
-        navRect.bottom >= window.innerHeight - 1
-      );
-    });
-    const navRect = visibleBottomNav?.getBoundingClientRect();
-    const issues: string[] = [];
-
-    if (hit && hit !== button && !button.contains(hit)) {
-      issues.push(`center hit ${hit.tagName.toLowerCase()} instead of button`);
-    }
-
-    if (navRect && rect.bottom > navRect.top - 6) {
-      issues.push(`bottom ${rect.bottom} too close to bottom nav ${navRect.top}`);
-    }
-
-    return issues;
-  });
-
-  expect(failures, `${label} Learn this feature button should be reachable`).toEqual([]);
-}
-
 async function expectPageBackground(page: Page, pageName: string) {
   if (pageName === "crash-course") {
     await expect(page.getByTestId("crash-course-subtitle-panel")).toBeVisible();
@@ -495,10 +435,8 @@ test.describe("corrective responsive visual QA", () => {
           `${viewport.name} ${appPage.name} should not show the dev issue overlay`
         ).toBe(false);
         await expectPageBackground(page, appPage.name);
-        await expectFeatureGuideButtonInsideViewport(
-          page,
-          `${viewport.name} ${appPage.name}`
-        );
+        await expect(page.getByRole("button", { name: "Learn this feature" }))
+          .toHaveCount(0);
         await expectLittleAlexFullyVisible(
           page,
           `${viewport.name} ${appPage.name}`

@@ -420,45 +420,5 @@ export const GENERATED_UI_ASSETS: GeneratedUiAssetSpec[] = [
     ratio: "3:2",
     size: "1536*1024" as const
   })),
-  ...professionalPageBackgroundSpecs,
-  {
-    alt: "Board guide thumbnail",
-    composition:
-      "soft lane-like zones made from abstract rounded panels, two balanced persona dots, shared orbit path, and a helper spark",
-    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/feature-guide/load-map.png`,
-    promptSubject: "household board helper thumbnail",
-    ratio: "4:3",
-    size: "1024*768",
-    slug: "feature-guide-load-map"
-  },
-  {
-    alt: "Library guide thumbnail",
-    composition:
-      "tidy shelf of abstract rounded tiles and containers, search magnifier shape, helper spark, and balanced color-coded dots",
-    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/feature-guide/library.png`,
-    promptSubject: "household responsibility library browsing helper thumbnail",
-    ratio: "4:3",
-    size: "1024*768",
-    slug: "feature-guide-library"
-  },
-  {
-    alt: "Check-ins guide thumbnail",
-    composition:
-      "small table shape with two balanced avatar dots, blank decision loop, helper spark, and calm completion path",
-    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/feature-guide/check-ins.png`,
-    promptSubject: "household check-in helper thumbnail",
-    ratio: "4:3",
-    size: "1024*768",
-    slug: "feature-guide-check-ins"
-  },
-  {
-    alt: "Settings guide thumbnail",
-    composition:
-      "friendly controls panel with blank toggles, color dots, helper spark, and tidy preference path",
-    outputPath: `${GENERATED_UI_ASSET_OUTPUT_DIR}/feature-guide/settings.png`,
-    promptSubject: "household settings helper thumbnail",
-    ratio: "4:3",
-    size: "1024*768",
-    slug: "feature-guide-settings"
-  }
+  ...professionalPageBackgroundSpecs
 ];

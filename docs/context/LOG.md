@@ -1,5 +1,33 @@
 # Fairplay Context Log
 
+## 2026-05-08 - Desktop Layout And Learn Cleanup
+
+Requested by the user: polish Ask Greg and Board desktop responsive layouts, add short subtitles for Your Deck and Board, and remove the old "Learn this feature" dummy onboarding workflow without disturbing mobile layouts.
+
+Actions completed:
+
+- Rebuilt Ask Greg as one cohesive desktop panel with a larger Greg asset, tighter copy/action/draft spacing, and mobile-safe packing.
+- Reworked Board so Alex and Max are the primary lanes, while Save for Later and Not Applicable are secondary and responsive.
+- Restyled Board cards to match the quality of Your Deck cards more closely.
+- Added concise subtitles to Your Deck and Board.
+- Removed active feature-guide launcher/tour/practice components, dummy Library/Settings workflows, guide markers, and the onboarding-preview AI route.
+- Removed obsolete feature-guide entries from the generated UI asset registry.
+- Removed unused Load Map component/lane metadata files while preserving `/app/load-map` as a Board redirect.
+- Fixed Little Alex stacking above page content so the desktop helper remains draggable in reduced-motion mode.
+- Added implementation notes in `docs/implementation/2026-05-08-desktop-layout-learn-cleanup.md`.
+
+Verification:
+
+- `git diff --check`
+- `npm run prisma:validate`
+- `npm run lint`
+- `npm run typecheck`
+- `npm test -- --run` (84 files, 493 tests)
+- `npm run build`
+- `npx playwright test e2e/little-alex-physics.spec.ts --project=chromium --grep "uses a static draggable-safe mode with reduced motion"`
+- `npm run test:e2e` (28 Playwright tests)
+- Rendered Playwright QA at 1440px, 1024px, 390px, and 320px widths for Ask Greg/Board plus retired guide checks for Library/Settings.
+
 ## 2026-05-08 - Mobile UX Card Workflow Fix
 
 Requested by the user: stop forcing Little Alex on mobile, fix Ask Greg mobile width/readability, move Deal gesture instructions, add Deal Undo, make mobile card gestures safer, make Fogging Estandards editable and persistent, and prevent clipped card detail text.

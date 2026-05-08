@@ -52,9 +52,8 @@ describe("CheckInFlow", () => {
     expect(screen.getByRole("heading", { name: "Schedule check-in" })).toBeVisible();
     expect(screen.getByText("Pick a time. After it happens, confirm and add notes."))
       .toBeVisible();
-    expect(screen.getByTestId("check-in-new-visual")).toHaveAttribute(
-      "data-guide-id",
-      "check-in-overview"
+    expect(screen.getByTestId("check-in-new-visual")).not.toHaveAttribute(
+      "data-guide-id"
     );
     expect(screen.getByTestId("check-in-new-background")).toHaveAttribute(
       "aria-hidden",
@@ -102,14 +101,10 @@ describe("CheckInFlow", () => {
     render(<CheckInFlow initialCheckIn={scheduledCheckIn} onComplete={onComplete} />);
 
     expect(screen.getByRole("heading", { name: "Scheduled check-in" })).toBeVisible();
-    expect(screen.getByRole("region", { name: "Confirm check-in" })).toHaveAttribute(
-      "data-guide-id",
-      "check-in-notes"
-    );
-    expect(screen.getByRole("button", { name: "Confirm it happened" })).toHaveAttribute(
-      "data-guide-id",
-      "check-in-complete-action"
-    );
+    expect(screen.getByRole("region", { name: "Confirm check-in" }))
+      .not.toHaveAttribute("data-guide-id");
+    expect(screen.getByRole("button", { name: "Confirm it happened" }))
+      .not.toHaveAttribute("data-guide-id");
     expect(screen.queryByRole("region", { name: "Decision form" }))
       .not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Learn this feature" }))

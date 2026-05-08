@@ -399,27 +399,6 @@ async function failDraft(
   throw new AiCardDraftServiceError("GENERATION_FAILED", message, { draftId });
 }
 
-function failPreviewGeneration(
-  error: unknown,
-  diagnostics?: AiDiagnosticsContext
-): never {
-  const message = "AI card draft generation failed.";
-  if (diagnostics) {
-    const serialized = serializeAiError(error);
-    logAiGenerationDiagnostic({
-      ...diagnostics,
-      errorCode: serialized.code,
-      errorName: serialized.name,
-      event: "generation_failed",
-      model: serialized.model,
-      provider: serialized.provider,
-      providerRequestId: serialized.providerRequestId,
-      status: serialized.status
-    });
-  }
-  throw new AiCardDraftServiceError("GENERATION_FAILED", message);
-}
-
 export function createAiCardDraftService(
   deps: AiCardDraftServiceDeps = defaultDeps
 ) {
@@ -463,29 +442,6 @@ export function createAiCardDraftService(
         });
       } catch (error) {
         return failDraft(deps, session.householdId, draft.id, error, diagnostics);
-      }
-    },
-
-    async createOnboardingPreview(
-      session: CurrentSession,
-      input: { inputText: string },
-      diagnostics?: AiDiagnosticsContext
-    ): Promise<StructuredAiCard> {
-      requireSelectedPersona(session);
-      if (!input.inputText.trim()) {
-        throw new AiCardDraftServiceError("INVALID_INPUT", "Text input is required.");
-      }
-
-      const structureInput = {
-        taskText: input.inputText
-      };
-
-      try {
-        return diagnostics
-          ? await deps.structureTaskAsCard(structureInput, diagnostics)
-          : await deps.structureTaskAsCard(structureInput);
-      } catch (error) {
-        return failPreviewGeneration(error, diagnostics);
       }
     },
 

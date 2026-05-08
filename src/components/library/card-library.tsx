@@ -9,8 +9,6 @@ import type {
   CardTemplateSummary
 } from "@/contracts/card-templates";
 import { CARD_TEMPLATE_LABELS } from "@/contracts/card-templates";
-import { FEATURE_GUIDES } from "@/components/guide/guide-content";
-import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
 import { AiTaskManager } from "@/components/library/ai-task-manager";
 import { Chip } from "@/components/ui/chip";
 import { DecorativeBackgroundLayer } from "@/components/visuals/fairplay-visuals";
@@ -90,29 +88,20 @@ export function CardLibrary({
           <input
             aria-label="Search cards"
             className="min-h-11 rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
-            data-guide-id="library-search"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Meals, school, auto"
             type="search"
             value={query}
           />
         </label>
-        <div className="grid gap-3 lg:justify-items-end">
-          <FeatureGuideLauncher
-            guide={FEATURE_GUIDES.library}
-            showDescription={false}
-            showHelper={false}
-          />
-          <p className="text-[13px] font-semibold text-fp-muted-ink">
-            {filteredTemplates.length} / {templates.length} cards
-          </p>
-        </div>
+        <p className="text-[13px] font-semibold text-fp-muted-ink lg:justify-self-end">
+          {filteredTemplates.length} / {templates.length} cards
+        </p>
       </div>
 
       <div
         aria-label="Card labels"
         className="flex flex-wrap gap-2 pb-1"
-        data-guide-id="library-labels"
       >
         <button
           className={filterButtonClass(selectedLabel === "all")}
