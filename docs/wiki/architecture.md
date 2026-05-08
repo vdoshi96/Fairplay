@@ -26,9 +26,9 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 - `auth`: forms, login/create/persona clients, auth page shell.
 - `cards`: card-state mapping, image-first card workspace for Your Deck/Deal/Board, and simplified card detail sheet.
 - `library`: card library and AI task manager.
-- `responsibilities`: legacy load map compatibility, editor, board lane metadata, and service-backed card distribution.
+- `responsibilities`: responsibility editor; card distribution and board bucket mapping now live in `cards` plus server responsibility services.
 - `check-ins`: lightweight schedule, confirmation, and notes flow.
-- `crash-course`, `guide`, `onboarding`: active learning and onboarding surfaces. `welcome` remains as retired compatibility code and is not mounted in the protected app shell.
+- `crash-course` and `onboarding`: active learning and onboarding surfaces. The old feature-guide overlay/practice workflow has been removed. `welcome` remains as retired compatibility code and is not mounted in the protected app shell.
 - `little-alex`, `settings`, `theme`, `visuals`, `motion`, `ui`: helper, preferences, theme, visual primitives, motion, and shared UI.
 
 ### Contracts And Domain

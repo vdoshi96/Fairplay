@@ -43,10 +43,9 @@ This is a practical index, not a reorganization plan.
 - `src/components/auth/`: create/login/persona UI and auth helpers.
 - `src/components/cards/`: card state mapping, image-first card workspace, and simplified card detail sheet.
 - `src/components/library/`: card library and AI Task Manager.
-- `src/components/responsibilities/`: legacy Load Map compatibility, editor, and lane metadata.
+- `src/components/responsibilities/`: responsibility editor.
 - `src/components/check-ins/`: check-in flow.
 - `src/components/crash-course/`: crash course content, scene, and flow.
-- `src/components/guide/`: feature guides and practice workflows.
 - `src/components/onboarding/`: onboarding flow and client page.
 - `src/components/little-alex/`: Matter.js helper/avatar physics.
 - `src/components/settings/`: settings panel.
@@ -81,7 +80,7 @@ This is a practical index, not a reorganization plan.
 
 - `src/**/*.test.ts(x)`: Vitest unit/component/service/route/repository tests.
 - `src/server/repositories/persistence.integration.test.ts`: DB-backed integration test requiring Postgres.
-- `e2e/*.spec.ts`: Playwright tests for auth/onboarding, check-ins, guided learning, visual responsive behavior, root redirects, Little Alex, Board, and legacy Load Map compatibility.
+- `e2e/*.spec.ts`: Playwright tests for auth/onboarding, check-ins, retired feature-guide absence, visual responsive behavior, root redirects, Little Alex, Board, and legacy Load Map compatibility.
 - `e2e/helpers/`: Playwright helper utilities.
 
 ## Docs
@@ -99,7 +98,7 @@ This is a practical index, not a reorganization plan.
 ## Assets And Scripts
 
 - `public/assets/fairplay/cards/`: card cover assets.
-- `public/assets/fairplay/generated-ui/`: generated backgrounds, crash-course art, feature-guide art, and illustrations. Retired Radar generated entries/assets have been removed.
+- `public/assets/fairplay/generated-ui/`: generated backgrounds, crash-course art, historical feature-guide art, and illustrations. Retired Radar generated entries/assets have been removed.
 - `public/assets/fairplay/little-alex-sprites/`: Little Alex generated sprites and manifests.
 - `scripts/db/wait-for-db.mjs`: local DB wait helper.
 - `scripts/generate-*.mjs`: asset generation scripts.
@@ -125,5 +124,4 @@ This is a practical index, not a reorganization plan.
 ## Board Lane Compatibility Note
 
 - `ResponsibilityBoardLane` values are persisted API/database keys. Keep `cards_of_concern`, `player_1`, `player_2`, and `kid_split` stable unless a later PR performs an explicit compatibility migration.
-- User-facing labels and help text live in `src/components/responsibilities/board-lanes.ts`.
-- Card-first bucket labels and lane conversion helpers live in `src/components/cards/card-state.ts`.
+- User-facing labels, help text, and lane conversion helpers live in `src/components/cards/card-state.ts`.

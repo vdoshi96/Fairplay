@@ -4,7 +4,7 @@ Last updated: 2026-05-08
 
 ## System Summary
 
-Fairplay is a Next.js App Router household planning app with Prisma/Postgres persistence, server-managed household sessions, persona-aware app state, a mobile-first card app shell, image-first Your Deck/Deal/Board/Ask Greg primary tabs, lightweight check-in records, learning flows, settings, and Little Alex helper preferences.
+Fairplay is a Next.js App Router household planning app with Prisma/Postgres persistence, server-managed household sessions, persona-aware app state, a mobile-first card app shell, image-first Your Deck/Deal/Board/Ask Greg primary tabs, lightweight check-in records, Theory/onboarding/Crash Course learning surfaces, settings, and Little Alex helper preferences.
 
 ## Wiki Pages
 
@@ -15,7 +15,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 
 - Auth and session: household create/login/logout/me, persona selection, middleware protection, server session refresh.
 - Card workflow: Your Deck searchable assigned-card gallery, Deal swipe deck plus available-card list, Board bucket sections, Ask Greg card generation.
-- Learning: Theory, feature guides, onboarding.
+- Learning: Theory, onboarding, and Crash Course; the retired feature-guide practice workflow is not mounted.
 - Responsibilities: stable persisted lanes, product bucket mapping, assignment/status/visibility/placement routes, simplified card detail.
 - Library: full source catalog cards with flip-to-back details; Deal uses the same catalog-backed dealable pool.
 - Check-ins: schedule a check-in, confirm it happened, and save optional minutes/notes.

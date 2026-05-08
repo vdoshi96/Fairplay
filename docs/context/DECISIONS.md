@@ -12,6 +12,7 @@ Last updated: 2026-05-08
 | 2026-05-08 | Keep persisted board-lane keys but normalize product buckets in the UI/service layer. | Avoids a database compatibility migration while enabling `unassigned`, `alex`, `max`, `savedForLater`, and `notApplicable` behavior. | Accepted |
 | 2026-05-08 | Rename visible card standards copy to Fogging Estandards. | The user explicitly requested the new label and removal of old minimum-standard card-detail clutter. | Accepted |
 | 2026-05-08 | Make Little Alex desktop-only. | Mobile touch scrolling and dragging compete too often; preserving mobile scroll is more important than forcing a novelty interaction on touch-first layouts. | Accepted |
+| 2026-05-08 | Retire the feature-guide and dummy practice workflow. | The current card-first app is simple enough without extra "Learn this feature" launchers, and the dummy Library/Settings practice flows added maintenance cost without improving the core path. | Accepted |
 | 2026-05-08 | Use PWA/safe-area metadata and fixed mobile bottom tabs for the core app shell. | Mobile Safari and Add to Home Screen are primary targets for this redesign. | Accepted |
 | 2026-05-07 | Add standard repo memory and wiki files without reorganizing source files. | The repo organization is haphazard, and future agents need a reliable index before feature work or cleanup. | Accepted |
 | 2026-05-07 | Treat this as repo-level project memory, not global memory. | The facts are specific to Fairplay's product, codebase, source policy, and current architecture. | Accepted |

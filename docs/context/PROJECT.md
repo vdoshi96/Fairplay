@@ -12,7 +12,7 @@ The current v1 product centers on a two-person household using shared credential
 
 - Create a household with one household username and password.
 - Log in with shared credentials, then choose Alex or Max for the session.
-- Complete onboarding, Theory, and feature-guide learning flows.
+- Use Theory, onboarding, and Crash Course learning surfaces; the old feature-guide practice workflow is retired from v1.
 - Land on Deal after login/persona selection and assign cards with swipes, arrow keys, or large fallback buttons.
 - Use Your Deck as the primary assigned-card home with searchable, filterable, image-first assigned cards.
 - Use Board to review dealt/categorized card buckets: Alex, Max, Saved for Later, and Not Applicable.

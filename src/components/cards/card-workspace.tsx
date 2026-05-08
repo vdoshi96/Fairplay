@@ -88,13 +88,6 @@ const actionMeta: Record<DealActionBucket, {
   }
 };
 
-const boardOrder: CardBucket[] = [
-  "alex",
-  "max",
-  "savedForLater",
-  "notApplicable"
-];
-
 type LastDealAction = {
   bucket: DealActionBucket;
   card: CardWorkspaceCard;
@@ -469,13 +462,16 @@ function YourCardsView({
 
   return (
     <section className="grid gap-4">
-      <header className="grid gap-2">
+      <header className="grid gap-1">
         <p className="text-[13px] font-bold text-fp-muted-ink">
           {selectedPersona.displayName}
         </p>
         <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
           Your Deck
         </h1>
+        <p className="max-w-2xl text-[14px] font-semibold leading-6 text-fp-muted-ink">
+          Find the cards that have been played to you here.
+        </p>
       </header>
 
       {cards.length > 0 ? (
@@ -576,61 +572,116 @@ function BoardView({
   responsibilities
 }: Pick<CardWorkspaceProps, "onDistribute" | "responsibilities">) {
   const groups = groupCardsByBucket(responsibilities);
+  const primaryBuckets: CardBucket[] = ["alex", "max"];
+  const secondaryBuckets: CardBucket[] = ["savedForLater", "notApplicable"];
 
   return (
-    <section className="grid gap-4">
-      <header className="grid gap-2">
+    <section className="grid gap-3 lg:gap-4">
+      <header className="grid gap-1">
         <p className="text-[13px] font-bold text-fp-muted-ink">Board</p>
         <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
           Card board
         </h1>
+        <p className="max-w-2xl text-[14px] font-semibold leading-6 text-fp-muted-ink">
+          Organize assigned cards by person or status.
+        </p>
       </header>
 
       <div
-        className="grid max-w-full gap-3 md:grid-cols-2 xl:grid-cols-4"
+        className="grid max-w-full gap-3 xl:grid-cols-[minmax(0,1fr)_17rem] xl:items-start"
         data-testid="card-board"
       >
-        {boardOrder.map((bucket) => (
-          <details
-            open
-            className={[
-              "grid min-w-0 content-start gap-3 rounded-[8px] border p-3 shadow-[var(--fp-shadow-soft)] [&>summary::-webkit-details-marker]:hidden",
-              CARD_BUCKET_TONES[bucket]
-            ].join(" ")}
-            key={bucket}
-          >
-            <summary className="flex cursor-pointer list-none items-start justify-between gap-3 rounded-[8px] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]">
-              <div>
-                <h2 className="text-[16px] font-bold leading-6 text-fp-ink">
-                  {CARD_BUCKET_LABELS[bucket]}
-                </h2>
-                <p className="text-[12px] font-semibold leading-5 text-fp-muted-ink">
-                  {CARD_BUCKET_HELP[bucket]}
-                </p>
-              </div>
-              <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-[12px] font-bold text-fp-ink">
-                {groups[bucket].length}
-              </span>
-            </summary>
-            <div className="mt-3 grid gap-2">
-              {groups[bucket].map((card) => (
-                <CompactCard
-                  bucket={bucket}
-                  card={card}
-                  key={card.id}
-                  onDistribute={onDistribute}
-                />
-              ))}
-              {groups[bucket].length === 0 ? (
-                <p className="min-h-24 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] font-semibold leading-5 text-fp-muted-ink">
-                  Empty
-                </p>
-              ) : null}
-            </div>
-          </details>
-        ))}
+        <div
+          className="grid min-w-0 gap-3 lg:grid-cols-2"
+          data-testid="primary-board-lanes"
+        >
+          {primaryBuckets.map((bucket) => (
+            <BoardLane
+              bucket={bucket}
+              cards={groups[bucket]}
+              key={bucket}
+              onDistribute={onDistribute}
+              priority="primary"
+            />
+          ))}
+        </div>
+        <div
+          className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1"
+          data-testid="secondary-board-lanes"
+        >
+          {secondaryBuckets.map((bucket) => (
+            <BoardLane
+              bucket={bucket}
+              cards={groups[bucket]}
+              key={bucket}
+              onDistribute={onDistribute}
+              priority="secondary"
+            />
+          ))}
+        </div>
       </div>
     </section>
+  );
+}
+
+function BoardLane({
+  bucket,
+  cards,
+  onDistribute,
+  priority
+}: {
+  bucket: CardBucket;
+  cards: CardWorkspaceCard[];
+  onDistribute?: (move: CardDistributionMove) => Promise<void> | void;
+  priority: "primary" | "secondary";
+}) {
+  return (
+    <details
+      open
+      className={[
+        "grid min-w-0 content-start rounded-[8px] border shadow-[var(--fp-shadow-soft)] [&>summary::-webkit-details-marker]:hidden",
+        priority === "primary"
+          ? "gap-4 p-3 sm:p-4 lg:min-h-[24rem] xl:min-h-[30rem]"
+          : "gap-3 p-3 lg:shadow-[var(--fp-shadow-soft)]",
+        CARD_BUCKET_TONES[bucket]
+      ].join(" ")}
+    >
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 rounded-[8px] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]">
+        <div>
+          <h2
+            className={[
+              "font-bold text-fp-ink",
+              priority === "primary"
+                ? "text-[18px] leading-6"
+                : "text-[15px] leading-5"
+            ].join(" ")}
+          >
+            {CARD_BUCKET_LABELS[bucket]}
+          </h2>
+          <p className="mt-1 text-[12px] font-semibold leading-5 text-fp-muted-ink">
+            {CARD_BUCKET_HELP[bucket]}
+          </p>
+        </div>
+        <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-[12px] font-bold text-fp-ink">
+          {cards.length}
+        </span>
+      </summary>
+      <div className="grid gap-3">
+        {cards.map((card) => (
+          <CompactCard
+            bucket={bucket}
+            card={card}
+            key={card.id}
+            onDistribute={onDistribute}
+          />
+        ))}
+        {cards.length === 0 ? (
+          <p className="min-h-24 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] font-semibold leading-5 text-fp-muted-ink">
+            Empty
+          </p>
+        ) : null}
+      </div>
+    </details>
   );
 }
 
@@ -852,26 +903,29 @@ function CompactCard({
   );
 
   return (
-    <article className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-sm">
+    <article className="grid min-w-0 overflow-hidden rounded-[8px] border border-fp-line bg-white text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
       <Link
-        className="grid grid-cols-[4.75rem_minmax(0,1fr)] gap-3"
+        className="grid min-h-[8.25rem] grid-cols-[5.25rem_minmax(0,1fr)] sm:grid-cols-[5.75rem_minmax(0,1fr)]"
         href={`/app/responsibilities/${card.id}`}
       >
         <CardCoverImage
           card={card}
-          className="aspect-[5/7] rounded-[8px] border border-fp-line bg-white p-1"
+          className="min-h-0 border-r border-fp-line bg-fp-surface p-1.5"
         />
-        <span className="grid min-w-0 content-start gap-1">
-          <span className="text-[14px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
+        <span className="grid min-w-0 content-start gap-2 p-3">
+          <span className="text-[16px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
             {card.title}
           </span>
-          <span className="text-[12px] font-semibold leading-4 text-fp-muted-ink">
+          <span className="line-clamp-2 text-[12px] font-semibold leading-5 text-fp-muted-ink">
+            {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
+          </span>
+          <span className="w-fit rounded-full border border-fp-line bg-[var(--fp-surface)] px-2.5 py-1 text-[11px] font-bold text-fp-muted-ink">
             {card.cadence.replaceAll("_", " ")}
           </span>
         </span>
       </Link>
       {onDistribute ? (
-        <div className="grid gap-2">
+        <div className="grid gap-2 border-t border-fp-line bg-[var(--fp-surface-strong)] p-2">
           {bucket !== "unassigned" ? (
             <button
               className="min-h-9 rounded-[8px] border border-fp-line bg-white px-2 text-[11px] font-bold text-fp-ink"

@@ -12,7 +12,7 @@ import {
   X
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type {
   AiCardDraftDetail,
@@ -20,12 +20,6 @@ import type {
   AiCardDraftUpdate
 } from "@/contracts/ai-card-drafts";
 import { CADENCES } from "@/domain/enums";
-import {
-  completeGuidePractice,
-  useGuidePracticeRequest,
-  useGuidePracticeReset
-} from "@/components/guide/guide-practice";
-import { PracticeActionGuidance } from "@/components/guide/practice-action-guidance";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Sheet } from "@/components/ui/sheet";
@@ -46,16 +40,6 @@ type TrackedAiCardDraft = AiCardDraftSummary & {
   isOptimistic?: boolean;
   isLocalOnly?: boolean;
   localInputText?: string;
-};
-
-type OnboardingPreviewCard = {
-  title: string;
-  summary: string;
-  definition?: string;
-  conception?: string;
-  planning?: string;
-  execution?: string;
-  minimumStandard?: string;
 };
 
 const statusLabels: Record<AiCardDraftSummary["status"], string> = {
@@ -84,16 +68,6 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
   const [reviewDraft, setReviewDraft] = useState<TrackedAiCardDraft | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [error, setError] = useState<string | null>(null);
-  const [practiceOpen, setPracticeOpen] = useState(false);
-  const openLibraryPractice = useCallback(() => {
-    setPracticeOpen(true);
-  }, []);
-  const resetLibraryPractice = useCallback(() => {
-    setPracticeOpen(false);
-  }, []);
-
-  useGuidePracticeRequest("library-practice-start", openLibraryPractice);
-  useGuidePracticeReset("library-practice-start", resetLibraryPractice);
 
   const trackedDrafts = useMemo(() => {
     const serverIds = new Set(drafts.map((draft) => draft.id));
@@ -196,7 +170,6 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
     >
       <div
         className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
-        data-guide-id="library-ai-task-manager"
       >
         <div className="grid min-w-0 gap-1">
           <p className="text-[13px] font-semibold text-fp-muted-ink">
@@ -230,8 +203,6 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
           }}
         />
       ) : null}
-
-      {practiceOpen ? <LibraryPracticeWorkflow /> : null}
 
       <AiCardTracker
         drafts={trackedDrafts}
@@ -424,290 +395,6 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
       pendingCreateControllersRef.current.delete(clientId);
     }
   }
-}
-
-function LibraryPracticeWorkflow() {
-  const [request, setRequest] = useState("");
-  const [draftCreated, setDraftCreated] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [reviewOpen, setReviewOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [preview, setPreview] = useState<OnboardingPreviewCard | null>(null);
-  const [editsSaved, setEditsSaved] = useState(false);
-  const [putInPlayPreviewed, setPutInPlayPreviewed] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
-
-  function mark(eventId: string, message: string) {
-    setStatus(message);
-    completeGuidePractice(eventId);
-  }
-
-  function cleanUpWorkspace() {
-    setRequest("");
-    setDraftCreated(false);
-    setIsGenerating(false);
-    setReviewOpen(false);
-    setTitle("");
-    setSummary("");
-    setPreview(null);
-    setEditsSaved(false);
-    setPutInPlayPreviewed(false);
-    setStatus("Practice cleared.");
-  }
-
-  async function createDummyDraft() {
-    const inputText = request.trim();
-    if (!inputText || isGenerating) {
-      return;
-    }
-
-    setIsGenerating(true);
-    setStatus("Creating a practice draft...");
-    setDraftCreated(false);
-    setReviewOpen(false);
-    setEditsSaved(false);
-    setPutInPlayPreviewed(false);
-
-    try {
-      const response = await fetch("/api/ai-card-drafts/onboarding-preview", {
-        body: JSON.stringify({ inputText }),
-        headers: {
-          "content-type": "application/json"
-        },
-        method: "POST"
-      });
-
-      if (!response.ok) {
-        throw new Error("The practice draft could not be created.");
-      }
-
-      const generated = await response.json() as OnboardingPreviewCard;
-      setPreview(generated);
-      setTitle(generated.title);
-      setSummary(generated.summary);
-      setDraftCreated(true);
-      mark("library-capture-filled", "Practice draft created.");
-    } catch {
-      setPreview(null);
-      setTitle("");
-      setSummary("");
-      setStatus("Practice draft failed. Try a shorter request.");
-    } finally {
-      setIsGenerating(false);
-    }
-  }
-
-  const previewDetails = preview
-    ? [
-        ["Purpose", preview.definition],
-        ["Notice", preview.conception],
-        ["Plan", preview.planning],
-        ["Do", preview.execution],
-        ["Fogging Estandards", preview.minimumStandard]
-      ].filter((detail): detail is [string, string] => Boolean(detail[1]?.trim()))
-    : [];
-
-  return (
-    <section
-      aria-label="Practice a card"
-      className="relative z-[60] grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-4 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
-      data-guide-practice-surface
-    >
-      <div className="grid gap-1">
-        <h3 className="text-[16px] font-bold text-fp-ink">
-          Practice a card
-        </h3>
-        <p className="text-[13px] leading-5 text-fp-muted-ink">
-          Try a Greg draft, edit it, then preview sending it to Board. Nothing
-          is saved.
-        </p>
-      </div>
-
-      <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
-        <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-          What should the card cover?
-          <textarea
-            aria-label="Practice card request"
-            className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
-            onChange={(event) => setRequest(event.target.value)}
-            value={request}
-          />
-          <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
-            Name the work, timing, and what done looks like.
-          </span>
-        </label>
-        <PracticeActionGuidance
-          actionLabel="Create practice draft"
-          active={
-            request.trim().length > 0 &&
-            !draftCreated &&
-            !isGenerating
-          }
-          wrapperClassName="sm:w-fit"
-        >
-          <button
-            className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary disabled:opacity-60 sm:w-fit"
-            disabled={request.trim().length === 0 || isGenerating}
-            onClick={createDummyDraft}
-            type="button"
-          >
-            {isGenerating ? "Creating draft" : "Create practice draft"}
-          </button>
-        </PracticeActionGuidance>
-      </div>
-
-      {draftCreated ? (
-        <section
-          aria-label="Practice workspace"
-          className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3"
-        >
-          <div className="grid gap-1">
-            <h4 className="text-[14px] font-bold text-fp-ink">
-              Practice workspace
-            </h4>
-            <p className="text-[13px] leading-5 text-fp-muted-ink">
-              Temporary drafts stay here while the guide is open.
-            </p>
-          </div>
-          <div className="grid gap-1">
-            <p className="text-[13px] font-bold text-fp-ink">{title}</p>
-            <p className="text-[13px] leading-5 text-fp-muted-ink">{summary}</p>
-            <p className="text-[12px] leading-4 text-fp-muted-ink">
-              Practice draft, not a household card.
-            </p>
-          </div>
-          <PracticeActionGuidance
-            actionLabel="Review practice draft"
-            active={!reviewOpen}
-            wrapperClassName="sm:w-fit"
-          >
-            <button
-              className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
-              onClick={() => {
-                setReviewOpen(true);
-                mark("library-draft-reviewed", "Practice draft opened.");
-              }}
-              type="button"
-            >
-              Review draft
-            </button>
-          </PracticeActionGuidance>
-        </section>
-      ) : null}
-
-      {reviewOpen ? (
-        <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3">
-          <div className="grid gap-3 md:grid-cols-[minmax(9rem,14rem)_1fr]">
-            <div className="grid min-h-40 place-items-center rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-center text-[13px] font-bold text-fp-muted-ink">
-              Practice preview
-            </div>
-            <div className="grid gap-3">
-              <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-                Title
-                <input
-                  aria-label="Practice draft title"
-                  className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
-                  onChange={(event) => setTitle(event.target.value)}
-                  value={title}
-                />
-                <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
-                  The card name.
-                </span>
-              </label>
-              <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-                Summary
-                <textarea
-                  aria-label="Practice summary"
-                  className="min-h-20 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] text-fp-ink"
-                  onChange={(event) => setSummary(event.target.value)}
-                  value={summary}
-                />
-                <span className="text-[12px] font-normal leading-4 text-fp-muted-ink">
-                  What done should mean.
-                </span>
-              </label>
-              {previewDetails.length > 0 ? (
-                <dl className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px]">
-                  {previewDetails.map(([label, value]) => (
-                    <div className="grid gap-1" key={label}>
-                      <dt className="font-bold text-fp-ink">{label}</dt>
-                      <dd className="leading-5 text-fp-muted-ink">{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              ) : null}
-            </div>
-          </div>
-          <div className="flex flex-wrap items-start gap-2">
-            <PracticeActionGuidance
-              actionLabel="Save practice edits"
-              active={!editsSaved}
-            >
-              <button
-                className="min-h-10 rounded-[8px] bg-fp-primary px-3 text-[13px] font-bold text-fp-on-primary"
-                onClick={() => {
-                  setEditsSaved(true);
-                  mark("library-draft-edited", "Practice edits saved.");
-                }}
-                type="button"
-              >
-                Save edits
-              </button>
-            </PracticeActionGuidance>
-            <PracticeActionGuidance
-              actionLabel="Preview on Board"
-              active={editsSaved && !putInPlayPreviewed}
-            >
-              <button
-                className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-                onClick={() => {
-                  setPutInPlayPreviewed(true);
-                  mark(
-                    "library-board-preview",
-                    "Practice card is ready for Board. No real card was created."
-                  );
-                }}
-                type="button"
-              >
-                Preview on Board
-              </button>
-            </PracticeActionGuidance>
-          </div>
-          {putInPlayPreviewed ? (
-            <article className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
-              <h4 className="text-[14px] font-bold text-fp-ink">
-                Board preview
-              </h4>
-              <p className="text-[13px] leading-5 text-fp-muted-ink">{title}</p>
-              <p className="text-[12px] leading-4 text-fp-muted-ink">
-                Preview only. Clear practice to remove it.
-              </p>
-            </article>
-          ) : null}
-        </div>
-      ) : null}
-
-      {draftCreated ? (
-        <button
-          className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink sm:w-fit"
-          onClick={cleanUpWorkspace}
-          type="button"
-        >
-          Clear practice
-        </button>
-      ) : null}
-
-      {status ? (
-        <p
-          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3 text-[13px] font-semibold text-fp-muted-ink"
-          role="status"
-        >
-          {status}
-        </p>
-      ) : null}
-    </section>
-  );
 }
 
 function GregTaskmasterAvatar() {

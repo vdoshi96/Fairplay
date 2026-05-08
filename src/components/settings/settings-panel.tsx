@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   type KeyboardEvent,
-  useCallback,
   useEffect,
   useRef,
   useState
@@ -21,14 +20,6 @@ import {
   type LittleAlexPreferences,
   type LittleAlexSkinTone
 } from "@/contracts/preferences";
-import { FeatureGuideLauncher } from "@/components/guide/feature-guide-launcher";
-import { FEATURE_GUIDES } from "@/components/guide/guide-content";
-import {
-  completeGuidePractice,
-  useGuidePracticeRequest,
-  useGuidePracticeReset
-} from "@/components/guide/guide-practice";
-import { PracticeActionGuidance } from "@/components/guide/practice-action-guidance";
 import { useTheme, type ResolvedTheme } from "@/components/theme/theme-provider";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { DecorativeBackgroundLayer } from "@/components/visuals/fairplay-visuals";
@@ -84,24 +75,12 @@ export function SettingsPanel({
   const [preferenceAction, setPreferenceAction] = useState<
     "restart-course" | null
   >(null);
-  const [practiceOpen, setPracticeOpen] = useState(false);
-  const [dummyPersonaConfirmOpen, setDummyPersonaConfirmOpen] = useState(false);
   const [actionStatus, setActionStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const contentRef = useRef<HTMLElement>(null);
   const switchTriggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const continueButtonRef = useRef<HTMLButtonElement>(null);
-  const openSettingsPractice = useCallback(() => {
-    setPracticeOpen(true);
-  }, []);
-  const resetSettingsPractice = useCallback(() => {
-    setPracticeOpen(false);
-    setDummyPersonaConfirmOpen(false);
-  }, []);
-
-  useGuidePracticeRequest("settings-practice-start", openSettingsPractice);
-  useGuidePracticeReset("settings-practice-start", resetSettingsPractice);
 
   useEffect(() => {
     const content = contentRef.current;
@@ -183,12 +162,10 @@ export function SettingsPanel({
 
   function handleSystemThemeToggle() {
     setThemeMode(themeMode === "system" ? resolvedTheme : "system");
-    completeGuidePractice("settings-appearance");
   }
 
   function handleThemeOverrideChange(nextMode: ResolvedTheme) {
     setThemeMode(nextMode);
-    completeGuidePractice("settings-appearance");
   }
 
   async function saveLittleAlexPreferences() {
@@ -258,7 +235,6 @@ export function SettingsPanel({
       <section className="grid gap-5" ref={contentRef}>
         <div
           className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
-          data-guide-id="settings-overview"
           data-testid="settings-preferences-visual"
         >
           <DecorativeBackgroundLayer
@@ -271,12 +247,6 @@ export function SettingsPanel({
             <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
               Settings
             </h1>
-            <div className="mt-2">
-              <FeatureGuideLauncher
-                guide={FEATURE_GUIDES.settings}
-                showDescription={false}
-              />
-            </div>
           </div>
         </div>
 
@@ -320,7 +290,6 @@ export function SettingsPanel({
 
         <section
           className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4"
-          data-guide-id="settings-appearance"
         >
           <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
             <div className="grid gap-1">
@@ -393,7 +362,6 @@ export function SettingsPanel({
 
         <section
           className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4"
-          data-guide-id="settings-persona"
         >
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Persona
@@ -523,16 +491,12 @@ export function SettingsPanel({
 
         <section
           className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4"
-          data-guide-id="settings-guided-start"
         >
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Guided start
           </h2>
           <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
             Restart Theory or open the card deck.
-          </p>
-          <p className="mt-2 text-[14px] leading-5 text-fp-muted-ink">
-            Feature guides stay on their pages.
           </p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             <button
@@ -552,11 +516,6 @@ export function SettingsPanel({
               Deal cards
             </Link>
           </div>
-          {practiceOpen ? (
-            <SettingsPracticeWorkflow
-              onOpenPersonaConfirm={() => setDummyPersonaConfirmOpen(true)}
-            />
-          ) : null}
         </section>
 
         <section className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4">
@@ -571,7 +530,6 @@ export function SettingsPanel({
 
         <button
           className="min-h-11 rounded-[8px] border border-fp-danger/40 bg-[var(--fp-surface-strong)] px-4 text-[14px] font-semibold text-fp-danger outline-none focus:ring-2 focus:ring-fp-danger/25 disabled:cursor-not-allowed disabled:opacity-70"
-          data-guide-id="settings-logout"
           disabled={loggingOut}
           onClick={() => void logout()}
           type="button"
@@ -623,151 +581,6 @@ export function SettingsPanel({
           </div>
         </div>
       ) : null}
-      {dummyPersonaConfirmOpen ? (
-        <div
-          aria-labelledby="dummy-persona-confirm-title"
-          aria-modal="true"
-          className="fixed inset-0 z-[65] grid place-items-center bg-fp-ink/35 px-4"
-          role="dialog"
-        >
-          <div className="grid w-full max-w-sm gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 text-fp-ink shadow-soft">
-            <h2
-              className="text-[17px] font-bold leading-6 text-fp-ink"
-              id="dummy-persona-confirm-title"
-            >
-              Dummy persona switch confirmation
-            </h2>
-            <p className="text-[14px] leading-5 text-fp-muted-ink">
-              This is a local practice confirmation. It will not leave Settings.
-            </p>
-            <PracticeActionGuidance
-              actionLabel="Stay in settings"
-              wrapperClassName="mt-1"
-            >
-              <button
-                className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-4 text-[14px] font-semibold text-fp-ink"
-                onClick={() => setDummyPersonaConfirmOpen(false)}
-                type="button"
-              >
-                Stay in settings
-              </button>
-            </PracticeActionGuidance>
-          </div>
-        </div>
-      ) : null}
     </>
   );
-}
-
-function SettingsPracticeWorkflow({
-  onOpenPersonaConfirm
-}: {
-  onOpenPersonaConfirm: () => void;
-}) {
-  const [appearanceMode, setAppearanceMode] = useState<"system" | "light" | "dark">(
-    "system"
-  );
-  const [appearanceChanged, setAppearanceChanged] = useState(false);
-  const [personaConfirmOpened, setPersonaConfirmOpened] = useState(false);
-  const [learningHubLocated, setLearningHubLocated] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
-
-  function mark(eventId: string, message: string) {
-    setStatus(message);
-    completeGuidePractice(eventId);
-  }
-
-  return (
-    <section
-      aria-label="Dummy Settings practice"
-      className="relative z-[60] mt-4 grid gap-3 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-fp-ink shadow-[var(--fp-shadow-elevated)]"
-      data-guide-practice-surface
-    >
-      <div className="grid gap-1">
-        <h3 className="text-[16px] font-bold text-fp-ink">
-          Dummy Settings practice
-        </h3>
-        <p className="text-[13px] leading-5 text-fp-muted-ink">
-          Practice settings actions locally without changing household data.
-        </p>
-      </div>
-      <PracticeActionGuidance
-        actionLabel="Choose a dummy appearance mode"
-        active={!appearanceChanged}
-        kind="action"
-      >
-        <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
-          Dummy appearance mode
-          <select
-            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[14px] text-fp-ink"
-            onChange={(event) => {
-              const value = event.target.value as "system" | "light" | "dark";
-              setAppearanceMode(value);
-              setAppearanceChanged(true);
-              mark(
-                "settings-appearance-mode",
-                `Dummy appearance mode changed to ${label(value)}.`
-              );
-            }}
-            value={appearanceMode}
-          >
-            <option value="system">System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </label>
-      </PracticeActionGuidance>
-      <div className="flex flex-wrap items-start gap-2">
-        <PracticeActionGuidance
-          actionLabel="Open dummy persona confirmation"
-          active={appearanceChanged && !personaConfirmOpened}
-        >
-          <button
-            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-            onClick={() => {
-              setPersonaConfirmOpened(true);
-              onOpenPersonaConfirm();
-              mark(
-                "settings-persona-confirm",
-                "Dummy persona confirmation opened."
-              );
-            }}
-            type="button"
-          >
-            Open dummy persona confirmation
-          </button>
-        </PracticeActionGuidance>
-        <PracticeActionGuidance
-          actionLabel="Locate dummy learning hub"
-          active={personaConfirmOpened && !learningHubLocated}
-        >
-          <button
-            className="min-h-10 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 text-[13px] font-bold text-fp-ink"
-            onClick={() => {
-              setLearningHubLocated(true);
-              mark("settings-learning-hub", "Dummy learning hub located.");
-            }}
-            type="button"
-          >
-            Locate dummy learning hub
-          </button>
-        </PracticeActionGuidance>
-      </div>
-      {status ? (
-        <p
-          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-muted)] p-3 text-[13px] font-semibold text-fp-muted-ink"
-          role="status"
-        >
-          {status}
-        </p>
-      ) : null}
-    </section>
-  );
-}
-
-function label(value: string) {
-  return value
-    .split("_")
-    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
-    .join(" ");
 }
