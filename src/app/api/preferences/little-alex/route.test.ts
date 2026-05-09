@@ -38,7 +38,7 @@ describe("/api/preferences/little-alex", () => {
     getLittleAlexPreferences.mockResolvedValue({
       personaId: session.selectedPersonaId,
       genderPresentation: "neutral",
-      chatPhrase: "i'm little alex horne",
+      chatPhrase: "Help!",
       skinTone: "tone_2",
       hairColor: "dark_brown",
       updatedAt: "2026-05-06T12:00:00.000Z"
@@ -63,7 +63,7 @@ describe("/api/preferences/little-alex", () => {
     expect(getLittleAlexPreferences).toHaveBeenCalledWith(
       session.selectedPersonaId
     );
-    expect(body.chatPhrase).toBe("i'm little alex horne");
+    expect(body.chatPhrase).toBe("Help!");
   });
 
   it("updates Little Alex preferences for the selected persona", async () => {

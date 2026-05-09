@@ -115,7 +115,7 @@ describe("Little Alex preference repository", () => {
     expect(preferences).toMatchObject({
       personaId: persona.id,
       genderPresentation: "neutral",
-      chatPhrase: "i'm little alex horne",
+      chatPhrase: "Help!",
       skinTone: "tone_2",
       hairColor: "dark_brown"
     });

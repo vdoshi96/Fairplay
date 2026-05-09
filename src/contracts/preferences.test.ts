@@ -44,21 +44,21 @@ describe("Little Alex preferences contracts", () => {
     const preferences = LittleAlexPreferencesSchema.parse({
       personaId: "550e8400-e29b-41d4-a716-446655440020",
       genderPresentation: "feminine",
-      chatPhrase: "i'm little alex horne",
+      chatPhrase: "hello little alex",
       skinTone: "tone_4",
       hairColor: "auburn",
       updatedAt: "2026-05-06T12:00:00.000Z"
     });
 
-    expect(preferences.chatPhrase).toBe("i'm little alex horne");
+    expect(preferences.chatPhrase).toBe("hello little alex");
     expect(preferences.skinTone).toBe("tone_4");
     expect(preferences.hairColor).toBe("auburn");
   });
 
-  it("defaults Little Alex to the required catchphrase and neutral appearance", () => {
+  it("defaults Little Alex to the help phrase and neutral appearance", () => {
     expect(LITTLE_ALEX_DEFAULT_PREFERENCES).toEqual({
       genderPresentation: "neutral",
-      chatPhrase: "i'm little alex horne",
+      chatPhrase: "Help!",
       skinTone: "tone_2",
       hairColor: "dark_brown"
     });

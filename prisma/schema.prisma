@@ -224,7 +224,7 @@ model PersonaLittleAlexPreferences {
   id                 String                         @id @default(uuid())
   personaId          String                         @unique
   genderPresentation LittleAlexGenderPresentation   @default(neutral)
-  chatPhrase         String                         @default("i'm little alex horne") @db.VarChar(30)
+  chatPhrase         String                         @default("Help!") @db.VarChar(30)
   skinTone           LittleAlexSkinTone             @default(tone_2)
   hairColor          LittleAlexHairColor            @default(dark_brown)
   createdAt          DateTime                       @default(now())

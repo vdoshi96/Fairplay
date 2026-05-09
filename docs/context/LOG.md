@@ -1,5 +1,25 @@
 # Fairplay Context Log
 
+## 2026-05-09 - Little Alex Default Help Phrase
+
+Requested by the user: change the default Little Alex chat bubble text to "Help!" and keep local and GitHub on the same commit.
+
+Actions completed:
+
+- Updated the Little Alex contract default and component fallback chat phrase to `Help!`.
+- Updated the Prisma schema default and added a migration that also moves existing rows still using the old default phrase to `Help!`.
+- Updated focused contract, repository, API, Settings, component, and Playwright expectations for the new default phrase.
+
+Verification:
+
+- Red test confirmed the old contract default failed against the new `Help!` expectation.
+- `npm test -- --run src/contracts/preferences.test.ts src/server/repositories/preferences.test.ts src/app/api/preferences/little-alex/route.test.ts src/components/settings/settings-panel.test.tsx src/components/little-alex/little-alex-physics.test.tsx`
+- `npm run prisma:validate`
+- `npm run typecheck`
+- `npm run lint`
+- `npm run prisma:migrate -- --skip-seed`
+- `git diff --check`
+
 ## 2026-05-08 - Little Alex Hair Recolor Correction
 
 Requested by the user after visual review: the Little Alex hair color setting must actually recolor the sprite hair, not add a colored blob over the head.

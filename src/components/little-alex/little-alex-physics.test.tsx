@@ -1042,7 +1042,7 @@ describe("LittleAlexPhysics", () => {
     expect(grabTarget).toHaveStyle({ pointerEvents: "auto" });
     expect(torso?.style.transform).not.toBe(initialTransform);
     expect(screen.getByTestId("little-alex-chat-bubble")).toHaveTextContent(
-      "i'm little alex horne"
+      "Help!"
     );
   });
 

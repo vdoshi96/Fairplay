@@ -40,7 +40,7 @@ const selectedPersona: PersonaSummary = {
 const littleAlexPreferences: LittleAlexPreferences = {
   personaId: selectedPersona.id,
   genderPresentation: "neutral",
-  chatPhrase: "i'm little alex horne",
+  chatPhrase: "Help!",
   skinTone: "tone_2",
   hairColor: "dark_brown",
   updatedAt: "2026-05-06T12:00:00.000Z"
@@ -166,7 +166,7 @@ describe("settings panel", () => {
       screen.getByRole("group", { name: "Little Alex gender presentation" })
     ).toBeVisible();
     expect(screen.getByLabelText("Little Alex chat bubble phrase")).toHaveValue(
-      "i'm little alex horne"
+      "Help!"
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Feminine" }));
@@ -215,7 +215,7 @@ describe("settings panel", () => {
       "maxLength",
       "30"
     );
-    expect(screen.getByText("21/30")).toBeVisible();
+    expect(screen.getByText("5/30")).toBeVisible();
   });
 
   it("uses theme primary tokens for selected appearance and persona dialog actions", async () => {

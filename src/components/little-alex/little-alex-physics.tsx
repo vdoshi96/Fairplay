@@ -21,7 +21,7 @@ import {
 } from "@/contracts/preferences";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-const DEFAULT_CHAT_PHRASE = "i'm little alex horne";
+const DEFAULT_CHAT_PHRASE = "Help!";
 const DEFAULT_GENDER_PRESENTATION: LittleAlexGenderPresentation = "neutral";
 const DEFAULT_SKIN_TONE: LittleAlexSkinTone = "tone_2";
 const DEFAULT_HAIR_COLOR: LittleAlexHairColor = "dark_brown";

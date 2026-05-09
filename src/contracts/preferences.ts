@@ -18,7 +18,7 @@ export {
 
 export const LITTLE_ALEX_DEFAULT_PREFERENCES = {
   genderPresentation: "neutral",
-  chatPhrase: "i'm little alex horne",
+  chatPhrase: "Help!",
   skinTone: "tone_2",
   hairColor: "dark_brown"
 } as const;

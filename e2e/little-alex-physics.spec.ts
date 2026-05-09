@@ -1255,7 +1255,7 @@ test.describe("Little Alex physics", () => {
 
     await dragLittleAlex(page, -240, 180);
     await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
-      "i'm little alex horne"
+      "Help!"
     );
     await page.waitForTimeout(500);
 
@@ -1491,7 +1491,7 @@ test.describe("Little Alex physics", () => {
 
       await dragLittleAlex(page, -220, 120);
       await expect(page.getByTestId("little-alex-chat-bubble")).toHaveText(
-        "i'm little alex horne"
+        "Help!"
       );
       await expectLittleAlexInViewport(page, { minLeft: 256 });
     }
