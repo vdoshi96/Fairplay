@@ -19,34 +19,9 @@ describe("middleware", () => {
     expect(response?.headers.get("location")).toBe("http://localhost/login");
   });
 
-  it("redirects signed-in app requests without a persona to persona selection", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => Response.json({ selectedPersonaId: null }, { status: 200 }))
-    );
-
-    const response = await middleware(
-      new NextRequest("http://localhost/app/home", {
-        headers: {
-          cookie: "fairplay_session=raw-session-token"
-        }
-      })
-    );
-
-    expect(response?.status).toBe(307);
-    expect(response?.headers.get("location")).toBe("http://localhost/choose-persona");
-  });
-
-  it("allows signed-in app requests with a selected persona", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        Response.json(
-          { selectedPersonaId: "56f3a328-af6d-4d1d-b8c7-603640126633" },
-          { status: 200 }
-        )
-      )
-    );
+  it("allows signed-in app requests to continue to the authoritative app layout", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
 
     const response = await middleware(
       new NextRequest("http://localhost/app/home", {
@@ -57,5 +32,21 @@ describe("middleware", () => {
     );
 
     expect(response?.status).toBe(200);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("parses a raw cookie header fallback without forwarding it", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    const response = await middleware(
+      new NextRequest("http://localhost/app/home", {
+        headers: {
+          cookie: "fairplay_session=raw-session-token"
+        }
+      })
+    );
+
+    expect(response?.status).toBe(200);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

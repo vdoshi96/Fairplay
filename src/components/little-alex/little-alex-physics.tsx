@@ -1102,6 +1102,7 @@ export function LittleAlexPhysics({
   const bubbleRef = useRef<HTMLDivElement | null>(null);
   const bubbleTimeoutRef = useRef<number | null>(null);
   const dragRef = useRef<DragState | null>(null);
+  const fullBodyHairSpriteRef = useRef<HTMLImageElement | null>(null);
   const fullBodySpriteRef = useRef<HTMLImageElement | null>(null);
   const grabTargetRef = useRef<HTMLDivElement | null>(null);
   const idleDirectionRef = useRef(1);
@@ -1144,6 +1145,9 @@ export function LittleAlexPhysics({
     });
     if (fullBodySpriteRef.current) {
       fullBodySpriteRef.current.style.opacity = `${fullBodyOpacity(state)}`;
+    }
+    if (fullBodyHairSpriteRef.current) {
+      fullBodyHairSpriteRef.current.style.opacity = `${fullBodyOpacity(state)}`;
     }
   }, []);
 
@@ -1212,6 +1216,12 @@ export function LittleAlexPhysics({
     });
     syncFullBodySprite(
       fullBodySpriteRef.current,
+      physics.bodies.torso.position,
+      physics.bodies.torso.angle,
+      ragdollState
+    );
+    syncFullBodySprite(
+      fullBodyHairSpriteRef.current,
       physics.bodies.torso.position,
       physics.bodies.torso.angle,
       ragdollState
@@ -2051,6 +2061,7 @@ export function LittleAlexPhysics({
         data-hair-shape={hairShape}
         data-testid="little-alex-full-hair-sprite"
         draggable={false}
+        ref={fullBodyHairSpriteRef}
         src={littleAlexHairSpritePath(genderPresentation, hairColor, "full")}
         style={fullBodyStyle}
       />
