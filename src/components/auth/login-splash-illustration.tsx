@@ -3,7 +3,7 @@ export function LoginSplashIllustration() {
   return (
     <div
       aria-label="Animated Fairplay household garden scene"
-      className="relative min-h-[420px] overflow-hidden rounded-[8px] border border-fp-line bg-[#fff7e7] shadow-soft"
+      className="relative min-h-[420px] overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card-muted)] shadow-[var(--fp-shadow-crisp)]"
       role="img"
     >
       <div
@@ -23,7 +23,7 @@ export function LoginSplashIllustration() {
           width={1536}
         />
       </div>
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,253,248,0.18)_58%,rgba(32,33,42,0.08))]" />
+      <div className="fp-asset-edge-wash pointer-events-none absolute inset-0" />
     </div>
   );
 }

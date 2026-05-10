@@ -9,7 +9,7 @@ export function Sheet({ children, className, ...props }: SheetProps) {
     <section
       {...props}
       className={[
-        "rounded border border-[var(--fp-line)] bg-[var(--fp-surface-strong)] p-4 shadow-[var(--fp-shadow-elevated)] sm:p-5",
+        "rounded-[8px] border border-[var(--fp-line)] bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-elevated)] sm:p-5",
         className
       ]
         .filter(Boolean)

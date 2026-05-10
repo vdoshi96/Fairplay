@@ -383,10 +383,10 @@ export function ResponsibilityEditor({
   return (
     <section className="grid gap-5">
       <div className="grid gap-1">
-        <p className="text-[13px] font-semibold text-fp-muted-ink">
+        <p className="text-[13px] font-bold text-fp-primary">
           Responsibility
         </p>
-        <h1 className="text-[28px] font-bold leading-[34px]">
+        <h1 className="text-[32px] font-bold leading-[38px]">
           {initialResponsibility ? "Edit responsibility" : "New responsibility"}
         </h1>
       </div>
@@ -396,8 +396,8 @@ export function ResponsibilityEditor({
           className={[
             "rounded-[8px] border px-3 py-2 text-[14px] font-semibold",
             feedback.tone === "error"
-              ? "border-fp-danger bg-white text-fp-danger"
-              : "border-fp-line bg-white text-fp-ink"
+              ? "border-fp-danger bg-[var(--fp-card)] text-fp-danger"
+              : "border-fp-line bg-[var(--fp-card)] text-fp-ink"
           ].join(" ")}
           role={feedback.tone === "error" ? "alert" : "status"}
         >
@@ -405,11 +405,11 @@ export function ResponsibilityEditor({
         </p>
       ) : null}
 
-      <div className="grid gap-4 rounded-[8px] border border-fp-line bg-white p-4">
+      <div className="grid gap-4 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4">
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
           Title
           <input
-            className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+            className="fp-input px-3 text-[15px]"
             onChange={(event) => setTitle(event.target.value)}
             value={title}
           />
@@ -418,7 +418,7 @@ export function ResponsibilityEditor({
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
           Summary
           <textarea
-            className="min-h-24 rounded-[8px] border border-fp-line px-3 py-2 text-[15px] text-fp-ink"
+            className="fp-input min-h-24 px-3 py-2 text-[15px]"
             onChange={(event) => setSummary(event.target.value)}
             value={summary}
           />
@@ -428,7 +428,7 @@ export function ResponsibilityEditor({
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Area keys
             <input
-              className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+              className="fp-input px-3 text-[15px]"
               onChange={(event) => setAreaKeys(event.target.value)}
               value={areaKeys}
             />
@@ -436,7 +436,7 @@ export function ResponsibilityEditor({
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Cadence
             <select
-              className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+              className="fp-input px-3 text-[15px]"
               onChange={(event) => setCadence(event.target.value as Cadence)}
               value={cadence}
             >
@@ -450,7 +450,7 @@ export function ResponsibilityEditor({
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Relevant days
             <input
-              className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+              className="fp-input px-3 text-[15px]"
               onChange={(event) => setRelevantDays(event.target.value)}
               value={relevantDays}
             />
@@ -458,7 +458,7 @@ export function ResponsibilityEditor({
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Visibility
             <select
-              className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+              className="fp-input px-3 text-[15px]"
               onChange={(event) =>
                 setVisibility(
                   event.target.value as Exclude<Visibility, "private">
@@ -476,7 +476,7 @@ export function ResponsibilityEditor({
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Status
             <select
-              className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+              className="fp-input px-3 text-[15px]"
               onChange={(event) =>
                 setStatus(event.target.value as ResponsibilityStatus)
               }
@@ -492,7 +492,7 @@ export function ResponsibilityEditor({
           <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
             Next review date
             <input
-              className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+              className="fp-input px-3 text-[15px]"
               onChange={(event) => setNextReviewAt(event.target.value)}
               type="date"
               value={nextReviewAt}
@@ -524,7 +524,7 @@ export function ResponsibilityEditor({
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
           Household standard
           <textarea
-            className="min-h-24 rounded-[8px] border border-fp-line px-3 py-2 text-[15px] text-fp-ink"
+            className="fp-input min-h-24 px-3 py-2 text-[15px]"
             onChange={(event) => setHouseholdStandard(event.target.value)}
             value={householdStandard}
           />
@@ -533,21 +533,21 @@ export function ResponsibilityEditor({
         <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
           Notes
           <textarea
-            className="min-h-24 rounded-[8px] border border-fp-line px-3 py-2 text-[15px] text-fp-ink"
+            className="fp-input min-h-24 px-3 py-2 text-[15px]"
             onChange={(event) => setNotes(event.target.value)}
             value={notes}
           />
         </label>
       </div>
 
-      <div className="grid gap-4 rounded-[8px] border border-fp-line bg-white p-4">
+      <div className="grid gap-4 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4">
         <h2 className="text-[18px] font-bold">Assignments</h2>
         {personas.map((persona) => (
           <div className="grid gap-3 sm:grid-cols-2" key={persona.key}>
             <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
               {persona.displayName} role
               <select
-                className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+                className="fp-input px-3 text-[15px]"
                 onChange={(event) =>
                   setRole(
                     persona.key,
@@ -566,7 +566,7 @@ export function ResponsibilityEditor({
             <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
               {persona.displayName} scope
               <select
-                className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+                className="fp-input px-3 text-[15px]"
                 onChange={(event) =>
                   setScope(persona.key, event.target.value as AssignmentScope)
                 }
@@ -583,11 +583,11 @@ export function ResponsibilityEditor({
         ))}
 
         {ownerChanged ? (
-          <div className="grid gap-3 rounded-[8px] border border-fp-line bg-fp-surface p-3">
+          <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3">
             <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
               Handoff context
               <textarea
-                className="min-h-24 rounded-[8px] border border-fp-line px-3 py-2 text-[15px] text-fp-ink"
+                className="fp-input min-h-24 px-3 py-2 text-[15px]"
                 onChange={(event) => setHandoffNotes(event.target.value)}
                 value={handoffNotes}
               />
@@ -595,7 +595,7 @@ export function ResponsibilityEditor({
             <label className="grid gap-1 text-[13px] font-semibold text-fp-muted-ink">
               Revisit date
               <input
-                className="min-h-11 rounded-[8px] border border-fp-line px-3 text-[15px] text-fp-ink"
+                className="fp-input px-3 text-[15px]"
                 onChange={(event) => setRevisitAt(event.target.value)}
                 type="date"
                 value={revisitAt}
@@ -617,7 +617,7 @@ export function ResponsibilityEditor({
         {initialResponsibility ? (
           <>
             <button
-              className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold"
+              className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-4 text-[14px] font-bold"
               disabled={actionDisabled}
               onClick={() => void updateStatus("paused")}
               type="button"
@@ -625,7 +625,7 @@ export function ResponsibilityEditor({
               Pause
             </button>
             <button
-              className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold"
+              className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-4 text-[14px] font-bold"
               disabled={actionDisabled}
               onClick={() => void updateStatus("not_relevant")}
               type="button"
@@ -633,7 +633,7 @@ export function ResponsibilityEditor({
               Mark not relevant
             </button>
             <button
-              className="min-h-11 rounded-[8px] border border-fp-danger bg-white px-4 text-[14px] font-bold text-fp-danger"
+              className="min-h-11 rounded-[8px] border border-fp-danger bg-[var(--fp-card)] px-4 text-[14px] font-bold text-fp-danger"
               disabled={actionDisabled}
               onClick={() => setArchiveOpen(true)}
               type="button"
@@ -651,14 +651,14 @@ export function ResponsibilityEditor({
           className="fixed inset-0 z-20 grid place-items-center bg-fp-ink/30 p-4"
           role="dialog"
         >
-          <div className="grid w-full max-w-sm gap-4 rounded-[8px] border border-fp-line bg-white p-4">
+          <div className="grid w-full max-w-sm gap-4 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4">
             <h2 className="text-[18px] font-bold">Archive responsibility?</h2>
             <p className="text-[14px] leading-6 text-fp-muted-ink">
               This keeps the history but removes it from the active planning view.
             </p>
             <div className="flex justify-end gap-2">
               <button
-                className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold"
+                className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-4 text-[14px] font-bold"
                 onClick={() => setArchiveOpen(false)}
                 type="button"
               >

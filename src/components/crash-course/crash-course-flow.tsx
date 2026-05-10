@@ -59,7 +59,7 @@ export function CrashCourseFlow({
   return (
     <section
       aria-labelledby="crash-course-title"
-      className="relative isolate min-h-[100svh] overflow-hidden bg-fp-paper px-4 pb-32 pt-5 sm:px-6 sm:pb-10 lg:px-8 lg:pb-8 lg:pr-56"
+      className="relative isolate min-h-[100svh] overflow-hidden bg-fp-paper/25 px-4 pb-32 pt-5 sm:px-6 sm:pb-10 lg:px-8 lg:pb-8 lg:pr-56"
       data-testid="crash-course-stage"
     >
       <DecorativeBackgroundLayer
@@ -73,7 +73,7 @@ export function CrashCourseFlow({
         data-testid="crash-course-lesson-shell"
       >
         {completed ? (
-          <div className="mx-auto grid w-full max-w-3xl gap-5 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-5 shadow-2xl backdrop-blur-md sm:p-7">
+          <div className="mx-auto grid w-full max-w-3xl gap-5 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-5 shadow-2xl backdrop-blur-md sm:p-7">
             <div className="grid gap-4">
               <img
                 alt=""
@@ -140,7 +140,7 @@ export function CrashCourseFlow({
             </header>
 
             <div
-              className="relative grid min-h-[calc(100svh_-_14rem)] w-full overflow-hidden rounded-[8px] border border-fp-line bg-[#edf4ee] shadow-2xl"
+              className="relative grid min-h-[calc(100svh_-_14rem)] w-full overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card-muted)] shadow-2xl"
               data-testid="crash-course-storyboard-frame"
             >
               <CrashCourseScene
@@ -149,7 +149,7 @@ export function CrashCourseFlow({
               />
 
               <div
-                className="relative z-10 grid max-h-[72svh] gap-4 overflow-y-auto border-t border-white/70 bg-[var(--fp-surface-strong)] p-4 shadow-2xl backdrop-blur-md sm:p-5 lg:absolute lg:bottom-4 lg:left-4 lg:right-4 lg:max-h-[50svh] lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:rounded-[8px] lg:border lg:border-fp-line"
+                className="relative z-10 grid max-h-[72svh] gap-4 overflow-y-auto border-t border-fp-line bg-[var(--fp-card)] p-4 shadow-2xl backdrop-blur-md sm:p-5 lg:absolute lg:bottom-4 lg:left-4 lg:right-4 lg:max-h-[50svh] lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:rounded-[8px] lg:border lg:border-fp-line"
                 data-testid="crash-course-subtitle-panel"
               >
                 <div className="grid gap-3">

@@ -4,23 +4,34 @@
 
 :root {
   color-scheme: light;
-  --fp-bg: #f7f3ec;
+  --fp-bg: #eef2ec;
   --fp-paper: var(--fp-bg);
-  --fp-ink: #202124;
-  --fp-ink-soft: #3b3d42;
-  --fp-primary: var(--fp-ink);
-  --fp-primary-hover: var(--fp-ink-soft);
+  --fp-ink: #172329;
+  --fp-ink-soft: #294047;
+  --fp-primary: #087b78;
+  --fp-primary-hover: #096a68;
   --fp-primary-disabled: var(--fp-muted);
   --fp-on-primary: #ffffff;
-  --fp-muted: #6a6761;
+  --fp-muted: #5f6d72;
   --fp-muted-ink: var(--fp-muted);
-  --fp-line: rgba(32, 33, 36, 0.14);
-  --fp-surface: rgba(255, 255, 255, 0.78);
-  --fp-surface-muted: rgba(250, 248, 242, 0.84);
-  --fp-surface-strong: rgba(255, 255, 255, 0.96);
-  --fp-focus: #315d64;
-  --fp-shadow-soft: 0 10px 26px rgba(32, 33, 36, 0.08);
-  --fp-shadow-elevated: 0 18px 46px rgba(32, 33, 36, 0.14);
+  --fp-line: color-mix(in srgb, var(--fp-ink) 16%, transparent);
+  --fp-surface: color-mix(in srgb, #ffffff 70%, var(--fp-paper));
+  --fp-surface-muted: color-mix(in srgb, #dfe8e6 62%, var(--fp-paper));
+  --fp-surface-strong: color-mix(in srgb, #ffffff 86%, var(--fp-paper));
+  --fp-card: color-mix(in srgb, #ffffff 78%, var(--fp-paper));
+  --fp-card-muted: color-mix(in srgb, #e8efec 72%, var(--fp-paper));
+  --fp-chrome: color-mix(in srgb, #ffffff 72%, var(--fp-paper));
+  --fp-sidebar: color-mix(in srgb, #f8fbfa 74%, var(--fp-paper));
+  --fp-focus: #087b78;
+  --fp-shadow-soft: 0 14px 34px rgba(23, 35, 41, 0.1);
+  --fp-shadow-elevated: 0 22px 54px rgba(23, 35, 41, 0.16);
+  --fp-shadow-crisp: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 18px 46px rgba(23, 35, 41, 0.11);
+  --fp-page-gradient:
+    radial-gradient(circle at 14% 12%, rgba(8, 123, 120, 0.13), transparent 31%),
+    radial-gradient(circle at 86% 2%, rgba(80, 111, 168, 0.16), transparent 34%),
+    radial-gradient(circle at 78% 80%, rgba(194, 111, 89, 0.13), transparent 38%),
+    linear-gradient(135deg, #eef2ec 0%, #f5efe4 47%, #e9f1f0 100%);
   --fp-app-sidebar-width: 16rem;
   --fp-app-bottom-nav-height: 4.5rem;
   --fp-app-safe-area-top: env(safe-area-inset-top, 0px);
@@ -58,23 +69,34 @@ html[data-theme="light"] {
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  --fp-bg: #161411;
+  --fp-bg: #121917;
   --fp-paper: var(--fp-bg);
-  --fp-ink: #f4efe7;
-  --fp-ink-soft: #dfd7ca;
-  --fp-primary: var(--fp-ink);
-  --fp-primary-hover: var(--fp-ink-soft);
+  --fp-ink: #f4f1e9;
+  --fp-ink-soft: #d8e2de;
+  --fp-primary: #8fcac1;
+  --fp-primary-hover: #b7ddd6;
   --fp-primary-disabled: var(--fp-muted);
-  --fp-on-primary: #161411;
-  --fp-muted: #b8afa2;
+  --fp-on-primary: #10211f;
+  --fp-muted: #a9bab5;
   --fp-muted-ink: var(--fp-muted);
-  --fp-line: rgba(244, 239, 231, 0.18);
-  --fp-surface: rgba(37, 34, 29, 0.84);
-  --fp-surface-muted: rgba(30, 28, 24, 0.86);
-  --fp-surface-strong: rgba(45, 41, 35, 0.96);
+  --fp-line: color-mix(in srgb, var(--fp-ink) 17%, transparent);
+  --fp-surface: rgba(27, 39, 37, 0.78);
+  --fp-surface-muted: rgba(21, 31, 29, 0.86);
+  --fp-surface-strong: rgba(32, 47, 44, 0.92);
+  --fp-card: rgba(35, 51, 48, 0.9);
+  --fp-card-muted: rgba(25, 37, 35, 0.94);
+  --fp-chrome: rgba(21, 31, 29, 0.82);
+  --fp-sidebar: rgba(18, 27, 25, 0.88);
   --fp-focus: #8fcac1;
   --fp-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.34);
   --fp-shadow-elevated: 0 22px 54px rgba(0, 0, 0, 0.48);
+  --fp-shadow-crisp: 0 1px 0 rgba(244, 241, 233, 0.08) inset,
+    0 24px 62px rgba(0, 0, 0, 0.42);
+  --fp-page-gradient:
+    radial-gradient(circle at 14% 12%, rgba(143, 202, 193, 0.16), transparent 31%),
+    radial-gradient(circle at 84% 4%, rgba(158, 174, 225, 0.13), transparent 36%),
+    radial-gradient(circle at 78% 82%, rgba(233, 154, 130, 0.1), transparent 38%),
+    linear-gradient(135deg, #121917 0%, #1b221d 48%, #111c1d 100%);
   --fp-home: #82bbb0;
   --fp-out: #9eaee1;
   --fp-caregiving: #e0929b;
@@ -107,13 +129,13 @@ html[data-theme="dark"] {
     background:
       linear-gradient(
         180deg,
-        rgba(247, 243, 236, 0.56),
-        rgba(247, 243, 236, 0.42) 44%,
-        rgba(247, 243, 236, 0.24)
+        color-mix(in srgb, var(--fp-paper) 72%, transparent),
+        color-mix(in srgb, var(--fp-paper) 54%, transparent) 44%,
+        color-mix(in srgb, var(--fp-paper) 28%, transparent)
       ),
       radial-gradient(
         circle at 22% 18%,
-        rgba(255, 255, 255, 0.42),
+        color-mix(in srgb, var(--fp-surface-strong) 42%, transparent),
         transparent 42%
       );
   }
@@ -122,25 +144,86 @@ html[data-theme="dark"] {
     background:
       linear-gradient(
         90deg,
-        rgba(255, 255, 255, 0.9),
-        rgba(255, 255, 255, 0.74) 54%,
-        rgba(255, 255, 255, 0.5)
+        color-mix(in srgb, var(--fp-surface-strong) 92%, transparent),
+        color-mix(in srgb, var(--fp-surface-strong) 74%, transparent) 54%,
+        color-mix(in srgb, var(--fp-surface-strong) 48%, transparent)
       ),
       radial-gradient(
         circle at 82% 20%,
-        rgba(255, 255, 255, 0.24),
+        color-mix(in srgb, var(--fp-primary) 16%, transparent),
         transparent 34%
       );
   }
 
   .fp-generated-surface-wash {
-    background-color: rgba(255, 255, 255, 0.92);
+    background-color: var(--fp-surface-strong);
     background-image: linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.96),
-      rgba(255, 255, 255, 0.88) 58%,
-      rgba(255, 255, 255, 0.62)
+      color-mix(in srgb, var(--fp-surface-strong) 96%, transparent),
+      color-mix(in srgb, var(--fp-surface-strong) 88%, transparent) 58%,
+      color-mix(in srgb, var(--fp-surface) 62%, transparent)
     );
+  }
+
+  .fp-app-chrome {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--fp-chrome) 96%, transparent),
+        color-mix(in srgb, var(--fp-chrome) 84%, transparent)
+      );
+    border-color: var(--fp-line);
+    box-shadow: var(--fp-shadow-soft);
+  }
+
+  .fp-panel {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--fp-card) 96%, transparent),
+        color-mix(in srgb, var(--fp-card-muted) 82%, transparent)
+      );
+    border: 1px solid var(--fp-line);
+    border-radius: 8px;
+    box-shadow: var(--fp-shadow-crisp);
+  }
+
+  .fp-panel-flat {
+    background: var(--fp-card);
+    border: 1px solid var(--fp-line);
+    border-radius: 8px;
+  }
+
+  .fp-input {
+    min-height: 2.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--fp-line);
+    background: color-mix(in srgb, var(--fp-surface-strong) 88%, transparent);
+    color: var(--fp-ink);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--fp-ink) 5%, transparent) inset;
+    outline: none;
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .fp-input:focus,
+  .fp-input:focus-visible {
+    border-color: var(--fp-focus);
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--fp-focus) 18%, transparent),
+      0 1px 0 color-mix(in srgb, var(--fp-ink) 5%, transparent) inset;
+  }
+
+  .fp-asset-edge-wash {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.06),
+        color-mix(in srgb, var(--fp-paper) 18%, transparent) 58%,
+        color-mix(in srgb, var(--fp-ink) 10%, transparent)
+      );
   }
 
   html[data-theme="dark"] .fp-generated-surface-wash {
@@ -311,13 +394,8 @@ html {
 body {
   min-height: 100svh;
   margin: 0;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--fp-surface-strong) 72%, transparent),
-      color-mix(in srgb, var(--fp-paper) 92%, transparent)
-    ),
-    var(--fp-paper);
+  background: var(--fp-page-gradient);
+  background-attachment: fixed;
   color: var(--fp-ink);
   font-family: var(--font-geist-sans), Inter, ui-sans-serif, system-ui,
     sans-serif;

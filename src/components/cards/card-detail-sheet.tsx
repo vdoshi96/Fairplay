@@ -111,21 +111,21 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
       <div
         className={
           isGeneratedCover
-            ? "grid overflow-hidden rounded-[8px] bg-white lg:grid-cols-[minmax(360px,44vw)_1fr]"
-            : "grid overflow-hidden rounded-[8px] bg-white lg:grid-cols-[minmax(240px,340px)_1fr]"
+            ? "grid overflow-hidden rounded-[8px] bg-[var(--fp-card)] lg:grid-cols-[minmax(360px,44vw)_1fr]"
+            : "grid overflow-hidden rounded-[8px] bg-[var(--fp-card)] lg:grid-cols-[minmax(240px,340px)_1fr]"
         }
       >
         <div
           className={
             isGeneratedCover
-              ? "grid min-h-[520px] border-b border-fp-line bg-fp-surface lg:min-h-[700px] lg:border-b-0 lg:border-r"
-              : "grid min-h-[360px] border-b border-fp-line bg-fp-surface lg:border-b-0 lg:border-r"
+              ? "grid min-h-[520px] border-b border-fp-line bg-[var(--fp-card-muted)] lg:min-h-[700px] lg:border-b-0 lg:border-r"
+              : "grid min-h-[360px] border-b border-fp-line bg-[var(--fp-card-muted)] lg:border-b-0 lg:border-r"
           }
         >
           <div
             className={
               isGeneratedCover
-                ? "relative grid min-h-[520px] place-items-center overflow-hidden bg-fp-surface lg:min-h-[700px]"
+                ? "relative grid min-h-[520px] place-items-center overflow-hidden bg-[var(--fp-card-muted)] lg:min-h-[700px]"
                 : "grid place-items-center p-5"
             }
             data-testid={
@@ -147,7 +147,7 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
                 width={isGeneratedCover ? 1460 : 500}
               />
             ) : (
-              <div className="grid aspect-[5/7] w-full max-w-[280px] place-items-center rounded-[8px] border border-fp-line bg-white p-5 text-center shadow-[var(--fp-shadow-soft)]">
+              <div className="grid aspect-[5/7] w-full max-w-[280px] place-items-center rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-5 text-center shadow-[var(--fp-shadow-soft)]">
                 <div className="grid gap-2">
                   <p className="text-[12px] font-bold uppercase text-fp-muted-ink">
                     Fairplay card
@@ -179,7 +179,7 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
             </div>
           </header>
 
-          <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4">
+          <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4">
             <h2 className="text-[16px] font-bold text-fp-ink">
               What is this card for?
             </h2>
@@ -188,14 +188,14 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
             </p>
           </section>
 
-          <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4">
+          <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4">
             <h2 className="text-[16px] font-bold text-fp-ink">
               Fogging Estandards
             </h2>
             <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
               <textarea
                 aria-label="Fogging Estandards"
-                className="min-h-32 w-full min-w-0 max-w-full rounded-[8px] border border-fp-line bg-white px-3 py-2 text-[14px] leading-6 text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition [overflow-wrap:anywhere] focus:border-fp-ink disabled:opacity-70"
+                className="fp-input min-h-32 w-full min-w-0 max-w-full px-3 py-2 text-[14px] leading-6 [overflow-wrap:anywhere] disabled:opacity-70"
                 disabled={!onSaveStandards || savingStandards}
                 onChange={(event) => setStandardsDraft(event.target.value)}
                 value={standardsDraft}
@@ -229,7 +229,7 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
                 Destination
                 <select
                   aria-label="Move destination"
-                  className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink disabled:opacity-60"
+                  className="fp-input px-3 text-[15px] disabled:opacity-60"
                   disabled={!onMove}
                   onChange={(event) =>
                     setSelectedBucket(event.target.value as CardDistributionBucket | "")

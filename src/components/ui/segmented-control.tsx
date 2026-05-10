@@ -22,7 +22,7 @@ export function SegmentedControl<T extends string>({
     <div
       aria-label={ariaLabel}
       className={[
-        "inline-flex max-w-full gap-1 overflow-hidden rounded border border-[var(--fp-line)] bg-[var(--fp-surface)] p-1",
+        "inline-flex max-w-full gap-1 overflow-hidden rounded-[8px] border border-[var(--fp-line)] bg-[var(--fp-surface)] p-1 shadow-[var(--fp-shadow-soft)]",
         className
       ]
         .filter(Boolean)
@@ -36,7 +36,7 @@ export function SegmentedControl<T extends string>({
           <button
             aria-pressed={isSelected}
             className={[
-              "min-h-9 min-w-16 rounded px-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
+              "min-h-9 min-w-16 rounded-[8px] px-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
               isSelected
                 ? "bg-fp-primary text-fp-on-primary shadow-[var(--fp-shadow-soft)]"
                 : "text-[var(--fp-muted)] hover:bg-[var(--fp-surface-strong)] hover:text-[var(--fp-ink)]"

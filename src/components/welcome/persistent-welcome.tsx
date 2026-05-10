@@ -71,7 +71,7 @@ export function PersistentWelcome({
     return (
       <aside
         aria-label="Welcome to Fairplay"
-        className="mb-3 rounded-[8px] border border-fp-line bg-white px-3 py-2 shadow-soft"
+        className="mb-3 rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-3 py-2 shadow-[var(--fp-shadow-soft)]"
         data-welcome-variant="compact"
         role="dialog"
       >
@@ -110,7 +110,7 @@ export function PersistentWelcome({
 
             <button
               aria-label="Close welcome"
-              className="min-h-9 min-w-9 rounded-[8px] border border-fp-line bg-white text-fp-muted-ink outline-none transition hover:bg-fp-soft hover:text-fp-ink focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-9 min-w-9 rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-fp-muted-ink outline-none transition hover:bg-[var(--fp-surface)] hover:text-fp-ink focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-60"
               disabled={closing}
               onClick={() => void closeWelcome()}
               type="button"
@@ -122,7 +122,7 @@ export function PersistentWelcome({
 
         {error ? (
           <p
-            className="mt-2 rounded-[8px] border border-fp-danger/40 bg-white px-3 py-2 text-[13px] leading-5 text-fp-danger"
+            className="mt-2 rounded-[8px] border border-fp-danger/40 bg-[var(--fp-card)] px-3 py-2 text-[13px] leading-5 text-fp-danger"
             role="alert"
           >
             {error}
@@ -135,7 +135,7 @@ export function PersistentWelcome({
   return (
     <aside
       aria-label="Welcome to Fairplay"
-      className="mb-4 rounded-[8px] border border-fp-line bg-white p-3 shadow-soft sm:p-4"
+      className="mb-4 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 shadow-[var(--fp-shadow-soft)] sm:p-4"
       data-welcome-variant="prominent"
       role="dialog"
     >
@@ -155,7 +155,7 @@ export function PersistentWelcome({
 
         <button
           aria-label="Close welcome"
-          className="min-h-10 min-w-10 justify-self-start rounded-[8px] border border-fp-line bg-white text-fp-muted-ink outline-none transition hover:bg-fp-soft hover:text-fp-ink focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-60 sm:justify-self-end"
+          className="min-h-10 min-w-10 justify-self-start rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-fp-muted-ink outline-none transition hover:bg-[var(--fp-surface)] hover:text-fp-ink focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-60 sm:justify-self-end"
           disabled={closing}
           onClick={() => void closeWelcome()}
           type="button"
@@ -183,7 +183,7 @@ export function PersistentWelcome({
 
       {error ? (
         <p
-          className="mt-3 rounded-[8px] border border-fp-danger/40 bg-white px-3 py-2 text-[14px] leading-5 text-fp-danger"
+          className="mt-3 rounded-[8px] border border-fp-danger/40 bg-[var(--fp-card)] px-3 py-2 text-[14px] leading-5 text-fp-danger"
           role="alert"
         >
           {error}

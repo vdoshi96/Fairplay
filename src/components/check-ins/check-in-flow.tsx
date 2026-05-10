@@ -109,7 +109,7 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
   return (
     <section className="mx-auto grid w-full max-w-2xl gap-4">
       <div
-        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card-muted)] shadow-[var(--fp-shadow-crisp)]"
         data-testid={completed ? "check-in-complete-visual" : "check-in-active-visual"}
       >
         <DecorativeBackgroundLayer
@@ -125,7 +125,7 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
             <p className="text-[13px] font-semibold text-fp-muted-ink">
               Check-ins
             </p>
-            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+            <h1 className="text-[32px] font-bold leading-[38px] text-fp-ink">
               {completed ? "Check-in record" : "Scheduled check-in"}
             </h1>
             <p className="text-[14px] leading-6 text-fp-muted-ink">
@@ -140,7 +140,7 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
 
       {message ? (
         <p
-          className="flex items-center gap-2 rounded-[8px] border border-fp-line bg-white p-3 text-[14px] font-semibold text-fp-muted-ink"
+          className="flex items-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 text-[14px] font-semibold text-fp-muted-ink"
           role="status"
         >
           {completed ? <MotionSpark decorative /> : null}
@@ -160,12 +160,12 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
       <MotionPanel>
         <section
           aria-label={completed ? "Meeting notes" : "Confirm check-in"}
-          className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-[var(--fp-shadow-soft)]"
+          className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]"
         >
           <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
             Minutes / notes
             <textarea
-              className="min-h-32 rounded-[8px] border border-fp-line bg-white px-3 py-2 text-[14px] leading-6 text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+              className="fp-input min-h-32 px-3 py-2 text-[14px] leading-6"
               onChange={(event) => setNotes(event.target.value)}
               placeholder="Optional notes from the meeting"
               value={notes}
@@ -237,7 +237,7 @@ export function NewCheckInLauncher({
       data-testid="check-in-new-workflow"
     >
       <div
-        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card-muted)] shadow-[var(--fp-shadow-crisp)]"
         data-testid="check-in-new-visual"
       >
         <DecorativeBackgroundLayer
@@ -251,7 +251,7 @@ export function NewCheckInLauncher({
             <p className="text-[13px] font-semibold text-fp-muted-ink">
               Check-ins
             </p>
-            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+            <h1 className="text-[32px] font-bold leading-[38px] text-fp-ink">
               Schedule check-in
             </h1>
             <p className="text-[14px] leading-6 text-fp-muted-ink">
@@ -275,13 +275,13 @@ export function NewCheckInLauncher({
 
       <section
         aria-label="Schedule a check-in"
-        className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-[var(--fp-shadow-soft)]"
+        className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]"
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
             Check-in date
             <input
-              className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[15px] text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+              className="fp-input px-3 text-[15px]"
               onChange={(event) => setScheduledDate(event.target.value)}
               type="date"
               value={scheduledDate}
@@ -290,7 +290,7 @@ export function NewCheckInLauncher({
           <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
             Check-in time
             <input
-              className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[15px] text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/20"
+              className="fp-input px-3 text-[15px]"
               onChange={(event) => setScheduledTime(event.target.value)}
               type="time"
               value={scheduledTime}
@@ -327,12 +327,12 @@ export function CheckInHistoryTable({
           Past check-ins and scheduled records.
         </p>
       </div>
-      <div className="overflow-x-auto rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] shadow-[var(--fp-shadow-soft)]">
+      <div className="overflow-x-auto rounded-[8px] border border-fp-line bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)]">
         <table
           aria-label="Check-in history"
           className="w-full min-w-[34rem] border-collapse text-left text-[13px]"
         >
-          <thead className="border-b border-fp-line bg-white">
+          <thead className="border-b border-fp-line bg-[var(--fp-surface)]">
             <tr>
               <th className="px-3 py-3 font-bold text-fp-ink" scope="col">
                 Previous check-in date

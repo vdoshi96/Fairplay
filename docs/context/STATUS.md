@@ -1,17 +1,17 @@
 # Fairplay Status
 
-Last updated: 2026-05-08
+Last updated: 2026-05-09
 
 ## Current Phase
 
-The desktop layout and Learn cleanup pass is implemented locally. The active product treats Library source cards and Deal cards as the same catalog-backed set, keeps Board focused on cards assigned/categorized to Alex, Max, Save for later, or Not applicable, has safer Deal gestures with Undo, desktop-only Little Alex, tighter Ask Greg desktop/mobile layout, editable Fogging Estandards, unclipped card detail text, and no active "Learn this feature" guide workflow.
+The dynamic redesign pass is implemented locally. The active product treats Library source cards and Deal cards as the same catalog-backed set, keeps Board focused on cards assigned/categorized to Alex, Max, Save for later, or Not applicable, has safer Deal gestures with Undo, desktop-only Little Alex, tighter Ask Greg desktop/mobile layout, editable Fogging Estandards, unclipped card detail text, no active "Learn this feature" guide workflow, and theme-adaptive app chrome/panels/surfaces instead of a fixed light/white skin.
 
 The previous tooling follow-up stabilized local verification: Playwright e2e now builds the app and runs against `next start` with explicit local runtime env, and Prisma local migration uses a dedicated `SHADOW_DATABASE_URL` plus a shadow DB setup helper so app roles without `CREATEDB` no longer block `migrate dev`.
 
 ## Branch And Working Tree
 
 - Local `main` has been fast-forwarded through PR #47.
-- Active follow-up branch: `codex/desktop-layout-onboarding-cleanup`.
+- Active follow-up branch: `codex/app-redesign-implementation`.
 - Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, #45 focused patch QA/docs, and #47 catalog/deal/board plus Little Alex fix.
 
 ## What Exists
@@ -145,6 +145,7 @@ The local tooling stability pass replaced the flaky `next dev` Playwright server
 - Focused Little Alex/Deal/Board/Check-in patch verification passed: `npm run prisma:validate`, `npm run prisma:generate`, `npm run lint`, `npm run typecheck`, `npm test -- --run` (89 files, 530 tests), `npm run build`, targeted Check-in/corrective responsive/Little Alex Playwright, and full `npm run test:e2e` (28 tests).
 - Catalog/deal/board and Little Alex verification passed: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 538 tests), `npm run build`, targeted corrective responsive/Little Alex/guided-learning/auth Playwright specs, and full `npm run test:e2e -- --workers=1` (28 tests). `npm run prisma:migrate -- --skip-seed` hit local shadow DB permission `P3014`; `prisma migrate deploy` applied the catalog identity migration successfully.
 - Local e2e/Prisma stability verification passed: `git diff --check`, `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (90 files, 540 tests), `npm run prisma:migrate -- --skip-seed`, and full `npm run test:e2e` (28 tests). The previous local shadow DB permission `P3014` is resolved by `SHADOW_DATABASE_URL` and `npm run db:shadow`.
+- Dynamic redesign verification passed: `git diff --check`, `npm run prisma:validate`, `npm run lint`, `npm run typecheck`, `npm test -- --run` (84 files, 496 tests), `npm run build`, targeted dark-mode visual QA, targeted reduced-motion Little Alex QA, full `npm run test:e2e` (28 tests), and Browser-rendered authenticated QA across the main app pages with zero console errors. Details are tracked in `docs/implementation/2026-05-09-dynamic-redesign.md`.
 
 ## Suggested Cleanup Plan
 

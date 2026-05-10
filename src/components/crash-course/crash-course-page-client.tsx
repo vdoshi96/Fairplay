@@ -109,7 +109,7 @@ export function CrashCoursePageClient({
       <div className="pointer-events-none fixed right-4 top-20 z-30 grid max-w-sm gap-2 sm:right-6 lg:top-6">
         {loading ? (
           <p
-            className="pointer-events-auto rounded-[8px] border border-fp-line bg-white/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
+            className="pointer-events-auto rounded-[8px] border border-fp-line bg-[color:var(--fp-card)]/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
             role="status"
           >
             Loading saved Theory progress...
@@ -118,7 +118,7 @@ export function CrashCoursePageClient({
 
         {error ? (
           <p
-            className="pointer-events-auto rounded-[8px] border border-fp-danger/40 bg-white/95 p-3 text-[14px] font-semibold leading-5 text-fp-danger shadow-[var(--fp-shadow-soft)] backdrop-blur"
+            className="pointer-events-auto rounded-[8px] border border-fp-danger/40 bg-[color:var(--fp-card)]/95 p-3 text-[14px] font-semibold leading-5 text-fp-danger shadow-[var(--fp-shadow-soft)] backdrop-blur"
             role="alert"
           >
             {error}
@@ -127,7 +127,7 @@ export function CrashCoursePageClient({
 
         {saving ? (
           <p
-            className="pointer-events-auto rounded-[8px] border border-fp-line bg-white/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
+            className="pointer-events-auto rounded-[8px] border border-fp-line bg-[color:var(--fp-card)]/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
             role="status"
           >
             Saving Theory progress...
@@ -136,7 +136,7 @@ export function CrashCoursePageClient({
 
         {status === "skipped" ? (
           <p
-            className="pointer-events-auto rounded-[8px] border border-fp-line bg-white/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
+            className="pointer-events-auto rounded-[8px] border border-fp-line bg-[color:var(--fp-card)]/95 p-3 text-[14px] font-semibold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] backdrop-blur"
             role="status"
           >
             Course skipped for {selectedPersona.displayName}.

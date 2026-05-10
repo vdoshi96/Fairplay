@@ -72,7 +72,7 @@ export function AppShell({
 
   return (
     <div
-      className="min-h-[100svh] w-full max-w-full overflow-x-clip bg-fp-paper text-fp-ink lg:grid lg:grid-cols-[var(--fp-app-sidebar-width)_minmax(0,1fr)]"
+      className="min-h-[100svh] w-full max-w-full overflow-x-clip bg-transparent text-fp-ink lg:grid lg:grid-cols-[var(--fp-app-sidebar-width)_minmax(0,1fr)]"
       data-testid="app-shell-root"
     >
       {showLittleAlex ? (
@@ -84,13 +84,13 @@ export function AppShell({
         />
       ) : null}
 
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-[var(--fp-app-sidebar-width)] border-r border-fp-line bg-[var(--fp-surface-strong)] px-4 py-5 shadow-[var(--fp-shadow-soft)] backdrop-blur lg:flex lg:flex-col">
+      <aside className="fp-app-chrome fixed inset-y-0 left-0 z-20 hidden w-[var(--fp-app-sidebar-width)] border-r border-fp-line px-4 py-5 backdrop-blur-md lg:flex lg:flex-col">
         <Link
           className="flex min-w-0 items-center gap-3 rounded outline-none focus:ring-2 focus:ring-fp-ink/25"
           href="/app/your-cards"
         >
           <FairplayMark
-            className="h-11 w-11 shrink-0 rounded border border-fp-line bg-white"
+            className="h-11 w-11 shrink-0 rounded-[8px] border border-fp-line bg-[var(--fp-card)]"
             decorative
           />
           <span className="min-w-0">
@@ -103,7 +103,7 @@ export function AppShell({
           </span>
         </Link>
 
-        <nav aria-label="Primary" className="mt-8 grid gap-1">
+        <nav aria-label="Primary" className="mt-8 grid gap-1.5">
           {primaryNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = isActiveRoute(pathname, item.href);
@@ -112,7 +112,7 @@ export function AppShell({
               <Link
                 aria-current={isActive ? "page" : undefined}
                 className={[
-                  "flex min-h-11 items-center gap-3 rounded px-3 text-[14px] font-semibold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
+                  "flex min-h-11 items-center gap-3 rounded-[8px] px-3 text-[14px] font-bold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
                   isActive
                     ? "bg-fp-primary text-fp-on-primary shadow-[var(--fp-shadow-soft)]"
                     : "text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
@@ -136,7 +136,7 @@ export function AppShell({
               <Link
                 aria-current={isActive ? "page" : undefined}
                 className={[
-                  "flex min-h-10 items-center gap-3 rounded px-3 text-[13px] font-semibold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
+                  "flex min-h-10 items-center gap-3 rounded-[8px] px-3 text-[13px] font-bold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
                   isActive
                     ? "bg-[var(--fp-surface)] text-fp-ink"
                     : "text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
@@ -151,7 +151,7 @@ export function AppShell({
           })}
         </nav>
 
-        <div className="mt-auto flex min-h-12 items-center gap-3 rounded border border-fp-line bg-[var(--fp-surface)] px-3 text-[13px] font-semibold">
+        <div className="mt-auto flex min-h-12 items-center gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[13px] font-bold shadow-[var(--fp-shadow-soft)]">
           <PersonaAvatar
             className="fp-motion-persona-bob h-8 w-8 shrink-0 rounded-full"
             decorative
@@ -163,7 +163,7 @@ export function AppShell({
 
       <div className="min-w-0 max-w-full overflow-x-clip lg:col-start-2">
         <header
-          className="sticky top-0 z-10 w-full max-w-full overflow-x-clip border-b border-fp-line bg-[var(--fp-surface-strong)]/95 px-4 py-3 backdrop-blur sm:px-6 lg:hidden"
+          className="fp-app-chrome sticky top-0 z-10 w-full max-w-full overflow-x-clip border-b border-fp-line px-4 py-3 backdrop-blur-md sm:px-6 lg:hidden"
           data-testid="mobile-app-header"
         >
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
@@ -172,7 +172,7 @@ export function AppShell({
               href="/app/your-cards"
             >
               <FairplayMark
-                className="h-10 w-10 shrink-0 rounded border border-fp-line bg-white"
+                className="h-10 w-10 shrink-0 rounded-[8px] border border-fp-line bg-[var(--fp-card)]"
                 decorative
               />
               <span className="min-w-0">
@@ -201,7 +201,7 @@ export function AppShell({
 
         <nav
           aria-label="Primary"
-          className="fixed inset-x-0 bottom-0 z-10 min-h-[var(--fp-app-bottom-nav-height)] w-full max-w-full overflow-visible border-t border-fp-line bg-[var(--fp-surface-strong)] px-2 pb-[max(0.5rem,var(--fp-app-safe-area-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,33,36,0.08)] lg:hidden"
+          className="fp-app-chrome fixed inset-x-0 bottom-0 z-10 min-h-[var(--fp-app-bottom-nav-height)] w-full max-w-full overflow-visible border-t border-fp-line px-2 pb-[max(0.5rem,var(--fp-app-safe-area-bottom))] pt-2 lg:hidden"
           data-testid="mobile-bottom-navigation"
         >
           <div className="mx-auto grid max-w-xl grid-cols-5 gap-1">
@@ -213,7 +213,7 @@ export function AppShell({
                 <Link
                   aria-current={isActive ? "page" : undefined}
                   className={[
-                    "grid min-h-12 min-w-0 place-items-center gap-1 rounded px-1 text-center text-[11px] font-semibold leading-4 outline-none transition focus:ring-2 focus:ring-fp-ink/20",
+                    "grid min-h-12 min-w-0 place-items-center gap-1 rounded-[8px] px-1 text-center text-[11px] font-bold leading-4 outline-none transition focus:ring-2 focus:ring-fp-ink/20",
                     isActive
                       ? "bg-fp-primary text-fp-on-primary"
                       : "text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
@@ -306,7 +306,7 @@ function OverflowMenu({
         aria-expanded={isOpen}
         aria-label="Open more actions"
         className={[
-          "grid cursor-pointer list-none place-items-center rounded border border-fp-line bg-white text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 [&::-webkit-details-marker]:hidden",
+          "grid cursor-pointer list-none place-items-center rounded-[8px] border border-fp-line bg-[var(--fp-surface)] text-fp-ink outline-none shadow-[var(--fp-shadow-soft)] focus:ring-2 focus:ring-fp-ink/25 [&::-webkit-details-marker]:hidden",
           isBottomPlacement
             ? "min-h-12 w-full gap-1 px-1 text-[11px] font-semibold leading-4 text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
             : "h-11 w-11"
@@ -341,7 +341,7 @@ function OverflowMenu({
           <nav
             aria-label="More"
             className={[
-              "fp-overflow-menu-panel z-30 grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-2 shadow-[var(--fp-shadow-elevated)]",
+              "fp-overflow-menu-panel z-30 grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-2 shadow-[var(--fp-shadow-elevated)]",
               isBottomPlacement
                 ? "fixed inset-x-3 bottom-[calc(var(--fp-app-bottom-nav-height)+var(--fp-app-safe-area-bottom)+0.75rem)] mx-auto max-w-sm origin-bottom"
                 : "absolute right-0 top-12 min-w-48"

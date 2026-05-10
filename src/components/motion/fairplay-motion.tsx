@@ -39,7 +39,7 @@ export function AssignmentShift({
     <div
       aria-label={label}
       className={cx(
-        "fp-motion-assignment-shift flex min-h-12 items-center gap-2 rounded-[8px] border border-fp-line bg-white px-3 py-2",
+        "fp-motion-assignment-shift flex min-h-12 items-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-3 py-2",
         className
       )}
       data-fp-motion="assignment-shift"

@@ -25,7 +25,7 @@ export function CreateHouseholdPageClient() {
       title="Create a household"
     >
       <div className="grid gap-4">
-        <p className="rounded-[8px] border border-fp-line bg-white px-3 py-2 text-[13px] leading-5 text-fp-muted-ink">
+        <p className="rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 py-2 text-[13px] font-medium leading-5 text-fp-muted-ink">
           {SAFETY_COPY.nonClinicalBoundary}
         </p>
         <CreateHouseholdForm

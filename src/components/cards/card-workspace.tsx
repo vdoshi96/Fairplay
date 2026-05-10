@@ -325,13 +325,13 @@ function DistributeView({
   return (
     <section className="grid min-h-[calc(100svh_-_var(--fp-app-content-bottom-padding))] gap-4">
       <header className="grid gap-2">
-        <p className="text-[13px] font-bold text-fp-muted-ink">Deal</p>
-        <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+        <p className="text-[13px] font-bold text-fp-primary">Deal</p>
+        <h1 className="text-[32px] font-bold leading-[38px] text-fp-ink sm:text-[36px] sm:leading-[42px]">
           Deal the next card
         </h1>
       </header>
 
-      <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+      <label className="fp-panel grid gap-2 p-3 text-[13px] font-bold text-fp-muted-ink sm:p-4">
         Search cards
         <span className="relative">
           <Search
@@ -340,7 +340,7 @@ function DistributeView({
           />
           <input
             aria-label="Search cards to deal"
-            className="min-h-12 w-full rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] py-3 pl-10 pr-3 text-[16px] font-semibold text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+            className="fp-input w-full py-3 pl-10 pr-3 text-[16px] font-semibold"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by title, area, standard"
             type="search"
@@ -358,14 +358,14 @@ function DistributeView({
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
           <div
             aria-label="Responsibility deal deck"
-            className="relative grid min-h-[28rem] place-items-center outline-none sm:min-h-[32rem]"
+            className="relative grid min-h-[28rem] place-items-center rounded-[8px] border border-fp-line bg-[color:var(--fp-surface)]/55 p-3 shadow-[var(--fp-shadow-soft)] outline-none sm:min-h-[32rem]"
             data-testid="swipe-deck"
             onKeyDown={handleKeyDown}
             ref={deckRef}
             tabIndex={0}
           >
-            <div aria-hidden className="absolute inset-x-8 top-10 h-[24rem] rounded-[8px] border border-fp-line bg-white/60 shadow-[var(--fp-shadow-soft)] rotate-[-3deg]" />
-            <div aria-hidden className="absolute inset-x-6 top-8 h-[24rem] rounded-[8px] border border-fp-line bg-white/80 shadow-[var(--fp-shadow-soft)] rotate-[2deg]" />
+            <div aria-hidden className="absolute inset-x-8 top-10 h-[24rem] rounded-[8px] border border-fp-line bg-[var(--fp-card-muted)] shadow-[var(--fp-shadow-soft)] rotate-[-3deg]" />
+            <div aria-hidden className="absolute inset-x-6 top-8 h-[24rem] rounded-[8px] border border-fp-line bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)] rotate-[2deg]" />
             <SwipeCard
               card={topCard}
               flipped={flippedId === topCard.id}
@@ -421,7 +421,7 @@ function DistributeView({
               {lastAction.card.title} -&gt; {CARD_BUCKET_LABELS[lastAction.bucket]}
             </span>
             <button
-              className="min-h-9 rounded-[8px] border border-fp-line bg-white px-3 text-[12px] font-bold text-fp-ink disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:cursor-not-allowed disabled:opacity-60"
               disabled={pendingId !== null}
               onClick={() => void undoLastAction()}
               type="button"
@@ -463,10 +463,10 @@ function YourCardsView({
   return (
     <section className="grid gap-4">
       <header className="grid gap-1">
-        <p className="text-[13px] font-bold text-fp-muted-ink">
+        <p className="text-[13px] font-bold text-fp-primary">
           {selectedPersona.displayName}
         </p>
-        <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+        <h1 className="text-[32px] font-bold leading-[38px] text-fp-ink sm:text-[36px] sm:leading-[42px]">
           Your Deck
         </h1>
         <p className="max-w-2xl text-[14px] font-semibold leading-6 text-fp-muted-ink">
@@ -476,7 +476,7 @@ function YourCardsView({
 
       {cards.length > 0 ? (
         <>
-          <div className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 shadow-[var(--fp-shadow-soft)]">
+          <div className="fp-panel grid gap-3 p-3 sm:p-4">
             <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
               Search your deck
               <span className="relative">
@@ -486,7 +486,7 @@ function YourCardsView({
                 />
                 <input
                   aria-label="Search your deck"
-                  className="min-h-11 w-full rounded-[8px] border border-fp-line bg-white py-2.5 pl-10 pr-3 text-[16px] font-semibold text-fp-ink outline-none transition focus:border-fp-ink"
+                  className="fp-input w-full py-2.5 pl-10 pr-3 text-[16px] font-semibold"
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search by title, area, standard"
                   type="search"
@@ -504,7 +504,7 @@ function YourCardsView({
                     "min-h-10 rounded-[8px] border px-3 text-[13px] font-bold",
                     cadenceFilter === cadence
                       ? "border-fp-primary bg-fp-primary text-fp-on-primary"
-                      : "border-fp-line bg-white text-fp-ink"
+                      : "border-fp-line bg-[var(--fp-surface)] text-fp-ink"
                   ].join(" ")}
                   key={cadence}
                   onClick={() => setCadenceFilter(cadence)}
@@ -536,7 +536,7 @@ function YourCardsView({
               </h2>
               {hasFilter ? (
                 <button
-                  className="mx-auto inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold text-fp-ink"
+                  className="mx-auto inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-[14px] font-bold text-fp-ink"
                   onClick={() => {
                     setQuery("");
                     setCadenceFilter("all");
@@ -578,8 +578,8 @@ function BoardView({
   return (
     <section className="grid gap-3 lg:gap-4">
       <header className="grid gap-1">
-        <p className="text-[13px] font-bold text-fp-muted-ink">Board</p>
-        <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+        <p className="text-[13px] font-bold text-fp-primary">Board</p>
+        <h1 className="text-[32px] font-bold leading-[38px] text-fp-ink sm:text-[36px] sm:leading-[42px]">
           Card board
         </h1>
         <p className="max-w-2xl text-[14px] font-semibold leading-6 text-fp-muted-ink">
@@ -710,7 +710,7 @@ function SwipeCard({
       {...handlers}
       aria-label={card.title}
       aria-pressed={flipped}
-      className="relative z-10 grid aspect-[5/7] w-[min(82vw,23rem)] touch-pan-y select-none content-stretch overflow-hidden rounded-[8px] border border-fp-line bg-white text-left text-fp-ink shadow-[var(--fp-shadow-elevated)] transition-transform duration-150 will-change-transform"
+      className="relative z-10 grid aspect-[5/7] w-[min(82vw,23rem)] touch-pan-y select-none content-stretch overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-elevated)] transition-transform duration-150 will-change-transform"
       onClick={onFlip}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -762,7 +762,7 @@ function SwipeCard({
         </div>
       ) : null}
       {pending ? (
-        <div className="absolute inset-0 grid place-items-center bg-white/80 text-[15px] font-bold text-fp-ink">
+        <div className="absolute inset-0 grid place-items-center bg-[color:var(--fp-card)]/80 text-[15px] font-bold text-fp-ink">
           Moving...
         </div>
       ) : null}
@@ -781,7 +781,7 @@ function DealGestureInstructions() {
   return (
     <ul
       aria-label="Deal gesture instructions"
-      className="grid grid-cols-2 gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[12px] font-bold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] sm:grid-cols-4"
+    className="grid grid-cols-2 gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 text-[12px] font-bold leading-5 text-fp-muted-ink shadow-[var(--fp-shadow-soft)] sm:grid-cols-4"
     >
       {instructions.map((instruction) => (
         <li key={instruction}>{instruction}</li>
@@ -801,7 +801,7 @@ function CardFileItem({
     <article
       aria-label={card.title}
       aria-pressed={flipped}
-      className="grid min-h-[20rem] overflow-hidden rounded-[8px] border border-fp-line bg-white text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]"
+      className="grid min-h-[20rem] overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]"
       onClick={() => setFlipped((current) => !current)}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -859,16 +859,16 @@ function CardBack({
           {card.title}
         </h2>
         <div className="flex flex-wrap gap-2">
-          <span className="rounded-full border border-fp-line bg-white px-3 py-1 text-[12px] font-bold text-fp-muted-ink">
+          <span className="rounded-full border border-fp-line bg-[var(--fp-surface)] px-3 py-1 text-[12px] font-bold text-fp-muted-ink">
             Assigned to {assignmentLabelFor(card)}
           </span>
-          <span className="rounded-full border border-fp-line bg-white px-3 py-1 text-[12px] font-bold text-fp-muted-ink">
+          <span className="rounded-full border border-fp-line bg-[var(--fp-surface)] px-3 py-1 text-[12px] font-bold text-fp-muted-ink">
             {CARD_BUCKET_LABELS[bucket]}
           </span>
         </div>
       </header>
 
-      <section className="grid gap-1 rounded-[8px] border border-fp-line bg-white p-3">
+      <section className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3">
         <h3 className="text-[13px] font-bold text-fp-ink">
           What is this card for?
         </h3>
@@ -877,7 +877,7 @@ function CardBack({
         </p>
       </section>
 
-      <section className="grid gap-1 rounded-[8px] border border-fp-line bg-white p-3">
+      <section className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3">
         <h3 className="text-[13px] font-bold text-fp-ink">
           Fogging Estandards
         </h3>
@@ -903,7 +903,7 @@ function CompactCard({
   );
 
   return (
-    <article className="grid min-w-0 overflow-hidden rounded-[8px] border border-fp-line bg-white text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
+    <article className="grid min-w-0 overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
       <Link
         className="grid min-h-[8.25rem] grid-cols-[5.25rem_minmax(0,1fr)] sm:grid-cols-[5.75rem_minmax(0,1fr)]"
         href={`/app/responsibilities/${card.id}`}
@@ -928,7 +928,7 @@ function CompactCard({
         <div className="grid gap-2 border-t border-fp-line bg-[var(--fp-surface-strong)] p-2">
           {bucket !== "unassigned" ? (
             <button
-              className="min-h-9 rounded-[8px] border border-fp-line bg-white px-2 text-[11px] font-bold text-fp-ink"
+              className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
               onClick={() =>
                 void onDistribute({
                   bucket: "unassigned",
@@ -975,7 +975,7 @@ function AvailableCardList({
   return (
     <section
       aria-label="Available cards to deal"
-      className="grid content-start gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 shadow-[var(--fp-shadow-soft)]"
+      className="grid content-start gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 shadow-[var(--fp-shadow-soft)]"
       data-testid="distribution-card-list"
     >
       <div className="flex items-baseline justify-between gap-3">
@@ -996,8 +996,8 @@ function AvailableCardList({
               className={[
                 "grid min-w-0 grid-cols-[4rem_minmax(0,1fr)] gap-3 rounded-[8px] border p-2 text-left outline-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
                 selected
-                  ? "border-fp-primary bg-white shadow-[var(--fp-shadow-soft)]"
-                  : "border-fp-line bg-white/70"
+                  ? "border-fp-primary bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)]"
+                  : "border-fp-line bg-[var(--fp-surface)]"
               ].join(" ")}
               key={card.id}
               onClick={() => onSelect(card.id)}
@@ -1073,7 +1073,7 @@ function ActionButton({
   return (
     <button
       aria-label={actionMeta[bucket].label}
-      className="grid min-h-14 place-items-center gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[13px] font-bold text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)] disabled:cursor-not-allowed disabled:opacity-55"
+      className="grid min-h-14 place-items-center gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-3 py-2 text-[13px] font-bold text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)] disabled:cursor-not-allowed disabled:opacity-55"
       disabled={disabled}
       onClick={onClick}
       type="button"
@@ -1089,14 +1089,14 @@ function ActionButton({
 
 function SearchEmptyState({ onClear }: { onClear: () => void }) {
   return (
-    <section className="grid min-h-[24rem] place-items-center rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-6 text-center shadow-[var(--fp-shadow-soft)]">
+    <section className="grid min-h-[24rem] place-items-center rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-card)] p-6 text-center shadow-[var(--fp-shadow-soft)]">
       <div className="grid justify-items-center gap-3">
         <Search aria-hidden className="h-10 w-10 text-fp-muted-ink" />
         <h2 className="max-w-sm text-[22px] font-bold leading-7 text-fp-ink">
           No cards match this search.
         </h2>
         <button
-          className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-bold text-fp-ink"
+          className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-[14px] font-bold text-fp-ink"
           onClick={onClear}
           type="button"
         >
@@ -1109,7 +1109,7 @@ function SearchEmptyState({ onClear }: { onClear: () => void }) {
 
 function EmptyDeck() {
   return (
-    <section className="grid min-h-[24rem] place-items-center rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-6 text-center shadow-[var(--fp-shadow-soft)]">
+    <section className="grid min-h-[24rem] place-items-center rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-card)] p-6 text-center shadow-[var(--fp-shadow-soft)]">
       <div className="grid justify-items-center gap-3">
         <Sparkles aria-hidden className="h-10 w-10 text-[var(--fp-helper)]" />
         <h2 className="max-w-sm text-[22px] font-bold leading-7 text-fp-ink">

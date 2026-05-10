@@ -34,7 +34,7 @@ export function Chip({ className, tone = "default", ...props }: ChipProps) {
     <span
       {...props}
       className={[
-        "inline-flex max-w-full items-center truncate rounded border px-2 py-1 text-xs font-bold leading-none",
+        "inline-flex max-w-full items-center truncate rounded-full border px-2.5 py-1 text-xs font-bold leading-none",
         toneClasses[tone],
         className
       ]

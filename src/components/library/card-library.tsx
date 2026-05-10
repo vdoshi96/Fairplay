@@ -68,7 +68,7 @@ export function CardLibrary({
   return (
     <section className="grid gap-5">
       <div
-        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card-muted)] shadow-[var(--fp-shadow-crisp)]"
         data-testid="library-shelf-visual"
       >
         <DecorativeBackgroundLayer
@@ -87,7 +87,7 @@ export function CardLibrary({
           Search
           <input
             aria-label="Search cards"
-            className="min-h-11 rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+            className="fp-input px-3 text-[15px] font-medium"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Meals, school, auto"
             type="search"
@@ -127,7 +127,7 @@ export function CardLibrary({
           {filteredTemplates.map((template) => (
             <article
               aria-label={template.title}
-              className="grid min-h-[430px] min-w-0 grid-rows-[1fr_auto] overflow-hidden rounded-[8px] border border-fp-line bg-white shadow-[var(--fp-shadow-soft)]"
+              className="grid min-h-[430px] min-w-0 grid-rows-[1fr_auto] overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]"
               key={template.id}
             >
               <button
@@ -167,7 +167,7 @@ export function CardLibrary({
           ))}
         </div>
       ) : (
-        <div className="rounded border border-dashed border-fp-line bg-white p-6 text-[15px] font-semibold text-fp-muted-ink">
+        <div className="rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-card)] p-6 text-[15px] font-semibold text-fp-muted-ink">
           No cards match the current filters.
         </div>
       )}
@@ -228,7 +228,7 @@ function LibraryCardBack({ template }: { template: LibraryCardTemplate }) {
         </div>
       </header>
 
-      <section className="grid gap-1 rounded-[8px] border border-fp-line bg-white p-3">
+      <section className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3">
         <h3 className="text-[13px] font-bold text-fp-ink">
           What is this card for?
         </h3>
@@ -237,7 +237,7 @@ function LibraryCardBack({ template }: { template: LibraryCardTemplate }) {
         </p>
       </section>
 
-      <section className="grid gap-1 rounded-[8px] border border-fp-line bg-white p-3">
+      <section className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3">
         <h3 className="text-[13px] font-bold text-fp-ink">
           Fogging Estandards
         </h3>
@@ -252,9 +252,9 @@ function LibraryCardBack({ template }: { template: LibraryCardTemplate }) {
 
 function filterButtonClass(active: boolean) {
   return [
-    "inline-flex min-h-10 shrink-0 items-center rounded border px-3 text-[13px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
+    "inline-flex min-h-10 shrink-0 items-center rounded-[8px] border px-3 text-[13px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
     active
       ? "border-fp-primary bg-fp-primary text-fp-on-primary"
-      : "border-fp-line bg-white text-fp-ink hover:bg-fp-surface"
+      : "border-fp-line bg-[var(--fp-surface)] text-fp-ink hover:bg-[var(--fp-surface-strong)]"
   ].join(" ");
 }

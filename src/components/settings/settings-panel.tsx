@@ -252,7 +252,7 @@ export function SettingsPanel({
     <>
       <section className="grid gap-5" ref={contentRef}>
         <div
-          className="relative overflow-hidden rounded-[8px] border border-fp-line bg-fp-ink shadow-[var(--fp-shadow-soft)]"
+          className="relative overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card-muted)] shadow-[var(--fp-shadow-crisp)]"
           data-testid="settings-preferences-visual"
         >
           <DecorativeBackgroundLayer
@@ -262,7 +262,7 @@ export function SettingsPanel({
             washClassName="fp-page-hero-wash"
           />
           <div className="fp-generated-surface-wash relative z-10 grid gap-2 p-4 backdrop-blur-[1px]">
-            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+            <h1 className="text-[32px] font-bold leading-[38px] text-fp-ink">
               Settings
             </h1>
           </div>
@@ -270,7 +270,7 @@ export function SettingsPanel({
 
         {error ? (
           <p
-            className="rounded-[8px] border border-fp-danger/40 bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] leading-5 text-fp-danger"
+            className="rounded-[8px] border border-fp-danger/40 bg-[var(--fp-card)] px-3 py-2 text-[14px] leading-5 text-fp-danger"
             role="alert"
           >
             {error}
@@ -279,14 +279,14 @@ export function SettingsPanel({
 
         {actionStatus ? (
           <p
-            className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[14px] font-semibold leading-5 text-fp-muted-ink"
+            className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-3 py-2 text-[14px] font-semibold leading-5 text-fp-muted-ink"
             role="status"
           >
             {actionStatus}
           </p>
         ) : null}
 
-        <section className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4">
+        <section className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]">
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Household
           </h2>
@@ -307,7 +307,7 @@ export function SettingsPanel({
         </section>
 
         <section
-          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4"
+          className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]"
         >
           <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
             <div className="grid gap-1">
@@ -323,7 +323,7 @@ export function SettingsPanel({
             <div className="grid gap-3 sm:grid-cols-[auto_auto] sm:items-center">
               <button
                 aria-checked={themeMode === "system"}
-                className="inline-flex min-h-11 items-center justify-between gap-3 rounded-[8px] border border-fp-line bg-fp-surface px-3 text-left text-[14px] font-semibold text-fp-ink outline-none transition focus:ring-2 focus:ring-fp-ink/25"
+                className="inline-flex min-h-11 items-center justify-between gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-left text-[14px] font-semibold text-fp-ink outline-none transition focus:ring-2 focus:ring-fp-ink/25"
                 onClick={handleSystemThemeToggle}
                 role="switch"
                 type="button"
@@ -348,7 +348,7 @@ export function SettingsPanel({
               </button>
               <div
                 aria-label="Theme override"
-                className="inline-flex max-w-full gap-1 overflow-hidden rounded border border-[var(--fp-line)] bg-[var(--fp-surface)] p-1"
+                className="inline-flex max-w-full gap-1 overflow-hidden rounded-[8px] border border-[var(--fp-line)] bg-[var(--fp-surface)] p-1"
                 role="group"
               >
                 {overrideThemeOptions.map((option) => {
@@ -379,7 +379,7 @@ export function SettingsPanel({
         </section>
 
         <section
-          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4"
+          className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]"
         >
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Persona
@@ -388,7 +388,7 @@ export function SettingsPanel({
             Switch the active view for this session.
           </p>
           <button
-            className="mt-4 min-h-11 rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
+            className="mt-4 min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
             onClick={() => setShowSwitchConfirm(true)}
             ref={switchTriggerRef}
             type="button"
@@ -397,7 +397,7 @@ export function SettingsPanel({
           </button>
         </section>
 
-        <section className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4">
+        <section className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]">
           <div className="grid gap-4">
             <div className="grid gap-1">
               <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
@@ -550,7 +550,7 @@ export function SettingsPanel({
         </section>
 
         <section
-          className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4"
+          className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]"
         >
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Guided start
@@ -560,7 +560,7 @@ export function SettingsPanel({
           </p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             <button
-              className="min-h-11 rounded-[8px] border border-fp-line bg-fp-surface px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-70"
+              className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-70"
               disabled={preferenceAction !== null}
               onClick={() => void restartCrashCourse()}
               type="button"
@@ -570,7 +570,7 @@ export function SettingsPanel({
                 : "Restart Theory"}
             </button>
             <Link
-              className="flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-fp-surface px-4 text-center text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
+              className="flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-center text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
               href="/app/distribute"
             >
               Deal cards
@@ -578,7 +578,7 @@ export function SettingsPanel({
           </div>
         </section>
 
-        <section className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4">
+        <section className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]">
           <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
             Data controls
           </h2>
@@ -589,7 +589,7 @@ export function SettingsPanel({
         </section>
 
         <button
-          className="min-h-11 rounded-[8px] border border-fp-danger/40 bg-[var(--fp-surface-strong)] px-4 text-[14px] font-semibold text-fp-danger outline-none focus:ring-2 focus:ring-fp-danger/25 disabled:cursor-not-allowed disabled:opacity-70"
+          className="min-h-11 rounded-[8px] border border-fp-danger/40 bg-[var(--fp-card)] px-4 text-[14px] font-semibold text-fp-danger outline-none focus:ring-2 focus:ring-fp-danger/25 disabled:cursor-not-allowed disabled:opacity-70"
           disabled={loggingOut}
           onClick={() => void logout()}
           type="button"
@@ -608,7 +608,7 @@ export function SettingsPanel({
           ref={dialogRef}
           role="dialog"
         >
-          <div className="w-full max-w-sm rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-soft">
+          <div className="w-full max-w-sm rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-soft">
             <h2
               className="text-[17px] font-bold leading-6 text-fp-ink"
               id="switch-persona-title"
@@ -631,7 +631,7 @@ export function SettingsPanel({
                 Continue
               </button>
               <button
-                className="min-h-11 flex-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
+                className="min-h-11 flex-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
                 onClick={closeSwitchConfirm}
                 type="button"
               >

@@ -378,3 +378,27 @@ Verification:
 - Confirmed all requested memory/wiki files are present and non-empty.
 - Ran a trailing-whitespace scan over `AGENTS.md`, `docs/context`, and `docs/wiki`; no matches.
 - Did not rerun full app test suites because this pass changed documentation/index files only.
+
+## 2026-05-09 - Dynamic Redesign Implementation
+
+Requested by the user: implement the approved website redesign, keep mock assets out of the runtime app, make the redesign dynamic rather than specifically light/white, avoid breaking behavior, and finish with local/GitHub on the same merged commit.
+
+Actions completed:
+
+- Converted the approved mock direction into a theme-adaptive app polish pass using Fairplay CSS tokens for page gradients, chrome, panels, cards, inputs, and active navigation.
+- Updated shared shell/auth/UI primitives plus the main app pages: Your Deck, Deal, Board, Ask Greg, Check-ins, Theory, Settings, Card Library, Onboarding, and responsibility detail/edit surfaces.
+- Preserved existing public assets; mock images were not copied into the app and no runtime asset replacement was performed.
+- Increased the dark-mode visual QA timeout to reflect the heavier multi-page full-page screenshot pass.
+
+Verification:
+
+- `git diff --check`
+- `npm run prisma:validate`
+- `npm run lint`
+- `npm run typecheck`
+- `npm test -- --run`
+- `npm run build`
+- `npx playwright test e2e/dark-mode-visual.spec.ts`
+- `npx playwright test e2e/little-alex-physics.spec.ts -g "uses a static draggable-safe mode with reduced motion"`
+- `npm run test:e2e`
+- Browser-rendered authenticated QA across the main protected app pages, each with expected headings and zero console errors.

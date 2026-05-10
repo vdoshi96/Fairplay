@@ -273,6 +273,8 @@ async function expectUnobscured(locator: Locator, label: string) {
 }
 
 test.describe("dark mode visual QA", () => {
+  test.setTimeout(60_000);
+
   test.beforeEach(async ({ context, page }) => {
     await context.clearCookies();
     await page.addInitScript(() => {

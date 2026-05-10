@@ -23,11 +23,11 @@ export default async function AskGregPage() {
 
   return (
     <section className="grid min-w-0 max-w-full gap-3 overflow-hidden lg:gap-4">
-      <section className="grid min-w-0 max-w-full self-start overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 shadow-[var(--fp-shadow-soft)] sm:p-4 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:items-start lg:gap-5 lg:p-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <section className="fp-panel grid min-w-0 max-w-full self-start overflow-hidden p-3 sm:p-4 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:items-start lg:gap-5 lg:p-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="grid min-w-0 content-start gap-4 lg:gap-3">
           <header className="grid min-w-0 gap-1">
-            <p className="m-0 text-[13px] font-bold text-fp-muted-ink">Ask Greg</p>
-            <h1 className="m-0 text-[28px] font-bold leading-[34px] text-fp-ink">
+            <p className="m-0 text-[13px] font-bold text-fp-primary">Ask Greg</p>
+            <h1 className="m-0 text-[32px] font-bold leading-[38px] text-fp-ink sm:text-[36px] sm:leading-[42px]">
               Make more cards
             </h1>
             <p className="m-0 max-w-2xl text-[14px] font-semibold leading-6 text-fp-muted-ink [overflow-wrap:anywhere]">
@@ -36,7 +36,7 @@ export default async function AskGregPage() {
           </header>
           <AiTaskManager drafts={aiDrafts} showGregAvatar={false} />
         </div>
-        <div className="hidden min-w-0 items-end justify-items-center overflow-hidden rounded-[8px] border border-fp-line bg-white/70 p-2 lg:grid lg:min-h-[26rem] xl:min-h-[30rem]">
+        <div className="hidden min-w-0 items-end justify-items-center overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-2 lg:grid lg:min-h-[26rem] xl:min-h-[30rem]">
           <Image
             alt="Greg card helper"
             className="-mb-3 h-auto w-full max-w-[20rem] origin-bottom scale-125 object-contain drop-shadow-[0_18px_28px_rgba(34,34,34,0.14)] xl:max-w-[22rem] xl:scale-[1.32]"

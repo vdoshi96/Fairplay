@@ -31,12 +31,12 @@ export function AuthPageShell({
     >
       <div
         aria-hidden="true"
-        className="fp-generated-surface-wash absolute inset-0"
+        className="absolute inset-0 bg-[var(--fp-page-gradient)] opacity-80 mix-blend-screen"
       />
       <section
         className={
           hasVisual
-            ? "relative mx-auto grid min-h-[calc(100svh-3rem)] w-full max-w-5xl content-center gap-8 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-center"
+            ? "relative mx-auto grid min-h-[calc(100svh-3rem)] w-full max-w-6xl content-center gap-8 lg:grid-cols-[minmax(0,440px)_minmax(0,1fr)] lg:items-center"
             : "relative mx-auto grid min-h-[calc(100svh-3rem)] w-full max-w-md content-center gap-6"
         }
       >
@@ -47,7 +47,7 @@ export function AuthPageShell({
           >
             <span
               aria-hidden="true"
-              className="grid h-10 w-10 place-items-center rounded-[8px] border border-fp-line bg-white"
+              className="grid h-10 w-10 place-items-center rounded-[8px] border border-fp-line bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)]"
             >
               <span className="relative h-5 w-5 rounded-full border-2 border-fp-shared">
                 <span className="absolute -left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-fp-alex" />
@@ -58,16 +58,16 @@ export function AuthPageShell({
           </Link>
 
           <div className="grid gap-2">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
+            <p className="text-[13px] font-bold uppercase tracking-[0.04em] text-fp-muted-ink">
               {eyebrow}
             </p>
-            <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+            <h1 className="text-[32px] font-bold leading-[38px] text-fp-ink">
               {title}
             </h1>
-            <p className="text-[15px] leading-6 text-fp-muted-ink">{summary}</p>
+            <p className="text-[15px] font-medium leading-6 text-fp-muted-ink">{summary}</p>
           </div>
 
-          <div className="rounded-[8px] border border-fp-line bg-fp-surface/95 p-4 shadow-[var(--fp-shadow-soft)] backdrop-blur">
+          <div className="fp-panel p-4 backdrop-blur-md sm:p-5">
             {children}
           </div>
 

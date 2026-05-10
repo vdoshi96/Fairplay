@@ -82,7 +82,7 @@ export function CreateHouseholdForm({ onCreated }: CreateHouseholdFormProps) {
     <form className="grid gap-4" noValidate onSubmit={handleSubmit}>
       {errors.form ? (
         <p
-          className="rounded-[8px] border border-fp-danger/40 bg-white px-3 py-2 text-[14px] leading-5 text-fp-danger"
+          className="rounded-[8px] border border-fp-danger/40 bg-[var(--fp-card)] px-3 py-2 text-[14px] leading-5 text-fp-danger"
           role="alert"
         >
           {errors.form}
@@ -100,7 +100,7 @@ export function CreateHouseholdForm({ onCreated }: CreateHouseholdFormProps) {
           aria-describedby={errors.householdName ? errorId("household-name") : undefined}
           aria-invalid={errors.householdName ? "true" : "false"}
           autoComplete="organization"
-          className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[15px] text-fp-ink outline-none transition focus:border-fp-alex focus:ring-2 focus:ring-fp-alex/25"
+          className="fp-input px-3 text-[15px] font-medium"
           id={fieldId("household-name")}
           name="householdName"
           onChange={(event) => setHouseholdName(event.target.value)}
@@ -121,7 +121,7 @@ export function CreateHouseholdForm({ onCreated }: CreateHouseholdFormProps) {
           aria-describedby={errors.username ? errorId("create-username") : undefined}
           aria-invalid={errors.username ? "true" : "false"}
           autoComplete="username"
-          className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[15px] text-fp-ink outline-none transition focus:border-fp-alex focus:ring-2 focus:ring-fp-alex/25"
+          className="fp-input px-3 text-[15px] font-medium"
           id={fieldId("create-username")}
           name="username"
           onChange={(event) => setUsername(event.target.value)}
@@ -142,7 +142,7 @@ export function CreateHouseholdForm({ onCreated }: CreateHouseholdFormProps) {
           aria-describedby={errors.password ? errorId("create-password") : undefined}
           aria-invalid={errors.password ? "true" : "false"}
           autoComplete="new-password"
-          className="min-h-11 rounded-[8px] border border-fp-line bg-white px-3 text-[15px] text-fp-ink outline-none transition focus:border-fp-alex focus:ring-2 focus:ring-fp-alex/25"
+          className="fp-input px-3 text-[15px] font-medium"
           id={fieldId("create-password")}
           name="password"
           onChange={(event) => setPassword(event.target.value)}
@@ -157,7 +157,7 @@ export function CreateHouseholdForm({ onCreated }: CreateHouseholdFormProps) {
       </div>
 
       <button
-        className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-semibold text-fp-on-primary outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/30 disabled:cursor-not-allowed disabled:bg-fp-primary-disabled"
+        className="min-h-11 rounded-[8px] bg-fp-primary px-4 text-[14px] font-bold text-fp-on-primary shadow-[var(--fp-shadow-soft)] outline-none transition hover:bg-fp-primary-hover focus:ring-2 focus:ring-fp-primary/30 disabled:cursor-not-allowed disabled:bg-fp-primary-disabled"
         disabled={pending}
         type="submit"
       >

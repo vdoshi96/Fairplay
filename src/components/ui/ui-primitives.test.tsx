@@ -53,7 +53,7 @@ describe("UI primitives", () => {
     render(<Button variant="primary">Open library</Button>);
 
     expect(screen.getByRole("button", { name: "Open library" })).toHaveClass(
-      "rounded"
+      "rounded-[8px]"
     );
   });
 });

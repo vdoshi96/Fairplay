@@ -221,7 +221,7 @@ export function AiTaskManager({
       />
 
       {error ? (
-        <p className="rounded border border-fp-line bg-white p-3 text-[14px] font-semibold text-fp-muted-ink">
+        <p className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 text-[14px] font-semibold text-fp-muted-ink">
           {error}
         </p>
       ) : null}
@@ -436,7 +436,7 @@ export function AiCardTracker({
   return (
     <section
       aria-label="AI drafts"
-      className="grid min-w-0 max-w-full gap-3 overflow-hidden rounded border border-fp-line bg-white p-3 shadow-[var(--fp-shadow-soft)] sm:p-4"
+      className="grid min-w-0 max-w-full gap-3 overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 shadow-[var(--fp-shadow-soft)] sm:p-4"
       data-testid="ai-card-tracker"
     >
       {drafts.length > 0 ? (
@@ -444,7 +444,7 @@ export function AiCardTracker({
           {drafts.map((draft) => (
             <article
               aria-label={`${draft.title ?? draft.promptPreview} ${draft.status} draft`}
-              className="grid min-w-0 max-w-full gap-3 rounded border border-fp-line bg-fp-surface p-3"
+              className="grid min-w-0 max-w-full gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3"
               data-testid="ai-draft-card"
               key={draft.id}
             >
@@ -488,7 +488,7 @@ export function AiCardTracker({
               </button>
 
               {draft.failureMessage ? (
-                <p className="rounded border border-fp-line bg-white p-3 text-[13px] leading-5 text-fp-muted-ink [overflow-wrap:anywhere]">
+                <p className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 text-[13px] leading-5 text-fp-muted-ink [overflow-wrap:anywhere]">
                   {draft.failureMessage}
                 </p>
               ) : null}
@@ -569,7 +569,7 @@ export function AiCardTracker({
           ))}
         </div>
       ) : (
-        <p className="rounded border border-dashed border-fp-line bg-fp-surface p-4 text-[14px] font-semibold text-fp-muted-ink">
+        <p className="rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface)] p-4 text-[14px] font-semibold text-fp-muted-ink">
           No drafts yet.
         </p>
       )}
@@ -623,7 +623,7 @@ export function AiCardCaptureSheet({
         Describe the card
         <textarea
           aria-label="Describe the card"
-          className="min-h-28 w-full min-w-0 max-w-full rounded border border-fp-line bg-white px-3 py-2 text-[15px] leading-6 text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition [overflow-wrap:anywhere] focus:border-fp-ink"
+          className="fp-input min-h-28 w-full min-w-0 max-w-full px-3 py-2 text-[15px] leading-6 [overflow-wrap:anywhere]"
           onChange={(event) => setInputText(event.target.value)}
           placeholder="What needs doing, when, and what done means"
           value={inputText}
@@ -792,7 +792,7 @@ export function AiCardReviewPanel({
           />
         ) : null}
 
-        <section className="grid gap-1 rounded border border-fp-line bg-fp-surface p-3">
+        <section className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3">
           <p className="text-[12px] font-bold uppercase text-fp-muted-ink">
             Original prompt
           </p>
@@ -809,7 +809,7 @@ export function AiCardReviewPanel({
         ) : null}
 
         {draft.failureMessage ? (
-          <section className="grid gap-1 rounded border border-fp-line bg-white p-3">
+          <section className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3">
             <p className="text-[12px] font-bold uppercase text-fp-muted-ink">
               Error details
             </p>
@@ -864,7 +864,7 @@ export function AiCardReviewPanel({
               Rhythm
               <select
                 aria-label="Rhythm"
-                className="min-h-10 w-full min-w-0 max-w-full rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition focus:border-fp-ink"
+                className="fp-input min-h-10 w-full min-w-0 max-w-full px-3 text-[15px]"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, cadence: event.target.value }))
                 }
@@ -1177,7 +1177,7 @@ function TextInput({
       {label}
       <input
         aria-label={label}
-        className="min-h-10 w-full min-w-0 max-w-full rounded border border-fp-line bg-white px-3 text-[15px] text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition [overflow-wrap:anywhere] focus:border-fp-ink"
+        className="fp-input min-h-10 w-full min-w-0 max-w-full px-3 text-[15px] [overflow-wrap:anywhere]"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       />
@@ -1206,7 +1206,7 @@ function TextArea({
       {label}
       <textarea
         aria-label={label}
-        className="min-h-24 w-full min-w-0 max-w-full rounded border border-fp-line bg-white px-3 py-2 text-[14px] leading-6 text-fp-ink shadow-[var(--fp-shadow-soft)] outline-none transition [overflow-wrap:anywhere] focus:border-fp-ink"
+        className="fp-input min-h-24 w-full min-w-0 max-w-full px-3 py-2 text-[14px] leading-6 [overflow-wrap:anywhere]"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       />
@@ -1248,7 +1248,7 @@ function GeneratedDraftCover({
 }) {
   return (
     <span
-      className={`block overflow-hidden rounded border border-fp-line bg-white shadow-[var(--fp-shadow-soft)] ${className}`}
+      className={`block overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)] ${className}`}
     >
       <img
         alt={alt}

@@ -95,13 +95,13 @@ export default async function ResponsibilityDetailPage({
       <div className="grid gap-6">
         <nav aria-label="Responsibility navigation" className="flex flex-wrap gap-2">
           <Link
-            className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 py-3 text-[14px] font-bold text-fp-ink"
+            className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 py-3 text-[14px] font-bold text-fp-ink shadow-[var(--fp-shadow-soft)]"
             href="/app/your-cards"
           >
             Back to Your Deck
           </Link>
           <Link
-            className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 py-3 text-[14px] font-bold text-fp-ink"
+            className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 py-3 text-[14px] font-bold text-fp-ink shadow-[var(--fp-shadow-soft)]"
             href="/app/board"
           >
             Back to Board

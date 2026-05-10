@@ -130,14 +130,14 @@ export const PageShell = forwardRef<HTMLElement, PageShellProps>(
       >
         {background ? (
           <DecorativeBackgroundLayer
-            className="opacity-40 [background-position:center_top] [mask-image:linear-gradient(125deg,black_0%,rgba(0,0,0,0.72)_48%,rgba(0,0,0,0.28)_100%)]"
+            className="opacity-45 [background-position:center_top] [mask-image:linear-gradient(125deg,black_0%,rgba(0,0,0,0.62)_48%,rgba(0,0,0,0.18)_100%)]"
             src={background.src}
             testId={background.testId}
             washClassName="fp-page-background-wash"
           />
         ) : null}
         <div
-          className="relative z-10 mx-auto grid w-full max-w-full min-w-0 gap-5 pr-[var(--fp-little-alex-inline-reserve)] lg:max-w-6xl lg:pl-8"
+          className="relative z-10 mx-auto grid w-full max-w-full min-w-0 gap-5 pr-[var(--fp-little-alex-inline-reserve)] lg:max-w-7xl lg:pl-8"
           data-page-shell-content
         >
           {children}
@@ -157,15 +157,15 @@ export function PageHeader({
     <header className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
       <div className="grid gap-1">
         {eyebrow ? (
-          <p className="text-[13px] font-semibold text-fp-muted-ink">
+          <p className="text-[13px] font-bold text-fp-muted-ink">
             {eyebrow}
           </p>
         ) : null}
-        <h1 className="text-[28px] font-bold leading-[34px] text-fp-ink">
+        <h1 className="text-[30px] font-bold leading-[36px] text-fp-ink sm:text-[34px] sm:leading-[40px]">
           {title}
         </h1>
         {description ? (
-          <p className="max-w-2xl text-[15px] leading-6 text-fp-muted-ink">
+          <p className="max-w-2xl text-[15px] font-medium leading-6 text-fp-muted-ink">
             {description}
           </p>
         ) : null}
@@ -181,7 +181,7 @@ export function PageSurface({ children, className }: PageSurfaceProps) {
   return (
     <section
       className={cn(
-        "rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-4 shadow-[var(--fp-shadow-soft)]",
+        "rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-crisp)]",
         className
       )}
     >

@@ -37,7 +37,7 @@ export function OnboardingGuide({ onSkip }: OnboardingGuideProps) {
   return (
     <section className="mx-auto grid w-full max-w-3xl gap-6">
       <div
-        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-white bg-cover bg-center p-5 shadow-[var(--fp-shadow-soft)] sm:p-6"
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] bg-cover bg-center p-5 shadow-[var(--fp-shadow-crisp)] sm:p-6"
         data-onboarding-background
         style={{ backgroundImage: `url('${ONBOARDING_BACKGROUND}')` }}
       >
@@ -72,8 +72,8 @@ export function OnboardingGuide({ onSkip }: OnboardingGuideProps) {
       <div className="grid gap-3 sm:grid-cols-2">
         {steps.map((step, index) => (
           <MotionPanel key={step.title}>
-            <article className="h-full rounded-[8px] border border-fp-line bg-white p-4">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-fp-surface text-[13px] font-bold text-fp-ink">
+            <article className="h-full rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--fp-surface)] text-[13px] font-bold text-fp-ink">
                 {index + 1}
               </span>
               <h2 className="mt-3 text-[17px] font-bold leading-6 text-fp-ink">
@@ -87,7 +87,7 @@ export function OnboardingGuide({ onSkip }: OnboardingGuideProps) {
         ))}
       </div>
 
-      <aside className="rounded-[8px] border border-fp-caution/40 bg-white p-4">
+      <aside className="rounded-[8px] border border-fp-caution/40 bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]">
         <h2 className="text-[17px] font-bold leading-6 text-fp-ink">
           Keep sharing intentional
         </h2>
@@ -104,7 +104,7 @@ export function OnboardingGuide({ onSkip }: OnboardingGuideProps) {
           Start dealing cards
         </a>
         <button
-          className="min-h-11 rounded-[8px] border border-fp-line bg-white px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
+          className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-4 text-[14px] font-semibold text-fp-ink outline-none focus:ring-2 focus:ring-fp-ink/25"
           onClick={onSkip}
           type="button"
         >

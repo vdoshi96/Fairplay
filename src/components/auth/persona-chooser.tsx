@@ -59,7 +59,7 @@ export function PersonaChooser({
     <div className="grid gap-4">
       {error ? (
         <p
-          className="rounded-[8px] border border-fp-danger/40 bg-white px-3 py-2 text-[14px] leading-5 text-fp-danger"
+          className="rounded-[8px] border border-fp-danger/40 bg-[var(--fp-card)] px-3 py-2 text-[14px] leading-5 text-fp-danger"
           role="alert"
         >
           {error}
@@ -73,7 +73,7 @@ export function PersonaChooser({
           return (
             <button
               aria-pressed={selected}
-              className={`min-h-[112px] rounded-[8px] border-2 bg-white p-4 text-left outline-none transition hover:bg-fp-surface focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-70 ${
+              className={`min-h-[112px] rounded-[8px] border-2 bg-[var(--fp-card)] p-4 text-left shadow-[var(--fp-shadow-soft)] outline-none transition hover:-translate-y-0.5 hover:bg-[var(--fp-surface)] focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-70 ${
                 personaAccent[persona.key]
               }`}
               disabled={pendingPersonaId !== null}
@@ -84,7 +84,7 @@ export function PersonaChooser({
               <span className="flex items-center gap-3">
                 <span
                   aria-hidden="true"
-                  className={`grid h-11 w-11 place-items-center rounded-full text-[16px] font-bold text-white ${
+                  className={`grid h-11 w-11 place-items-center rounded-full text-[16px] font-bold text-fp-on-primary ${
                     persona.key === "alex" ? "bg-fp-alex" : "bg-fp-max"
                   }`}
                 >

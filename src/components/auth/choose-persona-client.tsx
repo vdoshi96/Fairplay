@@ -83,7 +83,7 @@ export function ChoosePersonaClient() {
         <p className="text-[15px] leading-6 text-fp-muted-ink">Loading personas...</p>
       ) : error ? (
         <p
-          className="rounded-[8px] border border-fp-danger/40 bg-white px-3 py-2 text-[14px] leading-5 text-fp-danger"
+          className="rounded-[8px] border border-fp-danger/40 bg-[var(--fp-card)] px-3 py-2 text-[14px] leading-5 text-fp-danger"
           role="alert"
         >
           {error}
