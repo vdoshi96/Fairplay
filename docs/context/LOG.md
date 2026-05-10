@@ -1,5 +1,44 @@
 # Fairplay Context Log
 
+## 2026-05-10 - Security Scan Hardening Pass
+
+Requested by the user: run the Codex Security scan on the codebase and make necessary changes without breaking app functionality. CodeRabbit was initially requested, but the user later asked to ignore the CodeRabbit part.
+
+Actions completed:
+
+- Ran a bounded repository-wide high-impact security pass over auth/session, middleware, tenant scoping, AI provider boundaries, browser storage, unsafe rendering, raw query/process/file sinks, and dependency advisories.
+- Wrote scan artifacts under `/tmp/codex-security-scans/Fairplay/7f3ae25b147d_20260510T135638Z/`.
+- Removed middleware's host-derived self-fetch to `/api/auth/me` so raw cookies are no longer forwarded to a URL built from inbound request metadata; authoritative session/persona enforcement remains in the protected app layout.
+- Added middleware regression coverage asserting signed-in app requests continue without calling `fetch`.
+- Forced `postcss@8.5.14` via package pin and npm override so the nested vulnerable PostCSS copy under Next is removed and `npm audit` is clean.
+
+Verification:
+
+- `npm test -- src/middleware.test.ts --run`
+- `npm audit --json`
+- `npm run prisma:validate`
+- `npm run lint`
+- `npm run typecheck`
+- `npm test -- --run`
+- `npm run build`
+
+## 2026-05-10 - Little Alex Hair Layer Physics Sync
+
+Requested by the user after visual review: regenerated Little Alex hair assets stayed pinned near the bottom-right screen area, and custom hair color appeared during ragdoll but reverted to default hair when Little Alex settled.
+
+Actions completed:
+
+- Added the full-body hair sprite layer to the same imperative Matter.js DOM sync path as the full-body character sprite.
+- Synced full-body hair layer opacity through settled, flinging, and recovering visual states.
+- Added focused regression coverage that drags Little Alex in physics mode and requires the full-body hair layer transform and opacity to match the body sprite.
+
+Verification:
+
+- `npm test -- src/components/little-alex/little-alex-physics.test.tsx --run`
+- `npm run typecheck`
+- `npm run lint`
+- `git diff --check`
+
 ## 2026-05-09 - Little Alex Default Help Phrase
 
 Requested by the user: change the default Little Alex chat bubble text to "Help!" and keep local and GitHub on the same commit.

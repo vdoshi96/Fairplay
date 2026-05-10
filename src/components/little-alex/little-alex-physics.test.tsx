@@ -938,6 +938,39 @@ describe("LittleAlexPhysics", () => {
       .not.toBeInTheDocument();
   });
 
+  it("keeps the full-body hair color layer attached to the physics body", () => {
+    stubReducedMotion(false);
+    stubPointerCapture();
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+
+    render(<LittleAlexPhysics hairColor="auburn" />);
+    const fullSprite = screen.getByTestId("little-alex-full-sprite");
+    const fullHairSprite = screen.getByTestId("little-alex-full-hair-sprite");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+    const initialTransform = fullSprite.style.transform;
+
+    dispatchPointer(grabTarget, "pointerdown", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+    dispatchPointer(grabTarget, "pointermove", {
+      clientX: 780,
+      clientY: 260,
+      pointerId: 1,
+      timeStamp: 64
+    });
+
+    expect(fullSprite.style.transform).not.toBe(initialTransform);
+    expect(fullHairSprite).toHaveAttribute(
+      "src",
+      "/assets/fairplay/little-alex-sprites/neutral-auburn-full-hair.png"
+    );
+    expect(fullHairSprite.style.transform).toBe(fullSprite.style.transform);
+    expect(fullHairSprite.style.opacity).toBe(fullSprite.style.opacity);
+  });
+
   it("overlaps reduced-motion arm and torso x bounds at both shoulders", () => {
     stubReducedMotion(true);
 

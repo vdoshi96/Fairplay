@@ -16,53 +16,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  const authState = await fetchAuthState(request);
-
-  if (!authState.authenticated) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  if (!authState.selectedPersonaId) {
-    return NextResponse.redirect(new URL("/choose-persona", request.url));
-  }
-
+  // The app layout performs the authoritative DB-backed session and persona check.
+  // Middleware only gates obviously anonymous app requests so it never forwards
+  // the raw Cookie header to a URL derived from an inbound Host header.
   return NextResponse.next();
-}
-
-async function fetchAuthState(request: NextRequest): Promise<{
-  authenticated: boolean;
-  selectedPersonaId: string | null;
-}> {
-  try {
-    const response = await fetch(new URL("/api/auth/me", request.url), {
-      headers: {
-        cookie: request.headers.get("cookie") ?? ""
-      },
-      cache: "no-store"
-    });
-
-    if (!response.ok) {
-      return {
-        authenticated: false,
-        selectedPersonaId: null
-      };
-    }
-
-    const body = (await response.json()) as {
-      authenticated?: boolean;
-      selectedPersonaId?: string | null;
-    };
-
-    return {
-      authenticated: body.authenticated !== false,
-      selectedPersonaId: body.selectedPersonaId ?? null
-    };
-  } catch {
-    return {
-      authenticated: false,
-      selectedPersonaId: null
-    };
-  }
 }
 
 function getCookieFromHeader(header: string | null, name: string): string | null {
