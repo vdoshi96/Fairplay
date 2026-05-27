@@ -17,6 +17,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   AiCardDraftDetail,
   AiCardDraftSummary,
+  AiCardReuseCandidate,
   AiCardDraftUpdate
 } from "@/contracts/ai-card-drafts";
 import { CADENCES } from "@/domain/enums";
@@ -35,12 +36,18 @@ type PendingAction =
   | `put-in-play:${string}`
   | `retry:${string}`
   | `save:${string}`
+  | `accept-reuse:${string}`
   | null;
 
 type TrackedAiCardDraft = AiCardDraftSummary & {
   isOptimistic?: boolean;
   isLocalOnly?: boolean;
   localInputText?: string;
+};
+
+type ReuseSuggestion = {
+  candidate: AiCardReuseCandidate;
+  inputText: string;
 };
 
 const statusLabels: Record<AiCardDraftSummary["status"], string> = {
@@ -70,6 +77,7 @@ export function AiTaskManager({
   );
   const [localDrafts, setLocalDrafts] = useState<TrackedAiCardDraft[]>([]);
   const [reviewDraft, setReviewDraft] = useState<TrackedAiCardDraft | null>(null);
+  const [reuseSuggestion, setReuseSuggestion] = useState<ReuseSuggestion | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -199,12 +207,27 @@ export function AiTaskManager({
         <AiCardCaptureSheet
           onCancel={() => setCaptureOpen(false)}
           onSubmit={(inputText) => {
-            const clientId = createClientDraftId();
-            const optimisticDraft = createOptimisticDraft(clientId, inputText);
-            setLocalDrafts((current) => [optimisticDraft, ...current]);
-            setError(null);
-            void createTextDraft(clientId, inputText);
+            void searchReuseOrCreate(inputText);
           }}
+        />
+      ) : null}
+
+      {reuseSuggestion ? (
+        <ReuseCandidatePanel
+          candidate={reuseSuggestion.candidate}
+          inputText={reuseSuggestion.inputText}
+          isAccepting={
+            pendingAction === `accept-reuse:${reuseSuggestion.candidate.id}`
+          }
+          onAccept={() => {
+            void acceptReuseSuggestion(reuseSuggestion);
+          }}
+          onGenerateNew={() => {
+            const inputText = reuseSuggestion.inputText;
+            setReuseSuggestion(null);
+            startCreateTextDraft(inputText);
+          }}
+          onDismiss={() => setReuseSuggestion(null)}
         />
       ) : null}
 
@@ -321,6 +344,79 @@ export function AiTaskManager({
     return localDrafts.some((draft) => draft.id === draftId && draft.isLocalOnly);
   }
 
+  async function searchReuseOrCreate(inputText: string) {
+    setReuseSuggestion(null);
+    setError(null);
+    setPendingAction("save:reuse-search");
+
+    try {
+      const response = await fetch("/api/ai-card-drafts/reuse-candidates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inputText })
+      });
+      if (!response.ok) {
+        const apiError = await readSafeApiError(
+          response,
+          "Reusable cards could not be searched."
+        );
+        throw new Error(apiError.message);
+      }
+
+      const result = (await response.json()) as { candidates?: AiCardReuseCandidate[] };
+      const candidate = result.candidates?.[0];
+      if (candidate) {
+        setReuseSuggestion({ candidate, inputText });
+        setCaptureOpen(false);
+        return;
+      }
+
+      startCreateTextDraft(inputText);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Reusable cards could not be searched.");
+    } finally {
+      setPendingAction((current) => (current === "save:reuse-search" ? null : current));
+    }
+  }
+
+  function startCreateTextDraft(inputText: string) {
+    const clientId = createClientDraftId();
+    const optimisticDraft = createOptimisticDraft(clientId, inputText);
+    setLocalDrafts((current) => [optimisticDraft, ...current]);
+    setError(null);
+    void createTextDraft(clientId, inputText);
+  }
+
+  async function acceptReuseSuggestion(suggestion: ReuseSuggestion) {
+    setPendingAction(`accept-reuse:${suggestion.candidate.id}`);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `/api/ai-card-drafts/reuse-candidates/${suggestion.candidate.id}/accept`,
+        { method: "POST" }
+      );
+      if (!response.ok) {
+        const apiError = await readSafeApiError(
+          response,
+          "The reusable card could not be added."
+        );
+        throw new Error(apiError.message);
+      }
+
+      const created = (await response.json()) as { id?: string };
+      setReuseSuggestion(null);
+      router.refresh();
+      if (created.id) {
+        router.push(`/app/responsibilities/${created.id}`);
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The reusable card could not be added.");
+    } finally {
+      setPendingAction(null);
+    }
+  }
+
   async function createTextDraft(clientId: string, inputText: string) {
     const controller = new AbortController();
     pendingCreateControllersRef.current.set(clientId, controller);
@@ -413,6 +509,75 @@ function GregTaskmasterAvatar() {
       src="/assets/fairplay/generated-ui/greg-taskmaster-avatar.png"
       width={1254}
     />
+  );
+}
+
+function ReuseCandidatePanel({
+  candidate,
+  inputText,
+  isAccepting,
+  onAccept,
+  onDismiss,
+  onGenerateNew
+}: {
+  candidate: AiCardReuseCandidate;
+  inputText: string;
+  isAccepting: boolean;
+  onAccept: () => void;
+  onDismiss: () => void;
+  onGenerateNew: () => void;
+}) {
+  return (
+    <section
+      aria-label="Reusable AI card suggestion"
+      className="grid min-w-0 max-w-full gap-3 overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 shadow-[var(--fp-shadow-soft)] sm:grid-cols-[auto_minmax(0,1fr)] sm:p-4"
+      data-testid="ai-reuse-candidate"
+    >
+      {candidate.sourceCoverAssetPath ? (
+        <GeneratedDraftCover
+          alt={`Reusable cover for ${candidate.title}`}
+          className="w-24"
+          src={candidate.sourceCoverAssetPath}
+        />
+      ) : null}
+      <div className="grid min-w-0 gap-3">
+        <div className="grid min-w-0 gap-1">
+          <p className="text-[13px] font-semibold text-fp-muted-ink">
+            Reusable card
+          </p>
+          <h3 className="text-[18px] font-bold leading-6 text-fp-ink [overflow-wrap:anywhere]">
+            {candidate.title}
+          </h3>
+          <p className="text-[14px] leading-6 text-fp-muted-ink [overflow-wrap:anywhere]">
+            {candidate.summary}
+          </p>
+          <p className="text-[12px] leading-4 text-fp-muted-ink [overflow-wrap:anywhere]">
+            Matched from: {inputText}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2 text-[12px] font-semibold text-fp-muted-ink">
+          <Chip>{Math.round(candidate.score * 100)}% match</Chip>
+          <Chip>{candidate.cadence.replaceAll("_", " ")}</Chip>
+          {candidate.reuseCount > 0 ? <Chip>Used {candidate.reuseCount}x</Chip> : null}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button disabled={isAccepting} onClick={onAccept} variant="primary">
+            <CheckCircle2 aria-hidden="true" size={16} />
+            Use this card
+          </Button>
+          <Button disabled={isAccepting} onClick={onGenerateNew}>
+            <Sparkles aria-hidden="true" size={16} />
+            Generate new
+          </Button>
+          <Button disabled={isAccepting} onClick={onDismiss} variant="ghost">
+            <X aria-hidden="true" size={16} />
+            Dismiss
+          </Button>
+        </div>
+      </div>
+    </section>
   );
 }
 

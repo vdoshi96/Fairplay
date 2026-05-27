@@ -70,6 +70,23 @@ function detail(overrides: Partial<AiCardDraftDetail> = {}): AiCardDraftDetail {
   };
 }
 
+const reuseCandidate = {
+  id: "550e8400-e29b-41d4-a716-446655440020",
+  score: 0.76,
+  title: "Lunch packing",
+  summary: "Keep school lunches packed before the morning rush.",
+  areaKeys: ["kids"],
+  hiddenEffortKeys: ["planning"],
+  cadence: "weekly",
+  definition: "Own lunch packing from groceries to packed bags.",
+  conception: "Notice the lunch calendar and snack supply.",
+  planning: "Plan groceries and containers before the school week.",
+  execution: "Pack lunches and place them where kids can grab them.",
+  minimumStandard: "Lunches are ready before school.",
+  sourceCoverAssetPath: `/api/ai-card-drafts/${draftIds.ready}/cover`,
+  reuseCount: 3
+};
+
 describe("AiTaskManager", () => {
   beforeEach(() => {
     routerPush.mockReset();
@@ -222,9 +239,19 @@ describe("AiTaskManager", () => {
   });
 
   it("submits text captures to the draft API and refreshes the library", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ id: draftIds.processing })
+    const fetchMock = vi.fn(async (...args: [string, RequestInit?]) => {
+      const [url] = args;
+      if (url === "/api/ai-card-drafts/reuse-candidates") {
+        return {
+          ok: true,
+          json: async () => ({ candidates: [] })
+        };
+      }
+
+      return {
+        ok: true,
+        json: async () => ({ id: draftIds.processing })
+      };
     });
     vi.stubGlobal("fetch", fetchMock);
     render(<AiTaskManager drafts={[]} />);
@@ -238,7 +265,17 @@ describe("AiTaskManager", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: "Create draft" }));
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/ai-card-drafts/reuse-candidates",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      })
+    );
+    expect(JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string)).toEqual({
+      inputText: "Make a card for packing lunches."
+    });
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/ai-card-drafts",
       expect.objectContaining({
@@ -246,20 +283,129 @@ describe("AiTaskManager", () => {
         headers: { "Content-Type": "application/json" }
       })
     );
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+    expect(JSON.parse((fetchMock.mock.calls[1][1] as RequestInit).body as string)).toEqual({
       inputText: "Make a card for packing lunches."
     });
     expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
+  it("offers a reusable generated card before calling generation", async () => {
+    const createdResponsibilityId = "550e8400-e29b-41d4-a716-446655440091";
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url === "/api/ai-card-drafts/reuse-candidates") {
+        return {
+          ok: true,
+          json: async () => ({ candidates: [reuseCandidate] })
+        };
+      }
+
+      if (
+        url === `/api/ai-card-drafts/reuse-candidates/${reuseCandidate.id}/accept`
+      ) {
+        return {
+          ok: true,
+          json: async () => ({ id: createdResponsibilityId })
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AiTaskManager drafts={[]} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Ask Greg" }));
+    await userEvent.type(
+      screen.getByLabelText("Describe the card"),
+      "Make a card for packing lunches."
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Create draft" }));
+
+    const suggestion = await screen.findByRole("region", {
+      name: "Reusable AI card suggestion"
+    });
+    expect(within(suggestion).getByText("Reusable card")).toBeVisible();
+    expect(within(suggestion).getByText("Lunch packing")).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(
+      within(suggestion).getByRole("button", { name: "Use this card" })
+    );
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/ai-card-drafts/reuse-candidates/${reuseCandidate.id}/accept`,
+        { method: "POST" }
+      )
+    );
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+    expect(routerPush).toHaveBeenCalledWith(
+      `/app/responsibilities/${createdResponsibilityId}`
+    );
+  });
+
+  it("lets users reject a reusable card and generate a new draft", async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url === "/api/ai-card-drafts/reuse-candidates") {
+        return {
+          ok: true,
+          json: async () => ({ candidates: [reuseCandidate] })
+        };
+      }
+
+      if (url === "/api/ai-card-drafts") {
+        return {
+          ok: true,
+          json: async () =>
+            detail({
+              id: draftIds.ready,
+              title: "Custom lunch system",
+              inputText: "Make a card for packing lunches."
+            })
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AiTaskManager drafts={[]} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Ask Greg" }));
+    await userEvent.type(
+      screen.getByLabelText("Describe the card"),
+      "Make a card for packing lunches."
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Create draft" }));
+    const suggestion = await screen.findByRole("region", {
+      name: "Reusable AI card suggestion"
+    });
+
+    await userEvent.click(
+      within(suggestion).getByRole("button", { name: "Generate new" })
+    );
+
+    expect(await screen.findByText("Custom lunch system")).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/ai-card-drafts",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
   it("clears the prompt and shows an independent queued request while create is pending", async () => {
     let resolveCreate: (response: Response) => void = () => {};
-    const fetchMock = vi.fn(
-      () =>
-        new Promise<Response>((resolve) => {
-          resolveCreate = resolve;
-        })
-    );
+    const fetchMock = vi.fn((url: string) => {
+      if (url === "/api/ai-card-drafts/reuse-candidates") {
+        return Promise.resolve(
+          new Response(JSON.stringify({ candidates: [] }), {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          })
+        );
+      }
+
+      return new Promise<Response>((resolve) => {
+        resolveCreate = resolve;
+      });
+    });
     vi.stubGlobal("fetch", fetchMock);
     render(<AiTaskManager drafts={[]} />);
 
@@ -303,14 +449,23 @@ describe("AiTaskManager", () => {
   });
 
   it("shows safe generation failure JSON and refreshes so failed drafts can appear", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: false,
-      json: async () => ({
-        error: "AI card draft generation failed.",
-        code: "GENERATION_FAILED",
-        draftId: draftIds.failed,
-        requestId: "fp_ai_test"
-      })
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url === "/api/ai-card-drafts/reuse-candidates") {
+        return {
+          ok: true,
+          json: async () => ({ candidates: [] })
+        };
+      }
+
+      return {
+        ok: false,
+        json: async () => ({
+          error: "AI card draft generation failed.",
+          code: "GENERATION_FAILED",
+          draftId: draftIds.failed,
+          requestId: "fp_ai_test"
+        })
+      };
     });
     vi.stubGlobal("fetch", fetchMock);
     render(<AiTaskManager drafts={[]} />);

@@ -294,6 +294,30 @@ model Responsibility {
   @@index([templateId])
 }
 
+model GeneratedCardLibraryEntry {
+  id                     String            @id @default(uuid())
+  sourceDraftId          String?           @unique
+  sourceResponsibilityId String?           @unique
+  title                  String
+  summary                String
+  areaKeys               String[]
+  hiddenEffortKeys       HiddenEffortKey[]
+  cadence                Cadence
+  definition             String
+  conception             String
+  planning               String
+  execution              String
+  minimumStandard        String
+  sourceCoverAssetPath   String?
+  searchText             String
+  reuseCount             Int               @default(0)
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  @@index([createdAt])
+  @@index([reuseCount])
+}
+
 model AiCardDraft {
   id                       String                @id @default(uuid())
   householdId              String

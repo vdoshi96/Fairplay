@@ -1,5 +1,6 @@
 import type {
   AiCardDraftDetail,
+  AiCardReuseCandidate,
   AiCardDraftSummary,
   AiCardDraftUpdate
 } from "@/contracts/ai-card-drafts";
@@ -19,9 +20,11 @@ import {
 import type { CurrentSession } from "@/server/auth/current-session";
 import {
   acceptAiCardDraftAsResponsibility,
+  acceptGeneratedCardReuseCandidate,
   cancelAiCardDraft,
   createAiCardDraft,
   deleteAiCardDraft,
+  findGeneratedCardReuseCandidates,
   getAiCardDraft,
   getAiCardDraftCover,
   listAiCardDrafts,
@@ -123,6 +126,11 @@ export type AiCardDraftServiceDeps = {
     diagnostics?: AiDiagnosticsContext
   ) => Promise<StructuredAiCard>;
   acceptDraftAsResponsibility: typeof acceptAiCardDraftAsResponsibility;
+  findReusableCards: (input: {
+    inputText: string;
+    limit?: number;
+  }) => Promise<AiCardReuseCandidate[]>;
+  acceptReusableCard: typeof acceptGeneratedCardReuseCandidate;
 };
 
 type AiCardGenerationStage =
@@ -145,7 +153,9 @@ const defaultDeps: AiCardDraftServiceDeps = {
   deleteDraft: deleteAiCardDraft,
   getCover: getAiCardDraftCover,
   structureTaskAsCard,
-  acceptDraftAsResponsibility: acceptAiCardDraftAsResponsibility
+  acceptDraftAsResponsibility: acceptAiCardDraftAsResponsibility,
+  findReusableCards: findGeneratedCardReuseCandidates,
+  acceptReusableCard: acceptGeneratedCardReuseCandidate
 };
 
 function requireSelectedPersona(session: CurrentSession): PersonaId {
@@ -442,6 +452,39 @@ export function createAiCardDraftService(
         });
       } catch (error) {
         return failDraft(deps, session.householdId, draft.id, error, diagnostics);
+      }
+    },
+
+    async reuseCandidates(
+      session: CurrentSession,
+      input: { inputText: string }
+    ): Promise<{ candidates: AiCardReuseCandidate[] }> {
+      requireSelectedPersona(session);
+      if (!input.inputText.trim()) {
+        throw new AiCardDraftServiceError("INVALID_INPUT", "Text input is required.");
+      }
+
+      return {
+        candidates: await deps.findReusableCards({
+          inputText: input.inputText,
+          limit: 3
+        })
+      };
+    },
+
+    async acceptReuseCandidate(
+      session: CurrentSession,
+      candidateId: string
+    ): Promise<ResponsibilityDetail> {
+      const createdByPersonaId = requireSelectedPersona(session);
+      try {
+        return await deps.acceptReusableCard({
+          householdId: session.householdId,
+          createdByPersonaId,
+          libraryEntryId: candidateId
+        });
+      } catch (error) {
+        mapRepositoryServiceError(error);
       }
     },
 

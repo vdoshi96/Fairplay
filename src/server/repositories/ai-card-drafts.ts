@@ -2,12 +2,15 @@ import type {
   AiCardDraft,
   AiCardDraftStatus,
   AiCardGenerationStage,
-  AiCardSourceInputType
+  AiCardSourceInputType,
+  GeneratedCardLibraryEntry,
+  Prisma
 } from "@prisma/client";
 
 import type {
   AiCardDraftDetail,
   AiCardDraftSummary,
+  AiCardReuseCandidate,
   AiCardDraftUpdate
 } from "@/contracts/ai-card-drafts";
 import type { ResponsibilityDetail } from "@/contracts/responsibilities";
@@ -36,6 +39,17 @@ export type ScopedAiCardDraftInput = {
 export type SaveAiCardDraftGenerationInput = ScopedAiCardDraftInput & {
   card?: StructuredAiCard;
   audioTranscript?: string | null;
+};
+
+export type GeneratedCardReuseCandidateInput = {
+  inputText: string;
+  limit?: number;
+};
+
+export type AcceptGeneratedCardReuseCandidateInput = {
+  householdId: HouseholdId;
+  createdByPersonaId: PersonaId;
+  libraryEntryId: string;
 };
 
 function truncatePreview(value: string) {
@@ -201,6 +215,149 @@ function requireGeneratedDraftFields(draft: AiCardDraft): StructuredAiCard {
     execution: draft.execution,
     minimumStandard: draft.minimumStandard
   };
+}
+
+const SEARCH_STOP_WORDS = new Set([
+  "and",
+  "are",
+  "card",
+  "create",
+  "doing",
+  "for",
+  "from",
+  "how",
+  "into",
+  "make",
+  "need",
+  "needs",
+  "responsibility",
+  "task",
+  "that",
+  "the",
+  "this",
+  "turn",
+  "what",
+  "when",
+  "with"
+]);
+
+function tokenizeSearchText(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .split(/[^a-z0-9]+/u)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 2 && !SEARCH_STOP_WORDS.has(token));
+}
+
+function buildGeneratedCardSearchText(card: StructuredAiCard) {
+  return [
+    card.title,
+    card.summary,
+    card.areaKeys.join(" "),
+    card.hiddenEffortKeys.join(" "),
+    card.cadence,
+    card.definition,
+    card.conception,
+    card.planning,
+    card.execution,
+    card.minimumStandard
+  ].join(" ");
+}
+
+function scoreGeneratedCardReuse(inputText: string, searchText: string) {
+  const inputTokens = new Set(tokenizeSearchText(inputText));
+  const candidateTokens = new Set(tokenizeSearchText(searchText));
+
+  if (inputTokens.size === 0 || candidateTokens.size === 0) {
+    return 0;
+  }
+
+  let overlap = 0;
+  inputTokens.forEach((token) => {
+    if (candidateTokens.has(token)) {
+      overlap += 1;
+    }
+  });
+
+  const coverage = overlap / inputTokens.size;
+  const titlePhraseBonus = searchText
+    .toLowerCase()
+    .includes(inputText.trim().toLowerCase())
+    ? 0.15
+    : 0;
+
+  return Math.min(1, Number((coverage + titlePhraseBonus).toFixed(4)));
+}
+
+function toReuseCandidate(
+  entry: GeneratedCardLibraryEntry,
+  score: number
+): AiCardReuseCandidate {
+  return {
+    id: entry.id,
+    score,
+    title: entry.title,
+    summary: entry.summary,
+    areaKeys: entry.areaKeys,
+    hiddenEffortKeys: entry.hiddenEffortKeys,
+    cadence: entry.cadence,
+    definition: entry.definition,
+    conception: entry.conception,
+    planning: entry.planning,
+    execution: entry.execution,
+    minimumStandard: entry.minimumStandard,
+    sourceCoverAssetPath: entry.sourceCoverAssetPath,
+    reuseCount: entry.reuseCount
+  };
+}
+
+async function upsertGeneratedCardLibraryEntry(input: {
+  client: Pick<Prisma.TransactionClient, "generatedCardLibraryEntry">;
+  sourceDraftId?: string | null;
+  sourceResponsibilityId?: string | null;
+  card: StructuredAiCard;
+  sourceCoverAssetPath?: string | null;
+}) {
+  const searchText = buildGeneratedCardSearchText(input.card);
+  const data = {
+    title: input.card.title,
+    summary: input.card.summary,
+    areaKeys: input.card.areaKeys,
+    hiddenEffortKeys: input.card.hiddenEffortKeys,
+    cadence: input.card.cadence,
+    definition: input.card.definition,
+    conception: input.card.conception,
+    planning: input.card.planning,
+    execution: input.card.execution,
+    minimumStandard: input.card.minimumStandard,
+    sourceCoverAssetPath: input.sourceCoverAssetPath ?? null,
+    searchText
+  };
+
+  if (input.sourceDraftId) {
+    await input.client.generatedCardLibraryEntry.upsert({
+      where: { sourceDraftId: input.sourceDraftId },
+      create: {
+        ...data,
+        sourceDraftId: input.sourceDraftId,
+        sourceResponsibilityId: input.sourceResponsibilityId ?? null
+      },
+      update: {
+        ...data,
+        sourceResponsibilityId: input.sourceResponsibilityId ?? null
+      }
+    });
+    return;
+  }
+
+  await input.client.generatedCardLibraryEntry.create({
+    data: {
+      ...data,
+      sourceResponsibilityId: input.sourceResponsibilityId ?? null
+    }
+  });
 }
 
 export async function createAiCardDraft(
@@ -439,6 +596,108 @@ export async function markAiCardDraftAccepted(input: ScopedAiCardDraftInput & {
   return toDetail(draft);
 }
 
+export async function findGeneratedCardReuseCandidates(
+  input: GeneratedCardReuseCandidateInput
+): Promise<AiCardReuseCandidate[]> {
+  const trimmed = input.inputText.trim();
+  if (!trimmed) {
+    throw new RepositoryError("INVALID_INPUT", "Text input is required.");
+  }
+
+  const entries = await prisma.generatedCardLibraryEntry.findMany({
+    orderBy: [
+      { reuseCount: "desc" },
+      { createdAt: "desc" }
+    ],
+    take: 250
+  });
+
+  return entries
+    .map((entry) => ({
+      entry,
+      score: scoreGeneratedCardReuse(trimmed, entry.searchText)
+    }))
+    .filter((candidate) => candidate.score >= 0.34)
+    .sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+      if (right.entry.reuseCount !== left.entry.reuseCount) {
+        return right.entry.reuseCount - left.entry.reuseCount;
+      }
+      return right.entry.createdAt.getTime() - left.entry.createdAt.getTime();
+    })
+    .slice(0, input.limit ?? 3)
+    .map((candidate) => toReuseCandidate(candidate.entry, candidate.score));
+}
+
+export async function acceptGeneratedCardReuseCandidate(
+  input: AcceptGeneratedCardReuseCandidateInput
+): Promise<ResponsibilityDetail> {
+  return prisma.$transaction(async (tx) => {
+    const [entry, creatorCount] = await Promise.all([
+      tx.generatedCardLibraryEntry.findUnique({
+        where: {
+          id: input.libraryEntryId
+        }
+      }),
+      tx.persona.count({
+        where: {
+          id: input.createdByPersonaId,
+          householdId: input.householdId
+        }
+      })
+    ]);
+
+    if (!entry) {
+      throw new RepositoryError("NOT_FOUND", "Reusable generated card not found.");
+    }
+
+    if (creatorCount !== 1) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Creator persona does not belong to household."
+      );
+    }
+
+    const responsibility = await createResponsibilityWithClient(tx, {
+      householdId: input.householdId,
+      createdByPersonaId: input.createdByPersonaId,
+      title: entry.title,
+      summary: entry.summary,
+      areaKeys: entry.areaKeys,
+      hiddenEffortKeys: entry.hiddenEffortKeys,
+      cadence: entry.cadence,
+      relevantDays: [],
+      status: "active",
+      visibility: "shared_household",
+      boardLane: "not_in_play",
+      boardSortOrder: 0,
+      householdStandard: entry.minimumStandard,
+      notes: null,
+      sourceDefinition: entry.definition,
+      sourceConception: entry.conception,
+      sourcePlanning: entry.planning,
+      sourceExecution: entry.execution,
+      sourceMinimumStandard: entry.minimumStandard,
+      sourceCoverAssetPath: entry.sourceCoverAssetPath
+    });
+
+    await tx.generatedCardLibraryEntry.update({
+      where: {
+        id: entry.id
+      },
+      data: {
+        reuseCount: {
+          increment: 1
+        }
+      }
+    });
+
+    return responsibility;
+  });
+}
+
 export async function acceptAiCardDraftAsResponsibility(input: {
   householdId: HouseholdId;
   draftId: AiCardDraftId;
@@ -538,6 +797,14 @@ export async function acceptAiCardDraftAsResponsibility(input: {
       data: {
         acceptedResponsibilityId: responsibility.id
       }
+    });
+
+    await upsertGeneratedCardLibraryEntry({
+      client: tx,
+      sourceDraftId: draft.id,
+      sourceResponsibilityId: responsibility.id,
+      card,
+      sourceCoverAssetPath: coverAssetPath
     });
 
     return responsibility;
