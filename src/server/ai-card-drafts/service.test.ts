@@ -2,7 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import type { AiCardDraftDetail, AiCardDraftSummary } from "@/contracts/ai-card-drafts";
+import type {
+  AiCardDraftDetail,
+  AiCardDraftSummary,
+  AiCardReuseCandidate
+} from "@/contracts/ai-card-drafts";
 import type { ResponsibilityDetail } from "@/contracts/responsibilities";
 import type { GeneratedCoverImage, StructuredAiCard } from "@/server/ai/card-generator";
 import type { CurrentSession } from "@/server/auth/current-session";
@@ -44,6 +48,23 @@ const generatedCard: StructuredAiCard = {
 const generatedCover: GeneratedCoverImage = {
   bytes: new Uint8Array([137, 80, 78, 71]),
   mimeType: "image/png"
+};
+
+const reuseCandidate: AiCardReuseCandidate = {
+  id: "550e8400-e29b-41d4-a716-446655440020",
+  score: 0.82,
+  title: generatedCard.title,
+  summary: generatedCard.summary,
+  areaKeys: generatedCard.areaKeys,
+  hiddenEffortKeys: generatedCard.hiddenEffortKeys,
+  cadence: generatedCard.cadence,
+  definition: generatedCard.definition,
+  conception: generatedCard.conception,
+  planning: generatedCard.planning,
+  execution: generatedCard.execution,
+  minimumStandard: generatedCard.minimumStandard,
+  sourceCoverAssetPath: `/api/ai-card-drafts/${draftId}/cover`,
+  reuseCount: 2
 };
 
 function draft(overrides: Partial<AiCardDraftDetail> = {}): AiCardDraftDetail {
@@ -153,6 +174,8 @@ function makeDeps(overrides: Partial<AiCardDraftServiceDeps> = {}): AiCardDraftS
     }),
     structureTaskAsCard: vi.fn().mockResolvedValue(generatedCard),
     acceptDraftAsResponsibility: vi.fn().mockResolvedValue(responsibility()),
+    findReusableCards: vi.fn().mockResolvedValue([reuseCandidate]),
+    acceptReusableCard: vi.fn().mockResolvedValue(responsibility()),
     ...overrides
   };
 }
@@ -291,6 +314,51 @@ describe("AI card draft service", () => {
       { taskText: "Dog medicine" },
       diagnostics
     );
+  });
+
+  it("searches generated-card reuse candidates without calling generation", async () => {
+    const deps = makeDeps();
+    const service = createAiCardDraftService(deps);
+
+    await expect(
+      service.reuseCandidates(session, { inputText: "Dog medicine refill" })
+    ).resolves.toEqual({ candidates: [reuseCandidate] });
+
+    expect(deps.findReusableCards).toHaveBeenCalledWith({
+      inputText: "Dog medicine refill",
+      limit: 3
+    });
+    expect(deps.createDraft).not.toHaveBeenCalled();
+    expect(deps.structureTaskAsCard).not.toHaveBeenCalled();
+  });
+
+  it("accepts a generated-card reuse candidate as the current user", async () => {
+    const deps = makeDeps();
+    const service = createAiCardDraftService(deps);
+
+    await expect(
+      service.acceptReuseCandidate(session, reuseCandidate.id)
+    ).resolves.toMatchObject({ id: responsibilityId });
+
+    expect(deps.acceptReusableCard).toHaveBeenCalledWith({
+      householdId,
+      createdByPersonaId: alexId,
+      libraryEntryId: reuseCandidate.id
+    });
+    expect(deps.createDraft).not.toHaveBeenCalled();
+  });
+
+  it("requires a selected persona for generated-card reuse", async () => {
+    const deps = makeDeps();
+    const service = createAiCardDraftService(deps);
+    const anonymousSession = { ...session, selectedPersonaId: null };
+
+    await expect(
+      service.reuseCandidates(anonymousSession, { inputText: "Dog medicine" })
+    ).rejects.toMatchObject({ code: "AUTH_REQUIRED" });
+    await expect(
+      service.acceptReuseCandidate(anonymousSession, reuseCandidate.id)
+    ).rejects.toMatchObject({ code: "AUTH_REQUIRED" });
   });
 
   it("validates household ownership through get/list/update/retry/cover operations", async () => {

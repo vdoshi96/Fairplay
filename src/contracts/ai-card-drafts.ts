@@ -93,7 +93,45 @@ export const AiCardDraftUpdateSchema = z
   })
   .strict();
 
+export const AiCardReuseCandidateSearchSchema = z
+  .object({
+    inputText: z.string().trim().min(1).max(4000)
+  })
+  .strict();
+
+export const AiCardReuseCandidateSchema = z
+  .object({
+    id: z.string().uuid(),
+    score: z.number().min(0).max(1),
+    title: z.string().trim().min(1).max(140),
+    summary: z.string().trim().min(1).max(700),
+    areaKeys: z.array(AreaKeySchema),
+    hiddenEffortKeys: z.array(HiddenEffortKeySchema),
+    cadence: CadenceSchema,
+    definition: z.string().trim().min(1).max(3000),
+    conception: z.string().trim().min(1).max(3000),
+    planning: z.string().trim().min(1).max(3000),
+    execution: z.string().trim().min(1).max(3000),
+    minimumStandard: z.string().trim().min(1).max(3000),
+    sourceCoverAssetPath: GeneratedCoverAssetPathSchema,
+    reuseCount: z.number().int().nonnegative()
+  })
+  .strict();
+
+export const AiCardReuseCandidateResponseSchema = z
+  .object({
+    candidates: z.array(AiCardReuseCandidateSchema)
+  })
+  .strict();
+
 export type AiCardDraftSummary = z.infer<typeof AiCardDraftSummarySchema>;
 export type AiCardDraftDetail = z.infer<typeof AiCardDraftDetailSchema>;
 export type AiCardDraftUpdate = z.infer<typeof AiCardDraftUpdateSchema>;
 export type AiCardDraftCreate = z.infer<typeof AiCardDraftCreateSchema>;
+export type AiCardReuseCandidateSearch = z.infer<
+  typeof AiCardReuseCandidateSearchSchema
+>;
+export type AiCardReuseCandidate = z.infer<typeof AiCardReuseCandidateSchema>;
+export type AiCardReuseCandidateResponse = z.infer<
+  typeof AiCardReuseCandidateResponseSchema
+>;

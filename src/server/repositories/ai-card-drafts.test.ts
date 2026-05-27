@@ -8,10 +8,12 @@ import { RepositoryError } from "../db/errors";
 import { createHouseholdWithPersonas } from "./households";
 import {
   acceptAiCardDraftAsResponsibility,
+  acceptGeneratedCardReuseCandidate,
   cancelAiCardDraft,
   createAiCardDraft,
   deleteAiCardDraft,
   deleteAiCardDraftAudio,
+  findGeneratedCardReuseCandidates,
   getAiCardDraft,
   getAiCardDraftCover,
   listAiCardDrafts,
@@ -93,6 +95,8 @@ beforeAll(() => {
 });
 
 afterEach(async () => {
+  await prisma.generatedCardLibraryEntry.deleteMany();
+
   if (createdHouseholdIds.size === 0) {
     return;
   }
@@ -484,6 +488,62 @@ describe("AI card draft repository", () => {
         }
       })
     ).resolves.toBe(1);
+
+    const libraryEntry = await prisma.generatedCardLibraryEntry.findUniqueOrThrow({
+      where: { sourceDraftId: draft.id }
+    });
+    expect(libraryEntry).toMatchObject({
+      sourceResponsibilityId: responsibility.id,
+      title: generatedCard.title,
+      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`,
+      reuseCount: 0
+    });
+  });
+
+  it("finds similar generated cards and accepts reuse without creating a new draft", async () => {
+    const { household, personas, draft } = await createReadyAudioDraft();
+    const original = await acceptAiCardDraftAsResponsibility({
+      householdId: household.id,
+      draftId: draft.id,
+      createdByPersonaId: personas[0].id
+    });
+
+    const candidates = await findGeneratedCardReuseCandidates({
+      inputText: "dog medicine refill schedule"
+    });
+
+    expect(candidates[0]).toMatchObject({
+      title: generatedCard.title,
+      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
+    });
+    expect(candidates[0].score).toBeGreaterThanOrEqual(0.34);
+
+    const reused = await acceptGeneratedCardReuseCandidate({
+      householdId: household.id,
+      createdByPersonaId: personas[1].id,
+      libraryEntryId: candidates[0].id
+    });
+
+    expect(reused).toMatchObject({
+      title: generatedCard.title,
+      status: "active",
+      boardLane: "not_in_play",
+      sourceCoverAssetPath: `/api/ai-card-drafts/${draft.id}/cover`
+    });
+    expect(reused.id).not.toBe(original.id);
+    await expect(
+      prisma.aiCardDraft.count({
+        where: {
+          householdId: household.id
+        }
+      })
+    ).resolves.toBe(1);
+    await expect(
+      prisma.generatedCardLibraryEntry.findUniqueOrThrow({
+        where: { id: candidates[0].id },
+        select: { reuseCount: true }
+      })
+    ).resolves.toEqual({ reuseCount: 1 });
   });
 
   it("returns generated source fields when accepting an AI draft titled like a source card", async () => {
