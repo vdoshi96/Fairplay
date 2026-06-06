@@ -75,11 +75,32 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
 
   const trackedDrafts = useMemo(() => {
     const serverIds = new Set(drafts.map((draft) => draft.id));
-    return [
-      ...localDrafts.filter((draft) => draft.isOptimistic || !serverIds.has(draft.id)),
-      ...drafts
-    ];
+    const localDraftById = new Map(localDrafts.map((draft) => [draft.id, draft]));
+    const localOnlyDrafts = localDrafts.filter(
+      (draft) => draft.isOptimistic || !serverIds.has(draft.id)
+    );
+    const mergedServerDrafts = drafts.map((draft) => localDraftById.get(draft.id) ?? draft);
+
+    return [...localOnlyDrafts, ...mergedServerDrafts].filter(
+      (draft) => draft.status !== "canceled"
+    );
   }, [drafts, localDrafts]);
+
+  useEffect(() => {
+    if (!reviewDraft) {
+      return;
+    }
+
+    const updatedDraft = trackedDrafts.find((draft) => draft.id === reviewDraft.id);
+    if (!updatedDraft) {
+      setReviewDraft(null);
+      return;
+    }
+
+    if (updatedDraft !== reviewDraft) {
+      setReviewDraft(updatedDraft);
+    }
+  }, [reviewDraft, trackedDrafts]);
 
   async function mutateDraft(path: string, action: Exclude<PendingAction, null>) {
     setPendingAction(action);
@@ -97,6 +118,15 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
         }
         throw new Error(apiError.message);
       }
+      const updated = (await response.json()) as AiCardDraftDetail | AiCardDraftSummary;
+      const reconciled = reconcileDraftUpdate(updated);
+      setReviewDraft((current) =>
+        current?.id === reconciled.id && reconciled.status !== "canceled"
+          ? reconciled
+          : current?.id === reconciled.id
+            ? null
+            : current
+      );
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The draft could not be updated.");
@@ -156,7 +186,11 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
           data-testid="greg-taskmaster-control"
         >
           <GregTaskmasterAvatar />
-          <Button onClick={() => setCaptureOpen((open) => !open)} variant="primary">
+          <Button
+            className="w-full min-w-0 px-3 text-[13px] sm:w-auto sm:px-4 sm:text-sm"
+            onClick={() => setCaptureOpen((open) => !open)}
+            variant="primary"
+          >
             <Sparkles aria-hidden="true" size={16} />
             Greg - The Taskmaster
           </Button>
@@ -226,6 +260,23 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
     void mutateDraft(`/api/ai-card-drafts/${draftId}/cancel`, `cancel:${draftId}`);
   }
 
+  function reconcileDraftUpdate(updated: AiCardDraftDetail | AiCardDraftSummary) {
+    const fallbackInput =
+      "inputText" in updated ? updated.inputText ?? updated.promptPreview : updated.promptPreview;
+    const reconciled = summaryFromCreatedDraft(updated, fallbackInput);
+
+    setLocalDrafts((current) => {
+      const existing = current.find((draft) => draft.id === updated.id);
+      const nextDraft = existing?.localInputText
+        ? summaryFromCreatedDraft(updated, existing.localInputText)
+        : reconciled;
+
+      return replaceLocalDraft(current, updated.id, nextDraft);
+    });
+
+    return reconciled;
+  }
+
   async function createTextDraft(clientId: string, inputText: string) {
     const controller = new AbortController();
     pendingCreateControllersRef.current.set(clientId, controller);
@@ -244,17 +295,18 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
         );
         const failedId = apiError.draftId ?? clientId;
         setLocalDrafts((current) =>
-          current.map((draft) =>
-            draft.id === clientId
-              ? {
-                  ...draft,
-                  id: failedId,
-                  generationStage: "failed",
-                  status: "failed",
-                  failureMessage: apiError.message,
-                  isOptimistic: false
-                }
-              : draft
+          replaceLocalDraft(
+            current,
+            clientId,
+            {
+              ...(current.find((draft) => draft.id === clientId) ??
+                createOptimisticDraft(clientId, inputText)),
+              id: failedId,
+              generationStage: "failed",
+              status: "failed",
+              failureMessage: apiError.message,
+              isOptimistic: false
+            }
           )
         );
         if (apiError.code === "GENERATION_FAILED") {
@@ -265,15 +317,16 @@ export function AiTaskManager({ drafts }: AiTaskManagerProps) {
 
       const created = (await response.json()) as AiCardDraftDetail | AiCardDraftSummary;
       setLocalDrafts((current) =>
-        current.map((draft) =>
-          draft.id === clientId
-            ? {
-                ...draft,
-                ...summaryFromCreatedDraft(created, inputText),
-                isOptimistic: false,
-                localInputText: inputText
-              }
-            : draft
+        replaceLocalDraft(
+          current,
+          clientId,
+          {
+            ...(current.find((draft) => draft.id === clientId) ??
+              createOptimisticDraft(clientId, inputText)),
+            ...summaryFromCreatedDraft(created, inputText),
+            isOptimistic: false,
+            localInputText: inputText
+          }
         )
       );
       router.refresh();
@@ -534,14 +587,14 @@ export function AiCardTracker({
   return (
     <section
       aria-label="AI-created cards"
-      className="grid gap-3 rounded border border-fp-line bg-white p-4 shadow-[var(--fp-shadow-soft)]"
+      className="grid min-w-0 gap-3 overflow-hidden rounded border border-fp-line bg-white p-4 shadow-[var(--fp-shadow-soft)]"
     >
       {drafts.length > 0 ? (
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid min-w-0 gap-3 lg:grid-cols-2">
           {drafts.map((draft) => (
             <article
               aria-label={`${draft.title ?? draft.promptPreview} ${draft.status} draft`}
-              className="grid gap-3 rounded border border-fp-line bg-fp-surface p-3"
+              className="grid min-w-0 gap-3 rounded border border-fp-line bg-fp-surface p-3"
               key={draft.id}
             >
               <button
@@ -549,9 +602,9 @@ export function AiCardTracker({
                 onClick={() => onReview(draft)}
                 type="button"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="truncate text-[16px] font-bold text-fp-ink">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="break-words text-[16px] font-bold text-fp-ink [overflow-wrap:anywhere]">
                       {draft.title ?? draft.promptPreview}
                     </h3>
                     <p className="line-clamp-2 text-[13px] leading-5 text-fp-muted-ink">
@@ -568,7 +621,7 @@ export function AiCardTracker({
               </button>
 
               {draft.failureMessage ? (
-                <p className="rounded border border-fp-line bg-white p-3 text-[13px] leading-5 text-fp-muted-ink">
+                <p className="break-words rounded border border-fp-line bg-white p-3 text-[13px] leading-5 text-fp-muted-ink [overflow-wrap:anywhere]">
                   {draft.failureMessage}
                 </p>
               ) : null}
@@ -659,7 +712,7 @@ export function AiCardCaptureSheet({
   }
 
   return (
-    <Sheet aria-label="Capture AI card draft" className="grid gap-4">
+    <Sheet aria-label="Capture AI card draft" className="grid min-w-0 gap-4 overflow-hidden">
       <div className="flex items-start justify-between gap-3">
         <div className="grid gap-1">
           <h3 className="text-[18px] font-bold text-fp-ink">Capture a card</h3>
@@ -811,7 +864,7 @@ export function AiCardReviewPanel({
   const canEdit = draft.status === "ready";
 
   return (
-    <Sheet aria-label="Review AI card draft" className="grid gap-4">
+    <Sheet aria-label="Review AI card draft" className="grid min-w-0 gap-4 overflow-hidden">
       <div className="grid content-start gap-3">
         <div className="flex items-start justify-between gap-3">
           <div className="grid gap-1">
@@ -832,7 +885,7 @@ export function AiCardReviewPanel({
           <p className="text-[12px] font-bold uppercase text-fp-muted-ink">
             Original prompt
           </p>
-          <p className="text-[14px] leading-6 text-fp-ink">{originalPrompt}</p>
+          <p className="break-words text-[14px] leading-6 text-fp-ink [overflow-wrap:anywhere]">{originalPrompt}</p>
         </section>
 
         {isLoading ? (
@@ -847,7 +900,7 @@ export function AiCardReviewPanel({
             <p className="text-[12px] font-bold uppercase text-fp-muted-ink">
               Error details
             </p>
-            <p className="text-[14px] leading-6 text-fp-muted-ink">
+            <p className="break-words text-[14px] leading-6 text-fp-muted-ink [overflow-wrap:anywhere]">
               {draft.failureMessage}
             </p>
           </section>
@@ -1065,6 +1118,31 @@ function createOptimisticDraft(id: string, inputText: string): TrackedAiCardDraf
     isOptimistic: true,
     localInputText: inputText
   };
+}
+
+function replaceLocalDraft(
+  drafts: TrackedAiCardDraft[],
+  previousId: string,
+  nextDraft: TrackedAiCardDraft
+) {
+  let inserted = false;
+  const nextDrafts: TrackedAiCardDraft[] = [];
+
+  for (const draft of drafts) {
+    if (draft.id === previousId) {
+      if (!inserted) {
+        nextDrafts.push(nextDraft);
+        inserted = true;
+      }
+      continue;
+    }
+
+    if (draft.id !== nextDraft.id) {
+      nextDrafts.push(draft);
+    }
+  }
+
+  return inserted ? nextDrafts : [nextDraft, ...nextDrafts];
 }
 
 function summaryFromCreatedDraft(

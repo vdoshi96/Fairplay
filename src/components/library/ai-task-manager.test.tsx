@@ -262,6 +262,263 @@ describe("AiTaskManager", () => {
     expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
+  it("closes and removes a failed draft when cleanup succeeds from the detail panel", async () => {
+    const failedDraft = draft({
+      id: draftIds.failed,
+      status: "failed",
+      generationStage: "failed",
+      failureMessage: "The model timed out."
+    });
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (
+        url === `/api/ai-card-drafts/${draftIds.failed}/cancel` &&
+        init?.method === "POST"
+      ) {
+        return {
+          ok: true,
+          json: async () => ({
+            ...failedDraft,
+            status: "canceled",
+            updatedAt: "2026-05-05T12:05:00.000Z"
+          })
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AiTaskManager drafts={[failedDraft]} />);
+
+    await userEvent.click(
+      within(screen.getByRole("article", { name: /failed draft/i })).getByRole(
+        "button",
+        { name: /laundry keeps slipping/i }
+      )
+    );
+    const panel = screen.getByRole("region", { name: "Review AI card draft" });
+    expect(within(panel).getByText("The model timed out.")).toBeVisible();
+
+    await userEvent.click(within(panel).getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/ai-card-drafts/${draftIds.failed}/cancel`,
+        expect.objectContaining({ method: "POST" })
+      )
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("region", { name: "Review AI card draft" })
+      ).not.toBeInTheDocument()
+    );
+    expect(screen.queryByRole("article", { name: /failed draft/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("Canceled")).not.toBeInTheDocument();
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not show stale failed detail when refreshed props mark the draft canceled", async () => {
+    const failedDraft = draft({
+      id: draftIds.failed,
+      status: "failed",
+      generationStage: "failed",
+      failureMessage: "The model timed out."
+    });
+    const { rerender } = render(<AiTaskManager drafts={[failedDraft]} />);
+
+    await userEvent.click(
+      within(screen.getByRole("article", { name: /failed draft/i })).getByRole(
+        "button",
+        { name: /laundry keeps slipping/i }
+      )
+    );
+    expect(screen.getByRole("region", { name: "Review AI card draft" })).toBeVisible();
+
+    rerender(
+      <AiTaskManager
+        drafts={[
+          {
+            ...failedDraft,
+            status: "canceled",
+            updatedAt: "2026-05-05T12:05:00.000Z"
+          }
+        ]}
+      />
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("region", { name: "Review AI card draft" })
+      ).not.toBeInTheDocument()
+    );
+    expect(screen.queryByText("Canceled")).not.toBeInTheDocument();
+    expect(screen.queryByText("Generation failed")).not.toBeInTheDocument();
+  });
+
+  it("updates a failed draft after retry succeeds without waiting for refreshed props", async () => {
+    const failedDraft = draft({
+      id: draftIds.failed,
+      status: "failed",
+      generationStage: "failed",
+      failureMessage: "The model timed out."
+    });
+    const retriedDetail = detail({
+      id: draftIds.failed,
+      title: "Lunch packing",
+      inputText: "Make a card for packing lunches."
+    });
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (
+        url === `/api/ai-card-drafts/${draftIds.failed}/retry` &&
+        init?.method === "POST"
+      ) {
+        return {
+          ok: true,
+          json: async () => retriedDetail
+        };
+      }
+
+      if (url === `/api/ai-card-drafts/${draftIds.failed}` && !init) {
+        return {
+          ok: true,
+          json: async () => retriedDetail
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AiTaskManager drafts={[failedDraft]} />);
+
+    await userEvent.click(
+      within(screen.getByRole("article", { name: /failed draft/i })).getByRole(
+        "button",
+        { name: /laundry keeps slipping/i }
+      )
+    );
+    await userEvent.click(
+      within(screen.getByRole("region", { name: "Review AI card draft" })).getByRole(
+        "button",
+        { name: "Retry" }
+      )
+    );
+
+    expect(await screen.findByLabelText("Draft title")).toHaveValue("Lunch packing");
+    expect(screen.getByText("Make a card for packing lunches.")).toBeVisible();
+    expect(screen.queryByText("The model timed out.")).not.toBeInTheDocument();
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("deduplicates local draft overrides when cleanup and retry reuse the same server id", async () => {
+    const failedResponse = {
+      error: "AI card draft generation failed.",
+      code: "GENERATION_FAILED",
+      draftId: draftIds.failed,
+      requestId: "fp_ai_test"
+    };
+    const retriedDetail = detail({
+      id: draftIds.failed,
+      title: "Lunch packing",
+      inputText: "Make a card for packing lunches."
+    });
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url === "/api/ai-card-drafts" && init?.method === "POST") {
+        return {
+          ok: false,
+          json: async () => failedResponse
+        };
+      }
+
+      if (
+        url === `/api/ai-card-drafts/${draftIds.failed}/cancel` &&
+        init?.method === "POST"
+      ) {
+        return {
+          ok: true,
+          json: async () =>
+            draft({
+              id: draftIds.failed,
+              status: "canceled",
+              generationStage: "failed",
+              failureMessage: "AI card draft generation failed."
+            })
+        };
+      }
+
+      if (
+        url === `/api/ai-card-drafts/${draftIds.failed}/retry` &&
+        init?.method === "POST"
+      ) {
+        return {
+          ok: true,
+          json: async () => retriedDetail
+        };
+      }
+
+      if (url === `/api/ai-card-drafts/${draftIds.failed}` && !init) {
+        return {
+          ok: true,
+          json: async () => retriedDetail
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AiTaskManager drafts={[]} />);
+
+    async function submitPrompt() {
+      await userEvent.type(
+        screen.getByLabelText("Describe the card"),
+        "Make a card for packing lunches."
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Create draft" }));
+      await screen.findByRole("article", {
+        name: /make a card for packing lunches.*failed draft/i
+      });
+    }
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Greg - The Taskmaster" })
+    );
+    await submitPrompt();
+    await userEvent.click(
+      within(
+        screen.getByRole("article", {
+          name: /make a card for packing lunches.*failed draft/i
+        })
+      ).getByRole("button", { name: "Cancel" })
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("article", {
+          name: /make a card for packing lunches.*failed draft/i
+        })
+      ).not.toBeInTheDocument()
+    );
+
+    await submitPrompt();
+    await userEvent.click(
+      within(
+        screen.getByRole("article", {
+          name: /make a card for packing lunches.*failed draft/i
+        })
+      ).getByRole("button", { name: /make a card for packing lunches/i })
+    );
+    await userEvent.click(
+      within(
+        screen.getByRole("region", { name: "Review AI card draft" })
+      ).getByRole("button", { name: "Retry" })
+    );
+
+    expect(await screen.findByLabelText("Draft title")).toHaveValue("Lunch packing");
+    expect(
+      screen.queryByRole("article", {
+        name: /make a card for packing lunches.*failed draft/i
+      })
+    ).not.toBeInTheDocument();
+    expect(screen.getAllByText("Lunch packing")).toHaveLength(2);
+  });
+
   it("fetches text detail, saves edits, and exposes text-only actions", async () => {
     const draftDetail = detail();
     const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
