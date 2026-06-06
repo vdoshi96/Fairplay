@@ -374,11 +374,6 @@ export function createAiCardDraftService(
           }
         })();
         if (card) {
-          await deps.saveGeneration({
-            householdId: session.householdId,
-            draftId,
-            card
-          });
           return deps.markStage({
             householdId: session.householdId,
             draftId,

@@ -272,6 +272,46 @@ describe("AI card draft service", () => {
     }
   );
 
+  it("marks failed drafts with existing generated text ready on retry without rewriting generation", async () => {
+    const deps = makeDeps({
+      getDraft: vi.fn().mockResolvedValue(
+        readyDraft({
+          status: "failed",
+          generationStage: "failed",
+          failureMessage: "Previous ready transition failed."
+        })
+      ),
+      saveGeneration: vi
+        .fn()
+        .mockRejectedValue(
+          new RepositoryError(
+            "INVALID_INPUT",
+            "AI card draft is not in an editable lifecycle state."
+          )
+        ),
+      markStage: vi.fn().mockResolvedValue(
+        readyDraft({
+          status: "ready",
+          generationStage: "ready",
+          failureMessage: null
+        })
+      )
+    });
+    const service = createAiCardDraftService(deps);
+
+    await expect(service.retry(session, draftId)).resolves.toMatchObject({
+      status: "ready"
+    });
+
+    expect(deps.structureTaskAsCard).not.toHaveBeenCalled();
+    expect(deps.saveGeneration).not.toHaveBeenCalled();
+    expect(deps.markStage).toHaveBeenCalledWith({
+      householdId,
+      draftId,
+      stage: "ready"
+    });
+  });
+
   it.each(["accepted", "canceled"] as const)(
     "rejects updates for %s drafts",
     async (status) => {
