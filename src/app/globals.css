@@ -607,6 +607,12 @@ a {
   z-index: 3;
 }
 
+.fp-little-alex-shell[data-ragdoll-state="flinging"] .fp-little-alex-part,
+.fp-little-alex-shell[data-ragdoll-state="flinging"] .fp-little-alex-full-sprite,
+.fp-little-alex-shell[data-ragdoll-state="flinging"] .fp-little-alex-full-hair-sprite {
+  transition: none;
+}
+
 .fp-little-alex-hair-sprite {
   display: block;
   height: 100%;

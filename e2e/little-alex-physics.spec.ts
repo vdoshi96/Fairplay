@@ -876,19 +876,24 @@ async function littleAlexVisibleRagdollFailures(
       const fullSprite = document.querySelector<HTMLElement>(
         '[data-testid="little-alex-full-sprite"]'
       );
+      const fullHairSprite = document.querySelector<HTMLElement>(
+        '[data-testid="little-alex-full-hair-sprite"]'
+      );
       const state = littleAlex?.getAttribute("data-ragdoll-state");
 
       if (state !== expectedState) {
         failures.push(`expected ragdoll state ${expectedState}, got ${state ?? "none"}`);
       }
 
-      if (!fullSprite) {
-        failures.push("full-body sprite is missing");
-      } else if (
-        expectedState === "flinging" &&
-        Number.parseFloat(getComputedStyle(fullSprite).opacity) > 0.25
-      ) {
-        failures.push("full-body sprite is still visible during fling");
+      for (const [name, element] of [
+        ["full-body sprite", fullSprite],
+        ["full-body hair sprite", fullHairSprite]
+      ] as const) {
+        if (!element) {
+          failures.push(`${name} is missing`);
+        } else if (Number.parseFloat(getComputedStyle(element).opacity) > 0.25) {
+          failures.push(`${name} is still visible during ${expectedState}`);
+        }
       }
 
       const snapshots = Object.fromEntries(
@@ -971,6 +976,86 @@ async function expectVisibleRagdollConnected(
       timeout
     })
     .toEqual([]);
+}
+
+type LittleAlexMotionSample = {
+  elapsedMs: number;
+  fullOpacity: number;
+  fullX: number;
+  fullY: number;
+  ragdollState: string | null;
+};
+
+async function sampleLittleAlexMotion(
+  page: Page,
+  durationMs: number,
+  intervalMs: number
+) {
+  const samples: LittleAlexMotionSample[] = [];
+
+  for (let elapsedMs = 0; elapsedMs <= durationMs; elapsedMs += intervalMs) {
+    if (elapsedMs > 0) {
+      await page.waitForTimeout(intervalMs);
+    }
+
+    samples.push(
+      await page.evaluate((sampleElapsedMs) => {
+        const shell = document.querySelector<HTMLElement>(
+          '[data-testid="little-alex-horne"]'
+        );
+        const fullSprite = document.querySelector<HTMLElement>(
+          '[data-testid="little-alex-full-sprite"]'
+        );
+        const rect = fullSprite?.getBoundingClientRect();
+
+        return {
+          elapsedMs: sampleElapsedMs,
+          fullOpacity: fullSprite
+            ? Number.parseFloat(getComputedStyle(fullSprite).opacity)
+            : 0,
+          fullX: rect?.x ?? 0,
+          fullY: rect?.y ?? 0,
+          ragdollState: shell?.getAttribute("data-ragdoll-state") ?? null
+        };
+      }, elapsedMs)
+    );
+  }
+
+  return samples;
+}
+
+function movingSettledFullBodyFailures(samples: LittleAlexMotionSample[]) {
+  const firstSettled = samples.find(
+    (sample) =>
+      sample.elapsedMs >= 500 &&
+      sample.ragdollState === "settled" &&
+      sample.fullOpacity > 0.25
+  );
+
+  if (!firstSettled) {
+    return [];
+  }
+
+  return samples.flatMap((sample) => {
+    if (
+      sample.elapsedMs < firstSettled.elapsedMs ||
+      sample.ragdollState !== "settled" ||
+      sample.fullOpacity <= 0.25
+    ) {
+      return [];
+    }
+
+    const drift = Math.hypot(
+      sample.fullX - firstSettled.fullX,
+      sample.fullY - firstSettled.fullY
+    );
+
+    return drift > 2
+      ? [
+          `settled full-body sprite drifted ${drift.toFixed(1)}px by ${sample.elapsedMs}ms`
+        ]
+      : [];
+  });
 }
 
 async function littleAlexScreenshotPixelFailures(
@@ -1270,6 +1355,24 @@ test.describe("Little Alex physics", () => {
     }
 
     await expectLittleAlexInViewport(page);
+  });
+
+  test("never shows a moving full-body sprite after a settled release", async ({
+    page
+  }) => {
+    await createHouseholdAndChooseAlex(page);
+    await page.goto("/app/home");
+
+    const littleAlex = page.getByTestId("little-alex-horne");
+
+    await expect(littleAlex).toHaveAttribute("data-physics-ready", "true");
+    await dragLittleAlex(page, 5, 0);
+
+    const samples = await sampleLittleAlexMotion(page, 1_000, 100);
+
+    expect(movingSettledFullBodyFailures(samples)).toEqual([]);
+    await expect(page.getByTestId("little-alex-chat-bubble")).toHaveCount(0);
+    await expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
   });
 
   test("reveals connected limb sprites during fling and recovery", async ({ page }) => {
