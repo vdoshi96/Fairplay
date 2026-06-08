@@ -470,6 +470,59 @@ describe("LittleAlexPhysics", () => {
     expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
   });
 
+  it("does not apply a hidden post-release impulse for a tiny settled release", () => {
+    stubReducedMotion(false);
+    stubPointerCapture();
+    vi.spyOn(Matter.Runner, "run").mockImplementation(() => Matter.Runner.create());
+    const setVelocitySpy = vi.spyOn(Matter.Body, "setVelocity");
+    const setAngularVelocitySpy = vi.spyOn(Matter.Body, "setAngularVelocity");
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const fullSprite = screen.getByTestId("little-alex-full-sprite");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    dispatchPointer(grabTarget, "pointerdown", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+    dispatchPointer(grabTarget, "pointermove", {
+      clientX: 905,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 16
+    });
+
+    setVelocitySpy.mockClear();
+    setAngularVelocitySpy.mockClear();
+
+    dispatchPointer(grabTarget, "pointerup", {
+      clientX: 905,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 32
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "settled");
+    expect(fullSprite).toHaveStyle({ opacity: "1" });
+    screen.getAllByTestId("little-alex-body-part").forEach((part) => {
+      expect(part).toHaveStyle({ opacity: "0" });
+    });
+    expect(screen.queryByTestId("little-alex-chat-bubble")).not.toBeInTheDocument();
+    expect(
+      setVelocitySpy.mock.calls.filter(([, velocity]) => {
+        return Math.hypot(velocity.x, velocity.y) > 0.001;
+      })
+    ).toEqual([]);
+    expect(
+      setAngularVelocitySpy.mock.calls.filter(([, velocity]) => {
+        return Math.abs(velocity) > 0.001;
+      })
+    ).toEqual([]);
+  });
+
   it("recovers the ragdoll visual state on the existing post-release timer", () => {
     vi.useFakeTimers();
     stubReducedMotion(false);
@@ -528,10 +581,12 @@ describe("LittleAlexPhysics", () => {
 
     render(<LittleAlexPhysics />);
     const fullSprite = screen.getByTestId("little-alex-full-sprite");
+    const fullHairSprite = screen.getByTestId("little-alex-full-hair-sprite");
     const grabTarget = screen.getByTestId("little-alex-grab-target");
 
     expect(screen.getAllByTestId("little-alex-sprite")).toHaveLength(6);
     expect(fullSprite).toHaveStyle({ opacity: "1" });
+    expect(fullHairSprite).toHaveStyle({ opacity: "1" });
     screen.getAllByTestId("little-alex-body-part").forEach((part) => {
       expect(part).toHaveStyle({ opacity: "0" });
     });
@@ -556,6 +611,7 @@ describe("LittleAlexPhysics", () => {
     });
 
     expect(fullSprite).toHaveStyle({ opacity: "0" });
+    expect(fullHairSprite).toHaveStyle({ opacity: "0" });
     screen.getAllByTestId("little-alex-body-part").forEach((part) => {
       expect(part).toHaveStyle({ opacity: "1" });
       expect(part.querySelector("img")).not.toBeNull();
@@ -565,7 +621,8 @@ describe("LittleAlexPhysics", () => {
       vi.advanceTimersByTime(6_500);
     });
 
-    expect(fullSprite).toHaveStyle({ opacity: "1" });
+    expect(fullSprite).toHaveStyle({ opacity: "0" });
+    expect(fullHairSprite).toHaveStyle({ opacity: "0" });
     expect(screen.getByTestId("little-alex-horne")).toHaveAttribute(
       "data-idle-state",
       "standing"
@@ -583,6 +640,7 @@ describe("LittleAlexPhysics", () => {
     });
 
     expect(fullSprite).toHaveStyle({ opacity: "1" });
+    expect(fullHairSprite).toHaveStyle({ opacity: "1" });
     screen.getAllByTestId("little-alex-body-part").forEach((part) => {
       expect(part).toHaveStyle({ opacity: "0" });
     });

@@ -38,6 +38,8 @@ const WALL_THICKNESS = 96;
 const VIEWPORT_PADDING = 2;
 const SERVER_SAFE_ANCHOR = { x: 906, y: 218 };
 const RAGDOLL_RECOVERY_TRANSITION_MS = 360;
+const GAZE_DIRECTION_DEAD_ZONE_PX = 12;
+const EDGE_REBOUND_DAMPING = 0.62;
 
 type Point = {
   x: number;
@@ -101,6 +103,13 @@ type GazeState = {
 type IdleState = "active" | "standing" | "walking";
 
 type RagdollVisualState = "settled" | "dragging" | "flinging" | "recovering";
+
+type ReleaseDecision = {
+  motion: "ragdoll" | "static";
+  releaseDistance: number;
+  releaseSpeed: number;
+  showBubble: boolean;
+};
 
 type WalkDirection = -1 | 1;
 
@@ -266,7 +275,7 @@ function isRagdollPartVisible(state: RagdollVisualState) {
 }
 
 function fullBodyOpacity(state: RagdollVisualState) {
-  return state === "flinging" ? 0 : 1;
+  return state === "flinging" || state === "recovering" ? 0 : 1;
 }
 
 const characterBounds = partConfigs.reduce(
@@ -825,8 +834,8 @@ function containBodyInPlayArea(
 
   Matter.Body.setPosition(body, nextPosition);
   Matter.Body.setVelocity(body, {
-    x: clampedX ? 0 : body.velocity.x,
-    y: clampedY ? 0 : body.velocity.y
+    x: clampedX ? -body.velocity.x * EDGE_REBOUND_DAMPING : body.velocity.x,
+    y: clampedY ? -body.velocity.y * EDGE_REBOUND_DAMPING : body.velocity.y
   });
 }
 
@@ -880,7 +889,12 @@ function gazeStateForTarget(target: Point, focus: Point): GazeState {
   const y = roundedGaze(clamp(deltaY / distance, -0.8, 0.8));
 
   return {
-    direction: x < -0.15 ? "left" : x > 0.15 ? "right" : "center",
+    direction:
+      deltaX < -GAZE_DIRECTION_DEAD_ZONE_PX
+        ? "left"
+        : deltaX > GAZE_DIRECTION_DEAD_ZONE_PX
+          ? "right"
+          : "center",
     x,
     y
   };
@@ -890,17 +904,36 @@ function sameGazeState(a: GazeState, b: GazeState) {
   return a.direction === b.direction && a.x === b.x && a.y === b.y;
 }
 
-function releaseShouldShowBubble(drag: DragState, releasePoint: Point) {
+function classifyRelease(drag: DragState, releasePoint: Point): ReleaseDecision {
   const releaseDistance =
     drag.source === "touch"
       ? drag.maxDistance
       : Math.max(drag.maxDistance, distanceBetween(drag.startPoint, releasePoint));
   const releaseSpeed = Math.hypot(drag.velocity.x, drag.velocity.y);
-
-  return (
+  const showBubble =
     releaseDistance >= BUBBLE_DRAG_DISTANCE_THRESHOLD ||
-    releaseSpeed >= BUBBLE_RELEASE_SPEED_THRESHOLD
-  );
+    releaseSpeed >= BUBBLE_RELEASE_SPEED_THRESHOLD;
+
+  return {
+    motion: showBubble ? "ragdoll" : "static",
+    releaseDistance,
+    releaseSpeed,
+    showBubble
+  };
+}
+
+function releaseVelocityForPointerUp(drag: DragState, point: Point, timeStamp: number) {
+  const eventTime = Number.isFinite(timeStamp) ? timeStamp : drag.lastTime + 16;
+  const elapsed = Math.max(eventTime - drag.lastTime, 16);
+  const finalVelocity = {
+    x: clampVelocity(((point.x - drag.lastPoint.x) / elapsed) * 16),
+    y: clampVelocity(((point.y - drag.lastPoint.y) / elapsed) * 16)
+  };
+
+  return Math.hypot(finalVelocity.x, finalVelocity.y) >
+    Math.hypot(drag.velocity.x, drag.velocity.y)
+    ? finalVelocity
+    : drag.velocity;
 }
 
 function touchIntentForMovement(startPoint: Point, point: Point) {
@@ -940,6 +973,57 @@ function setBodyPose(body: Matter.Body, position: Point, angle: number) {
   Matter.Body.setAngle(body, angle);
   Matter.Body.setVelocity(body, { x: 0, y: 0 });
   Matter.Body.setAngularVelocity(body, 0);
+}
+
+function setRagdollBodiesStatic(physics: PhysicsWorld, isStatic: boolean) {
+  Object.values(physics.bodies).forEach((body) => {
+    if (body.isStatic !== isStatic) {
+      Matter.Body.setStatic(body, isStatic);
+    }
+
+    if (isStatic) {
+      Matter.Body.setVelocity(body, { x: 0, y: 0 });
+      Matter.Body.setAngularVelocity(body, 0);
+    }
+  });
+}
+
+function settleBodiesAtAnchor(physics: PhysicsWorld, anchor: Point) {
+  const settledAnchor = clampAnchor(anchor);
+
+  setRagdollBodiesStatic(physics, true);
+  setBodyPose(
+    physics.bodies.torso,
+    positionForPart(settledAnchor, partConfigByKey.torso),
+    0
+  );
+  setBodyPose(
+    physics.bodies.head,
+    positionForPart(settledAnchor, partConfigByKey.head),
+    0
+  );
+  setBodyPose(
+    physics.bodies.leftArm,
+    positionForPart(settledAnchor, partConfigByKey.leftArm),
+    -0.1
+  );
+  setBodyPose(
+    physics.bodies.rightArm,
+    positionForPart(settledAnchor, partConfigByKey.rightArm),
+    0.1
+  );
+  setBodyPose(
+    physics.bodies.leftLeg,
+    positionForPart(settledAnchor, partConfigByKey.leftLeg),
+    0.025
+  );
+  setBodyPose(
+    physics.bodies.rightLeg,
+    positionForPart(settledAnchor, partConfigByKey.rightLeg),
+    -0.025
+  );
+
+  return settledAnchor;
 }
 
 function canWalkDistance(
@@ -1161,6 +1245,12 @@ export function LittleAlexPhysics({
   );
 
   const beginRagdollRecovery = useCallback(() => {
+    const physics = physicsRef.current;
+
+    if (physics) {
+      setRagdollBodiesStatic(physics, true);
+    }
+
     setRagdollVisualStateNow("recovering");
     clearRagdollRecoveryTimeout();
     ragdollRecoveryTimeoutRef.current = window.setTimeout(() => {
@@ -1441,6 +1531,12 @@ export function LittleAlexPhysics({
     ) => {
       clearPendingDrag();
       clearRagdollRecoveryTimeout();
+      const physics = physicsRef.current;
+
+      if (physics) {
+        setRagdollBodiesStatic(physics, true);
+      }
+
       setRagdollVisualStateNow("settled");
       setIdleState("active");
       setIdleStandDelayMs(IDLE_STAND_DELAY_MS);
@@ -1539,6 +1635,7 @@ export function LittleAlexPhysics({
     setPhysicsReady(false);
     const { height, width } = viewportSize();
     const physics = createRagdoll(clampAnchor(reducedAnchor), width, height);
+    setRagdollBodiesStatic(physics, true);
     physicsRef.current = physics;
 
     const sync = () => {
@@ -1783,7 +1880,7 @@ export function LittleAlexPhysics({
         captureTarget.releasePointerCapture(event.pointerId);
       }
 
-      const shouldShowBubble = releaseShouldShowBubble(drag, point);
+      const release = classifyRelease(drag, point);
 
       if (reducedMotion) {
         const releaseAnchor = clampAnchor({
@@ -1794,7 +1891,7 @@ export function LittleAlexPhysics({
         setRagdollVisualStateNow("settled");
         setReducedAnchor(releaseAnchor);
         idleWalkTurnRef.current = initialIdleWalkTurn(releaseAnchor.x);
-        if (shouldShowBubble) {
+        if (release.showBubble) {
           showChatBubble();
         }
         return;
@@ -1807,23 +1904,51 @@ export function LittleAlexPhysics({
         return;
       }
 
-      setRagdollVisualStateNow(shouldShowBubble ? "flinging" : "settled");
+      if (release.motion === "static") {
+        const releaseAnchor = settleBodiesAtAnchor(physics, {
+          x: point.x - drag.offset.x,
+          y: point.y - drag.offset.y
+        });
+
+        setRagdollVisualStateNow("settled");
+        idleStateRef.current = "standing";
+        setIdleState("standing");
+        syncPhysicsDom();
+        idleWalkTurnRef.current = initialIdleWalkTurn(releaseAnchor.x);
+        if (release.showBubble) {
+          showChatBubble();
+        }
+        return;
+      }
+
+      const releaseVelocity = releaseVelocityForPointerUp(
+        drag,
+        point,
+        event.timeStamp
+      );
+
+      setRagdollBodiesStatic(physics, false);
+      setRagdollVisualStateNow("flinging");
       Object.entries(physics.bodies).forEach(([key, body]) => {
         const weight = key === "torso" ? 1 : 0.82;
 
         Matter.Body.setVelocity(body, {
-          x: clampVelocity(drag.velocity.x * weight * PHYSICS_SPEED_MULTIPLIER),
-          y: clampVelocity(drag.velocity.y * weight * PHYSICS_SPEED_MULTIPLIER)
+          x: clampVelocity(
+            releaseVelocity.x * weight * PHYSICS_SPEED_MULTIPLIER
+          ),
+          y: clampVelocity(
+            releaseVelocity.y * weight * PHYSICS_SPEED_MULTIPLIER
+          )
         });
         Matter.Body.setAngularVelocity(
           body,
-          clampVelocity(drag.velocity.x * PHYSICS_SPEED_MULTIPLIER) *
+          clampVelocity(releaseVelocity.x * PHYSICS_SPEED_MULTIPLIER) *
             (key === "head" ? 0.006 : 0.004)
         );
       });
       syncPhysicsDom();
       idleWalkTurnRef.current = initialIdleWalkTurn(physics.bodies.torso.position.x);
-      if (shouldShowBubble) {
+      if (release.showBubble) {
         showChatBubble();
       }
     },
@@ -1874,10 +1999,7 @@ export function LittleAlexPhysics({
       const physics = physicsRef.current;
 
       if (physics) {
-        Object.values(physics.bodies).forEach((body) => {
-          Matter.Body.setVelocity(body, { x: 0, y: 0 });
-          Matter.Body.setAngularVelocity(body, 0);
-        });
+        setRagdollBodiesStatic(physics, true);
         syncPhysicsDom();
       }
     },
