@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import type { ResponsibilityBoardLane } from "@prisma/client";
 import { afterEach, beforeAll, describe, expect, test } from "vitest";
 
 import { prisma } from "../db/prisma";
@@ -7,6 +8,7 @@ import { createHouseholdWithPersonas } from "./households";
 import { listPersonasForHousehold } from "./personas";
 import {
   addResponsibilityAssignments,
+  applyResponsibilityCardDistribution,
   createResponsibility,
   getResponsibilityDetail,
   updateResponsibilityBoardPlacement
@@ -286,6 +288,373 @@ describe("responsibility repository", () => {
         }
       }
     ]);
+  });
+
+  test("atomically persists distribution status, handoff, assignment history, events, and placement", async () => {
+    const { household, personas } = await createTestHousehold("card-distribution");
+    const [alex, max] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Seasonal storage reset",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning", "doing"],
+      cadence: "seasonal",
+      status: "active",
+      visibility: "shared_household",
+      householdStandard: null,
+      notes: null,
+      nextReviewAt: null,
+      boardLane: "player_2",
+      boardSortOrder: 3
+    });
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: max.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: max.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    const moved = await applyResponsibilityCardDistribution({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      actorPersonaId: alex.id,
+      status: "paused",
+      targetOwnerPersonaKey: null,
+      toLane: "not_in_play",
+      sortOrder: 8,
+      handoffNotes: "Moved through card distribution."
+    });
+
+    expect(moved).toMatchObject({
+      id: responsibility.id,
+      status: "paused",
+      boardLane: "not_in_play",
+      boardSortOrder: 8,
+      currentAssignments: []
+    });
+
+    const events = await prisma.responsibilityEvent.findMany({
+      where: {
+        responsibilityId: responsibility.id
+      },
+      select: {
+        eventType: true,
+        payload: true
+      }
+    });
+
+    expect(events).toHaveLength(3);
+    expect(events).toEqual(
+      expect.arrayContaining([
+        {
+          eventType: "status_changed",
+          payload: {
+            status: "paused",
+            note: null,
+            reviewOn: null
+          }
+        },
+        {
+          eventType: "assignment_changed",
+          payload: {
+            assignments: [],
+            handoffNotes: "Moved through card distribution.",
+            revisitAt: expect.any(String)
+          }
+        },
+        {
+          eventType: "board_lane_changed",
+          payload: {
+            fromLane: "player_2",
+            toLane: "not_in_play",
+            fromSortOrder: 3,
+            toSortOrder: 8,
+            note: null
+          }
+        }
+      ])
+    );
+  });
+
+  test("serializes concurrent distribution moves so one current owner matches the final lane", async () => {
+    const { household, personas } = await createTestHousehold(
+      "card-distribution-concurrent"
+    );
+    const [alex, max] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Concurrent move card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "unassigned",
+      visibility: "shared_household",
+      householdStandard: null,
+      notes: null,
+      nextReviewAt: null
+    });
+    const commonMove = {
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      status: "active" as const,
+      sortOrder: 0,
+      handoffNotes: "Moved through card distribution."
+    };
+
+    await Promise.all([
+      applyResponsibilityCardDistribution({
+        ...commonMove,
+        actorPersonaId: alex.id,
+        targetOwnerPersonaKey: "alex",
+        toLane: "player_1"
+      }),
+      applyResponsibilityCardDistribution({
+        ...commonMove,
+        actorPersonaId: max.id,
+        targetOwnerPersonaKey: "max",
+        toLane: "player_2"
+      })
+    ]);
+
+    const detail = await getResponsibilityDetail({
+      householdId: household.id,
+      responsibilityId: responsibility.id
+    });
+    const finalOwner = detail?.currentAssignments[0]?.personaKey;
+
+    expect(detail?.currentAssignments).toHaveLength(1);
+    expect(["alex", "max"]).toContain(finalOwner);
+    expect(detail?.boardLane).toBe(
+      finalOwner === "alex" ? "player_1" : "player_2"
+    );
+    await expect(
+      prisma.responsibilityAssignment.count({
+        where: {
+          responsibilityId: responsibility.id,
+          endsAt: null
+        }
+      })
+    ).resolves.toBe(1);
+
+    const assignmentHistory = await prisma.responsibilityAssignment.findMany({
+      where: {
+        responsibilityId: responsibility.id
+      },
+      select: {
+        startsAt: true,
+        endsAt: true
+      }
+    });
+    expect(
+      assignmentHistory.every(
+        (assignment) =>
+          assignment.endsAt === null ||
+          assignment.endsAt.getTime() >= assignment.startsAt.getTime()
+      )
+    ).toBe(true);
+  });
+
+  test("keeps status, assignment, and lane as one valid tuple across unlike concurrent moves", async () => {
+    const { household, personas } = await createTestHousehold(
+      "card-distribution-concurrent-unlike"
+    );
+    const [alex, max] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Concurrent unlike move card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "unassigned",
+      visibility: "shared_household",
+      householdStandard: null,
+      notes: null,
+      nextReviewAt: null
+    });
+
+    await Promise.all([
+      applyResponsibilityCardDistribution({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        status: "active",
+        targetOwnerPersonaKey: "alex",
+        toLane: "player_1",
+        sortOrder: 1,
+        handoffNotes: "Moved through card distribution."
+      }),
+      applyResponsibilityCardDistribution({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: max.id,
+        status: "paused",
+        targetOwnerPersonaKey: null,
+        toLane: "not_in_play",
+        sortOrder: 2,
+        handoffNotes: "Moved through card distribution."
+      })
+    ]);
+
+    const detail = await getResponsibilityDetail({
+      householdId: household.id,
+      responsibilityId: responsibility.id
+    });
+    const finalTuple = {
+      assignments: detail?.currentAssignments.map((assignment) => assignment.personaKey),
+      lane: detail?.boardLane,
+      sortOrder: detail?.boardSortOrder,
+      status: detail?.status
+    };
+
+    expect([
+      {
+        assignments: ["alex"],
+        lane: "player_1",
+        sortOrder: 1,
+        status: "active"
+      },
+      {
+        assignments: [],
+        lane: "not_in_play",
+        sortOrder: 2,
+        status: "paused"
+      }
+    ]).toContainEqual(finalTuple);
+  });
+
+  test("does not end a future-dated active assignment before it starts", async () => {
+    const { household, personas } = await createTestHousehold(
+      "card-distribution-future-assignment"
+    );
+    const [alex, max] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Future assignment card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      householdStandard: null,
+      notes: null,
+      nextReviewAt: null
+    });
+    const futureStart = new Date(Date.now() + 60_000).toISOString();
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: futureStart,
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    await applyResponsibilityCardDistribution({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      actorPersonaId: max.id,
+      status: "active",
+      targetOwnerPersonaKey: "max",
+      toLane: "player_2",
+      sortOrder: 0,
+      handoffNotes: "Moved through card distribution."
+    });
+
+    const history = await prisma.responsibilityAssignment.findMany({
+      where: {
+        responsibilityId: responsibility.id
+      },
+      orderBy: {
+        createdAt: "asc"
+      },
+      select: {
+        startsAt: true,
+        endsAt: true
+      }
+    });
+    expect(history[0]?.endsAt?.getTime()).toBeGreaterThanOrEqual(
+      history[0]?.startsAt.getTime() ?? Number.POSITIVE_INFINITY
+    );
+  });
+
+  test("rolls back the entire distribution when a later placement write fails", async () => {
+    const { household, personas } = await createTestHousehold(
+      "card-distribution-rollback"
+    );
+    const [alex] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Rollback protected card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "unassigned",
+      visibility: "shared_household",
+      householdStandard: null,
+      notes: null,
+      nextReviewAt: null
+    });
+
+    await expect(
+      applyResponsibilityCardDistribution({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        status: "active",
+        targetOwnerPersonaKey: "alex",
+        toLane: "invalid_lane" as ResponsibilityBoardLane,
+        sortOrder: 12,
+        handoffNotes: "Moved through card distribution."
+      })
+    ).rejects.toThrow();
+
+    await expect(
+      getResponsibilityDetail({
+        householdId: household.id,
+        responsibilityId: responsibility.id
+      })
+    ).resolves.toMatchObject({
+      status: "unassigned",
+      boardLane: "cards_of_concern",
+      boardSortOrder: 0,
+      currentAssignments: []
+    });
+    await expect(
+      prisma.responsibilityAssignment.count({
+        where: {
+          responsibilityId: responsibility.id
+        }
+      })
+    ).resolves.toBe(0);
+    await expect(
+      prisma.responsibilityEvent.count({
+        where: {
+          responsibilityId: responsibility.id
+        }
+      })
+    ).resolves.toBe(0);
   });
 });
 

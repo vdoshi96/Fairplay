@@ -246,7 +246,7 @@ function assertCanPutInPlay(draft: AiCardDraftDetail) {
   if (draft.status !== "ready") {
     throw new AiCardDraftServiceError(
       "INVALID_INPUT",
-      "Only ready AI card drafts can be added to the Board."
+      "Only ready AI card drafts can be added to Deal."
     );
   }
 }

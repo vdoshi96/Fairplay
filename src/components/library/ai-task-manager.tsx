@@ -153,7 +153,7 @@ export function AiTaskManager({
       if (!response.ok) {
         const apiError = await readSafeApiError(
           response,
-          "The card could not be added to the Board."
+          "The card could not be added to Deal."
         );
         throw new Error(apiError.message);
       }
@@ -165,10 +165,10 @@ export function AiTaskManager({
       router.refresh();
       const responsibilityId = created.id ?? created.acceptedResponsibilityId;
       if (responsibilityId) {
-        router.push(`/app/responsibilities/${responsibilityId}`);
+        router.push(dealPathForResponsibility(responsibilityId));
       }
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "The card could not be added to the Board.");
+      setError(caught instanceof Error ? caught.message : "The card could not be added to Deal.");
     } finally {
       setPendingAction(null);
     }
@@ -408,7 +408,7 @@ export function AiTaskManager({
       setReuseSuggestion(null);
       router.refresh();
       if (created.id) {
-        router.push(`/app/responsibilities/${created.id}`);
+        router.push(dealPathForResponsibility(created.id));
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The reusable card could not be added.");
@@ -718,7 +718,7 @@ export function AiCardTracker({
                     variant="primary"
                   >
                     <Send aria-hidden="true" size={16} />
-                    Add to Board
+                    Add to Deal
                   </Button>
                   <Button
                     disabled={pendingAction === `remove:${draft.id}`}
@@ -1120,7 +1120,7 @@ export function AiCardReviewPanel({
             </Button>
             <Button disabled={isPuttingInPlay || isSaving} onClick={onPutInPlay}>
               <Send aria-hidden="true" size={16} />
-              Add to Board
+              Add to Deal
             </Button>
             <Button
               disabled={isRemoving || isSaving}
@@ -1206,6 +1206,15 @@ function formatDraftOption(value: string) {
 
 function createClientDraftId() {
   return globalThis.crypto?.randomUUID?.() ?? `client-${Date.now()}`;
+}
+
+function dealPathForResponsibility(responsibilityId: string) {
+  const params = new URLSearchParams({
+    added: "greg",
+    selected: responsibilityId
+  });
+
+  return `/app/distribute?${params.toString()}`;
 }
 
 function isAbortError(caught: unknown) {

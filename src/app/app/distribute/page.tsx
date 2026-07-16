@@ -5,15 +5,24 @@ import { NextRequest } from "next/server";
 
 import { getAppSessionView } from "@/components/app-shell/session-view";
 import { CardWorkspace } from "@/components/cards/card-workspace";
-import type { CardDistributionMove } from "@/components/cards/card-state";
+import {
+  getDistributableCards,
+  type CardDistributionMove
+} from "@/components/cards/card-state";
+import { ResponsibilityIdSchema } from "@/domain/ids";
 import { getCurrentSession } from "@/server/auth/current-session";
 import { distributeResponsibilityCard } from "@/server/responsibilities/card-distribution";
 import { responsibilityService } from "@/server/responsibilities/service";
 
-export default async function DistributePage() {
-  const [session, sessionView] = await Promise.all([
+type DistributePageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function DistributePage({ searchParams }: DistributePageProps) {
+  const [session, sessionView, query] = await Promise.all([
     getPageSession("/app/distribute"),
-    getAppSessionView()
+    getAppSessionView(),
+    searchParams
   ]);
 
   if (!session || !sessionView) {
@@ -25,6 +34,13 @@ export default async function DistributePage() {
   }
 
   const overview = await responsibilityService.listOverview(session);
+  const requestedId = parseSelectedResponsibilityId(query.selected);
+  const selectedCard = requestedId
+    ? getDistributableCards(overview.responsibilities).find(
+        (card) => card.id === requestedId
+      ) ?? null
+    : null;
+  const addedToDeal = query.added === "greg" && selectedCard !== null;
 
   async function distribute(move: CardDistributionMove) {
     "use server";
@@ -47,12 +63,23 @@ export default async function DistributePage() {
 
   return (
     <CardWorkspace
+      addedToDeal={addedToDeal}
+      initialSelectedId={selectedCard?.id}
       onDistribute={distribute}
       responsibilities={overview.responsibilities}
       selectedPersona={sessionView.selectedPersona}
       view="distribute"
     />
   );
+}
+
+function parseSelectedResponsibilityId(value: string | string[] | undefined) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const parsed = ResponsibilityIdSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
 }
 
 async function getPageSession(pathname: string) {

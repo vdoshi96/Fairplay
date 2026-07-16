@@ -17,6 +17,7 @@ import type {
   ResponsibilityDetail,
   ResponsibilitySummary
 } from "../../contracts/responsibilities";
+import type { PersonaKey } from "../../domain/enums";
 import type { HouseholdId, PersonaId, ResponsibilityId } from "../../domain/ids";
 import { RepositoryError } from "../db/errors";
 import { prisma } from "../db/prisma";
@@ -159,6 +160,26 @@ type ResponsibilityWriteClient = Pick<
   "persona" | "responsibilityTemplate" | "responsibility"
 >;
 
+async function lockResponsibilityForUpdate(
+  tx: Prisma.TransactionClient,
+  input: {
+    householdId: HouseholdId;
+    responsibilityId: ResponsibilityId;
+  }
+) {
+  const lockedResponsibilities = await tx.$queryRaw<Array<{ id: string }>>`
+    SELECT "id"
+    FROM "Responsibility"
+    WHERE "id" = ${input.responsibilityId}
+      AND "householdId" = ${input.householdId}
+    FOR UPDATE
+  `;
+
+  if (lockedResponsibilities.length === 0) {
+    throw new RepositoryError("NOT_FOUND", "Responsibility not found for household.");
+  }
+}
+
 export async function createResponsibilityWithClient(
   client: ResponsibilityWriteClient,
   input: CreateResponsibilityInput
@@ -236,18 +257,43 @@ export async function addResponsibilityAssignments(input: {
   }[];
 }): Promise<ResponsibilityDetail> {
   const startsAt = new Date(input.startsAt);
+  if (Number.isNaN(startsAt.getTime())) {
+    throw new RepositoryError("INVALID_INPUT", "Assignment effective date must be valid.");
+  }
+
   const responsibility = await prisma.$transaction(async (tx) => {
+    await lockResponsibilityForUpdate(tx, input);
+
     const responsibility = await tx.responsibility.findFirst({
       where: {
         id: input.responsibilityId,
         householdId: input.householdId
       },
       select: {
-        id: true
+        id: true,
+        assignments: {
+          where: {
+            endsAt: null
+          },
+          select: {
+            startsAt: true
+          }
+        }
       }
     });
     if (!responsibility) {
       throw new RepositoryError("NOT_FOUND", "Responsibility not found for household.");
+    }
+
+    const latestActiveStart = responsibility.assignments.reduce(
+      (latest, assignment) => Math.max(latest, assignment.startsAt.getTime()),
+      Number.NEGATIVE_INFINITY
+    );
+    if (startsAt.getTime() < latestActiveStart) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Assignment effective date cannot predate the current assignment."
+      );
     }
 
     const personaIds = [
@@ -323,6 +369,257 @@ export async function getResponsibilityDetail(input: {
     : null;
 }
 
+export type ApplyResponsibilityCardDistributionInput = {
+  householdId: HouseholdId;
+  responsibilityId: ResponsibilityId;
+  actorPersonaId: PersonaId;
+  status: Extract<
+    ResponsibilityStatus,
+    "active" | "not_relevant" | "paused" | "unassigned"
+  >;
+  targetOwnerPersonaKey: PersonaKey | null;
+  toLane: ResponsibilityBoardLane;
+  sortOrder: number;
+  handoffNotes?: string;
+};
+
+/**
+ * Applies every persisted part of a Deal/Board move in one transaction.
+ *
+ * Status, assignment history, audit events, and board placement must not be
+ * split across service calls: a later failure would otherwise leave the card
+ * in a mixed state that no product bucket can represent reliably.
+ */
+export async function applyResponsibilityCardDistribution(
+  input: ApplyResponsibilityCardDistributionInput
+): Promise<ResponsibilityDetail> {
+  const responsibility = await prisma.$transaction((tx) =>
+    applyResponsibilityCardDistributionWithClient(tx, input)
+  );
+
+  return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
+}
+
+async function applyResponsibilityCardDistributionWithClient(
+  tx: Prisma.TransactionClient,
+  input: ApplyResponsibilityCardDistributionInput
+) {
+  // Serialize moves for one card so concurrent devices cannot leave multiple
+  // active owners or event payloads derived from the same stale lane.
+  await lockResponsibilityForUpdate(tx, input);
+
+  const [existing, actorPersona, targetOwnerPersona] = await Promise.all([
+    tx.responsibility.findFirst({
+      where: {
+        id: input.responsibilityId,
+        householdId: input.householdId
+      },
+      select: {
+        id: true,
+        status: true,
+        boardLane: true,
+        boardSortOrder: true,
+        assignments: {
+          where: {
+            endsAt: null
+          },
+          select: {
+            role: true,
+            startsAt: true,
+            persona: {
+              select: {
+                key: true
+              }
+            }
+          }
+        }
+      }
+    }),
+    tx.persona.findFirst({
+      where: {
+        id: input.actorPersonaId,
+        householdId: input.householdId
+      },
+      select: {
+        id: true
+      }
+    }),
+    input.targetOwnerPersonaKey
+      ? tx.persona.findFirst({
+          where: {
+            householdId: input.householdId,
+            key: input.targetOwnerPersonaKey
+          },
+          select: {
+            id: true
+          }
+        })
+      : Promise.resolve(null)
+  ]);
+
+  if (!existing) {
+    throw new RepositoryError(
+      "NOT_FOUND",
+      "Responsibility disappeared during distribution."
+    );
+  }
+
+  if (!actorPersona) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Actor persona does not belong to the responsibility household."
+    );
+  }
+
+  if (input.targetOwnerPersonaKey && !targetOwnerPersona) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Target owner persona does not belong to the responsibility household."
+    );
+  }
+
+  // Capture mutation time only after the row lock is acquired. Caller-captured
+  // timestamps can be committed in the opposite order under concurrency and
+  // produce assignment histories whose endsAt predates startsAt.
+  const latestActiveStart = existing.assignments.reduce(
+    (latest, assignment) => Math.max(latest, assignment.startsAt.getTime()),
+    Number.NEGATIVE_INFINITY
+  );
+  const effectiveAt = new Date(Math.max(Date.now(), latestActiveStart));
+  const revisitAt = new Date(effectiveAt);
+  revisitAt.setDate(revisitAt.getDate() + 7);
+  const revisitAtIso = revisitAt.toISOString();
+
+  const currentOwnerKeys = existing.assignments
+    .filter(
+      (assignment) =>
+        assignment.role === "accountable_owner" ||
+        assignment.role === "shared_owner"
+    )
+    .map((assignment) => assignment.persona.key)
+    .sort();
+  const assignmentChanged = input.targetOwnerPersonaKey
+    ? currentOwnerKeys.length !== 1 ||
+      currentOwnerKeys[0] !== input.targetOwnerPersonaKey
+    : currentOwnerKeys.length !== 0;
+  const hasCurrentOwner = currentOwnerKeys.length > 0;
+
+  if (
+    assignmentChanged &&
+    hasCurrentOwner &&
+    !input.handoffNotes
+  ) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Accountable owner changes need handoff context."
+    );
+  }
+
+  if (existing.status !== input.status) {
+    await tx.responsibility.update({
+      where: {
+        id: input.responsibilityId
+      },
+      data: {
+        status: input.status
+      }
+    });
+    await tx.responsibilityEvent.create({
+      data: {
+        householdId: input.householdId,
+        responsibilityId: input.responsibilityId,
+        actorPersonaId: input.actorPersonaId,
+        eventType: "status_changed",
+        payload: {
+          status: input.status,
+          note: null,
+          reviewOn: null
+        },
+        occurredAt: effectiveAt
+      }
+    });
+  }
+
+  if (assignmentChanged) {
+    await tx.responsibilityAssignment.updateMany({
+      where: {
+        responsibilityId: input.responsibilityId,
+        responsibility: {
+          householdId: input.householdId
+        },
+        endsAt: null
+      },
+      data: {
+        endsAt: effectiveAt
+      }
+    });
+
+    if (input.targetOwnerPersonaKey && targetOwnerPersona) {
+      await tx.responsibilityAssignment.create({
+        data: {
+          responsibilityId: input.responsibilityId,
+          personaId: targetOwnerPersona.id,
+          role: "accountable_owner",
+          scope: "outcome",
+          startsAt: effectiveAt,
+          createdByPersonaId: input.actorPersonaId
+        }
+      });
+    }
+
+    await tx.responsibilityEvent.create({
+      data: {
+        householdId: input.householdId,
+        responsibilityId: input.responsibilityId,
+        actorPersonaId: input.actorPersonaId,
+        eventType: "assignment_changed",
+        payload: {
+          assignments: input.targetOwnerPersonaKey
+            ? [
+                {
+                  personaKey: input.targetOwnerPersonaKey,
+                  role: "accountable_owner",
+                  scope: "outcome"
+                }
+              ]
+            : [],
+          handoffNotes: hasCurrentOwner ? input.handoffNotes ?? null : null,
+          revisitAt: hasCurrentOwner ? revisitAtIso : null
+        },
+        occurredAt: effectiveAt
+      }
+    });
+  }
+
+  await tx.responsibilityEvent.create({
+    data: {
+      householdId: input.householdId,
+      responsibilityId: input.responsibilityId,
+      actorPersonaId: input.actorPersonaId,
+      eventType: "board_lane_changed",
+      payload: {
+        fromLane: existing.boardLane,
+        toLane: input.toLane,
+        fromSortOrder: existing.boardSortOrder,
+        toSortOrder: input.sortOrder,
+        note: null
+      },
+      occurredAt: effectiveAt
+    }
+  });
+
+  return tx.responsibility.update({
+    where: {
+      id: input.responsibilityId
+    },
+    data: {
+      boardLane: input.toLane,
+      boardSortOrder: input.sortOrder
+    },
+    include: responsibilityInclude
+  });
+}
+
 export async function updateResponsibilityBoardPlacement(input: {
   householdId: HouseholdId;
   responsibilityId: ResponsibilityId;
@@ -332,6 +629,8 @@ export async function updateResponsibilityBoardPlacement(input: {
   note?: string;
 }): Promise<ResponsibilityDetail> {
   const responsibility = await prisma.$transaction(async (tx) => {
+    await lockResponsibilityForUpdate(tx, input);
+
     const existing = await tx.responsibility.findFirst({
       where: {
         id: input.responsibilityId,
