@@ -9,6 +9,10 @@ import {
   CheckInVisual,
   DecorativeBackgroundLayer
 } from "@/components/visuals/fairplay-visuals";
+import {
+  WorthReviewing,
+  type CheckInReviewResponsibility
+} from "./worth-reviewing";
 
 type CompleteCheckInInput = {
   completedAt: string;
@@ -190,9 +194,11 @@ export function CheckInFlow({ initialCheckIn, onComplete }: CheckInFlowProps) {
 }
 
 export function NewCheckInLauncher({
-  history = []
+  history = [],
+  worthReviewing = []
 }: {
   history?: CheckInHistoryRow[];
+  worthReviewing?: CheckInReviewResponsibility[];
 }) {
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
@@ -226,6 +232,10 @@ export function NewCheckInLauncher({
     return (
       <section className="grid gap-6">
         <CheckInFlow initialCheckIn={startedCheckIn} />
+        <WorthReviewing
+          responsibilities={worthReviewing}
+          showNextCheckInAction={false}
+        />
         <CheckInHistoryTable records={history} />
       </section>
     );
@@ -273,9 +283,12 @@ export function NewCheckInLauncher({
         </p>
       ) : null}
 
+      <WorthReviewing responsibilities={worthReviewing} />
+
       <section
         aria-label="Schedule a check-in"
         className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]"
+        id="schedule-check-in"
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">

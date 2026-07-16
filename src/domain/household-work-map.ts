@@ -12,6 +12,7 @@ import {
   type PersonaKey,
   type ResponsibilityStatus
 } from "@/domain/enums";
+import { isResponsibilityWorthReviewingAt } from "@/domain/responsibility-review";
 
 export type ComputeHouseholdWorkMapInput = {
   responsibilities: readonly ResponsibilitySummary[];
@@ -58,17 +59,6 @@ function asOfTime(value: string | Date | undefined): number {
   }
 
   return time;
-}
-
-function isDueForReview(
-  responsibility: ResponsibilitySummary,
-  asOf: number
-): boolean {
-  return (
-    responsibility.status === "needs_review" ||
-    (responsibility.nextReviewAt !== null &&
-      new Date(responsibility.nextReviewAt).getTime() <= asOf)
-  );
 }
 
 function ownerPersonas(
@@ -120,7 +110,7 @@ export function computeHouseholdWorkMap(
 
     const owners = ownerPersonas(responsibility);
     const sharedOwners = sharedOwnerPersonas(responsibility);
-    const dueReview = isDueForReview(responsibility, asOf);
+    const dueReview = isResponsibilityWorthReviewingAt(responsibility, asOf);
 
     if (owners.size === 0) {
       household.unassigned += 1;

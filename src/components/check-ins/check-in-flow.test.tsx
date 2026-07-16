@@ -46,7 +46,19 @@ describe("CheckInFlow", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<NewCheckInLauncher />);
+    render(
+      <NewCheckInLauncher
+        worthReviewing={[
+          {
+            id: "550e8400-e29b-41d4-a716-446655440011",
+            title: "Dishes",
+            status: "needs_review",
+            nextReviewAt: null,
+            hiddenEffortKeys: ["planning"]
+          }
+        ]}
+      />
+    );
 
     expect(screen.getByTestId("check-in-new-workflow")).toBeVisible();
     expect(screen.getByRole("heading", { name: "Schedule check-in" })).toBeVisible();
@@ -69,6 +81,14 @@ describe("CheckInFlow", () => {
       .not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Learn this feature" }))
       .not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Worth reviewing" })).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "View or update agreement for Dishes" })
+    ).toHaveAttribute(
+      "href",
+      "/app/responsibilities/550e8400-e29b-41d4-a716-446655440011"
+    );
+    expect(screen.queryByText(/agenda/i)).not.toBeInTheDocument();
 
     const scheduleButton = screen.getByRole("button", { name: "Schedule" });
     expect(scheduleButton).toBeDisabled();
