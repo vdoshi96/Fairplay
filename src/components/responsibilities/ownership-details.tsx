@@ -26,6 +26,7 @@ type OwnershipRole = (typeof roleOptions)[number];
 
 export type OwnershipAgreementSubmission = {
   assignments: ResponsibilityAssignmentSummary[];
+  expectedOwnerPersonaKeys: PersonaKey[];
   handoffMode:
     | "replace_former_owner"
     | "retain_former_owner_as_helper"
@@ -124,6 +125,14 @@ export function OwnershipDetails({
       return;
     }
 
+    if (
+      ownerCount === 1 &&
+      assignments.some((assignment) => assignment.role === "shared_owner")
+    ) {
+      setFeedback({ tone: "error", message: "Shared ownership needs two owners." });
+      return;
+    }
+
     if (accountableCount > 1) {
       setFeedback({ tone: "error", message: "Choose no more than one accountable owner." });
       return;
@@ -142,6 +151,7 @@ export function OwnershipDetails({
     try {
       await onSave({
         assignments,
+        expectedOwnerPersonaKeys: [...currentOwnerKeys].sort(),
         handoffMode: removesCurrentOwner ? handoffMode : null,
         handoffNotes: handoffNotes.trim() || null,
         reviewAt: reviewDate ? `${reviewDate}T12:00:00.000Z` : null

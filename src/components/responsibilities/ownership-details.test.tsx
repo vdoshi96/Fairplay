@@ -60,6 +60,7 @@ describe("OwnershipDetails", () => {
         assignments: [
           { personaKey: "max", role: "accountable_owner", scope: "outcome" }
         ],
+        expectedOwnerPersonaKeys: ["alex"],
         handoffMode: "retain_former_owner_as_helper",
         handoffNotes: "Walk through the routine.",
         reviewAt: "2026-08-01T12:00:00.000Z"
@@ -90,5 +91,28 @@ describe("OwnershipDetails", () => {
       handoffMode: null,
       reviewAt: "2026-07-20T12:00:00.000Z"
     });
+  });
+
+  it("does not save a shared-owner role without another owner", async () => {
+    const onSave = vi.fn();
+    render(
+      <OwnershipDetails
+        currentAssignments={[
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+        ]}
+        nextReviewAt={null}
+        onSave={onSave}
+        personas={personas}
+      />
+    );
+
+    await userEvent.selectOptions(screen.getByLabelText("Alex role"), "none");
+    await userEvent.selectOptions(screen.getByLabelText("Max role"), "shared_owner");
+    await userEvent.click(screen.getByRole("button", { name: "Save ownership details" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Shared ownership needs two owners."
+    );
+    expect(onSave).not.toHaveBeenCalled();
   });
 });
