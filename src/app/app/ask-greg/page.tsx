@@ -31,7 +31,7 @@ export default async function AskGregPage() {
               Make more cards
             </h1>
             <p className="m-0 max-w-2xl text-[14px] font-semibold leading-6 text-fp-muted-ink [overflow-wrap:anywhere]">
-              Describe a responsibility and Greg will draft a card you can add to the Board.
+              Describe a responsibility and Greg will draft a card you can add to Deal.
             </p>
           </header>
           <AiTaskManager drafts={aiDrafts} showGregAvatar={false} />

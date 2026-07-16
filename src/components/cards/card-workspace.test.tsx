@@ -243,6 +243,56 @@ describe("CardWorkspace", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("selects and announces a card that was just added to Deal", () => {
+    const selectedId = "550e8400-e29b-41d4-a716-446655440031";
+
+    render(
+      <CardWorkspace
+        addedToDeal
+        initialSelectedId={selectedId}
+        responsibilities={[
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440030",
+            title: "Lunch",
+            boardSortOrder: 0
+          }),
+          card({
+            id: selectedId,
+            title: "Laundry reset",
+            boardSortOrder: 1
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Laundry reset" })).toBeVisible();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Laundry reset was added to Deal and selected."
+    );
+    expect(
+      within(screen.getByTestId("distribution-card-list")).getByRole("button", {
+        name: /Laundry reset/i
+      })
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("ignores an unknown initial Deal selection and does not announce success", () => {
+    render(
+      <CardWorkspace
+        addedToDeal
+        initialSelectedId="550e8400-e29b-41d4-a716-446655449999"
+        responsibilities={[card({ title: "Lunch" })]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Lunch" })).toBeVisible();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
   it("does not show duplicate catalog cards in Available cards", () => {
     render(
       <CardWorkspace

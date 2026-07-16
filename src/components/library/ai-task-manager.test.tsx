@@ -234,8 +234,47 @@ describe("AiTaskManager", () => {
       within(readyDraft).getByRole("img", { name: "Generated cover for Laundry reset" })
     ).toHaveAttribute("src", `/api/ai-card-drafts/${draftIds.ready}/cover`);
     expect(within(readyDraft).getByRole("button", { name: "Review" })).toBeVisible();
-    expect(within(readyDraft).getByRole("button", { name: "Add to Board" })).toBeVisible();
+    expect(within(readyDraft).getByRole("button", { name: "Add to Deal" })).toBeVisible();
     expect(within(readyDraft).getByRole("button", { name: "Discard" })).toBeVisible();
+  });
+
+  it("adds a ready draft to Deal and selects the returned responsibility", async () => {
+    const createdResponsibilityId = "550e8400-e29b-41d4-a716-446655440099";
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (
+        url === `/api/ai-card-drafts/${draftIds.ready}/put-in-play` &&
+        init?.method === "POST"
+      ) {
+        return {
+          ok: true,
+          json: async () => ({ acceptedResponsibilityId: createdResponsibilityId })
+        };
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <AiTaskManager
+        drafts={[
+          draft({
+            id: draftIds.ready,
+            status: "ready",
+            generationStage: "ready",
+            title: "Laundry reset"
+          })
+        ]}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Add to Deal" }));
+
+    await waitFor(() =>
+      expect(routerPush).toHaveBeenCalledWith(
+        `/app/distribute?added=greg&selected=${createdResponsibilityId}`
+      )
+    );
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
   });
 
   it("submits text captures to the draft API and refreshes the library", async () => {
@@ -339,7 +378,7 @@ describe("AiTaskManager", () => {
     );
     expect(routerRefresh).toHaveBeenCalledTimes(1);
     expect(routerPush).toHaveBeenCalledWith(
-      `/app/responsibilities/${createdResponsibilityId}`
+      `/app/distribute?added=greg&selected=${createdResponsibilityId}`
     );
   });
 

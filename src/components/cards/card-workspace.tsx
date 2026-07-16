@@ -35,6 +35,8 @@ import {
 } from "./card-state";
 
 type CardWorkspaceProps = {
+  addedToDeal?: boolean;
+  initialSelectedId?: string;
   onDistribute?: (move: CardDistributionMove) => Promise<void> | void;
   responsibilities: CardWorkspaceCard[];
   selectedPersona: PersonaSummary;
@@ -101,6 +103,8 @@ const HORIZONTAL_DOMINANCE_RATIO = 1.25;
 const VERTICAL_DOMINANCE_RATIO = 1.45;
 
 export function CardWorkspace({
+  addedToDeal = false,
+  initialSelectedId,
   onDistribute,
   responsibilities,
   selectedPersona,
@@ -126,6 +130,8 @@ export function CardWorkspace({
 
   return (
     <DistributeView
+      addedToDeal={addedToDeal}
+      initialSelectedId={initialSelectedId}
       onDistribute={onDistribute}
       responsibilities={responsibilities}
     />
@@ -133,9 +139,14 @@ export function CardWorkspace({
 }
 
 function DistributeView({
+  addedToDeal,
+  initialSelectedId,
   onDistribute,
   responsibilities
-}: Pick<CardWorkspaceProps, "onDistribute" | "responsibilities">) {
+}: Pick<
+  CardWorkspaceProps,
+  "addedToDeal" | "initialSelectedId" | "onDistribute" | "responsibilities"
+>) {
   const [removedIds, setRemovedIds] = useState<Set<string>>(() => new Set());
   const [drag, setDrag] = useState<DragState | null>(null);
   const [flippedId, setFlippedId] = useState<string | null>(null);
@@ -143,7 +154,9 @@ function DistributeView({
   const [lastAction, setLastAction] = useState<LastDealAction | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => initialSelectedId ?? null
+  );
   const dragRef = useRef<DragState | null>(null);
   const deckRef = useRef<HTMLDivElement | null>(null);
   const allDeck = useMemo(
@@ -160,6 +173,9 @@ function DistributeView({
     drag?.dragging ? { x: drag.x - drag.startX, y: drag.y - drag.startY } : null;
   const previewBucket = dragOffset ? bucketFromOffset(dragOffset.x, dragOffset.y) : null;
   const hasSearch = query.trim().length > 0;
+  const addedCard = addedToDeal
+    ? allDeck.find((card) => card.id === initialSelectedId) ?? null
+    : null;
 
   async function distribute(bucket: DealActionBucket) {
     if (!topCard || pendingId) {
@@ -330,6 +346,15 @@ function DistributeView({
           Deal the next card
         </h1>
       </header>
+
+      {addedCard ? (
+        <p
+          className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 text-[14px] font-semibold text-fp-ink shadow-[var(--fp-shadow-soft)]"
+          role="status"
+        >
+          {addedCard.title} was added to Deal and selected.
+        </p>
+      ) : null}
 
       <label className="fp-panel grid gap-2 p-3 text-[13px] font-bold text-fp-muted-ink sm:p-4">
         Search cards
