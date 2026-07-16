@@ -16,6 +16,8 @@ const card = {
   execution: "Complete service and follow-through.",
   minimumStandard: "Vehicle is safe, legal, and available.",
   householdStandard: "Both drivers can use the car safely each weekday.",
+  hiddenEffortKeys: ["noticing", "planning"],
+  nextReviewAt: "2026-06-15T12:00:00.000Z",
   notes: "Insurance card lives in the glove box.",
   coverAssetPath: "/assets/fairplay/cards/auto.png"
 } as const;
@@ -45,7 +47,15 @@ describe("CardDetailSheet", () => {
     expect(screen.getByLabelText("Fogging Estandards")).toHaveValue(
       "Both drivers can use the car safely each weekday."
     );
-    expect(screen.queryByText("CPE")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Full ownership includes" })).toBeVisible();
+    expect(screen.getByText("Conception")).toBeVisible();
+    expect(screen.getByText("Notice repairs and timing.")).toBeVisible();
+    expect(screen.getByText("Planning", { selector: "dt" })).toBeVisible();
+    expect(screen.getByText("Schedule service and arrange transport.")).toBeVisible();
+    expect(screen.getByText("Execution")).toBeVisible();
+    expect(screen.getByText("Complete service and follow-through.")).toBeVisible();
+    expect(screen.getByText("Noticing")).toBeVisible();
+    expect(screen.getByText(/Review by/)).toHaveTextContent("Review by Jun 15, 2026");
     expect(screen.queryByText("Insurance card lives in the glove box.")).not.toBeInTheDocument();
 
     await userEvent.selectOptions(screen.getByLabelText("Move destination"), "alex");

@@ -81,6 +81,8 @@ describe("responsibility detail card mapping", () => {
     expect(card.execution).toBe("Generated execution.");
     expect(card.minimumStandard).toBe("Generated minimum standard.");
     expect(card.householdStandard).toBe("Generated household standard.");
+    expect(card.hiddenEffortKeys).toEqual(["planning"]);
+    expect(card.nextReviewAt).toBeNull();
     expect(card.coverAssetPath).toBeNull();
   });
 });

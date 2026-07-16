@@ -61,6 +61,8 @@ export function detailCardFor(responsibility: ResponsibilityDetail): CardDetailC
     execution: sourceFields.execution,
     minimumStandard: sourceFields.minimumStandard,
     householdStandard: responsibility.householdStandard,
+    hiddenEffortKeys: responsibility.hiddenEffortKeys,
+    nextReviewAt: responsibility.nextReviewAt,
     notes: responsibility.notes,
     coverAssetPath: sourceCoverAssetPath ? null : sourceCard?.coverAssetPath ?? null,
     sourceCoverAssetPath

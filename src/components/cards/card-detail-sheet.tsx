@@ -28,6 +28,8 @@ export type CardDetailCard = {
   execution?: string | null;
   minimumStandard?: string | null;
   householdStandard?: string | null;
+  hiddenEffortKeys?: readonly string[];
+  nextReviewAt?: string | null;
   notes?: string | null;
   coverAssetPath?: string | null;
   sourceCoverAssetPath?: string | null;
@@ -72,6 +74,11 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
   const availableMoveBuckets = moveBuckets.filter(
     (bucket) => laneForBucket(bucket) !== card.boardLane
   );
+  const ownershipPhases = [
+    { label: "Conception", value: card.conception },
+    { label: "Planning", value: card.planning },
+    { label: "Execution", value: card.execution }
+  ];
 
   function moveSelectedCard() {
     if (!selectedBucket) {
@@ -188,6 +195,49 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
             </p>
           </section>
 
+          <section className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4">
+            <div className="grid gap-1">
+              <h2 className="text-[16px] font-bold text-fp-ink">
+                Full ownership includes
+              </h2>
+              <p className="text-[13px] leading-5 text-fp-muted-ink">
+                The thinking and follow-through that sit behind the visible task.
+              </p>
+            </div>
+            <dl className="grid gap-3">
+              {ownershipPhases.map(({ label, value }) => (
+                <div className="grid gap-1" key={label}>
+                  <dt className="text-[13px] font-bold text-fp-ink">{label}</dt>
+                  <dd className="whitespace-pre-wrap text-[13px] leading-5 text-fp-muted-ink [overflow-wrap:anywhere]">
+                    {value || `No ${label.toLowerCase()} notes yet.`}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <div className="flex flex-wrap gap-2" aria-label="Hidden effort">
+              {(card.hiddenEffortKeys ?? []).map((effort) => (
+                <Chip key={effort}>{humanize(effort)}</Chip>
+              ))}
+              {(card.hiddenEffortKeys ?? []).length === 0 ? (
+                <span className="text-[13px] font-semibold text-fp-muted-ink">
+                  No hidden-effort tags yet.
+                </span>
+              ) : null}
+            </div>
+            <p className="text-[13px] font-semibold text-fp-muted-ink">
+              {card.nextReviewAt ? (
+                <>
+                  Review by{" "}
+                  <time dateTime={card.nextReviewAt}>
+                    {formatReviewDate(card.nextReviewAt)}
+                  </time>
+                </>
+              ) : (
+                "No review date set."
+              )}
+            </p>
+          </section>
+
           <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4">
             <h2 className="text-[16px] font-bold text-fp-ink">
               Fogging Estandards
@@ -266,4 +316,20 @@ function standardsTextFor(card: CardDetailCard) {
     card.minimumStandard ??
     "No standard has been written for this card yet."
   );
+}
+
+function formatReviewDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    year: "numeric"
+  }).format(new Date(value));
+}
+
+function humanize(value: string) {
+  return value
+    .split("_")
+    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
+    .join(" ");
 }
