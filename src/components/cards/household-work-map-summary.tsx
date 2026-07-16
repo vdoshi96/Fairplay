@@ -74,8 +74,8 @@ export function HouseholdWorkMapSummary({
 function WorkMapContext() {
   return (
     <p className="text-[12px] font-semibold leading-5 text-fp-muted-ink">
-      Active and needs-review responsibilities only. Counts describe
-      responsibilities, not people.
+      Persona totals use active and needs-review work. Household totals also
+      show cards outside active work. Counts describe responsibilities, not people.
     </p>
   );
 }

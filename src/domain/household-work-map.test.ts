@@ -206,11 +206,33 @@ describe("computeHouseholdWorkMap", () => {
     });
     expect(workMap.household).toEqual({
       shared: 0,
-      unassigned: 0,
+      unassigned: 1,
       paused: 1,
       notApplicable: 1,
       dueReview: 0
     });
+  });
+
+  it("counts Deal cards as household-level unassigned without adding persona workload", () => {
+    const workMap = computeHouseholdWorkMap({
+      responsibilities: [
+        responsibility({
+          id: "550e8400-e29b-41d4-a716-446655440031",
+          status: "unassigned",
+          templateId: "tpl-calendar",
+          currentAssignments: []
+        }),
+        responsibility({
+          id: "550e8400-e29b-41d4-a716-446655440032",
+          status: "active",
+          currentAssignments: []
+        })
+      ]
+    });
+
+    expect(workMap.household.unassigned).toBe(2);
+    expect(workMap.personas.alex.owned).toBe(0);
+    expect(workMap.personas.max.owned).toBe(0);
   });
 
   it("treats review dates at the boundary as due and rejects invalid asOf values", () => {

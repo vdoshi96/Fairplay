@@ -52,7 +52,7 @@ describe("HouseholdWorkMapSummary", () => {
     ).toBeVisible();
     expect(
       within(summary).getByText(
-        "Active and needs-review responsibilities only. Counts describe responsibilities, not people."
+        "Persona totals use active and needs-review work. Household totals also show cards outside active work. Counts describe responsibilities, not people."
       )
     ).toBeVisible();
 

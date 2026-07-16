@@ -98,23 +98,27 @@ export function computeHouseholdWorkMap(
   };
 
   for (const responsibility of input.responsibilities) {
+    const owners = ownerPersonas(responsibility);
+
     if (responsibility.status === "paused") {
       household.paused += 1;
     } else if (responsibility.status === "not_relevant") {
       household.notApplicable += 1;
+    } else if (
+      responsibility.status === "unassigned" ||
+      (WORKLOAD_STATUSES.has(responsibility.status) && owners.size === 0)
+    ) {
+      // The Deal/catalog pool is intentionally excluded from persona workload,
+      // but it still belongs in the household-level "No owner" context.
+      household.unassigned += 1;
     }
 
     if (!WORKLOAD_STATUSES.has(responsibility.status)) {
       continue;
     }
 
-    const owners = ownerPersonas(responsibility);
     const sharedOwners = sharedOwnerPersonas(responsibility);
     const dueReview = isResponsibilityWorthReviewingAt(responsibility, asOf);
-
-    if (owners.size === 0) {
-      household.unassigned += 1;
-    }
 
     if (sharedOwners.size > 0) {
       household.shared += 1;
