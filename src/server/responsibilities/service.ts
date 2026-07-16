@@ -1,7 +1,10 @@
 import type { Prisma } from "@prisma/client";
 
 import type { PersonaSummary } from "@/contracts/personas";
-import type { OwnershipAgreementMutation } from "@/contracts/ownership-agreement";
+import {
+  OwnershipAgreementMutationSchema,
+  type OwnershipAgreementMutation
+} from "@/contracts/ownership-agreement";
 import type {
   LoadSnapshotSummary,
   ResponsibilityAssignmentSummary,
@@ -448,8 +451,16 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
       input: OwnershipAgreementMutation
     ): Promise<ResponsibilityDetail> {
       const actorPersonaId = requireSelectedPersona(session);
+      const agreement = OwnershipAgreementMutationSchema.safeParse(input);
 
-      if (input.responsibilityId !== responsibilityId) {
+      if (!agreement.success) {
+        throw new ResponsibilityServiceError(
+          "INVALID_INPUT",
+          "Ownership agreement input is invalid."
+        );
+      }
+
+      if (agreement.data.responsibilityId !== responsibilityId) {
         throw new ResponsibilityServiceError(
           "INVALID_INPUT",
           "Ownership agreement does not match this responsibility."
@@ -460,11 +471,12 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
         householdId: session.householdId,
         responsibilityId,
         actorPersonaId,
-        expectedOwnerPersonaKeys: input.expectedOwnerPersonaKeys,
-        assignments: input.assignments,
-        reviewAt: input.reviewAt,
-        handoffMode: input.handoffMode,
-        handoffNotes: input.handoffNotes
+        expectedUpdatedAt: agreement.data.expectedUpdatedAt,
+        expectedOwnerPersonaKeys: agreement.data.expectedOwnerPersonaKeys,
+        assignments: agreement.data.assignments,
+        reviewAt: agreement.data.reviewAt,
+        handoffMode: agreement.data.handoffMode,
+        handoffNotes: agreement.data.handoffNotes
       });
     },
 

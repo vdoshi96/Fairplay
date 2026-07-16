@@ -437,6 +437,7 @@ export type ApplyResponsibilityOwnershipAgreementInput = {
   householdId: HouseholdId;
   responsibilityId: ResponsibilityId;
   actorPersonaId: PersonaId;
+  expectedUpdatedAt: string;
   expectedOwnerPersonaKeys: PersonaKey[];
   assignments: OwnershipAgreementAssignment[];
   reviewAt: string | null;
@@ -471,6 +472,14 @@ function assignmentSignature(
 export async function applyResponsibilityOwnershipAgreement(
   input: ApplyResponsibilityOwnershipAgreementInput
 ): Promise<ResponsibilityDetail> {
+  const expectedUpdatedAt = new Date(input.expectedUpdatedAt);
+  if (Number.isNaN(expectedUpdatedAt.getTime())) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Expected responsibility revision must be valid."
+    );
+  }
+
   const reviewAt = input.reviewAt === null ? null : new Date(input.reviewAt);
   if (reviewAt && Number.isNaN(reviewAt.getTime())) {
     throw new RepositoryError(
@@ -490,6 +499,7 @@ export async function applyResponsibilityOwnershipAgreement(
         },
         select: {
           id: true,
+          updatedAt: true,
           boardLane: true,
           boardSortOrder: true,
           assignments: {
@@ -536,6 +546,13 @@ export async function applyResponsibilityOwnershipAgreement(
       throw new RepositoryError(
         "NOT_FOUND",
         "Responsibility disappeared during ownership update."
+      );
+    }
+
+    if (existing.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+      throw new RepositoryError(
+        "CONFLICT",
+        "Responsibility changed since the ownership agreement was opened."
       );
     }
 
@@ -730,7 +747,9 @@ export async function applyResponsibilityOwnershipAgreement(
       (latest, assignment) => Math.max(latest, assignment.startsAt.getTime()),
       Number.NEGATIVE_INFINITY
     );
-    const effectiveAt = new Date(Math.max(Date.now(), latestActiveStart));
+    const effectiveAt = new Date(
+      Math.max(Date.now(), latestActiveStart, existing.updatedAt.getTime() + 1)
+    );
 
     if (assignmentsChanged) {
       await tx.responsibilityAssignment.updateMany({
@@ -802,7 +821,8 @@ export async function applyResponsibilityOwnershipAgreement(
       },
       data: {
         nextReviewAt: reviewAt,
-        boardLane: nextBoardLane
+        boardLane: nextBoardLane,
+        updatedAt: effectiveAt
       },
       include: responsibilityInclude
     });

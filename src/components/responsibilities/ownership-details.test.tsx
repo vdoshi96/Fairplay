@@ -17,6 +17,7 @@ describe("OwnershipDetails", () => {
         currentAssignments={[
           { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
         ]}
+        expectedUpdatedAt="2026-05-04T12:00:00.000Z"
         nextReviewAt={null}
         onSave={onSave}
         personas={personas}
@@ -40,6 +41,7 @@ describe("OwnershipDetails", () => {
         currentAssignments={[
           { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
         ]}
+        expectedUpdatedAt="2026-05-04T12:00:00.000Z"
         nextReviewAt={null}
         onSave={onSave}
         personas={personas}
@@ -60,6 +62,7 @@ describe("OwnershipDetails", () => {
         assignments: [
           { personaKey: "max", role: "accountable_owner", scope: "outcome" }
         ],
+        expectedUpdatedAt: "2026-05-04T12:00:00.000Z",
         expectedOwnerPersonaKeys: ["alex"],
         handoffMode: "retain_former_owner_as_helper",
         handoffNotes: "Walk through the routine.",
@@ -76,6 +79,7 @@ describe("OwnershipDetails", () => {
         currentAssignments={[
           { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
         ]}
+        expectedUpdatedAt="2026-05-04T12:00:00.000Z"
         nextReviewAt="2026-07-20T12:00:00.000Z"
         onSave={onSave}
         personas={personas}
@@ -100,6 +104,7 @@ describe("OwnershipDetails", () => {
         currentAssignments={[
           { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
         ]}
+        expectedUpdatedAt="2026-05-04T12:00:00.000Z"
         nextReviewAt={null}
         onSave={onSave}
         personas={personas}

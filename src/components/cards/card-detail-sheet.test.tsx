@@ -6,6 +6,7 @@ import { CardDetailSheet } from "./card-detail-sheet";
 
 const card = {
   id: "resp_123",
+  updatedAt: "2026-05-04T12:00:00.000Z",
   title: "Auto",
   labels: ["Out", "Daily Grind"],
   boardLane: "cards_of_concern",

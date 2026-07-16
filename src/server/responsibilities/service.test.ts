@@ -17,6 +17,7 @@ const householdId = "550e8400-e29b-41d4-a716-446655440000";
 const alexId = "550e8400-e29b-41d4-a716-446655440001";
 const maxId = "550e8400-e29b-41d4-a716-446655440002";
 const responsibilityId = "550e8400-e29b-41d4-a716-446655440010";
+const expectedUpdatedAt = "2026-05-04T12:00:00.000Z";
 
 const session: CurrentSession = {
   id: "550e8400-e29b-41d4-a716-446655440030",
@@ -335,6 +336,7 @@ describe("responsibility service", () => {
 
     const result = await service.updateOwnershipAgreement(session, responsibilityId, {
       responsibilityId,
+      expectedUpdatedAt,
       expectedOwnerPersonaKeys: ["alex"],
       assignments: [
         {
@@ -352,6 +354,7 @@ describe("responsibility service", () => {
       householdId,
       responsibilityId,
       actorPersonaId: alexId,
+      expectedUpdatedAt,
       expectedOwnerPersonaKeys: ["alex"],
       assignments: [
         {
@@ -383,6 +386,7 @@ describe("responsibility service", () => {
     const service = createResponsibilityService(deps);
     const input = {
       responsibilityId: "550e8400-e29b-41d4-a716-446655440011",
+      expectedUpdatedAt,
       expectedOwnerPersonaKeys: [],
       assignments: [
         {
@@ -405,6 +409,32 @@ describe("responsibility service", () => {
         input
       )
     ).rejects.toMatchObject({ code: "AUTH_REQUIRED" });
+    expect(deps.applyOwnershipAgreement).not.toHaveBeenCalled();
+  });
+
+  it("strictly validates ownership agreements inside the service", async () => {
+    const deps = makeDeps();
+    const service = createResponsibilityService(deps);
+
+    await expect(
+      service.updateOwnershipAgreement(session, responsibilityId, {
+        responsibilityId,
+        expectedUpdatedAt,
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          {
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          }
+        ],
+        reviewAt: null,
+        unexpected: "server actions must not bypass the strict contract"
+      } as unknown as Parameters<
+        typeof service.updateOwnershipAgreement
+      >[2])
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
     expect(deps.applyOwnershipAgreement).not.toHaveBeenCalled();
   });
 

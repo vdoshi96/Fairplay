@@ -7,7 +7,7 @@ import {
   PersonaKeySchema
 } from "../domain/enums";
 import { ResponsibilityIdSchema } from "../domain/ids";
-import { NullableIsoDateTimeSchema } from "../domain/time";
+import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from "../domain/time";
 
 export const OWNERSHIP_HANDOFF_MODES = [
   "replace_former_owner",
@@ -27,6 +27,7 @@ export const OwnershipAgreementAssignmentSchema = z
 export const OwnershipAgreementMutationSchema = z
   .object({
     responsibilityId: ResponsibilityIdSchema,
+    expectedUpdatedAt: IsoDateTimeSchema,
     expectedOwnerPersonaKeys: z.array(PersonaKeySchema).max(2),
     assignments: z.array(OwnershipAgreementAssignmentSchema).min(1).max(2),
     reviewAt: NullableIsoDateTimeSchema,
@@ -66,7 +67,6 @@ export const OwnershipAgreementMutationSchema = z
         message: "An ownership agreement needs at least one owner."
       });
     }
-
 
     const ownerAssignments = value.assignments.filter((assignment) =>
       ownerRoles.has(assignment.role)

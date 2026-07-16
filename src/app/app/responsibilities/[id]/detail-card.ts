@@ -51,6 +51,7 @@ export function detailCardFor(responsibility: ResponsibilityDetail): CardDetailC
 
   return {
     id: responsibility.id,
+    updatedAt: responsibility.updatedAt,
     title: responsibility.title,
     labels: sourceCard?.labels ?? [],
     boardLane: responsibility.boardLane,

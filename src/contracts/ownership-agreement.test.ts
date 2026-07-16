@@ -9,6 +9,7 @@ describe("ownership agreement JSON contract", () => {
     expect(
       OwnershipAgreementMutationSchema.parse({
         responsibilityId,
+        expectedUpdatedAt: "2026-05-04T12:00:00.000Z",
         expectedOwnerPersonaKeys: ["alex", "max"],
         assignments: [
           { personaKey: "alex", role: "shared_owner", scope: "outcome" },
@@ -26,6 +27,7 @@ describe("ownership agreement JSON contract", () => {
     expect(
       OwnershipAgreementMutationSchema.parse({
         responsibilityId,
+        expectedUpdatedAt: "2026-05-04T12:00:00.000Z",
         expectedOwnerPersonaKeys: ["alex"],
         assignments: [
           { personaKey: "alex", role: "accountable_owner", scope: "outcome" },
@@ -60,6 +62,7 @@ describe("ownership agreement JSON contract", () => {
       expect(() =>
         OwnershipAgreementMutationSchema.parse({
           responsibilityId,
+          expectedUpdatedAt: "2026-05-04T12:00:00.000Z",
           expectedOwnerPersonaKeys: ["alex"],
           assignments,
           reviewAt: null
@@ -72,6 +75,7 @@ describe("ownership agreement JSON contract", () => {
     expect(
       OwnershipAgreementMutationSchema.parse({
         responsibilityId,
+        expectedUpdatedAt: "2026-05-04T12:00:00.000Z",
         expectedOwnerPersonaKeys: [],
         assignments: [
           { personaKey: "max", role: "accountable_owner", scope: "outcome" }

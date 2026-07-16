@@ -26,6 +26,7 @@ type OwnershipRole = (typeof roleOptions)[number];
 
 export type OwnershipAgreementSubmission = {
   assignments: ResponsibilityAssignmentSummary[];
+  expectedUpdatedAt: string;
   expectedOwnerPersonaKeys: PersonaKey[];
   handoffMode:
     | "replace_former_owner"
@@ -37,6 +38,7 @@ export type OwnershipAgreementSubmission = {
 
 type OwnershipDetailsProps = {
   currentAssignments: readonly ResponsibilityAssignmentSummary[];
+  expectedUpdatedAt: string;
   nextReviewAt: string | null;
   onSave?: (agreement: OwnershipAgreementSubmission) => Promise<void> | void;
   personas: readonly PersonaSummary[];
@@ -62,6 +64,7 @@ function label(value: string) {
 
 export function OwnershipDetails({
   currentAssignments,
+  expectedUpdatedAt,
   nextReviewAt,
   onSave,
   personas
@@ -151,6 +154,7 @@ export function OwnershipDetails({
     try {
       await onSave({
         assignments,
+        expectedUpdatedAt,
         expectedOwnerPersonaKeys: [...currentOwnerKeys].sort(),
         handoffMode: removesCurrentOwner ? handoffMode : null,
         handoffNotes: handoffNotes.trim() || null,

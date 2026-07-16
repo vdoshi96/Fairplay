@@ -20,6 +20,7 @@ const session = {
   selectedPersonaId: "550e8400-e29b-41d4-a716-446655440001"
 };
 const id = "550e8400-e29b-41d4-a716-446655440010";
+const expectedUpdatedAt = "2026-05-04T12:00:00.000Z";
 
 function request(body: unknown) {
   return new NextRequest(
@@ -52,6 +53,7 @@ describe("POST /api/responsibilities/[id]/ownership-agreement", () => {
     const { POST } = await import("./route");
     const body = {
       responsibilityId: id,
+      expectedUpdatedAt,
       expectedOwnerPersonaKeys: ["alex"],
       assignments: [
         { personaKey: "max", role: "accountable_owner", scope: "outcome" }
@@ -81,6 +83,7 @@ describe("POST /api/responsibilities/[id]/ownership-agreement", () => {
     const response = await POST(
       request({
         responsibilityId: id,
+        expectedUpdatedAt,
         expectedOwnerPersonaKeys: ["alex"],
         assignments: [
           { personaKey: "alex", role: "helper", scope: "support" }
@@ -101,6 +104,7 @@ describe("POST /api/responsibilities/[id]/ownership-agreement", () => {
     const response = await POST(
       request({
         responsibilityId: id,
+        expectedUpdatedAt,
         expectedOwnerPersonaKeys: [],
         assignments: [
           { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
@@ -118,6 +122,7 @@ describe("POST /api/responsibilities/[id]/ownership-agreement", () => {
     const { POST } = await import("./route");
     const body = {
       responsibilityId: id,
+      expectedUpdatedAt,
       expectedOwnerPersonaKeys: ["alex"],
       assignments: [
         { personaKey: "max", role: "accountable_owner", scope: "outcome" }

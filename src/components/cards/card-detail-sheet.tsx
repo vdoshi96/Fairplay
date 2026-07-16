@@ -24,6 +24,7 @@ import {
 
 export type CardDetailCard = {
   id: string;
+  updatedAt: string;
   title: string;
   labels?: readonly CardTemplateLabel[];
   boardLane?: ResponsibilityBoardLane;
@@ -292,6 +293,7 @@ export function CardDetailSheet({
           {personas ? (
             <OwnershipDetails
               currentAssignments={card.currentAssignments ?? []}
+              expectedUpdatedAt={card.updatedAt}
               nextReviewAt={card.nextReviewAt ?? null}
               onSave={onSaveOwnership}
               personas={personas}

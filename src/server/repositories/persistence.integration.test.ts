@@ -267,6 +267,7 @@ describe("responsibility repository", () => {
       householdId: household.id,
       responsibilityId: responsibility.id,
       actorPersonaId: alex.id,
+      expectedUpdatedAt: responsibility.updatedAt,
       expectedOwnerPersonaKeys: ["alex"],
       assignments: [
         { personaKey: "max", role: "accountable_owner", scope: "outcome" }
@@ -367,6 +368,7 @@ describe("responsibility repository", () => {
       householdId: household.id,
       responsibilityId: responsibility.id,
       actorPersonaId: max.id,
+      expectedUpdatedAt: responsibility.updatedAt,
       expectedOwnerPersonaKeys: ["alex"],
       assignments: [
         { personaKey: "max", role: "accountable_owner", scope: "outcome" }
@@ -419,6 +421,7 @@ describe("responsibility repository", () => {
       householdId: household.id,
       responsibilityId: responsibility.id,
       actorPersonaId: alex.id,
+      expectedUpdatedAt: responsibility.updatedAt,
       expectedOwnerPersonaKeys: ["alex"],
       assignments: [
         { personaKey: "alex", role: "shared_owner", scope: "outcome" },
@@ -478,6 +481,7 @@ describe("responsibility repository", () => {
         householdId: household.id,
         responsibilityId: responsibility.id,
         actorPersonaId: alex.id,
+        expectedUpdatedAt: responsibility.updatedAt,
         expectedOwnerPersonaKeys: ["alex"],
         assignments: [
           { personaKey: "max", role: "accountable_owner", scope: "outcome" }
@@ -538,6 +542,7 @@ describe("responsibility repository", () => {
         householdId: household.id,
         responsibilityId: responsibility.id,
         actorPersonaId: alex.id,
+        expectedUpdatedAt: responsibility.updatedAt,
         expectedOwnerPersonaKeys: ["alex"],
         assignments: [
           { personaKey: "alex", role: "accountable_owner", scope: "outcome" },
@@ -596,6 +601,7 @@ describe("responsibility repository", () => {
         householdId: household.id,
         responsibilityId: responsibility.id,
         actorPersonaId: alex.id,
+        expectedUpdatedAt: responsibility.updatedAt,
         expectedOwnerPersonaKeys: [],
         assignments: [
           { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
@@ -606,6 +612,7 @@ describe("responsibility repository", () => {
         householdId: household.id,
         responsibilityId: responsibility.id,
         actorPersonaId: max.id,
+        expectedUpdatedAt: responsibility.updatedAt,
         expectedOwnerPersonaKeys: [],
         assignments: [
           { personaKey: "max", role: "accountable_owner", scope: "outcome" }
@@ -623,6 +630,94 @@ describe("responsibility repository", () => {
     expect(current?.currentAssignments).toHaveLength(1);
     expect(["alex", "max"]).toContain(
       current?.currentAssignments[0]?.personaKey
+    );
+    await expect(
+      prisma.responsibilityEvent.count({
+        where: {
+          responsibilityId: responsibility.id,
+          eventType: "assignment_changed"
+        }
+      })
+    ).resolves.toBe(1);
+  });
+
+  test("rejects a concurrent same-owner helper or review edit from a stale revision", async () => {
+    const { household, personas } = await createTestHousehold(
+      "ownership-concurrent-same-owner"
+    );
+    const [alex, max] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Concurrent ownership detail card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      nextReviewAt: null
+    });
+    const assigned = await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    const results = await Promise.allSettled([
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        expectedUpdatedAt: assigned.updatedAt,
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" },
+          { personaKey: "max", role: "helper", scope: "support" }
+        ],
+        reviewAt: "2026-08-01T12:00:00.000Z"
+      }),
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: max.id,
+        expectedUpdatedAt: assigned.updatedAt,
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" },
+          { personaKey: "max", role: "backup", scope: "temporary" }
+        ],
+        reviewAt: "2026-09-01T12:00:00.000Z"
+      })
+    ]);
+
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    const rejected = results.find((result) => result.status === "rejected");
+    expect(rejected).toMatchObject({
+      status: "rejected",
+      reason: { code: "CONFLICT" }
+    });
+
+    const current = await getResponsibilityDetail({
+      householdId: household.id,
+      responsibilityId: responsibility.id
+    });
+    expect(current?.currentAssignments).toHaveLength(2);
+    expect(current?.currentAssignments).toEqual(
+      expect.arrayContaining([
+        { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+      ])
+    );
+    expect(["2026-08-01T12:00:00.000Z", "2026-09-01T12:00:00.000Z"]).toContain(
+      current?.nextReviewAt
     );
     await expect(
       prisma.responsibilityEvent.count({
@@ -671,6 +766,7 @@ describe("responsibility repository", () => {
         householdId: household.id,
         responsibilityId: responsibility.id,
         actorPersonaId: alex.id,
+        expectedUpdatedAt: responsibility.updatedAt,
         expectedOwnerPersonaKeys: ["alex"],
         assignments: [
           { personaKey: "max", role: "accountable_owner", scope: "outcome" }
@@ -682,6 +778,7 @@ describe("responsibility repository", () => {
         householdId: household.id,
         responsibilityId: responsibility.id,
         actorPersonaId: max.id,
+        expectedUpdatedAt: responsibility.updatedAt,
         expectedOwnerPersonaKeys: ["alex"],
         assignments: [
           { personaKey: "max", role: "accountable_owner", scope: "part" }
