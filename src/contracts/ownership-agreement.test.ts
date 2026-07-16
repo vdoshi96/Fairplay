@@ -84,4 +84,48 @@ describe("ownership agreement JSON contract", () => {
       })
     ).not.toHaveProperty("handoffMode");
   });
+
+  it("accepts an explicit return to Deal for a card that currently has an owner", () => {
+    for (const handoffMode of [
+      "replace_former_owner",
+      "retain_former_owner_as_helper"
+    ] as const) {
+      expect(
+        OwnershipAgreementMutationSchema.parse({
+          responsibilityId,
+          expectedUpdatedAt: "2026-05-04T12:00:00.000Z",
+          expectedOwnerPersonaKeys: ["alex"],
+          assignments: [],
+          reviewAt: null,
+          handoffMode
+        })
+      ).toMatchObject({ assignments: [], handoffMode });
+    }
+  });
+
+  it("does not allow an initially unowned or manually helper-only card to bypass ownership", () => {
+    expect(() =>
+      OwnershipAgreementMutationSchema.parse({
+        responsibilityId,
+        expectedUpdatedAt: "2026-05-04T12:00:00.000Z",
+        expectedOwnerPersonaKeys: [],
+        assignments: [],
+        reviewAt: null,
+        handoffMode: "replace_former_owner"
+      })
+    ).toThrow();
+
+    expect(() =>
+      OwnershipAgreementMutationSchema.parse({
+        responsibilityId,
+        expectedUpdatedAt: "2026-05-04T12:00:00.000Z",
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          { personaKey: "max", role: "helper", scope: "support" }
+        ],
+        reviewAt: null,
+        handoffMode: "retain_former_owner_as_helper"
+      })
+    ).toThrow();
+  });
 });

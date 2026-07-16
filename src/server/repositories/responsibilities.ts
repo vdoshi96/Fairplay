@@ -466,8 +466,9 @@ function assignmentSignature(
  *
  * The responsibility row is locked before current ownership is inspected so a
  * stale client cannot silently remove an owner that another request just added.
- * Board lane values are intentionally left unchanged; shared presentation is
- * derived from assignments rather than a new persisted lane.
+ * Single-owner and ownerless agreements align the existing persisted lane to
+ * the owner or Deal pool. Shared presentation remains derived from assignments
+ * rather than introducing a new persisted lane.
  */
 export async function applyResponsibilityOwnershipAgreement(
   input: ApplyResponsibilityOwnershipAgreementInput
@@ -500,6 +501,7 @@ export async function applyResponsibilityOwnershipAgreement(
         select: {
           id: true,
           updatedAt: true,
+          status: true,
           boardLane: true,
           boardSortOrder: true,
           assignments: {
@@ -581,12 +583,6 @@ export async function applyResponsibilityOwnershipAgreement(
         .filter((assignment) => isOwnerRole(assignment.role))
         .map((assignment) => assignment.personaKey)
     );
-    if (requestedOwnerKeys.size === 0) {
-      throw new RepositoryError(
-        "INVALID_INPUT",
-        "An ownership agreement needs at least one owner."
-      );
-    }
     if (
       new Set(input.expectedOwnerPersonaKeys).size !==
       input.expectedOwnerPersonaKeys.length
@@ -637,6 +633,22 @@ export async function applyResponsibilityOwnershipAgreement(
         "CONFLICT",
         "Ownership agreement changed since it was opened."
       );
+    }
+
+    if (requestedOwnerKeys.size === 0) {
+      if (previousOwnerKeys.length === 0) {
+        throw new RepositoryError(
+          "INVALID_INPUT",
+          "An initially unowned card needs at least one owner."
+        );
+      }
+
+      if (input.assignments.length > 0) {
+        throw new RepositoryError(
+          "INVALID_INPUT",
+          "Clear non-owner roles before returning the card to Deal."
+        );
+      }
     }
 
     if (removedOwnerKeys.length > 0 && !input.handoffMode) {
@@ -735,13 +747,16 @@ export async function applyResponsibilityOwnershipAgreement(
           .map((assignment) => assignment.personaKey)
       )
     ];
-    const nextBoardLane: ResponsibilityBoardLane =
-      finalOwnerKeys.length === 1
-        ? finalOwnerKeys[0] === "alex"
-          ? "player_1"
-          : "player_2"
-        : existing.boardLane;
+    let nextBoardLane: ResponsibilityBoardLane = existing.boardLane;
+    if (finalOwnerKeys.length === 0) {
+      nextBoardLane = "cards_of_concern";
+    } else if (finalOwnerKeys.length === 1) {
+      nextBoardLane = finalOwnerKeys[0] === "alex" ? "player_1" : "player_2";
+    }
     const boardLaneChanged = nextBoardLane !== existing.boardLane;
+    const nextStatus: ResponsibilityStatus =
+      finalOwnerKeys.length === 0 ? "unassigned" : existing.status;
+    const statusChanged = nextStatus !== existing.status;
 
     const latestActiveStart = existing.assignments.reduce(
       (latest, assignment) => Math.max(latest, assignment.startsAt.getTime()),
@@ -765,16 +780,18 @@ export async function applyResponsibilityOwnershipAgreement(
         }
       });
 
-      await tx.responsibilityAssignment.createMany({
-        data: finalAssignments.map((assignment) => ({
-          responsibilityId: input.responsibilityId,
-          personaId: personaIdByKey.get(assignment.personaKey)!,
-          role: assignment.role,
-          scope: assignment.scope,
-          startsAt: effectiveAt,
-          createdByPersonaId: input.actorPersonaId
-        }))
-      });
+      if (finalAssignments.length > 0) {
+        await tx.responsibilityAssignment.createMany({
+          data: finalAssignments.map((assignment) => ({
+            responsibilityId: input.responsibilityId,
+            personaId: personaIdByKey.get(assignment.personaKey)!,
+            role: assignment.role,
+            scope: assignment.scope,
+            startsAt: effectiveAt,
+            createdByPersonaId: input.actorPersonaId
+          }))
+        });
+      }
     }
 
     await tx.responsibilityEvent.create({
@@ -795,6 +812,23 @@ export async function applyResponsibilityOwnershipAgreement(
         occurredAt: effectiveAt
       }
     });
+
+    if (statusChanged) {
+      await tx.responsibilityEvent.create({
+        data: {
+          householdId: input.householdId,
+          responsibilityId: input.responsibilityId,
+          actorPersonaId: input.actorPersonaId,
+          eventType: "status_changed",
+          payload: {
+            status: nextStatus,
+            note: null,
+            reviewOn: null
+          },
+          occurredAt: effectiveAt
+        }
+      });
+    }
 
     if (boardLaneChanged) {
       await tx.responsibilityEvent.create({
@@ -821,6 +855,7 @@ export async function applyResponsibilityOwnershipAgreement(
       },
       data: {
         nextReviewAt: reviewAt,
+        status: nextStatus,
         boardLane: nextBoardLane,
         updatedAt: effectiveAt
       },

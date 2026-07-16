@@ -171,4 +171,65 @@ describe("OwnershipDetails", () => {
     );
     expect(onSave).not.toHaveBeenCalled();
   });
+
+  it("returns an owned card to Deal only through an explicit former-owner handoff", async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    render(
+      <OwnershipDetails
+        currentAssignments={[
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" },
+          { personaKey: "max", role: "helper", scope: "support" }
+        ]}
+        expectedUpdatedAt="2026-05-04T12:00:00.000Z"
+        nextReviewAt={null}
+        onSave={onSave}
+        personas={personas}
+      />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Clear roles for Deal" }));
+    expect(screen.getByLabelText("Alex role")).toHaveValue("none");
+    expect(screen.getByLabelText("Max role")).toHaveValue("none");
+
+    await userEvent.click(
+      screen.getByRole("radio", { name: "Remove the former owner" })
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Return card to Deal" })
+    );
+
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith({
+        assignments: [],
+        expectedUpdatedAt: "2026-05-04T12:00:00.000Z",
+        expectedOwnerPersonaKeys: ["alex"],
+        handoffMode: "replace_former_owner",
+        handoffNotes: null,
+        reviewAt: null
+      })
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("Card returned to Deal.");
+  });
+
+  it("still requires an owner when a card starts without one", async () => {
+    const onSave = vi.fn();
+    render(
+      <OwnershipDetails
+        currentAssignments={[]}
+        expectedUpdatedAt="2026-05-04T12:00:00.000Z"
+        nextReviewAt={null}
+        onSave={onSave}
+        personas={personas}
+      />
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Save ownership details" })
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Choose at least one accountable or shared owner."
+    );
+    expect(onSave).not.toHaveBeenCalled();
+  });
 });

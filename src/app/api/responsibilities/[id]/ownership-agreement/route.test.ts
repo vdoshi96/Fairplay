@@ -77,7 +77,26 @@ describe("POST /api/responsibilities/[id]/ownership-agreement", () => {
     expect(updateOwnershipAgreement).toHaveBeenCalledWith(session, id, body);
   });
 
-  it("rejects malformed or ownerless agreements before the service", async () => {
+  it("forwards an explicit owned-card return to Deal", async () => {
+    const { POST } = await import("./route");
+    const body = {
+      responsibilityId: id,
+      expectedUpdatedAt,
+      expectedOwnerPersonaKeys: ["alex"],
+      assignments: [],
+      reviewAt: null,
+      handoffMode: "replace_former_owner"
+    };
+
+    const response = await POST(request(body), {
+      params: Promise.resolve({ id })
+    });
+
+    expect(response.status).toBe(200);
+    expect(updateOwnershipAgreement).toHaveBeenCalledWith(session, id, body);
+  });
+
+  it("rejects malformed or implicit owner removal before the service", async () => {
     const { POST } = await import("./route");
 
     const response = await POST(

@@ -335,6 +335,209 @@ describe("responsibility repository", () => {
     });
   });
 
+  test("atomically returns an owned card to Deal with assignment, status, and lane events", async () => {
+    const { household, personas } = await createTestHousehold("ownership-return-deal");
+    const [alex] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Return ownership card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      boardLane: "player_1",
+      nextReviewAt: null
+    });
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    const updated = await applyResponsibilityOwnershipAgreement({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      actorPersonaId: alex.id,
+      expectedUpdatedAt: responsibility.updatedAt,
+      expectedOwnerPersonaKeys: ["alex"],
+      assignments: [],
+      reviewAt: null,
+      handoffMode: "replace_former_owner",
+      handoffNotes: "Put this card back in the household deal pool."
+    });
+
+    expect(updated).toMatchObject({
+      boardLane: "cards_of_concern",
+      status: "unassigned",
+      currentAssignments: []
+    });
+    await expect(
+      prisma.responsibilityAssignment.findMany({
+        where: { responsibilityId: responsibility.id, endsAt: null }
+      })
+    ).resolves.toEqual([]);
+
+    const events = await prisma.responsibilityEvent.findMany({
+      where: { responsibilityId: responsibility.id },
+      select: { eventType: true, payload: true }
+    });
+    expect(events).toHaveLength(3);
+    expect(events).toEqual(
+      expect.arrayContaining([
+        {
+          eventType: "assignment_changed",
+          payload: expect.objectContaining({
+            assignments: [],
+            formerOwnerPersonaKeys: ["alex"],
+            handoffMode: "replace_former_owner",
+            handoffNotes: "Put this card back in the household deal pool."
+          })
+        },
+        {
+          eventType: "status_changed",
+          payload: {
+            status: "unassigned",
+            note: null,
+            reviewOn: null
+          }
+        },
+        {
+          eventType: "board_lane_changed",
+          payload: {
+            fromLane: "player_1",
+            toLane: "cards_of_concern",
+            fromSortOrder: 0,
+            toSortOrder: 0,
+            note: null
+          }
+        }
+      ])
+    );
+  });
+
+  test("returns a card to Deal with a helper only through retain-former handoff", async () => {
+    const { household, personas } = await createTestHousehold(
+      "ownership-return-helper"
+    );
+    const [alex] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Return ownership context card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      boardLane: "player_1",
+      nextReviewAt: null
+    });
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    const updated = await applyResponsibilityOwnershipAgreement({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      actorPersonaId: alex.id,
+      expectedUpdatedAt: responsibility.updatedAt,
+      expectedOwnerPersonaKeys: ["alex"],
+      assignments: [],
+      reviewAt: null,
+      handoffMode: "retain_former_owner_as_helper"
+    });
+
+    expect(updated).toMatchObject({
+      boardLane: "cards_of_concern",
+      status: "unassigned",
+      currentAssignments: [
+        { personaKey: "alex", role: "helper", scope: "support" }
+      ]
+    });
+  });
+
+  test("rejects ownerless first agreements and manually helper-only returns", async () => {
+    const { household, personas } = await createTestHousehold(
+      "ownership-ownerless-guard"
+    );
+    const [alex] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Ownerless guard card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "unassigned",
+      visibility: "shared_household",
+      nextReviewAt: null
+    });
+
+    await expect(
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        expectedUpdatedAt: responsibility.updatedAt,
+        expectedOwnerPersonaKeys: [],
+        assignments: [],
+        reviewAt: null,
+        handoffMode: "replace_former_owner"
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+    await expect(
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        expectedUpdatedAt: responsibility.updatedAt,
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          { personaKey: "max", role: "helper", scope: "support" }
+        ],
+        reviewAt: null,
+        handoffMode: "retain_former_owner_as_helper"
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+  });
+
   test("retains a former owner explicitly as a helper", async () => {
     const { household, personas } = await createTestHousehold("ownership-retain");
     const [alex, max] = personas;

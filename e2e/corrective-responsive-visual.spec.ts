@@ -491,7 +491,7 @@ test.describe("corrective responsive visual QA", () => {
     }
   });
 
-  test("Board remove returns a card to Deal while Library stays catalog-only", async ({ page }) => {
+  test("an explicit ownership handoff returns a Board card to Deal while Library stays catalog-only", async ({ page }) => {
     await createHouseholdAndChooseAlex(page);
     await closeWelcomeIfPresent(page);
     await createLoadMapResponsibility(page);
@@ -499,8 +499,13 @@ test.describe("corrective responsive visual QA", () => {
     await page.goto("/app/board");
     await closeWelcomeIfPresent(page);
     await expect(page.getByRole("heading", { name: "Card board" })).toBeVisible();
-    await page.getByRole("button", { name: "Remove from board" }).click();
-    await page.waitForLoadState("networkidle");
+    await page.getByRole("link", { name: "Move with ownership details" }).click();
+    await expect(page.getByRole("heading", { name: "Ownership details" }))
+      .toBeVisible();
+    await page.getByRole("button", { name: "Clear roles for Deal" }).click();
+    await page.getByRole("radio", { name: "Remove the former owner" }).click();
+    await page.getByRole("button", { name: "Return card to Deal" }).click();
+    await expect(page.getByRole("status")).toHaveText("Card returned to Deal.");
 
     await page.goto("/app/distribute");
     await closeWelcomeIfPresent(page);

@@ -29,7 +29,7 @@ export const OwnershipAgreementMutationSchema = z
     responsibilityId: ResponsibilityIdSchema,
     expectedUpdatedAt: IsoDateTimeSchema,
     expectedOwnerPersonaKeys: z.array(PersonaKeySchema).max(2),
-    assignments: z.array(OwnershipAgreementAssignmentSchema).min(1).max(2),
+    assignments: z.array(OwnershipAgreementAssignmentSchema).max(2),
     reviewAt: NullableIsoDateTimeSchema,
     handoffMode: OwnershipHandoffModeSchema.nullable().optional(),
     handoffNotes: z.string().trim().min(1).max(2000).nullable().optional()
@@ -60,17 +60,32 @@ export const OwnershipAgreementMutationSchema = z
       "accountable_owner",
       "shared_owner"
     ]);
-    if (!value.assignments.some((assignment) => ownerRoles.has(assignment.role))) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["assignments"],
-        message: "An ownership agreement needs at least one owner."
-      });
-    }
-
     const ownerAssignments = value.assignments.filter((assignment) =>
       ownerRoles.has(assignment.role)
     );
+    if (ownerAssignments.length === 0) {
+      if (value.expectedOwnerPersonaKeys.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["assignments"],
+          message: "An initially unowned card needs at least one owner."
+        });
+      } else if (!value.handoffMode) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["handoffMode"],
+          message: "Choose what happens to the former owner before returning the card to Deal."
+        });
+      } else if (value.assignments.length > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["assignments"],
+          message:
+            "Clear non-owner roles before returning the card to Deal. Former owners can be retained through the handoff choice."
+        });
+      }
+    }
+
     if (
       value.assignments.some((assignment) => assignment.role === "shared_owner") &&
       ownerAssignments.length < 2

@@ -124,6 +124,7 @@ export function OwnershipDetails({
   const removesCurrentOwner = [...currentOwnerKeys].some(
     (personaKey) => !nextOwnerKeys.has(personaKey)
   );
+  const returnsToDeal = currentOwnerKeys.size > 0 && nextOwnerKeys.size === 0;
 
   async function save() {
     setFeedback(null);
@@ -133,8 +134,16 @@ export function OwnershipDetails({
       (assignment) => assignment.role === "accountable_owner"
     ).length;
 
-    if (ownerCount === 0) {
+    if (ownerCount === 0 && currentOwnerKeys.size === 0) {
       setFeedback({ tone: "error", message: "Choose at least one accountable or shared owner." });
+      return;
+    }
+
+    if (ownerCount === 0 && assignments.length > 0) {
+      setFeedback({
+        tone: "error",
+        message: "Clear every role before returning this card to Deal."
+      });
       return;
     }
 
@@ -170,7 +179,10 @@ export function OwnershipDetails({
         handoffNotes: handoffNotes.trim() || null,
         reviewAt: reviewDate ? `${reviewDate}T12:00:00.000Z` : null
       });
-      setFeedback({ tone: "success", message: "Ownership agreement saved." });
+      setFeedback({
+        tone: "success",
+        message: returnsToDeal ? "Card returned to Deal." : "Ownership agreement saved."
+      });
     } catch {
       setFeedback({ tone: "error", message: "Unable to save the ownership agreement. Try again." });
     } finally {
@@ -219,6 +231,27 @@ export function OwnershipDetails({
         ))}
       </div>
 
+      {currentOwnerKeys.size > 0 ? (
+        <div className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3">
+          <p className="text-[13px] leading-5 text-fp-muted-ink">
+            Need this card back in Deal? Clear every role, choose what happens to
+            the current owner, then confirm the return. The card will become
+            unassigned and available to deal again.
+          </p>
+          <Button
+            className="w-fit"
+            disabled={!onSave || pending || returnsToDeal}
+            onClick={() => {
+              setRoles({ alex: "none", max: "none" });
+              setHandoffMode(null);
+              setFeedback(null);
+            }}
+          >
+            {returnsToDeal ? "Roles cleared for Deal" : "Clear roles for Deal"}
+          </Button>
+        </div>
+      ) : null}
+
       {removesCurrentOwner ? (
         <fieldset className="grid gap-2 rounded-[8px] border border-fp-line p-3">
           <legend className="px-1 text-[13px] font-bold text-fp-ink">
@@ -232,7 +265,7 @@ export function OwnershipDetails({
               onChange={() => setHandoffMode("replace_former_owner")}
               type="radio"
             />
-            Replace the former owner
+            {returnsToDeal ? "Remove the former owner" : "Replace the former owner"}
           </label>
           <label className="flex min-h-11 items-center gap-3 text-[13px] font-semibold text-fp-ink">
             <input
@@ -269,7 +302,13 @@ export function OwnershipDetails({
 
       <div className="flex flex-wrap items-center gap-3">
         <Button disabled={!onSave || pending} onClick={() => void save()} variant="primary">
-          {pending ? "Saving..." : "Save ownership details"}
+          {pending
+            ? returnsToDeal
+              ? "Returning..."
+              : "Saving..."
+            : returnsToDeal
+              ? "Return card to Deal"
+              : "Save ownership details"}
         </Button>
         {feedback ? (
           <p
