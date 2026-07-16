@@ -3,21 +3,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CurrentSession } from "@/server/auth/current-session";
 import { distributeResponsibilityCard } from "./card-distribution";
 
-const serviceMocks = vi.hoisted(() => ({
-  get: vi.fn(),
-  updateAssignments: vi.fn(),
-  updateStatus: vi.fn()
-}));
-
 const repositoryMocks = vi.hoisted(() => ({
-  updateResponsibilityBoardPlacement: vi.fn()
+  applyResponsibilityCardDistribution: vi.fn()
 }));
 
-vi.mock("./service", () => ({
-  responsibilityService: serviceMocks
+vi.mock("@/server/repositories/responsibilities", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("@/server/repositories/responsibilities")
+  >()),
+  ...repositoryMocks
 }));
-
-vi.mock("@/server/repositories/responsibilities", () => repositoryMocks);
 
 const session: CurrentSession = {
   id: "550e8400-e29b-41d4-a716-446655440030",
@@ -30,31 +25,16 @@ const session: CurrentSession = {
   userAgentHash: null
 };
 
-function responsibility(overrides: Record<string, unknown> = {}) {
-  return {
-    id: "550e8400-e29b-41d4-a716-446655440010",
-    status: "unassigned",
-    currentAssignments: [],
-    ...overrides
-  };
-}
+const responsibilityId = "550e8400-e29b-41d4-a716-446655440010";
 
 describe("card distribution service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("moves an unassigned card to Alex ownership and placement together", async () => {
-    serviceMocks.get.mockResolvedValue(
-      responsibility({
-        currentAssignments: [],
-        status: "unassigned"
-      })
-    );
-    serviceMocks.updateStatus.mockResolvedValue(undefined);
-    serviceMocks.updateAssignments.mockResolvedValue(undefined);
-    repositoryMocks.updateResponsibilityBoardPlacement.mockResolvedValue({
-      id: "550e8400-e29b-41d4-a716-446655440010",
+  it("moves an unassigned card to Alex through one atomic repository mutation", async () => {
+    const moved = {
+      id: responsibilityId,
       boardLane: "player_1",
       currentAssignments: [
         {
@@ -63,133 +43,90 @@ describe("card distribution service", () => {
           scope: "outcome"
         }
       ]
-    });
+    };
+    repositoryMocks.applyResponsibilityCardDistribution.mockResolvedValue(moved);
 
-    await distributeResponsibilityCard(session, {
+    const result = await distributeResponsibilityCard(session, {
       bucket: "alex",
-      responsibilityId: "550e8400-e29b-41d4-a716-446655440010"
+      responsibilityId
     });
 
-    expect(serviceMocks.updateStatus).toHaveBeenCalledWith(
-      session,
-      "550e8400-e29b-41d4-a716-446655440010",
-      { status: "active" }
-    );
-    expect(serviceMocks.updateAssignments).toHaveBeenCalledWith(
-      session,
-      "550e8400-e29b-41d4-a716-446655440010",
-      expect.objectContaining({
-        assignments: [
-          {
-            personaKey: "alex",
-            role: "accountable_owner",
-            scope: "outcome"
-          }
-        ]
-      })
-    );
-    expect(repositoryMocks.updateResponsibilityBoardPlacement).toHaveBeenCalledWith({
+    expect(result).toBe(moved);
+    expect(repositoryMocks.applyResponsibilityCardDistribution).toHaveBeenCalledOnce();
+    expect(repositoryMocks.applyResponsibilityCardDistribution).toHaveBeenCalledWith({
       actorPersonaId: session.selectedPersonaId,
+      effectiveAt: expect.any(Date),
+      handoffNotes: "Moved through card distribution.",
       householdId: session.householdId,
-      responsibilityId: "550e8400-e29b-41d4-a716-446655440010",
+      responsibilityId,
+      revisitAt: expect.any(String),
       sortOrder: 0,
+      status: "active",
+      targetOwnerPersonaKey: "alex",
       toLane: "player_1"
     });
   });
 
   it("clears ownership and pauses the card when saving it for later", async () => {
-    serviceMocks.get.mockResolvedValue(
-      responsibility({
-        currentAssignments: [
-          {
-            personaKey: "max",
-            role: "accountable_owner",
-            scope: "outcome"
-          }
-        ],
-        status: "active"
-      })
-    );
-    serviceMocks.updateStatus.mockResolvedValue(undefined);
-    serviceMocks.updateAssignments.mockResolvedValue(undefined);
-    repositoryMocks.updateResponsibilityBoardPlacement.mockResolvedValue({
-      id: "550e8400-e29b-41d4-a716-446655440010",
+    repositoryMocks.applyResponsibilityCardDistribution.mockResolvedValue({
+      id: responsibilityId,
       boardLane: "not_in_play",
       currentAssignments: []
     });
 
     await distributeResponsibilityCard(session, {
       bucket: "savedForLater",
-      responsibilityId: "550e8400-e29b-41d4-a716-446655440010",
+      responsibilityId,
       sortOrder: 4
     });
 
-    expect(serviceMocks.updateStatus).toHaveBeenCalledWith(
-      session,
-      "550e8400-e29b-41d4-a716-446655440010",
-      { status: "paused" }
-    );
-    expect(serviceMocks.updateAssignments).toHaveBeenCalledWith(
-      session,
-      "550e8400-e29b-41d4-a716-446655440010",
+    expect(repositoryMocks.applyResponsibilityCardDistribution).toHaveBeenCalledWith(
       expect.objectContaining({
-        assignments: [],
         handoffNotes: "Moved through card distribution.",
-        revisitAt: expect.any(String)
-      })
-    );
-    expect(repositoryMocks.updateResponsibilityBoardPlacement).toHaveBeenCalledWith(
-      expect.objectContaining({
+        revisitAt: expect.any(String),
         sortOrder: 4,
+        status: "paused",
+        targetOwnerPersonaKey: null,
         toLane: "not_in_play"
       })
     );
   });
 
-  it("sends a board card back to the unclassified pool", async () => {
-    serviceMocks.get.mockResolvedValue(
-      responsibility({
-        currentAssignments: [
-          {
-            personaKey: "alex",
-            role: "accountable_owner",
-            scope: "outcome"
-          }
-        ],
-        status: "active"
-      })
-    );
-    serviceMocks.updateStatus.mockResolvedValue(undefined);
-    serviceMocks.updateAssignments.mockResolvedValue(undefined);
-    repositoryMocks.updateResponsibilityBoardPlacement.mockResolvedValue({
-      id: "550e8400-e29b-41d4-a716-446655440010",
+  it("supports Undo by sending a board card back to the unclassified pool", async () => {
+    repositoryMocks.applyResponsibilityCardDistribution.mockResolvedValue({
+      id: responsibilityId,
       boardLane: "cards_of_concern",
       currentAssignments: []
     });
 
     await distributeResponsibilityCard(session, {
       bucket: "unassigned",
-      responsibilityId: "550e8400-e29b-41d4-a716-446655440010"
+      responsibilityId
     });
 
-    expect(serviceMocks.updateStatus).toHaveBeenCalledWith(
-      session,
-      "550e8400-e29b-41d4-a716-446655440010",
-      { status: "unassigned" }
-    );
-    expect(serviceMocks.updateAssignments).toHaveBeenCalledWith(
-      session,
-      "550e8400-e29b-41d4-a716-446655440010",
+    expect(repositoryMocks.applyResponsibilityCardDistribution).toHaveBeenCalledWith(
       expect.objectContaining({
-        assignments: [],
-        handoffNotes: "Moved through card distribution.",
-        revisitAt: expect.any(String)
-      })
-    );
-    expect(repositoryMocks.updateResponsibilityBoardPlacement).toHaveBeenCalledWith(
-      expect.objectContaining({
+        status: "unassigned",
+        targetOwnerPersonaKey: null,
         toLane: "cards_of_concern"
       })
     );
+  });
+
+  it("requires a selected persona before any mutation begins", async () => {
+    await expect(
+      distributeResponsibilityCard(
+        {
+          ...session,
+          selectedPersonaId: null
+        },
+        {
+          bucket: "alex",
+          responsibilityId
+        }
+      )
+    ).rejects.toMatchObject({ code: "AUTH_REQUIRED" });
+
+    expect(repositoryMocks.applyResponsibilityCardDistribution).not.toHaveBeenCalled();
   });
 });
