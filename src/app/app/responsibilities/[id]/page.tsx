@@ -6,6 +6,7 @@ import { NextRequest } from "next/server";
 
 import { getAppSessionView } from "@/components/app-shell/session-view";
 import { CardDetailSheet } from "@/components/cards/card-detail-sheet";
+import type { OwnershipAgreementSubmission } from "@/components/responsibilities/ownership-details";
 import type { CardDistributionBucket } from "@/components/cards/card-state";
 import { ResponsibilityIdSchema } from "@/domain/ids";
 import { getCurrentSession } from "@/server/auth/current-session";
@@ -88,6 +89,36 @@ export default async function ResponsibilityDetailPage({
     revalidatePath("/app/board");
   }
 
+  async function saveOwnershipAgreement(
+    agreement: OwnershipAgreementSubmission
+  ) {
+    "use server";
+
+    const actionSession = await getPageSession();
+
+    if (!actionSession) {
+      redirect("/login");
+    }
+
+    if (!actionSession.selectedPersonaId) {
+      redirect("/choose-persona");
+    }
+
+    await responsibilityService.updateOwnershipAgreement(
+      actionSession,
+      responsibilityId,
+      {
+        responsibilityId,
+        ...agreement
+      }
+    );
+    revalidatePath(`/app/responsibilities/${responsibilityId}`);
+    revalidatePath("/app/your-cards");
+    revalidatePath("/app/distribute");
+    revalidatePath("/app/board");
+    revalidatePath("/app/check-ins");
+  }
+
   try {
     const responsibility = await responsibilityService.get(session, responsibilityId);
 
@@ -110,7 +141,9 @@ export default async function ResponsibilityDetailPage({
         <CardDetailSheet
           card={detailCardFor(responsibility)}
           onMove={moveCard}
+          onSaveOwnership={saveOwnershipAgreement}
           onSaveStandards={saveCardStandards}
+          personas={sessionView.personas}
         />
       </div>
     );
