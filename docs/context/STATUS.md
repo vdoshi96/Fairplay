@@ -1,6 +1,6 @@
 # Fairplay Status
 
-Last updated: 2026-05-09
+Last updated: 2026-07-16
 
 ## Current Phase
 
@@ -23,6 +23,12 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Current source inventory includes about 236 TypeScript/TSX files under `src/`, 95 test/spec files across `src` and `e2e`, and 270 Fairplay public asset files.
 
 ## Recent Product State
+
+- Board and Deal now show a descriptive household work map derived only from active and needs-review responsibilities; it reports ownership, shared work, high-frequency work, hidden effort, and review timing without scores or partner rankings.
+- Shared-owned responsibilities are derived into a Shared Board section and appear in both owners' decks without adding or renaming a persisted board lane.
+- Responsibility details now expose conception, planning, execution, hidden-effort context, standards, review timing, and a complete ownership agreement for accountable/shared owners, helpers, and backups.
+- Existing-owner changes use one transaction-backed, revision-guarded agreement. Former owners require an explicit replace-or-retain-as-helper choice, and stale same-owner/helper/review edits return a conflict instead of overwriting newer work.
+- Check-ins include a read-only Worth reviewing area with due-card links and optional next-check-in scheduling; notes remain optional and the retired agenda builder remains absent.
 
 - Global generated backgrounds are stronger and paired with theme-aware washes so foreground surfaces remain readable.
 - The previous homepage is retired. Root, login, and persona selection land on Deal for signed-in selected-persona sessions.
