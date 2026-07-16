@@ -6,6 +6,7 @@ import {
   bucketForLane,
   getCardsForPersona,
   getDistributableCards,
+  getSharedOwnerCards,
   groupCardsByBucket,
   laneForBucket
 } from "./card-state";
@@ -168,5 +169,40 @@ describe("card state adapter", () => {
     expect(groups.savedForLater).toHaveLength(1);
     expect(groups.notApplicable).toHaveLength(1);
     expect(groups.unassigned).toHaveLength(1);
+  });
+
+  it("derives shared Board cards only from current shared-owner agreements", () => {
+    const cards = [
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440201",
+        title: "Shared plan",
+        currentAssignments: [
+          { personaKey: "alex", role: "shared_owner", scope: "part" },
+          { personaKey: "max", role: "shared_owner", scope: "part" }
+        ],
+        boardLane: "player_1"
+      }),
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440202",
+        title: "Helping only",
+        currentAssignments: [
+          { personaKey: "max", role: "helper", scope: "support" }
+        ],
+        boardLane: "player_2"
+      }),
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440203",
+        title: "Paused shared plan",
+        status: "paused",
+        currentAssignments: [
+          { personaKey: "alex", role: "shared_owner", scope: "part" }
+        ],
+        boardLane: "not_in_play"
+      })
+    ];
+
+    expect(getSharedOwnerCards(cards).map((item) => item.title)).toEqual([
+      "Shared plan"
+    ]);
   });
 });

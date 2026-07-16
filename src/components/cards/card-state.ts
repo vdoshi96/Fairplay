@@ -98,6 +98,21 @@ export function groupCardsByBucket<T extends ResponsibilitySummary>(cards: reado
   return groups;
 }
 
+export function getSharedOwnerCards<T extends ResponsibilitySummary>(
+  cards: readonly T[]
+): T[] {
+  return deduplicateCatalogCards(cards)
+    .filter(
+      (card) =>
+        (card.status === "active" || card.status === "needs_review") &&
+        card.currentAssignments.some(
+          (assignment) => assignment.role === "shared_owner"
+        )
+    )
+    .slice()
+    .sort(compareCards);
+}
+
 function deduplicateCatalogCards<T extends ResponsibilitySummary>(
   cards: readonly T[]
 ): T[] {

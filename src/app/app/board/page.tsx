@@ -6,6 +6,7 @@ import { NextRequest } from "next/server";
 import { getAppSessionView } from "@/components/app-shell/session-view";
 import { CardWorkspace } from "@/components/cards/card-workspace";
 import type { CardDistributionMove } from "@/components/cards/card-state";
+import { computeHouseholdWorkMap } from "@/domain/household-work-map";
 import { getCurrentSession } from "@/server/auth/current-session";
 import { distributeResponsibilityCard } from "@/server/responsibilities/card-distribution";
 import { responsibilityService } from "@/server/responsibilities/service";
@@ -25,6 +26,9 @@ export default async function BoardPage() {
   }
 
   const overview = await responsibilityService.listOverview(session);
+  const workMap = computeHouseholdWorkMap({
+    responsibilities: overview.responsibilities
+  });
 
   async function distribute(move: CardDistributionMove) {
     "use server";
@@ -51,6 +55,7 @@ export default async function BoardPage() {
       responsibilities={overview.responsibilities}
       selectedPersona={sessionView.selectedPersona}
       view="board"
+      workMap={workMap}
     />
   );
 }

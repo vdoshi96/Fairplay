@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { PersonaSummary } from "@/contracts/personas";
 import type { ResponsibilitySummary } from "@/contracts/responsibilities";
+import { computeHouseholdWorkMap } from "@/domain/household-work-map";
 import { CardWorkspace } from "./card-workspace";
 
 const selectedPersona: PersonaSummary = {
@@ -775,6 +776,58 @@ describe("CardWorkspace", () => {
       "/assets/fairplay/cards/meals-kids-school-lunch.png"
     );
     expect(board.className).not.toContain("table");
+  });
+
+  it("shows shared-owner agreements in a derived Shared section and work map", () => {
+    const responsibilities = [
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440030",
+        title: "Shared plan",
+        boardLane: "player_1",
+        currentAssignments: [
+          { personaKey: "alex", role: "shared_owner", scope: "part" },
+          { personaKey: "max", role: "shared_owner", scope: "part" }
+        ]
+      }),
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440031",
+        title: "Alex plan",
+        boardLane: "player_1",
+        currentAssignments: [
+          {
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          }
+        ]
+      })
+    ];
+
+    render(
+      <CardWorkspace
+        responsibilities={responsibilities}
+        selectedPersona={selectedPersona}
+        view="board"
+        workMap={computeHouseholdWorkMap({
+          asOf: "2026-07-16T00:00:00.000Z",
+          responsibilities
+        })}
+      />
+    );
+
+    const shared = screen.getByTestId("shared-board-lane");
+    const primary = screen.getByTestId("primary-board-lanes");
+
+    expect(within(shared).getByRole("heading", { name: "Shared" })).toBeVisible();
+    expect(within(shared).getByText("Shared plan")).toBeVisible();
+    expect(within(primary).queryByText("Shared plan")).not.toBeInTheDocument();
+    expect(within(primary).getByText("Alex plan")).toBeVisible();
+    expect(screen.getByTestId("board-work-map")).toBeVisible();
+    expect(
+      screen.getAllByText("Shared-owned").map((label) =>
+        label.parentElement?.querySelector("dd")?.textContent
+      )
+    ).toEqual(["1", "1"]);
   });
 
   it("lets board cards return to the unclassified deal pool", async () => {

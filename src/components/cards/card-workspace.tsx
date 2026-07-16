@@ -22,8 +22,10 @@ import {
   type PointerEvent
 } from "react";
 
+import type { HouseholdWorkMap } from "@/contracts/household-work-map";
 import type { PersonaSummary } from "@/contracts/personas";
 import type { ResponsibilitySummary } from "@/contracts/responsibilities";
+import { HouseholdWorkMapSummary } from "./household-work-map-summary";
 import type { CardBucket, CardDistributionBucket, CardDistributionMove } from "./card-state";
 import {
   CARD_BUCKET_HELP,
@@ -32,6 +34,7 @@ import {
   bucketForCard,
   getCardsForPersona,
   getDistributableCards,
+  getSharedOwnerCards,
   groupCardsByBucket
 } from "./card-state";
 
@@ -42,6 +45,7 @@ type CardWorkspaceProps = {
   responsibilities: CardWorkspaceCard[];
   selectedPersona: PersonaSummary;
   view: "board" | "distribute" | "yourCards";
+  workMap?: HouseholdWorkMap;
 };
 
 type CardWorkspaceCard = ResponsibilitySummary & {
@@ -109,7 +113,8 @@ export function CardWorkspace({
   onDistribute,
   responsibilities,
   selectedPersona,
-  view
+  view,
+  workMap
 }: CardWorkspaceProps) {
   if (view === "yourCards") {
     return (
@@ -125,6 +130,7 @@ export function CardWorkspace({
       <BoardView
         onDistribute={onDistribute}
         responsibilities={responsibilities}
+        workMap={workMap}
       />
     );
   }
@@ -135,6 +141,7 @@ export function CardWorkspace({
       initialSelectedId={initialSelectedId}
       onDistribute={onDistribute}
       responsibilities={responsibilities}
+      workMap={workMap}
     />
   );
 }
@@ -143,10 +150,15 @@ function DistributeView({
   addedToDeal,
   initialSelectedId,
   onDistribute,
-  responsibilities
+  responsibilities,
+  workMap
 }: Pick<
   CardWorkspaceProps,
-  "addedToDeal" | "initialSelectedId" | "onDistribute" | "responsibilities"
+  | "addedToDeal"
+  | "initialSelectedId"
+  | "onDistribute"
+  | "responsibilities"
+  | "workMap"
 >) {
   const [removedIds, setRemovedIds] = useState<Set<string>>(() => new Set());
   const [drag, setDrag] = useState<DragState | null>(null);
@@ -371,6 +383,10 @@ function DistributeView({
         <p className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 text-[14px] font-semibold text-fp-ink shadow-[var(--fp-shadow-soft)]">
           {addedCard.title} was added to Deal and selected.
         </p>
+      ) : null}
+
+      {workMap ? (
+        <HouseholdWorkMapSummary variant="deal" workMap={workMap} />
       ) : null}
 
       <label className="fp-panel grid gap-2 p-3 text-[13px] font-bold text-fp-muted-ink sm:p-4">
@@ -620,11 +636,17 @@ function YourCardsView({
 
 function BoardView({
   onDistribute,
-  responsibilities
-}: Pick<CardWorkspaceProps, "onDistribute" | "responsibilities">) {
+  responsibilities,
+  workMap
+}: Pick<CardWorkspaceProps, "onDistribute" | "responsibilities" | "workMap">) {
   const groups = groupCardsByBucket(responsibilities);
-  const primaryBuckets: CardBucket[] = ["alex", "max"];
-  const secondaryBuckets: CardBucket[] = ["savedForLater", "notApplicable"];
+  const sharedCards = getSharedOwnerCards(responsibilities);
+  const sharedCardIds = new Set(sharedCards.map((card) => card.id));
+  const primarySections: PersistedBoardSection[] = ["alex", "max"];
+  const secondarySections: PersistedBoardSection[] = [
+    "savedForLater",
+    "notApplicable"
+  ];
 
   return (
     <section className="grid gap-3 lg:gap-4">
@@ -638,63 +660,107 @@ function BoardView({
         </p>
       </header>
 
+      {workMap ? (
+        <HouseholdWorkMapSummary variant="board" workMap={workMap} />
+      ) : null}
+
       <div
-        className="grid max-w-full gap-3 xl:grid-cols-[minmax(0,1fr)_17rem] xl:items-start"
+        className="grid max-w-full gap-3"
         data-testid="card-board"
       >
+        <BoardLane
+          cards={sharedCards}
+          onDistribute={onDistribute}
+          priority="shared"
+          section="shared"
+        />
         <div
-          className="grid min-w-0 gap-3 lg:grid-cols-2"
-          data-testid="primary-board-lanes"
+          className="grid max-w-full gap-3 xl:grid-cols-[minmax(0,1fr)_17rem] xl:items-start"
         >
-          {primaryBuckets.map((bucket) => (
-            <BoardLane
-              bucket={bucket}
-              cards={groups[bucket]}
-              key={bucket}
-              onDistribute={onDistribute}
-              priority="primary"
-            />
-          ))}
-        </div>
-        <div
-          className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1"
-          data-testid="secondary-board-lanes"
-        >
-          {secondaryBuckets.map((bucket) => (
-            <BoardLane
-              bucket={bucket}
-              cards={groups[bucket]}
-              key={bucket}
-              onDistribute={onDistribute}
-              priority="secondary"
-            />
-          ))}
+          <div
+            className="grid min-w-0 gap-3 lg:grid-cols-2"
+            data-testid="primary-board-lanes"
+          >
+            {primarySections.map((section) => (
+              <BoardLane
+                cards={groups[section].filter(
+                  (card) => !sharedCardIds.has(card.id)
+                )}
+                key={section}
+                onDistribute={onDistribute}
+                priority="primary"
+                section={section}
+              />
+            ))}
+          </div>
+          <div
+            className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1"
+            data-testid="secondary-board-lanes"
+          >
+            {secondarySections.map((section) => (
+              <BoardLane
+                cards={groups[section]}
+                key={section}
+                onDistribute={onDistribute}
+                priority="secondary"
+                section={section}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
+type PersistedBoardSection = Exclude<CardBucket, "unassigned">;
+type BoardSectionKey = PersistedBoardSection | "shared";
+
+const BOARD_SECTION_LABELS: Record<BoardSectionKey, string> = {
+  alex: CARD_BUCKET_LABELS.alex,
+  max: CARD_BUCKET_LABELS.max,
+  notApplicable: CARD_BUCKET_LABELS.notApplicable,
+  savedForLater: CARD_BUCKET_LABELS.savedForLater,
+  shared: "Shared"
+};
+
+const BOARD_SECTION_HELP: Record<BoardSectionKey, string> = {
+  alex: CARD_BUCKET_HELP.alex,
+  max: CARD_BUCKET_HELP.max,
+  notApplicable: CARD_BUCKET_HELP.notApplicable,
+  savedForLater: CARD_BUCKET_HELP.savedForLater,
+  shared: "Responsibilities with an explicit shared-owner agreement"
+};
+
+const BOARD_SECTION_TONES: Record<BoardSectionKey, string> = {
+  alex: CARD_BUCKET_TONES.alex,
+  max: CARD_BUCKET_TONES.max,
+  notApplicable: CARD_BUCKET_TONES.notApplicable,
+  savedForLater: CARD_BUCKET_TONES.savedForLater,
+  shared: "border-[color:var(--fp-shared)]/35 bg-[color:var(--fp-shared)]/10"
+};
+
 function BoardLane({
-  bucket,
   cards,
   onDistribute,
-  priority
+  priority,
+  section
 }: {
-  bucket: CardBucket;
   cards: CardWorkspaceCard[];
   onDistribute?: (move: CardDistributionMove) => Promise<void> | void;
-  priority: "primary" | "secondary";
+  priority: "primary" | "secondary" | "shared";
+  section: BoardSectionKey;
 }) {
   return (
     <details
       open
+      data-testid={section === "shared" ? "shared-board-lane" : undefined}
       className={[
         "grid min-w-0 content-start rounded-[8px] border shadow-[var(--fp-shadow-soft)] [&>summary::-webkit-details-marker]:hidden",
         priority === "primary"
           ? "gap-4 p-3 sm:p-4 lg:min-h-[24rem] xl:min-h-[30rem]"
           : "gap-3 p-3 lg:shadow-[var(--fp-shadow-soft)]",
-        CARD_BUCKET_TONES[bucket]
+        BOARD_SECTION_TONES[section]
       ].join(" ")}
     >
       <summary className="flex cursor-pointer list-none items-start justify-between gap-3 rounded-[8px] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]">
@@ -707,10 +773,10 @@ function BoardLane({
                 : "text-[15px] leading-5"
             ].join(" ")}
           >
-            {CARD_BUCKET_LABELS[bucket]}
+            {BOARD_SECTION_LABELS[section]}
           </h2>
           <p className="mt-1 text-[12px] font-semibold leading-5 text-fp-muted-ink">
-            {CARD_BUCKET_HELP[bucket]}
+            {BOARD_SECTION_HELP[section]}
           </p>
         </div>
         <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-[12px] font-bold text-fp-ink">
@@ -720,7 +786,7 @@ function BoardLane({
       <div className="grid gap-3">
         {cards.map((card) => (
           <CompactCard
-            bucket={bucket}
+            bucket={section === "shared" ? bucketForCard(card) : section}
             card={card}
             key={card.id}
             onDistribute={onDistribute}
