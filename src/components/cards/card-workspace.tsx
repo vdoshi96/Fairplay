@@ -1054,6 +1054,7 @@ function CompactCard({
   const moveBuckets = (["alex", "max", "savedForLater", "notApplicable"] as const).filter(
     (candidate) => candidate !== bucket
   );
+  const hasActiveAssignments = card.currentAssignments.length > 0;
 
   return (
     <article className="grid min-w-0 overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
@@ -1079,37 +1080,48 @@ function CompactCard({
       </Link>
       {onDistribute ? (
         <div className="grid gap-2 border-t border-fp-line bg-[var(--fp-surface-strong)] p-2">
-          {bucket !== "unassigned" ? (
-            <button
-              className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
-              onClick={() =>
-                void onDistribute({
-                  bucket: "unassigned",
-                  responsibilityId: card.id
-                })
-              }
-              type="button"
+          {hasActiveAssignments ? (
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-center text-[12px] font-bold text-fp-ink underline-offset-4 hover:underline"
+              href={`/app/responsibilities/${card.id}#ownership-details`}
             >
-              Remove from board
-            </button>
-          ) : null}
-          <div className="grid grid-cols-2 gap-1">
-            {moveBuckets.map((nextBucket) => (
-              <button
-                className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
-                key={nextBucket}
-                onClick={() =>
-                  void onDistribute({
-                    bucket: nextBucket,
-                    responsibilityId: card.id
-                  })
-                }
-                type="button"
-              >
-                {CARD_BUCKET_LABELS[nextBucket]}
-              </button>
-            ))}
-          </div>
+              Move with ownership details
+            </Link>
+          ) : (
+            <>
+              {bucket !== "unassigned" ? (
+                <button
+                  className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
+                  onClick={() =>
+                    void onDistribute({
+                      bucket: "unassigned",
+                      responsibilityId: card.id
+                    })
+                  }
+                  type="button"
+                >
+                  Remove from board
+                </button>
+              ) : null}
+              <div className="grid grid-cols-2 gap-1">
+                {moveBuckets.map((nextBucket) => (
+                  <button
+                    className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
+                    key={nextBucket}
+                    onClick={() =>
+                      void onDistribute({
+                        bucket: nextBucket,
+                        responsibilityId: card.id
+                      })
+                    }
+                    type="button"
+                  >
+                    {CARD_BUCKET_LABELS[nextBucket]}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       ) : null}
     </article>

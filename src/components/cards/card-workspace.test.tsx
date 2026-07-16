@@ -890,4 +890,48 @@ describe("CardWorkspace", () => {
       })
     );
   });
+
+  it("routes owned board cards to ownership details instead of a quick move", () => {
+    const onDistribute = vi.fn().mockResolvedValue(undefined);
+    const responsibilityId = "550e8400-e29b-41d4-a716-446655440025";
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({
+            id: responsibilityId,
+            title: "Shared school plan",
+            boardLane: "player_1",
+            currentAssignments: [
+              {
+                personaKey: "alex",
+                role: "accountable_owner",
+                scope: "outcome"
+              },
+              {
+                personaKey: "max",
+                role: "helper",
+                scope: "support"
+              }
+            ]
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="board"
+      />
+    );
+
+    expect(
+      screen.getByRole("link", { name: "Move with ownership details" })
+    ).toHaveAttribute(
+      "href",
+      `/app/responsibilities/${responsibilityId}#ownership-details`
+    );
+    expect(
+      screen.queryByRole("button", { name: "Remove from board" })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Max" })).not.toBeInTheDocument();
+    expect(onDistribute).not.toHaveBeenCalled();
+  });
 });
