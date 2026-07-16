@@ -54,6 +54,7 @@ export function detailCardFor(responsibility: ResponsibilityDetail): CardDetailC
     title: responsibility.title,
     labels: sourceCard?.labels ?? [],
     boardLane: responsibility.boardLane,
+    currentAssignments: responsibility.currentAssignments,
     ownerLabel: ownerLabelFor(responsibility),
     definition: sourceFields.definition,
     conception: sourceFields.conception,

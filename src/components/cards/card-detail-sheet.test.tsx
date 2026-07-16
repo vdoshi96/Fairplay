@@ -12,6 +12,9 @@ const card = {
   ownerLabel: "Cards of Concern",
   definition: "Keep vehicle needs visible and handled.",
   conception: "Notice repairs and timing.",
+  currentAssignments: [
+    { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+  ],
   planning: "Schedule service and arrange transport.",
   execution: "Complete service and follow-through.",
   minimumStandard: "Vehicle is safe, legal, and available.",
@@ -85,6 +88,33 @@ describe("CardDetailSheet", () => {
     expect(screen.getByRole("img", { name: /dog medicine cover/i })).toHaveClass(
       "object-cover"
     );
+  });
+
+  it("shows editable ownership details when household personas are provided", () => {
+    const onSaveOwnership = vi.fn();
+    render(
+      <CardDetailSheet
+        card={card}
+        onSaveOwnership={onSaveOwnership}
+        personas={[
+          {
+            id: "550e8400-e29b-41d4-a716-446655440001",
+            key: "alex",
+            displayName: "Alex"
+          },
+          {
+            id: "550e8400-e29b-41d4-a716-446655440002",
+            key: "max",
+            displayName: "Max"
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Ownership details" })).toBeVisible();
+    expect(screen.getByLabelText("Alex role")).toHaveValue("accountable_owner");
+    expect(screen.getByLabelText("Max role")).toHaveValue("none");
+    expect(screen.getByRole("button", { name: "Save ownership details" })).toBeEnabled();
   });
 
   it("renders source-card sourceCoverAssetPath with legacy object-contain art treatment", () => {

@@ -50,6 +50,7 @@ describe("responsibility detail card mapping", () => {
     expect(card.sourceCoverAssetPath).toBe(
       "/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440099/cover"
     );
+    expect(card.currentAssignments).toEqual([]);
     expect(card.coverAssetPath).toBeNull();
   });
 

@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import type { CardTemplateLabel } from "@/contracts/card-templates";
+import type { PersonaSummary } from "@/contracts/personas";
+import type { ResponsibilityAssignmentSummary } from "@/contracts/responsibilities";
 import type { ResponsibilityBoardLane } from "@/domain/enums";
 import type { CardDistributionBucket } from "@/components/cards/card-state";
 import {
@@ -15,6 +17,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Sheet } from "@/components/ui/sheet";
+import {
+  OwnershipDetails,
+  type OwnershipAgreementSubmission
+} from "@/components/responsibilities/ownership-details";
 
 export type CardDetailCard = {
   id: string;
@@ -24,6 +30,7 @@ export type CardDetailCard = {
   ownerLabel?: string | null;
   definition?: string | null;
   conception?: string | null;
+  currentAssignments?: readonly ResponsibilityAssignmentSummary[];
   planning?: string | null;
   execution?: string | null;
   minimumStandard?: string | null;
@@ -38,7 +45,11 @@ export type CardDetailCard = {
 type CardDetailSheetProps = {
   card: CardDetailCard;
   onMove?: (bucket: CardDistributionBucket) => void;
+  onSaveOwnership?: (
+    agreement: OwnershipAgreementSubmission
+  ) => Promise<void> | void;
   onSaveStandards?: (standard: string) => Promise<void> | void;
+  personas?: readonly PersonaSummary[];
 };
 
 const aiDraftCoverPathPattern =
@@ -58,7 +69,13 @@ const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> =
 
 const moveBuckets = ["alex", "max", "savedForLater", "notApplicable"] as const;
 
-export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailSheetProps) {
+export function CardDetailSheet({
+  card,
+  onMove,
+  onSaveOwnership,
+  onSaveStandards,
+  personas
+}: CardDetailSheetProps) {
   const standardsDefaultText = standardsTextFor(card);
   const [selectedBucket, setSelectedBucket] = useState<CardDistributionBucket | "">("");
   const [standardsDraft, setStandardsDraft] = useState(() => standardsDefaultText);
@@ -271,6 +288,15 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
               ) : null}
             </div>
           </section>
+
+          {personas ? (
+            <OwnershipDetails
+              currentAssignments={card.currentAssignments ?? []}
+              nextReviewAt={card.nextReviewAt ?? null}
+              onSave={onSaveOwnership}
+              personas={personas}
+            />
+          ) : null}
 
           <section className="grid gap-3">
             <h2 className="text-[18px] font-bold text-fp-ink">Assign lane</h2>
