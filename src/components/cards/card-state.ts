@@ -73,7 +73,24 @@ export function getCardsForPersona<T extends ResponsibilitySummary>(
   const bucket = bucketForPersona(personaKey);
 
   return deduplicateCatalogCards(cards)
-    .filter((card) => bucketForCard(card) === bucket)
+    .filter((card) => {
+      const explicitOwners = card.currentAssignments.filter(
+        (assignment) =>
+          assignment.role === "accountable_owner" ||
+          assignment.role === "shared_owner"
+      );
+
+      if (explicitOwners.length > 0) {
+        return explicitOwners.some(
+          (assignment) => assignment.personaKey === personaKey
+        );
+      }
+
+      // Older records may have an owner lane without assignment history. Keep
+      // that compatibility fallback, but never let one persisted lane hide a
+      // genuinely shared agreement from either owner.
+      return bucketForCard(card) === bucket;
+    })
     .slice()
     .sort(compareCards);
 }

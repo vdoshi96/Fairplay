@@ -155,6 +155,33 @@ describe("card state adapter", () => {
     ]);
   });
 
+  it("puts a shared-owned card in both owners' decks without treating helpers as owners", () => {
+    const shared = card({
+      title: "Shared plan",
+      boardLane: "player_1",
+      currentAssignments: [
+        { personaKey: "alex", role: "shared_owner", scope: "outcome" },
+        { personaKey: "max", role: "shared_owner", scope: "outcome" }
+      ]
+    });
+    const helping = card({
+      title: "Helping only",
+      boardLane: "player_1",
+      currentAssignments: [
+        { personaKey: "alex", role: "accountable_owner", scope: "outcome" },
+        { personaKey: "max", role: "helper", scope: "support" }
+      ]
+    });
+
+    expect(getCardsForPersona([shared, helping], "alex").map((item) => item.title)).toEqual([
+      "Helping only",
+      "Shared plan"
+    ]);
+    expect(getCardsForPersona([shared, helping], "max").map((item) => item.title)).toEqual([
+      "Shared plan"
+    ]);
+  });
+
   it("groups all cards into polished board buckets", () => {
     const groups = groupCardsByBucket([
       card({ title: "A", boardLane: "player_1" }),
