@@ -182,6 +182,7 @@ export function OwnershipDetails({
     <section
       aria-labelledby="ownership-details-heading"
       className="grid gap-4 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4"
+      id="ownership-details"
     >
       <div className="grid gap-1">
         <h2 className="text-[18px] font-bold text-fp-ink" id="ownership-details-heading">
