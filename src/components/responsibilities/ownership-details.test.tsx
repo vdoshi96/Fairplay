@@ -72,6 +72,57 @@ describe("OwnershipDetails", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Ownership agreement saved.");
   });
 
+  it("resyncs a retained helper from the authoritative agreement before another save", async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    const { rerender } = render(
+      <OwnershipDetails
+        currentAssignments={[
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+        ]}
+        expectedUpdatedAt="2026-05-04T12:00:00.000Z"
+        nextReviewAt={null}
+        onSave={onSave}
+        personas={personas}
+      />
+    );
+
+    await userEvent.selectOptions(screen.getByLabelText("Alex role"), "none");
+    await userEvent.selectOptions(screen.getByLabelText("Max role"), "accountable_owner");
+    await userEvent.click(
+      screen.getByRole("radio", { name: "Keep the former owner as a helper" })
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Save ownership details" }));
+    await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
+
+    rerender(
+      <OwnershipDetails
+        currentAssignments={[
+          { personaKey: "alex", role: "helper", scope: "support" },
+          { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+        ]}
+        expectedUpdatedAt="2026-05-04T12:01:00.000Z"
+        nextReviewAt={null}
+        onSave={onSave}
+        personas={personas}
+      />
+    );
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Alex role")).toHaveValue("helper")
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Save ownership details" }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
+    expect(onSave.mock.calls[1]?.[0]).toMatchObject({
+      assignments: [
+        { personaKey: "alex", role: "helper", scope: "support" },
+        { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+      ],
+      expectedOwnerPersonaKeys: ["max"],
+      expectedUpdatedAt: "2026-05-04T12:01:00.000Z"
+    });
+  });
+
   it("supports genuine shared ownership without asking for a handoff", async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     render(

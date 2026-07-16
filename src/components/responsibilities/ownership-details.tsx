@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { PersonaSummary } from "@/contracts/personas";
 import type { ResponsibilityAssignmentSummary } from "@/contracts/responsibilities";
@@ -82,6 +82,16 @@ export function OwnershipDetails({
   const [feedback, setFeedback] = useState<
     { message: string; tone: "error" | "success" } | null
   >(null);
+
+  useEffect(() => {
+    setRoles({
+      alex: currentRole(currentAssignments, "alex"),
+      max: currentRole(currentAssignments, "max")
+    });
+    setReviewDate(nextReviewAt?.slice(0, 10) ?? "");
+    setHandoffMode(null);
+    setHandoffNotes("");
+  }, [currentAssignments, expectedUpdatedAt, nextReviewAt]);
 
   const assignments = useMemo(
     () =>
