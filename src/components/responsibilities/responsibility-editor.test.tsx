@@ -76,7 +76,7 @@ describe("ResponsibilityEditor", () => {
     expect(screen.getByLabelText("Revisit date")).toBeVisible();
   });
 
-  it("requires archive confirmation before calling the status action", () => {
+  it("requires accessible archive confirmation before calling the status action", async () => {
     const onStatusChange = vi.fn();
     render(
       <ResponsibilityEditor
@@ -86,10 +86,19 @@ describe("ResponsibilityEditor", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Archive" }));
+    const archiveTrigger = screen.getByRole("button", { name: "Archive" });
+    fireEvent.click(archiveTrigger);
 
-    expect(screen.getByRole("dialog", { name: "Archive responsibility?" })).toBeVisible();
+    const dialog = await screen.findByRole("alertdialog", {
+      name: "Archive responsibility?"
+    });
+    expect(dialog).toHaveAccessibleDescription(
+      "This keeps the history but removes it from the active planning view."
+    );
     expect(onStatusChange).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus()
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Confirm archive" }));
 
@@ -97,6 +106,7 @@ describe("ResponsibilityEditor", () => {
       status: "archived",
       confirmedArchive: true
     });
+    await waitFor(() => expect(archiveTrigger).toHaveFocus());
   });
 
   it("saves existing edit fields without visibility and uses the dedicated visibility path", async () => {
