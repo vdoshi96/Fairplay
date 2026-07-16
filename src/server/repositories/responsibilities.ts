@@ -935,14 +935,10 @@ async function applyResponsibilityCardDistributionWithClient(
     : currentOwnerKeys.length !== 0;
   const hasCurrentOwner = currentOwnerKeys.length > 0;
 
-  if (
-    assignmentChanged &&
-    hasCurrentOwner &&
-    !input.handoffNotes
-  ) {
+  if (assignmentChanged && existing.assignments.length > 0) {
     throw new RepositoryError(
       "INVALID_INPUT",
-      "Accountable owner changes need handoff context."
+      "Use ownership details to change an owned or collaborative card."
     );
   }
 

@@ -89,6 +89,7 @@ export function CardDetailSheet({
   const ownerLabel = card.ownerLabel ?? laneLabel;
   const isGeneratedCover = aiDraftCoverPathPattern.test(card.sourceCoverAssetPath ?? "");
   const coverAssetPath = card.sourceCoverAssetPath ?? card.coverAssetPath ?? null;
+  const hasActiveAssignments = (card.currentAssignments?.length ?? 0) > 0;
   const availableMoveBuckets = moveBuckets.filter(
     (bucket) => laneForBucket(bucket) !== card.boardLane
   );
@@ -300,38 +301,54 @@ export function CardDetailSheet({
             />
           ) : null}
 
-          <section className="grid gap-3">
-            <h2 className="text-[18px] font-bold text-fp-ink">Assign lane</h2>
-            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-              <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
-                Destination
-                <select
-                  aria-label="Move destination"
-                  className="fp-input px-3 text-[15px] disabled:opacity-60"
-                  disabled={!onMove}
-                  onChange={(event) =>
-                    setSelectedBucket(event.target.value as CardDistributionBucket | "")
-                  }
-                  value={selectedBucket}
-                >
-                  <option value="">Choose lane</option>
-                  {availableMoveBuckets.map((bucket) => (
-                    <option key={bucket} value={bucket}>
-                      {CARD_BUCKET_LABELS[bucket]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <Button
-                className="self-end"
-                disabled={!onMove || !selectedBucket}
-                onClick={moveSelectedCard}
+          {hasActiveAssignments ? (
+            <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4">
+              <h2 className="text-[18px] font-bold text-fp-ink">Move card</h2>
+              <p className="text-[13px] leading-5 text-fp-muted-ink">
+                This card already has an ownership agreement. Update that agreement so
+                helpers, backups, and former owners are handled explicitly.
+              </p>
+              <a
+                className="inline-flex min-h-11 w-fit items-center justify-center rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-4 text-[14px] font-bold text-fp-ink underline-offset-4 hover:underline"
+                href="#ownership-details"
               >
-                <MoveRight aria-hidden="true" size={16} />
-                Move
-              </Button>
-            </div>
-          </section>
+                Update ownership details
+              </a>
+            </section>
+          ) : (
+            <section className="grid gap-3">
+              <h2 className="text-[18px] font-bold text-fp-ink">Assign lane</h2>
+              <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+                  Destination
+                  <select
+                    aria-label="Move destination"
+                    className="fp-input px-3 text-[15px] disabled:opacity-60"
+                    disabled={!onMove}
+                    onChange={(event) =>
+                      setSelectedBucket(event.target.value as CardDistributionBucket | "")
+                    }
+                    value={selectedBucket}
+                  >
+                    <option value="">Choose lane</option>
+                    {availableMoveBuckets.map((bucket) => (
+                      <option key={bucket} value={bucket}>
+                        {CARD_BUCKET_LABELS[bucket]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <Button
+                  className="self-end"
+                  disabled={!onMove || !selectedBucket}
+                  onClick={moveSelectedCard}
+                >
+                  <MoveRight aria-hidden="true" size={16} />
+                  Move
+                </Button>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </Sheet>

@@ -27,7 +27,7 @@ const card = {
 } as const;
 
 describe("CardDetailSheet", () => {
-  it("shows source cover, ownership, purpose, Fogging Estandards, and lane move", async () => {
+  it("shows card details and routes owned moves through ownership details", () => {
     const onMove = vi.fn();
     render(
       <CardDetailSheet
@@ -61,6 +61,27 @@ describe("CardDetailSheet", () => {
     expect(screen.getByText("Noticing")).toBeVisible();
     expect(screen.getByText(/Review by/)).toHaveTextContent("Review by Jun 15, 2026");
     expect(screen.queryByText("Insurance card lives in the glove box.")).not.toBeInTheDocument();
+
+    expect(
+      screen.getByRole("link", { name: "Update ownership details" })
+    ).toHaveAttribute("href", "#ownership-details");
+    expect(screen.queryByLabelText("Move destination")).not.toBeInTheDocument();
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it("keeps quick lane assignment available for an ownerless card", async () => {
+    const onMove = vi.fn();
+
+    render(
+      <CardDetailSheet
+        card={{
+          ...card,
+          currentAssignments: [],
+          ownerLabel: "Unassigned"
+        }}
+        onMove={onMove}
+      />
+    );
 
     await userEvent.selectOptions(screen.getByLabelText("Move destination"), "alex");
     await userEvent.click(screen.getByRole("button", { name: "Move" }));
@@ -166,7 +187,14 @@ describe("CardDetailSheet", () => {
   });
 
   it("keeps lane movement disabled when no move hook is wired", () => {
-    render(<CardDetailSheet card={card} />);
+    render(
+      <CardDetailSheet
+        card={{
+          ...card,
+          currentAssignments: []
+        }}
+      />
+    );
 
     expect(screen.getByText("What is this card for?")).toBeVisible();
     expect(screen.getByText("Fogging Estandards")).toBeVisible();
