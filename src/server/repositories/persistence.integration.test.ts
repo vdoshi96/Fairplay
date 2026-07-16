@@ -9,6 +9,7 @@ import { listPersonasForHousehold } from "./personas";
 import {
   addResponsibilityAssignments,
   applyResponsibilityCardDistribution,
+  applyResponsibilityOwnershipAgreement,
   createResponsibility,
   getResponsibilityDetail,
   updateResponsibilityBoardPlacement
@@ -231,6 +232,485 @@ describe("responsibility repository", () => {
         responsibilityId: responsibility.id
       })
     ).resolves.toBeNull();
+  });
+
+  test("atomically replaces a former owner and records the ownership agreement", async () => {
+    const { household, personas } = await createTestHousehold("ownership-replace");
+    const [alex, max] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Replace ownership card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      nextReviewAt: null
+    });
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    const updated = await applyResponsibilityOwnershipAgreement({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      actorPersonaId: alex.id,
+      expectedOwnerPersonaKeys: ["alex"],
+      assignments: [
+        { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+      ],
+      reviewAt: "2026-08-01T12:00:00.000Z",
+      handoffMode: "replace_former_owner",
+      handoffNotes: "Max has the plan and supply context."
+    });
+
+    expect(updated).toMatchObject({
+      id: responsibility.id,
+      boardLane: "player_2",
+      nextReviewAt: "2026-08-01T12:00:00.000Z",
+      currentAssignments: [
+        { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+      ]
+    });
+    const history = await prisma.responsibilityAssignment.findMany({
+      where: { responsibilityId: responsibility.id },
+      orderBy: { createdAt: "asc" },
+      select: { personaId: true, startsAt: true, endsAt: true }
+    });
+    expect(history).toHaveLength(2);
+    expect(history[0]).toMatchObject({ personaId: alex.id });
+    expect(history[0]?.endsAt?.getTime()).toBeGreaterThanOrEqual(
+      history[0]?.startsAt.getTime() ?? Number.POSITIVE_INFINITY
+    );
+    expect(history[1]).toMatchObject({ personaId: max.id, endsAt: null });
+    await expect(
+      prisma.responsibilityEvent.findFirstOrThrow({
+        where: {
+          responsibilityId: responsibility.id,
+          eventType: "assignment_changed"
+        },
+        select: { payload: true }
+      })
+    ).resolves.toMatchObject({
+      payload: {
+        assignments: [
+          { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+        ],
+        formerOwnerPersonaKeys: ["alex"],
+        handoffMode: "replace_former_owner",
+        handoffNotes: "Max has the plan and supply context.",
+        reviewAt: "2026-08-01T12:00:00.000Z",
+        revisitAt: "2026-08-01T12:00:00.000Z"
+      }
+    });
+    await expect(
+      prisma.responsibilityEvent.findFirstOrThrow({
+        where: {
+          responsibilityId: responsibility.id,
+          eventType: "board_lane_changed"
+        },
+        select: { payload: true }
+      })
+    ).resolves.toEqual({
+      payload: {
+        fromLane: "cards_of_concern",
+        toLane: "player_2",
+        fromSortOrder: 0,
+        toSortOrder: 0,
+        note: null
+      }
+    });
+  });
+
+  test("retains a former owner explicitly as a helper", async () => {
+    const { household, personas } = await createTestHousehold("ownership-retain");
+    const [alex, max] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Retain ownership context card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      nextReviewAt: null
+    });
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    const updated = await applyResponsibilityOwnershipAgreement({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      actorPersonaId: max.id,
+      expectedOwnerPersonaKeys: ["alex"],
+      assignments: [
+        { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+      ],
+      reviewAt: null,
+      handoffMode: "retain_former_owner_as_helper"
+    });
+
+    expect(updated.currentAssignments).toEqual(
+      expect.arrayContaining([
+        { personaKey: "max", role: "accountable_owner", scope: "outcome" },
+        { personaKey: "alex", role: "helper", scope: "support" }
+      ])
+    );
+    expect(updated.currentAssignments).toHaveLength(2);
+    expect(updated.boardLane).toBe("player_2");
+  });
+
+  test("keeps the persisted lane stable for a genuine shared-owner agreement", async () => {
+    const { household, personas } = await createTestHousehold("ownership-shared");
+    const [alex] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Shared ownership card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      boardLane: "player_1",
+      nextReviewAt: null
+    });
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    const updated = await applyResponsibilityOwnershipAgreement({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      actorPersonaId: alex.id,
+      expectedOwnerPersonaKeys: ["alex"],
+      assignments: [
+        { personaKey: "alex", role: "shared_owner", scope: "outcome" },
+        { personaKey: "max", role: "shared_owner", scope: "outcome" }
+      ],
+      reviewAt: null
+    });
+
+    expect(updated.boardLane).toBe("player_1");
+    expect(updated.currentAssignments).toEqual(
+      expect.arrayContaining([
+        { personaKey: "alex", role: "shared_owner", scope: "outcome" },
+        { personaKey: "max", role: "shared_owner", scope: "outcome" }
+      ])
+    );
+    await expect(
+      prisma.responsibilityEvent.count({
+        where: {
+          responsibilityId: responsibility.id,
+          eventType: "board_lane_changed"
+        }
+      })
+    ).resolves.toBe(0);
+  });
+
+  test("rejects silent former-owner removal without changing the agreement", async () => {
+    const { household, personas } = await createTestHousehold("ownership-explicit");
+    const [alex] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Explicit handoff card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      nextReviewAt: null
+    });
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    await expect(
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+        ],
+        reviewAt: "2026-08-01T12:00:00.000Z"
+      })
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    await expect(
+      getResponsibilityDetail({
+        householdId: household.id,
+        responsibilityId: responsibility.id
+      })
+    ).resolves.toMatchObject({
+      nextReviewAt: null,
+      currentAssignments: [
+        { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+      ]
+    });
+    await expect(
+      prisma.responsibilityEvent.count({
+        where: { responsibilityId: responsibility.id }
+      })
+    ).resolves.toBe(0);
+  });
+
+  test("rolls back ownership history and review when a later write fails", async () => {
+    const { household, personas } = await createTestHousehold("ownership-rollback");
+    const [alex] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Ownership rollback card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      nextReviewAt: null
+    });
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    await expect(
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" },
+          {
+            personaKey: "max",
+            role: "invalid_role" as "helper",
+            scope: "support"
+          }
+        ],
+        reviewAt: "2026-08-01T12:00:00.000Z"
+      })
+    ).rejects.toThrow();
+
+    const current = await getResponsibilityDetail({
+      householdId: household.id,
+      responsibilityId: responsibility.id
+    });
+    expect(current).toMatchObject({
+      nextReviewAt: null,
+      currentAssignments: [
+        { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+      ]
+    });
+    await expect(
+      prisma.responsibilityAssignment.count({
+        where: { responsibilityId: responsibility.id }
+      })
+    ).resolves.toBe(1);
+    await expect(
+      prisma.responsibilityEvent.count({
+        where: { responsibilityId: responsibility.id }
+      })
+    ).resolves.toBe(0);
+  });
+
+  test("serializes concurrent first agreements and prevents a stale silent handoff", async () => {
+    const { household, personas } = await createTestHousehold(
+      "ownership-concurrent"
+    );
+    const [alex, max] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Concurrent ownership card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      nextReviewAt: null
+    });
+
+    const results = await Promise.allSettled([
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        expectedOwnerPersonaKeys: [],
+        assignments: [
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+        ],
+        reviewAt: null
+      }),
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: max.id,
+        expectedOwnerPersonaKeys: [],
+        assignments: [
+          { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+        ],
+        reviewAt: null
+      })
+    ]);
+
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    expect(results.filter((result) => result.status === "rejected")).toHaveLength(1);
+    const current = await getResponsibilityDetail({
+      householdId: household.id,
+      responsibilityId: responsibility.id
+    });
+    expect(current?.currentAssignments).toHaveLength(1);
+    expect(["alex", "max"]).toContain(
+      current?.currentAssignments[0]?.personaKey
+    );
+    await expect(
+      prisma.responsibilityEvent.count({
+        where: {
+          responsibilityId: responsibility.id,
+          eventType: "assignment_changed"
+        }
+      })
+    ).resolves.toBe(1);
+  });
+
+  test("rejects a stale handoff even when both concurrent requests chose a mode", async () => {
+    const { household, personas } = await createTestHousehold(
+      "ownership-concurrent-handoff"
+    );
+    const [alex, max] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Concurrent explicit handoff card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      boardLane: "player_1",
+      nextReviewAt: null
+    });
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    const results = await Promise.allSettled([
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+        ],
+        reviewAt: null,
+        handoffMode: "replace_former_owner"
+      }),
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: max.id,
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          { personaKey: "max", role: "accountable_owner", scope: "part" }
+        ],
+        reviewAt: null,
+        handoffMode: "replace_former_owner"
+      })
+    ]);
+
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    const rejected = results.find((result) => result.status === "rejected");
+    expect(rejected).toMatchObject({
+      status: "rejected",
+      reason: { code: "CONFLICT" }
+    });
+    await expect(
+      getResponsibilityDetail({
+        householdId: household.id,
+        responsibilityId: responsibility.id
+      })
+    ).resolves.toMatchObject({
+      boardLane: "player_2",
+      currentAssignments: [
+        {
+          personaKey: "max",
+          role: "accountable_owner"
+        }
+      ]
+    });
   });
 
   test("persists board placement changes and records lane movement events", async () => {
