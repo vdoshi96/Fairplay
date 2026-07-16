@@ -160,6 +160,26 @@ type ResponsibilityWriteClient = Pick<
   "persona" | "responsibilityTemplate" | "responsibility"
 >;
 
+async function lockResponsibilityForUpdate(
+  tx: Prisma.TransactionClient,
+  input: {
+    householdId: HouseholdId;
+    responsibilityId: ResponsibilityId;
+  }
+) {
+  const lockedResponsibilities = await tx.$queryRaw<Array<{ id: string }>>`
+    SELECT "id"
+    FROM "Responsibility"
+    WHERE "id" = ${input.responsibilityId}
+      AND "householdId" = ${input.householdId}
+    FOR UPDATE
+  `;
+
+  if (lockedResponsibilities.length === 0) {
+    throw new RepositoryError("NOT_FOUND", "Responsibility not found for household.");
+  }
+}
+
 export async function createResponsibilityWithClient(
   client: ResponsibilityWriteClient,
   input: CreateResponsibilityInput
@@ -237,18 +257,43 @@ export async function addResponsibilityAssignments(input: {
   }[];
 }): Promise<ResponsibilityDetail> {
   const startsAt = new Date(input.startsAt);
+  if (Number.isNaN(startsAt.getTime())) {
+    throw new RepositoryError("INVALID_INPUT", "Assignment effective date must be valid.");
+  }
+
   const responsibility = await prisma.$transaction(async (tx) => {
+    await lockResponsibilityForUpdate(tx, input);
+
     const responsibility = await tx.responsibility.findFirst({
       where: {
         id: input.responsibilityId,
         householdId: input.householdId
       },
       select: {
-        id: true
+        id: true,
+        assignments: {
+          where: {
+            endsAt: null
+          },
+          select: {
+            startsAt: true
+          }
+        }
       }
     });
     if (!responsibility) {
       throw new RepositoryError("NOT_FOUND", "Responsibility not found for household.");
+    }
+
+    const latestActiveStart = responsibility.assignments.reduce(
+      (latest, assignment) => Math.max(latest, assignment.startsAt.getTime()),
+      Number.NEGATIVE_INFINITY
+    );
+    if (startsAt.getTime() < latestActiveStart) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Assignment effective date cannot predate the current assignment."
+      );
     }
 
     const personaIds = [
@@ -335,9 +380,7 @@ export type ApplyResponsibilityCardDistributionInput = {
   targetOwnerPersonaKey: PersonaKey | null;
   toLane: ResponsibilityBoardLane;
   sortOrder: number;
-  effectiveAt: string | Date;
   handoffNotes?: string;
-  revisitAt?: string;
 };
 
 /**
@@ -363,17 +406,7 @@ async function applyResponsibilityCardDistributionWithClient(
 ) {
   // Serialize moves for one card so concurrent devices cannot leave multiple
   // active owners or event payloads derived from the same stale lane.
-  const lockedResponsibilities = await tx.$queryRaw<Array<{ id: string }>>`
-    SELECT "id"
-    FROM "Responsibility"
-    WHERE "id" = ${input.responsibilityId}
-      AND "householdId" = ${input.householdId}
-    FOR UPDATE
-  `;
-
-  if (lockedResponsibilities.length === 0) {
-    throw new RepositoryError("NOT_FOUND", "Responsibility not found for household.");
-  }
+  await lockResponsibilityForUpdate(tx, input);
 
   const [existing, actorPersona, targetOwnerPersona] = await Promise.all([
     tx.responsibility.findFirst({
@@ -392,6 +425,7 @@ async function applyResponsibilityCardDistributionWithClient(
           },
           select: {
             role: true,
+            startsAt: true,
             persona: {
               select: {
                 key: true
@@ -444,10 +478,17 @@ async function applyResponsibilityCardDistributionWithClient(
     );
   }
 
-  const effectiveAt = new Date(input.effectiveAt);
-  if (Number.isNaN(effectiveAt.getTime())) {
-    throw new RepositoryError("INVALID_INPUT", "Effective date must be valid.");
-  }
+  // Capture mutation time only after the row lock is acquired. Caller-captured
+  // timestamps can be committed in the opposite order under concurrency and
+  // produce assignment histories whose endsAt predates startsAt.
+  const latestActiveStart = existing.assignments.reduce(
+    (latest, assignment) => Math.max(latest, assignment.startsAt.getTime()),
+    Number.NEGATIVE_INFINITY
+  );
+  const effectiveAt = new Date(Math.max(Date.now(), latestActiveStart));
+  const revisitAt = new Date(effectiveAt);
+  revisitAt.setDate(revisitAt.getDate() + 7);
+  const revisitAtIso = revisitAt.toISOString();
 
   const currentOwnerKeys = existing.assignments
     .filter(
@@ -466,11 +507,11 @@ async function applyResponsibilityCardDistributionWithClient(
   if (
     assignmentChanged &&
     hasCurrentOwner &&
-    (!input.handoffNotes || !input.revisitAt)
+    !input.handoffNotes
   ) {
     throw new RepositoryError(
       "INVALID_INPUT",
-      "Accountable owner changes need handoff context and a revisit date."
+      "Accountable owner changes need handoff context."
     );
   }
 
@@ -494,7 +535,7 @@ async function applyResponsibilityCardDistributionWithClient(
           note: null,
           reviewOn: null
         },
-        occurredAt: new Date()
+        occurredAt: effectiveAt
       }
     });
   }
@@ -543,7 +584,7 @@ async function applyResponsibilityCardDistributionWithClient(
               ]
             : [],
           handoffNotes: hasCurrentOwner ? input.handoffNotes ?? null : null,
-          revisitAt: hasCurrentOwner ? input.revisitAt ?? null : null
+          revisitAt: hasCurrentOwner ? revisitAtIso : null
         },
         occurredAt: effectiveAt
       }
@@ -563,7 +604,7 @@ async function applyResponsibilityCardDistributionWithClient(
         toSortOrder: input.sortOrder,
         note: null
       },
-      occurredAt: new Date()
+      occurredAt: effectiveAt
     }
   });
 
@@ -588,6 +629,8 @@ export async function updateResponsibilityBoardPlacement(input: {
   note?: string;
 }): Promise<ResponsibilityDetail> {
   const responsibility = await prisma.$transaction(async (tx) => {
+    await lockResponsibilityForUpdate(tx, input);
+
     const existing = await tx.responsibility.findFirst({
       where: {
         id: input.responsibilityId,

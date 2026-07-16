@@ -55,11 +55,9 @@ describe("card distribution service", () => {
     expect(repositoryMocks.applyResponsibilityCardDistribution).toHaveBeenCalledOnce();
     expect(repositoryMocks.applyResponsibilityCardDistribution).toHaveBeenCalledWith({
       actorPersonaId: session.selectedPersonaId,
-      effectiveAt: expect.any(Date),
       handoffNotes: "Moved through card distribution.",
       householdId: session.householdId,
       responsibilityId,
-      revisitAt: expect.any(String),
       sortOrder: 0,
       status: "active",
       targetOwnerPersonaKey: "alex",
@@ -83,7 +81,6 @@ describe("card distribution service", () => {
     expect(repositoryMocks.applyResponsibilityCardDistribution).toHaveBeenCalledWith(
       expect.objectContaining({
         handoffNotes: "Moved through card distribution.",
-        revisitAt: expect.any(String),
         sortOrder: 4,
         status: "paused",
         targetOwnerPersonaKey: null,

@@ -155,7 +155,7 @@ function DistributeView({
   const [lastAction, setLastAction] = useState<LastDealAction | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [showAddedStatus, setShowAddedStatus] = useState(addedToDeal);
+  const [showAddedStatus, setShowAddedStatus] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(
     () => initialSelectedId ?? null
   );
@@ -184,6 +184,9 @@ function DistributeView({
       return;
     }
 
+    // Insert the live region after hydration so assistive technology announces
+    // the navigation result instead of treating it as initial page content.
+    setShowAddedStatus(true);
     window.history.replaceState(window.history.state, "", "/app/distribute");
   }, [addedToDeal]);
 
@@ -193,6 +196,7 @@ function DistributeView({
     }
 
     const card = topCard;
+    setShowAddedStatus(false);
     setPendingId(card.id);
     setError(null);
     dragRef.current = null;
@@ -357,11 +361,14 @@ function DistributeView({
         </h1>
       </header>
 
+      <p aria-atomic="true" className="sr-only" role="status">
+        {addedCard
+          ? `${addedCard.title} was added to Deal and selected.`
+          : ""}
+      </p>
+
       {addedCard ? (
-        <p
-          className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 text-[14px] font-semibold text-fp-ink shadow-[var(--fp-shadow-soft)]"
-          role="status"
-        >
+        <p className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 text-[14px] font-semibold text-fp-ink shadow-[var(--fp-shadow-soft)]">
           {addedCard.title} was added to Deal and selected.
         </p>
       ) : null}
@@ -376,7 +383,10 @@ function DistributeView({
           <input
             aria-label="Search cards to deal"
             className="fp-input w-full py-3 pl-10 pr-3 text-[16px] font-semibold"
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setShowAddedStatus(false);
+            }}
             placeholder="Search by title, area, standard"
             type="search"
             value={query}
@@ -427,7 +437,12 @@ function DistributeView({
           />
         </div>
       ) : hasSearch && allDeck.length > 0 ? (
-        <SearchEmptyState onClear={() => setQuery("")} />
+        <SearchEmptyState
+          onClear={() => {
+            setQuery("");
+            setShowAddedStatus(false);
+          }}
+        />
       ) : (
         <EmptyDeck />
       )}

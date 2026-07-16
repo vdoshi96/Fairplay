@@ -36,25 +36,15 @@ export async function distributeResponsibilityCard(
     );
   }
 
-  const effectiveAt = new Date();
-
   return applyResponsibilityCardDistribution({
     actorPersonaId: session.selectedPersonaId,
-    effectiveAt,
     handoffNotes: "Moved through card distribution.",
     householdId: session.householdId,
     responsibilityId: input.responsibilityId,
-    revisitAt: defaultRevisitAt(effectiveAt),
     sortOrder: input.sortOrder ?? 0,
     status: statusByDistributionBucket[input.bucket],
     targetOwnerPersonaKey:
       input.bucket === "alex" || input.bucket === "max" ? input.bucket : null,
     toLane: laneForBucket(input.bucket)
   });
-}
-
-function defaultRevisitAt(effectiveAt: Date) {
-  const revisitAt = new Date(effectiveAt);
-  revisitAt.setDate(revisitAt.getDate() + 7);
-  return revisitAt.toISOString();
 }

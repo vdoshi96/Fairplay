@@ -100,9 +100,11 @@ describe("CardWorkspace", () => {
         responsibilityId: "550e8400-e29b-41d4-a716-446655440000"
       })
     );
-    expect(
-      screen.getByText("No more cards to deal. Generate more cards when ready.")
-    ).toBeVisible();
+    await waitFor(() => {
+      expect(
+        screen.getByText("No more cards to deal. Generate more cards when ready.")
+      ).toBeVisible();
+    });
   });
 
   it("shows concise gesture instructions directly above the deal card", () => {
@@ -243,7 +245,7 @@ describe("CardWorkspace", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("selects and announces a card that was just added to Deal", () => {
+  it("selects and announces a card that was just added to Deal", async () => {
     const selectedId = "550e8400-e29b-41d4-a716-446655440031";
     window.history.pushState(
       null,
@@ -273,9 +275,11 @@ describe("CardWorkspace", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Laundry reset" })).toBeVisible();
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Laundry reset was added to Deal and selected."
-    );
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Laundry reset was added to Deal and selected."
+      );
+    });
     expect(
       within(screen.getByTestId("distribution-card-list")).getByRole("button", {
         name: /Laundry reset/i
@@ -290,7 +294,50 @@ describe("CardWorkspace", () => {
       })
     );
 
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+  });
+
+  it("does not reannounce an added card after distributing and undoing it", async () => {
+    const selectedId = "550e8400-e29b-41d4-a716-446655440031";
+    const onDistribute = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <CardWorkspace
+        addedToDeal
+        initialSelectedId={selectedId}
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({
+            id: selectedId,
+            title: "Laundry reset"
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Laundry reset was added to Deal and selected."
+      );
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Alex" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Undo last assignment" })
+    );
+
+    await waitFor(() => {
+      expect(onDistribute).toHaveBeenLastCalledWith({
+        bucket: "unassigned",
+        responsibilityId: selectedId
+      });
+      expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    });
+    expect(
+      screen.queryByText("Laundry reset was added to Deal and selected.")
+    ).not.toBeInTheDocument();
   });
 
   it("ignores an unknown initial Deal selection and does not announce success", () => {
@@ -305,7 +352,7 @@ describe("CardWorkspace", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Lunch" })).toBeVisible();
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
   });
 
   it("does not show duplicate catalog cards in Available cards", () => {
