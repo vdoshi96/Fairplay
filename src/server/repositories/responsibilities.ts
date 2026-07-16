@@ -112,6 +112,9 @@ function toResponsibilitySummary(
     nextReviewAt: nullableIso(responsibility.nextReviewAt),
     householdStandard: responsibility.householdStandard,
     sourceDefinition: responsibility.sourceDefinition,
+    sourceConception: responsibility.sourceConception,
+    sourcePlanning: responsibility.sourcePlanning,
+    sourceExecution: responsibility.sourceExecution,
     sourceMinimumStandard: responsibility.sourceMinimumStandard,
     sourceCoverAssetPath: responsibility.sourceCoverAssetPath
   };

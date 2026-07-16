@@ -736,6 +736,39 @@ describe("CardWorkspace", () => {
     expect(screen.getByText("What is this card for?")).toBeVisible();
     expect(screen.getByText("Fogging Estandards")).toBeVisible();
     expect(screen.getByText(/Assigned to Alex/i)).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "View or update agreement" })
+    ).toHaveAttribute(
+      "href",
+      "/app/responsibilities/550e8400-e29b-41d4-a716-446655440012"
+    );
+  });
+
+  it("shows ownership phases, hidden effort, and review timing on card backs", () => {
+    render(
+      <CardWorkspace
+        responsibilities={[
+          card({
+            boardLane: "player_1",
+            hiddenEffortKeys: ["noticing", "planning"],
+            nextReviewAt: "2026-08-01T12:00:00.000Z",
+            sourceConception: "Notice supplies running low.",
+            sourceExecution: "Restock and put everything away.",
+            sourcePlanning: "Make the list and choose a shopping window."
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="yourCards"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "School lunch" }));
+
+    expect(screen.getByText("Notice supplies running low.")).toBeVisible();
+    expect(screen.getByText("Make the list and choose a shopping window.")).toBeVisible();
+    expect(screen.getByText("Restock and put everything away.")).toBeVisible();
+    expect(screen.getByText("Noticing")).toBeVisible();
+    expect(screen.getByText("Review by Aug 1, 2026")).toBeVisible();
   });
 
   it("renders the grouped board as card buckets", () => {

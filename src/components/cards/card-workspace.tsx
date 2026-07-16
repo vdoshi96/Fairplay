@@ -915,39 +915,42 @@ function CardFileItem({
   const [flipped, setFlipped] = useState(false);
 
   return (
-    <article
-      aria-label={card.title}
-      aria-pressed={flipped}
-      className="grid min-h-[20rem] overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]"
-      onClick={() => setFlipped((current) => !current)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          setFlipped((current) => !current);
-        }
-      }}
-      role="button"
-      tabIndex={0}
-    >
-      {flipped ? (
-        <CardBack card={card} className="p-4" />
-      ) : (
-        <div className="grid grid-rows-[minmax(0,1fr)_auto]">
-          <CardCoverImage card={card} className="min-h-0 bg-fp-surface p-2" />
-          <div className="grid gap-2 p-3">
-            <div className="flex items-start justify-between gap-3">
-              <h2 className="text-[18px] font-bold leading-6 [overflow-wrap:anywhere]">
-                {card.title}
-              </h2>
-              <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-[var(--fp-alex)]" />
+    <article className="grid min-h-[20rem] grid-rows-[minmax(0,1fr)_auto] overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
+      <button
+        aria-label={card.title}
+        aria-pressed={flipped}
+        className="grid min-h-0 min-w-0 overflow-hidden text-left"
+        onClick={() => setFlipped((current) => !current)}
+        type="button"
+      >
+        {flipped ? (
+          <CardBack card={card} className="p-4" />
+        ) : (
+          <div className="grid grid-rows-[minmax(0,1fr)_auto]">
+            <CardCoverImage card={card} className="min-h-0 bg-fp-surface p-2" />
+            <div className="grid gap-2 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-[18px] font-bold leading-6 [overflow-wrap:anywhere]">
+                  {card.title}
+                </h2>
+                <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-[var(--fp-alex)]" />
+              </div>
+              <p className="line-clamp-2 text-[12px] font-semibold leading-5 text-fp-muted-ink">
+                {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
+              </p>
+              <p className="text-[12px] font-bold text-fp-muted-ink">Tap to flip</p>
             </div>
-            <p className="line-clamp-2 text-[12px] font-semibold leading-5 text-fp-muted-ink">
-              {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
-            </p>
-            <p className="text-[12px] font-bold text-fp-muted-ink">Tap to flip</p>
           </div>
-        </div>
-      )}
+        )}
+      </button>
+      {flipped ? (
+        <Link
+          className="inline-flex min-h-11 items-center justify-center border-t border-fp-line bg-[var(--fp-card)] px-3 text-center text-[13px] font-bold text-fp-ink underline-offset-4 hover:underline"
+          href={`/app/responsibilities/${card.id}`}
+        >
+          View or update agreement
+        </Link>
+      ) : null}
     </article>
   );
 }
@@ -964,7 +967,7 @@ function CardBack({
   return (
     <div
       className={[
-        "grid content-start gap-3 bg-[var(--fp-surface-strong)]",
+        "grid h-full content-start gap-3 overflow-y-auto bg-[var(--fp-surface-strong)]",
         className ?? ""
       ].join(" ")}
     >
@@ -991,6 +994,39 @@ function CardBack({
         </h3>
         <p className="whitespace-pre-wrap text-[13px] leading-5 text-fp-muted-ink [overflow-wrap:anywhere]">
           {cardPurpose(card)}
+        </p>
+      </section>
+
+      <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3">
+        <h3 className="text-[13px] font-bold text-fp-ink">Full ownership includes</h3>
+        <dl className="grid gap-2 text-[12px] leading-5 text-fp-muted-ink">
+          {[
+            ["Conception", card.sourceConception],
+            ["Planning", card.sourcePlanning],
+            ["Execution", card.sourceExecution]
+          ].map(([phase, value]) => (
+            <div className="grid gap-0.5" key={phase}>
+              <dt className="font-bold text-fp-ink">{phase}</dt>
+              <dd className="whitespace-pre-wrap [overflow-wrap:anywhere]">
+                {value || `No ${phase?.toLowerCase()} notes yet.`}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <div className="flex flex-wrap gap-1.5" aria-label="Hidden effort">
+          {card.hiddenEffortKeys.map((effort) => (
+            <span
+              className="rounded-full border border-fp-line bg-[var(--fp-card)] px-2 py-1 text-[11px] font-bold text-fp-muted-ink"
+              key={effort}
+            >
+              {humanize(effort)}
+            </span>
+          ))}
+        </div>
+        <p className="text-[12px] font-semibold text-fp-muted-ink">
+          {card.nextReviewAt
+            ? `Review by ${formatCardReviewDate(card.nextReviewAt)}`
+            : "No review date set."}
         </p>
       </section>
 
@@ -1375,4 +1411,13 @@ function humanize(value: string) {
     .split("_")
     .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatCardReviewDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    year: "numeric"
+  }).format(new Date(value));
 }

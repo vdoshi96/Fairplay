@@ -56,6 +56,9 @@ export const ResponsibilitySummarySchema = z
     nextReviewAt: NullableIsoDateTimeSchema,
     householdStandard: z.string().trim().max(2000).nullable().optional(),
     sourceDefinition: SourceCardTextSchema.optional(),
+    sourceConception: SourceCardTextSchema.optional(),
+    sourcePlanning: SourceCardTextSchema.optional(),
+    sourceExecution: SourceCardTextSchema.optional(),
     sourceMinimumStandard: SourceCardTextSchema.optional(),
     sourceCoverAssetPath: SourceCoverAssetPathSchema.optional()
   })
