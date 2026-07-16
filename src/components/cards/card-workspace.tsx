@@ -13,6 +13,7 @@ import {
   Sparkles
 } from "lucide-react";
 import {
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -154,6 +155,7 @@ function DistributeView({
   const [lastAction, setLastAction] = useState<LastDealAction | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [showAddedStatus, setShowAddedStatus] = useState(addedToDeal);
   const [selectedId, setSelectedId] = useState<string | null>(
     () => initialSelectedId ?? null
   );
@@ -173,9 +175,17 @@ function DistributeView({
     drag?.dragging ? { x: drag.x - drag.startX, y: drag.y - drag.startY } : null;
   const previewBucket = dragOffset ? bucketFromOffset(dragOffset.x, dragOffset.y) : null;
   const hasSearch = query.trim().length > 0;
-  const addedCard = addedToDeal
+  const addedCard = showAddedStatus && topCard?.id === initialSelectedId
     ? allDeck.find((card) => card.id === initialSelectedId) ?? null
     : null;
+
+  useEffect(() => {
+    if (!addedToDeal) {
+      return;
+    }
+
+    window.history.replaceState(window.history.state, "", "/app/distribute");
+  }, [addedToDeal]);
 
   async function distribute(bucket: DealActionBucket) {
     if (!topCard || pendingId) {
@@ -411,6 +421,7 @@ function DistributeView({
             onSelect={(cardId) => {
               setSelectedId(cardId);
               setFlippedId(null);
+              setShowAddedStatus(false);
             }}
             selectedId={topCard.id}
           />

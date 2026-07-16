@@ -245,6 +245,11 @@ describe("CardWorkspace", () => {
 
   it("selects and announces a card that was just added to Deal", () => {
     const selectedId = "550e8400-e29b-41d4-a716-446655440031";
+    window.history.pushState(
+      null,
+      "",
+      `/app/distribute?added=greg&selected=${selectedId}`
+    );
 
     render(
       <CardWorkspace
@@ -276,6 +281,16 @@ describe("CardWorkspace", () => {
         name: /Laundry reset/i
       })
     ).toHaveAttribute("aria-pressed", "true");
+    expect(window.location.pathname).toBe("/app/distribute");
+    expect(window.location.search).toBe("");
+
+    fireEvent.click(
+      within(screen.getByTestId("distribution-card-list")).getByRole("button", {
+        name: /Lunch/i
+      })
+    );
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
   it("ignores an unknown initial Deal selection and does not announce success", () => {
