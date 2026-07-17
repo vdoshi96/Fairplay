@@ -74,6 +74,21 @@ describe("middleware", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it("treats a malformed fallback cookie as anonymous instead of throwing", async () => {
+    const request = new NextRequest("http://localhost/app/home", {
+      headers: {
+        cookie: "fairplay_session=%"
+      }
+    });
+    vi.spyOn(request.cookies, "get").mockReturnValue(undefined);
+
+    const response = await middleware(request);
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("http://localhost/login");
+    expectSecurityHeaders(response);
+  });
+
   it("uses one nonce consistently for the request and response policy", async () => {
     const response = await middleware(
       new NextRequest("https://fairplay.example/login", {

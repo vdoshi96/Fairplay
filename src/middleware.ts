@@ -75,7 +75,15 @@ function getCookieFromHeader(header: string | null, name: string): string | null
     .map((part) => part.trim())
     .find((part) => part.startsWith(`${name}=`));
 
-  return cookie ? decodeURIComponent(cookie.slice(name.length + 1)) : null;
+  if (!cookie) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(cookie.slice(name.length + 1));
+  } catch {
+    return null;
+  }
 }
 
 export const config = {
