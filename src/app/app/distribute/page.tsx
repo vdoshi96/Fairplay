@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { NextRequest } from "next/server";
 
 import { getAppSessionView } from "@/components/app-shell/session-view";
-import { CardWorkspace } from "@/components/cards/card-workspace";
+import { DealWorkspace } from "@/components/cards/deal-workspace";
 import {
   getDistributableCards,
   type CardDistributionMove
@@ -66,13 +66,11 @@ export default async function DistributePage({ searchParams }: DistributePagePro
   }
 
   return (
-    <CardWorkspace
+    <DealWorkspace
       addedToDeal={addedToDeal}
       initialSelectedId={selectedCard?.id}
       onDistribute={distribute}
       responsibilities={overview.responsibilities}
-      selectedPersona={sessionView.selectedPersona}
-      view="distribute"
       workMap={workMap}
     />
   );

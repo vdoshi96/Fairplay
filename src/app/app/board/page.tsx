@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { NextRequest } from "next/server";
 
 import { getAppSessionView } from "@/components/app-shell/session-view";
-import { CardWorkspace } from "@/components/cards/card-workspace";
+import { BoardWorkspace } from "@/components/cards/board-workspace";
 import type { CardDistributionMove } from "@/components/cards/card-state";
 import { computeHouseholdWorkMap } from "@/domain/household-work-map";
 import { getCurrentSession } from "@/server/auth/current-session";
@@ -50,11 +50,9 @@ export default async function BoardPage() {
   }
 
   return (
-    <CardWorkspace
+    <BoardWorkspace
       onDistribute={distribute}
       responsibilities={overview.responsibilities}
-      selectedPersona={sessionView.selectedPersona}
-      view="board"
       workMap={workMap}
     />
   );
