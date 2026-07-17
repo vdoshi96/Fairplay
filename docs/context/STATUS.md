@@ -4,15 +4,15 @@ Last updated: 2026-07-16
 
 ## Current Phase
 
-The dynamic redesign pass is implemented locally. The active product treats Library source cards and Deal cards as the same catalog-backed set, keeps Board focused on cards assigned/categorized to Alex, Max, Save for later, or Not applicable, has safer Deal gestures with Undo, desktop-only Little Alex, tighter Ask Greg desktop/mobile layout, editable Fogging Estandards, unclipped card detail text, no active "Learn this feature" guide workflow, and theme-adaptive app chrome/panels/surfaces instead of a fixed light/white skin.
+The first three Fairplay Improvement Program milestones are implemented through the current verification branch: atomic card distribution and Ask Greg-to-Deal continuity; descriptive household work mapping with explicit ownership agreements; and UI/accessibility/motion polish for Deal, Board, Check-ins, dialogs, controls, authentication surfaces, and decorative backgrounds.
 
 The previous tooling follow-up stabilized local verification: Playwright e2e now builds the app and runs against `next start` with explicit local runtime env, and Prisma local migration uses a dedicated `SHADOW_DATABASE_URL` plus a shadow DB setup helper so app roles without `CREATEDB` no longer block `migrate dev`.
 
 ## Branch And Working Tree
 
-- Local `main` has been fast-forwarded through PR #47.
-- Active follow-up branch: `codex/app-redesign-implementation`.
-- Recent merged UX/card PRs: #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, #45 focused patch QA/docs, and #47 catalog/deal/board plus Little Alex fix.
+- Improvement Program correctness shipped in PR #56 and descriptive equity/ownership agreements shipped in PR #57; local `main` was synchronized to each merge before the next milestone began.
+- The UI/accessibility/motion milestone was developed on `codex/fairplay-ui-accessibility-motion` and gated by the complete regression ladder before merge.
+- Earlier merged UX/card PRs include #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, #45 focused patch QA/docs, and #47 catalog/deal/board plus Little Alex fix.
 
 ## What Exists
 
@@ -29,6 +29,11 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Responsibility details now expose conception, planning, execution, hidden-effort context, standards, review timing, and a complete ownership agreement for accountable/shared owners, helpers, and backups.
 - Existing-owner changes use one transaction-backed, revision-guarded agreement. Former owners require an explicit replace-or-retain-as-helper choice, and stale same-owner/helper/review edits return a conflict instead of overwriting newer work.
 - Check-ins include a read-only Worth reviewing area with due-card links and optional next-check-in scheduling; notes remain optional and the retired agenda builder remains absent.
+- Deal advances optimistically with a 200ms exit, exact failure rollback, reduced-motion state changes, a mobile-collapsed Available Cards browser, and no more than 20 mounted catalog rows.
+- Board uses one ownership-safe Move menu per card with card-level pending/error state, keyboard focus continuity, last-move Undo, and compact empty lanes.
+- Archive and ownership confirmations use a shared focus-trapped dialog/alert-dialog primitive with Escape close, background isolation, focus restoration, and modal-local error announcements.
+- Check-in history stacks below the tablet breakpoint; filters and operational controls use at least 44px targets with explicit pressed state where applicable.
+- Authentication content now sits on a high-opacity theme-adaptive surface over decorative art, and global page washes reduce background competition without removing the warm artwork.
 
 - Global generated backgrounds are stronger and paired with theme-aware washes so foreground surfaces remain readable.
 - The previous homepage is retired. Root, login, and persona selection land on Deal for signed-in selected-persona sessions.

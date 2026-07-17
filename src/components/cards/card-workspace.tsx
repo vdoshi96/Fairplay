@@ -755,6 +755,9 @@ function BoardView({
     message: string;
   } | null>(null);
   const [lastMove, setLastMove] = useState<LastBoardMove | null>(null);
+  const [undoMessage, setUndoMessage] = useState<string | null>(null);
+  const undoButtonRef = useRef<HTMLButtonElement | null>(null);
+  const undoStatusRef = useRef<HTMLDivElement | null>(null);
   const groups = groupCardsByBucket(responsibilities);
   const sharedCards = getSharedOwnerCards(responsibilities);
   const sharedCardIds = new Set(sharedCards.map((card) => card.id));
@@ -763,6 +766,18 @@ function BoardView({
     "savedForLater",
     "notApplicable"
   ];
+
+  useEffect(() => {
+    if (pendingId !== null) {
+      return;
+    }
+
+    if (lastMove) {
+      undoButtonRef.current?.focus();
+    } else if (undoMessage) {
+      undoStatusRef.current?.focus();
+    }
+  }, [lastMove, pendingId, undoMessage]);
 
   async function moveCard(
     card: CardWorkspaceCard,
@@ -775,6 +790,7 @@ function BoardView({
 
     setPendingId(card.id);
     setCardError(null);
+    setUndoMessage(null);
 
     try {
       await onDistribute({
@@ -805,6 +821,9 @@ function BoardView({
         bucket: lastMove.fromBucket,
         responsibilityId: lastMove.card.id
       });
+      setUndoMessage(
+        `${lastMove.card.title} restored to ${CARD_BUCKET_LABELS[lastMove.fromBucket]}.`
+      );
       setLastMove(null);
     } catch {
       setCardError({
@@ -883,23 +902,30 @@ function BoardView({
           </div>
         </div>
       </div>
-      {lastMove ? (
+      {lastMove || undoMessage ? (
         <div
           className="flex flex-wrap items-center justify-between gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] font-bold text-fp-muted-ink"
+          ref={undoStatusRef}
           role="status"
+          tabIndex={lastMove ? undefined : -1}
         >
           <span>
-            {lastMove.card.title} moved to {CARD_BUCKET_LABELS[lastMove.toBucket]}.
+            {lastMove
+              ? `${lastMove.card.title} moved to ${CARD_BUCKET_LABELS[lastMove.toBucket]}.`
+              : undoMessage}
           </span>
-          <button
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={pendingId !== null}
-            onClick={() => void undoLastMove()}
-            type="button"
-          >
-            <Undo2 aria-hidden className="h-4 w-4" />
-            Undo last move
-          </button>
+          {lastMove ? (
+            <button
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={pendingId !== null}
+              onClick={() => void undoLastMove()}
+              ref={undoButtonRef}
+              type="button"
+            >
+              <Undo2 aria-hidden className="h-4 w-4" />
+              Undo last move
+            </button>
+          ) : null}
         </div>
       ) : null}
     </section>

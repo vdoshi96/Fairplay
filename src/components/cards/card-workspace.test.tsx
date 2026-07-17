@@ -1224,8 +1224,9 @@ describe("CardWorkspace", () => {
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Lunch moved to Max."
     );
-    expect(moveButton).toHaveFocus();
-    fireEvent.click(screen.getByRole("button", { name: "Undo last move" }));
+    const undoButton = screen.getByRole("button", { name: "Undo last move" });
+    expect(undoButton).toHaveFocus();
+    fireEvent.click(undoButton);
 
     await waitFor(() =>
       expect(onDistribute).toHaveBeenLastCalledWith({
@@ -1235,6 +1236,47 @@ describe("CardWorkspace", () => {
     );
     expect(screen.queryByRole("button", { name: "Undo last move" }))
       .not.toBeInTheDocument();
+    const undoStatus = screen.getByRole("status");
+    expect(undoStatus).toHaveTextContent("Lunch restored to Alex.");
+    await waitFor(() => expect(undoStatus).toHaveFocus());
+  });
+
+  it("focuses the persistent Undo action after a successful server refresh moves the card", async () => {
+    let resolveMove: (() => void) | undefined;
+    const onDistribute = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveMove = resolve;
+        })
+    );
+    const props = {
+      onDistribute,
+      selectedPersona,
+      view: "board" as const
+    };
+    const { rerender } = render(
+      <CardWorkspace
+        {...props}
+        responsibilities={[card({ title: "Lunch", boardLane: "player_1" })]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Move Lunch" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Max" }));
+    await waitFor(() => expect(onDistribute).toHaveBeenCalledOnce());
+
+    rerender(
+      <CardWorkspace
+        {...props}
+        responsibilities={[card({ title: "Lunch", boardLane: "player_2" })]}
+      />
+    );
+    resolveMove?.();
+
+    const undoButton = await screen.findByRole("button", {
+      name: "Undo last move"
+    });
+    await waitFor(() => expect(undoButton).toHaveFocus());
   });
 
   it("keeps empty Board lanes compact on mobile", () => {

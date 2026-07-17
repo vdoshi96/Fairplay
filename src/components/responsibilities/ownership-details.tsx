@@ -81,6 +81,9 @@ export function OwnershipDetails({
   const [handoffNotes, setHandoffNotes] = useState("");
   const [pending, setPending] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [confirmationError, setConfirmationError] = useState<string | null>(
+    null
+  );
   const saveTriggerRef = useRef<HTMLButtonElement>(null);
   const confirmationCancelRef = useRef<HTMLButtonElement>(null);
   const [feedback, setFeedback] = useState<
@@ -136,6 +139,7 @@ export function OwnershipDetails({
     }
 
     setPending(true);
+    setConfirmationError(null);
     try {
       await onSave({
         assignments,
@@ -151,7 +155,13 @@ export function OwnershipDetails({
         message: returnsToDeal ? "Card returned to Deal." : "Ownership agreement saved."
       });
     } catch {
-      setFeedback({ tone: "error", message: "Unable to save the ownership agreement. Try again." });
+      const message = "Unable to save the ownership agreement. Try again.";
+
+      if (confirmationOpen) {
+        setConfirmationError(message);
+      } else {
+        setFeedback({ tone: "error", message });
+      }
     } finally {
       setPending(false);
     }
@@ -201,6 +211,7 @@ export function OwnershipDetails({
     }
 
     if (removesCurrentOwner) {
+      setConfirmationError(null);
       setConfirmationOpen(true);
       return;
     }
@@ -357,6 +368,7 @@ export function OwnershipDetails({
         initialFocusRef={confirmationCancelRef}
         onClose={() => {
           if (!pending) {
+            setConfirmationError(null);
             setConfirmationOpen(false);
           }
         }}
@@ -364,27 +376,40 @@ export function OwnershipDetails({
         title={returnsToDeal ? "Return this card to Deal?" : "Confirm ownership handoff?"}
         triggerRef={saveTriggerRef}
       >
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button
-            disabled={pending}
-            onClick={() => setConfirmationOpen(false)}
-            ref={confirmationCancelRef}
-          >
-            Cancel
-          </Button>
-          <Button
-            disabled={pending}
-            onClick={() => void persistAgreement()}
-            variant="primary"
-          >
-            {pending
-              ? returnsToDeal
-                ? "Returning..."
-                : "Saving..."
-              : returnsToDeal
-                ? "Confirm return to Deal"
-                : "Confirm handoff"}
-          </Button>
+        <div className="grid gap-3">
+          {confirmationError ? (
+            <p
+              className="rounded-[8px] border border-fp-danger/40 bg-[var(--fp-surface)] p-3 text-[13px] font-semibold text-fp-danger"
+              role="alert"
+            >
+              {confirmationError}
+            </p>
+          ) : null}
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              disabled={pending}
+              onClick={() => {
+                setConfirmationError(null);
+                setConfirmationOpen(false);
+              }}
+              ref={confirmationCancelRef}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={pending}
+              onClick={() => void persistAgreement()}
+              variant="primary"
+            >
+              {pending
+                ? returnsToDeal
+                  ? "Returning..."
+                  : "Saving..."
+                : returnsToDeal
+                  ? "Confirm return to Deal"
+                  : "Confirm handoff"}
+            </Button>
+          </div>
         </div>
       </AlertDialog>
     </>

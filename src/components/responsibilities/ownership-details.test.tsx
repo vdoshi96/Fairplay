@@ -260,6 +260,38 @@ describe("OwnershipDetails", () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
+  it("keeps a failed confirmed handoff error inside the active dialog", async () => {
+    const onSave = vi.fn().mockRejectedValue(new Error("save failed"));
+    render(
+      <OwnershipDetails
+        currentAssignments={[
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+        ]}
+        expectedUpdatedAt="2026-05-04T12:00:00.000Z"
+        nextReviewAt={null}
+        onSave={onSave}
+        personas={personas}
+      />
+    );
+
+    await userEvent.selectOptions(screen.getByLabelText("Alex role"), "none");
+    await userEvent.selectOptions(screen.getByLabelText("Max role"), "accountable_owner");
+    await userEvent.click(screen.getByRole("radio", { name: "Replace the former owner" }));
+    await userEvent.click(screen.getByRole("button", { name: "Save ownership details" }));
+    const confirmation = await screen.findByRole("alertdialog", {
+      name: "Confirm ownership handoff?"
+    });
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirm handoff" }));
+
+    expect(
+      await screen.findByText("Unable to save the ownership agreement. Try again.")
+    ).toHaveAttribute("role", "alert");
+    expect(confirmation).toContainElement(screen.getByRole("alert"));
+    expect(confirmation).toBeVisible();
+    expect(screen.getByRole("button", { name: "Confirm handoff" })).toBeEnabled();
+  });
+
   it("still requires an owner when a card starts without one", async () => {
     const onSave = vi.fn();
     render(
