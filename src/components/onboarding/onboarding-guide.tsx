@@ -4,7 +4,8 @@ import { SAFETY_COPY } from "@/lib/safety-copy";
 import { MotionPanel } from "@/components/motion/fairplay-motion";
 import {
   HelperMascot,
-  PersonaAvatar
+  PersonaAvatar,
+  ResponsiveBackgroundLayer
 } from "@/components/visuals/fairplay-visuals";
 
 type OnboardingGuideProps = {
@@ -37,15 +38,18 @@ export function OnboardingGuide({ onSkip }: OnboardingGuideProps) {
   return (
     <section className="mx-auto grid w-full max-w-3xl gap-6">
       <div
-        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] bg-cover bg-center p-5 shadow-[var(--fp-shadow-crisp)] sm:p-6"
+        className="relative overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-5 shadow-[var(--fp-shadow-crisp)] sm:p-6"
         data-onboarding-background
-        style={{ backgroundImage: `url('${ONBOARDING_BACKGROUND}')` }}
       >
+        <ResponsiveBackgroundLayer
+          src={ONBOARDING_BACKGROUND}
+          testId="onboarding-background"
+        />
         <div
           aria-hidden="true"
-          className="fp-generated-surface-wash absolute inset-0"
+          className="fp-generated-surface-wash absolute inset-0 z-[1]"
         />
-        <div className="relative grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="relative z-10 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
           <div className="grid gap-3">
             <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-fp-muted-ink">
               First setup

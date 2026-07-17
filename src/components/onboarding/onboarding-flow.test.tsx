@@ -11,14 +11,21 @@ describe("onboarding guide", () => {
     expect(
       screen.getByRole("heading", { name: "Set up your household rhythm" })
     ).toBeVisible();
-    const onboardingBackground = container.querySelector(
-      "[data-onboarding-background]"
+    expect(container.querySelector("[data-onboarding-background]")).not.toBeNull();
+    const onboardingBackground = screen.getByTestId("onboarding-background");
+    expect(onboardingBackground).toHaveAttribute("aria-hidden", "true");
+    expect(onboardingBackground).toHaveClass("fp-responsive-image-background");
+    expect(
+      onboardingBackground.style.getPropertyValue("--fp-background-fallback")
+    ).toBe(
+      "url('/assets/fairplay/generated-ui/backgrounds/onboarding-rhythm-path.png')"
     );
-    expect(onboardingBackground).not.toBeNull();
-    expect(onboardingBackground).toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/onboarding-rhythm-path.png')"
-    });
+    expect(
+      onboardingBackground.style.getPropertyValue("--fp-background-mobile")
+    ).toContain("onboarding-rhythm-path-768.avif");
+    expect(
+      onboardingBackground.style.getPropertyValue("--fp-background-desktop")
+    ).toContain("onboarding-rhythm-path-1536.webp");
     expect(screen.getByText("Map responsibilities")).toBeVisible();
     expect(screen.getByText("Assign ownership")).toBeVisible();
     expect(screen.getByText("Schedule a check-in")).toBeVisible();
