@@ -18,9 +18,11 @@ describe("UI primitives", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Restart crash course" }));
+    const button = screen.getByRole("button", { name: "Restart crash course" });
+    fireEvent.click(button);
 
     expect(onClick).toHaveBeenCalledTimes(1);
+    expect(button).toHaveClass("h-11", "w-11", "rounded-[8px]");
   });
 
   it("keeps chips compact and label-aware", () => {
@@ -44,9 +46,12 @@ describe("UI primitives", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "List" }));
+    const list = screen.getByRole("button", { name: "List" });
+    fireEvent.click(list);
 
     expect(onChange).toHaveBeenCalledWith("list");
+    expect(list).toHaveClass("min-h-11");
+    expect(list).toHaveAttribute("aria-pressed", "false");
   });
 
   it("renders button variants without layout-only text wrappers", () => {

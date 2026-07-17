@@ -468,7 +468,7 @@ export function SettingsPanel({
                     <button
                       aria-pressed={selected}
                       className={[
-                        "inline-flex min-h-10 items-center gap-2 rounded-[8px] border px-3 text-[13px] font-bold outline-none focus:ring-2 focus:ring-fp-ink/25",
+                        "inline-flex min-h-11 items-center gap-2 rounded-[8px] border px-3 text-[13px] font-bold outline-none focus:ring-2 focus:ring-fp-ink/25",
                         selected
                           ? "border-fp-ink bg-fp-primary text-fp-on-primary"
                           : "border-fp-line bg-[var(--fp-surface)] text-fp-ink"
@@ -510,7 +510,7 @@ export function SettingsPanel({
                     <button
                       aria-pressed={selected}
                       className={[
-                        "inline-flex min-h-10 items-center gap-2 rounded-[8px] border px-3 text-[13px] font-bold outline-none focus:ring-2 focus:ring-fp-ink/25",
+                        "inline-flex min-h-11 items-center gap-2 rounded-[8px] border px-3 text-[13px] font-bold outline-none focus:ring-2 focus:ring-fp-ink/25",
                         selected
                           ? "border-fp-ink bg-fp-primary text-fp-on-primary"
                           : "border-fp-line bg-[var(--fp-surface)] text-fp-ink"

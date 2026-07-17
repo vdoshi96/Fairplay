@@ -1029,7 +1029,7 @@ export function AiCardReviewPanel({
               Rhythm
               <select
                 aria-label="Rhythm"
-                className="fp-input min-h-10 w-full min-w-0 max-w-full px-3 text-[15px]"
+                className="fp-input min-h-11 w-full min-w-0 max-w-full px-3 text-[15px]"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, cadence: event.target.value }))
                 }
@@ -1351,7 +1351,7 @@ function TextInput({
       {label}
       <input
         aria-label={label}
-        className="fp-input min-h-10 w-full min-w-0 max-w-full px-3 text-[15px] [overflow-wrap:anywhere]"
+        className="fp-input min-h-11 w-full min-w-0 max-w-full px-3 text-[15px] [overflow-wrap:anywhere]"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       />

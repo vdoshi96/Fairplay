@@ -147,7 +147,24 @@ describe("CardLibrary", () => {
       "data-guide-id"
     );
 
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+
     await userEvent.click(screen.getByRole("button", { name: "Kids" }));
+
+    expect(screen.getByRole("button", { name: "Kids" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(screen.getByRole("button", { name: "Kids" })).toHaveClass(
+      "min-h-11"
+    );
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    );
 
     expect(screen.getByText("Homework")).toBeVisible();
     expect(screen.queryByText("Auto")).not.toBeInTheDocument();

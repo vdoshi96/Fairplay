@@ -98,7 +98,7 @@ export function PersistentWelcome({
 
               return (
                 <Link
-                  className="flex min-h-9 min-w-0 flex-1 basis-[9rem] items-center justify-center gap-1.5 rounded-[8px] border border-fp-line bg-fp-surface px-2.5 text-[12px] font-bold text-fp-ink outline-none transition hover:bg-fp-soft focus:ring-2 focus:ring-fp-ink/25 sm:flex-none"
+                  className="flex min-h-11 min-w-0 flex-1 basis-[9rem] items-center justify-center gap-1.5 rounded-[8px] border border-fp-line bg-fp-surface px-2.5 text-[12px] font-bold text-fp-ink outline-none transition hover:bg-fp-soft focus:ring-2 focus:ring-fp-ink/25 sm:flex-none"
                   href={item.href}
                   key={item.href}
                 >
@@ -110,7 +110,7 @@ export function PersistentWelcome({
 
             <button
               aria-label="Close welcome"
-              className="min-h-9 min-w-9 rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-fp-muted-ink outline-none transition hover:bg-[var(--fp-surface)] hover:text-fp-ink focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-11 min-w-11 rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-fp-muted-ink outline-none transition hover:bg-[var(--fp-surface)] hover:text-fp-ink focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-60"
               disabled={closing}
               onClick={() => void closeWelcome()}
               type="button"
@@ -155,7 +155,7 @@ export function PersistentWelcome({
 
         <button
           aria-label="Close welcome"
-          className="min-h-10 min-w-10 justify-self-start rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-fp-muted-ink outline-none transition hover:bg-[var(--fp-surface)] hover:text-fp-ink focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-60 sm:justify-self-end"
+          className="min-h-11 min-w-11 justify-self-start rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-fp-muted-ink outline-none transition hover:bg-[var(--fp-surface)] hover:text-fp-ink focus:ring-2 focus:ring-fp-ink/25 disabled:cursor-not-allowed disabled:opacity-60 sm:justify-self-end"
           disabled={closing}
           onClick={() => void closeWelcome()}
           type="button"

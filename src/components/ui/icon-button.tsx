@@ -16,7 +16,7 @@ export function IconButton({
     <button
       {...props}
       className={[
-        "inline-grid h-10 w-10 shrink-0 place-items-center rounded text-[var(--fp-ink)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)] disabled:cursor-not-allowed disabled:opacity-55",
+        "inline-grid h-11 w-11 shrink-0 place-items-center rounded-[8px] text-[var(--fp-ink)] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)] disabled:cursor-not-allowed disabled:opacity-55",
         variant === "solid"
           ? "border border-[var(--fp-line)] bg-[var(--fp-surface)] shadow-[var(--fp-shadow-soft)] hover:bg-[var(--fp-surface-strong)]"
           : "hover:bg-[var(--fp-surface-strong)]",
