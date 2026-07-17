@@ -1,10 +1,22 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 
 import { GENERATED_UI_ASSETS } from "./generated-ui-assets";
 
 const repoRoot = process.cwd();
+const responsiveImageSources = [
+  "public/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png",
+  "public/assets/fairplay/generated-ui/backgrounds/auth-warm-threshold.png",
+  "public/assets/fairplay/generated-ui/backgrounds/check-in-table.png",
+  "public/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png",
+  "public/assets/fairplay/generated-ui/backgrounds/library-shelf.png",
+  "public/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png",
+  "public/assets/fairplay/generated-ui/backgrounds/onboarding-rhythm-path.png",
+  "public/assets/fairplay/generated-ui/backgrounds/settings-preferences.png",
+  "public/assets/fairplay/generated-ui/login-household-garden.png"
+];
 
 describe("generated UI asset files", () => {
   it("commits every generated UI PNG with the expected dimensions", () => {
@@ -24,6 +36,30 @@ describe("generated UI asset files", () => {
         height: expectedHeight,
         width: expectedWidth
       });
+    }
+  });
+
+  it("commits substantially smaller responsive AVIF and WebP variants", async () => {
+    for (const sourcePath of responsiveImageSources) {
+      const sourceBytes = statSync(path.join(repoRoot, sourcePath)).size;
+      const basePath = sourcePath.replace(/\.png$/, "");
+
+      for (const width of [768, 1536] as const) {
+        for (const format of ["avif", "webp"] as const) {
+          const variantPath = path.join(
+            repoRoot,
+            `${basePath}-${width}.${format}`
+          );
+          expect(existsSync(variantPath), variantPath).toBe(true);
+          expect(statSync(variantPath).size, variantPath).toBeLessThan(
+            sourceBytes / 4
+          );
+
+          const metadata = await sharp(variantPath).metadata();
+          expect(metadata.format).toBe(format === "avif" ? "heif" : format);
+          expect(metadata.width).toBe(width);
+        }
+      }
     }
   });
 });

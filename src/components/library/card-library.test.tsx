@@ -56,6 +56,13 @@ const aiDrafts: AiCardDraftSummary[] = [
   }
 ];
 
+function expectOptimizedLocalImage(image: HTMLElement, sourcePath: string) {
+  expect(decodeURIComponent(image.getAttribute("src") ?? "")).toContain(
+    sourcePath
+  );
+  expect(image).toHaveAttribute("srcset");
+}
+
 describe("CardLibrary", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -72,10 +79,11 @@ describe("CardLibrary", () => {
       "aria-hidden",
       "true"
     );
-    expect(screen.getByTestId("library-shelf-background")).toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/library-shelf.png')"
-    });
+    expect(
+      screen
+        .getByTestId("library-shelf-background")
+        .style.getPropertyValue("--fp-background-mobile")
+    ).toContain("library-shelf-768.avif");
     expect(
       screen.getByRole("button", { name: "Ask Greg" })
     ).toBeVisible();
@@ -114,8 +122,8 @@ describe("CardLibrary", () => {
 
     const autoCard = screen.getByRole("article", { name: /auto/i });
     expect(within(autoCard).getByText("Vehicle responsibility summary.")).toBeVisible();
-    expect(within(autoCard).getByRole("img", { name: /auto cover/i })).toHaveAttribute(
-      "src",
+    expectOptimizedLocalImage(
+      within(autoCard).getByRole("img", { name: /auto cover/i }),
       "/assets/fairplay/cards/auto.png"
     );
     expect(within(autoCard).queryByRole("button", { name: "Alex" }))
@@ -227,16 +235,12 @@ describe("CardLibrary", () => {
     expect(screen.getByRole("article", { name: "Adult Friendships (Max)" }))
       .toBeVisible();
     expect(screen.queryByText(/Player 1|Player 2/)).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("img", { name: "Adult Friendships (Alex) cover" })
-    ).toHaveAttribute(
-      "src",
+    expectOptimizedLocalImage(
+      screen.getByRole("img", { name: "Adult Friendships (Alex) cover" }),
       "/assets/fairplay/cards/adult-friendships-player-1.png"
     );
-    expect(
-      screen.getByRole("img", { name: "Adult Friendships (Max) cover" })
-    ).toHaveAttribute(
-      "src",
+    expectOptimizedLocalImage(
+      screen.getByRole("img", { name: "Adult Friendships (Max) cover" }),
       "/assets/fairplay/cards/adult-friendships-player-2.png"
     );
   });

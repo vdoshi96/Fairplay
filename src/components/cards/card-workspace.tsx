@@ -1657,14 +1657,17 @@ function CardCoverImage({
     );
   }
 
+  const isPrivateGeneratedCover = card.sourceCoverAssetPath.startsWith("/api/");
+
   return (
     <div className={["overflow-hidden", className ?? ""].join(" ")}>
       <Image
         alt={`${card.title} cover`}
         className="h-full w-full object-contain"
         height={700}
+        sizes="(min-width: 1024px) 340px, (min-width: 640px) 50vw, 82vw"
         src={card.sourceCoverAssetPath}
-        unoptimized
+        unoptimized={isPrivateGeneratedCover}
         width={500}
       />
     </div>

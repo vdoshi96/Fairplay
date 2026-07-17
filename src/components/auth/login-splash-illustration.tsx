@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 export function LoginSplashIllustration() {
   return (
     <div
@@ -11,17 +10,37 @@ export function LoginSplashIllustration() {
         className="fp-motion-card-float absolute inset-0"
         data-testid="login-splash-art-frame"
       >
-        <img
-          alt=""
-          aria-hidden="true"
-          className="h-full w-full object-cover"
-          data-testid="login-splash-image"
-          draggable={false}
-          height={1152}
-          loading="eager"
-          src="/assets/fairplay/generated-ui/login-household-garden.png"
-          width={1536}
-        />
+        <picture className="block h-full w-full">
+          <source
+            media="(max-width: 767px)"
+            srcSet="/assets/fairplay/generated-ui/login-household-garden-768.avif 1x, /assets/fairplay/generated-ui/login-household-garden-1536.avif 2x"
+            type="image/avif"
+          />
+          <source
+            media="(max-width: 767px)"
+            srcSet="/assets/fairplay/generated-ui/login-household-garden-768.webp 1x, /assets/fairplay/generated-ui/login-household-garden-1536.webp 2x"
+            type="image/webp"
+          />
+          <source
+            srcSet="/assets/fairplay/generated-ui/login-household-garden-1536.avif"
+            type="image/avif"
+          />
+          <source
+            srcSet="/assets/fairplay/generated-ui/login-household-garden-1536.webp"
+            type="image/webp"
+          />
+          <img
+            alt=""
+            aria-hidden="true"
+            className="h-full w-full object-cover"
+            data-testid="login-splash-image"
+            draggable={false}
+            height={1152}
+            loading="eager"
+            src="/assets/fairplay/generated-ui/login-household-garden.png"
+            width={1536}
+          />
+        </picture>
       </div>
       <div className="fp-asset-edge-wash pointer-events-none absolute inset-0" />
     </div>

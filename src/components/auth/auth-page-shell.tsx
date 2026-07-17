@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { ResponsiveBackgroundLayer } from "@/components/visuals/fairplay-visuals";
+
 type AuthPageShellProps = {
   eyebrow: string;
   title: string;
@@ -25,10 +27,14 @@ export function AuthPageShell({
 
   return (
     <main
-      className="relative isolate min-h-[100svh] overflow-hidden bg-fp-paper bg-cover bg-center px-4 py-6 text-fp-ink sm:px-6"
+      className="relative isolate min-h-[100svh] overflow-hidden bg-fp-paper px-4 py-6 text-fp-ink sm:px-6"
       data-auth-background
-      style={{ backgroundImage: `url('${AUTH_BACKGROUND}')` }}
     >
+      <ResponsiveBackgroundLayer
+        className="opacity-55"
+        src={AUTH_BACKGROUND}
+        testId="auth-responsive-background"
+      />
       <div
         aria-hidden="true"
         className="fp-auth-background-wash pointer-events-none absolute inset-0"

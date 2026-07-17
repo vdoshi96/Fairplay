@@ -185,8 +185,8 @@ function LibraryCardFront({ template }: { template: LibraryCardTemplate }) {
           alt={`${template.title} cover`}
           className="h-full w-full object-contain p-3"
           height={700}
+          sizes="(min-width: 1280px) 25vw, (min-width: 640px) 33vw, 100vw"
           src={template.coverAssetPath}
-          unoptimized
           width={500}
         />
       </div>

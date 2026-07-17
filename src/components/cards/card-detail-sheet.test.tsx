@@ -26,6 +26,13 @@ const card = {
   coverAssetPath: "/assets/fairplay/cards/auto.png"
 } as const;
 
+function expectOptimizedLocalImage(image: HTMLElement, sourcePath: string) {
+  expect(decodeURIComponent(image.getAttribute("src") ?? "")).toContain(
+    sourcePath
+  );
+  expect(image).toHaveAttribute("srcset");
+}
+
 describe("CardDetailSheet", () => {
   it("shows card details and routes owned moves through ownership details", () => {
     const onMove = vi.fn();
@@ -37,8 +44,8 @@ describe("CardDetailSheet", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Auto" })).toBeVisible();
-    expect(screen.getByRole("img", { name: /auto cover/i })).toHaveAttribute(
-      "src",
+    expectOptimizedLocalImage(
+      screen.getByRole("img", { name: /auto cover/i }),
       "/assets/fairplay/cards/auto.png"
     );
     expect(screen.getByText(/Assigned to Cards of Concern/i)).toBeVisible();
@@ -150,8 +157,8 @@ describe("CardDetailSheet", () => {
 
     expect(screen.queryByTestId("generated-cover-art-panel")).not.toBeInTheDocument();
     expect(screen.getByTestId("source-cover-art-panel")).toBeVisible();
-    expect(screen.getByRole("img", { name: /auto cover/i })).toHaveAttribute(
-      "src",
+    expectOptimizedLocalImage(
+      screen.getByRole("img", { name: /auto cover/i }),
       "/assets/fairplay/cards/auto.png"
     );
     expect(screen.getByRole("img", { name: /auto cover/i })).toHaveClass(

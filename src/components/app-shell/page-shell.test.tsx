@@ -16,6 +16,12 @@ describe("PageShell decorative backgrounds", () => {
 
     expect(artwork).toHaveAttribute("aria-hidden", "true");
     expect(artwork).toHaveClass("pointer-events-none", "opacity-40");
+    expect(artwork.style.getPropertyValue("--fp-background-mobile")).toContain(
+      "load-map-workbench-768.avif"
+    );
+    expect(artwork.style.getPropertyValue("--fp-background-desktop")).toContain(
+      "load-map-workbench-1536.webp"
+    );
     expect(wash).toHaveAttribute("aria-hidden", "true");
     expect(wash).toHaveClass(
       "fp-page-background-wash",

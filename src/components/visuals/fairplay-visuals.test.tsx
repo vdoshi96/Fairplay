@@ -79,10 +79,19 @@ describe("Fairplay visual components", () => {
       "bg-no-repeat",
       "opacity-35"
     );
-    expect(layer).toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
-    });
+    expect(layer).toHaveClass("fp-responsive-image-background");
+    expect(layer.style.getPropertyValue("--fp-background-fallback")).toBe(
+      "url('/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png')"
+    );
+    expect(layer.style.getPropertyValue("--fp-background-mobile")).toContain(
+      "home-learning-studio-768.avif"
+    );
+    expect(layer.style.getPropertyValue("--fp-background-mobile")).toContain(
+      "home-learning-studio-1536.webp"
+    );
+    expect(layer.style.getPropertyValue("--fp-background-desktop")).toContain(
+      "home-learning-studio-1536.avif"
+    );
     expect(layer.querySelector(".bg-white\\/80")).not.toBeNull();
   });
 });

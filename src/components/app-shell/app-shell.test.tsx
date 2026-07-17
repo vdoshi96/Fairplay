@@ -127,10 +127,11 @@ describe("protected app UI", () => {
     expect(container.querySelector("[data-page-shell-content]")).toHaveClass(
       "min-w-0"
     );
-    expect(screen.getByTestId("page-shell-background-distribute")).toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png')"
-    });
+    expect(
+      screen
+        .getByTestId("page-shell-background-distribute")
+        .style.getPropertyValue("--fp-background-mobile")
+    ).toContain("app-shell-household-canvas-768.avif");
   });
 
   it("renders four primary tabs and keeps secondary routes in More", () => {
@@ -351,10 +352,11 @@ describe("protected app UI", () => {
       "data-page-background-id",
       "settings"
     );
-    expect(screen.getByTestId("page-shell-background-settings")).toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/settings-preferences.png')"
-    });
+    expect(
+      screen
+        .getByTestId("page-shell-background-settings")
+        .style.getPropertyValue("--fp-background-desktop")
+    ).toContain("settings-preferences-1536.webp");
     expect(screen.getAllByText("River Home").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Alex").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Switch persona" })).toBeVisible();

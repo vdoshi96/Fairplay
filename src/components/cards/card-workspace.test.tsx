@@ -62,6 +62,13 @@ function dispatchPointerEvent(
   return event;
 }
 
+function expectOptimizedLocalImage(image: HTMLElement, sourcePath: string) {
+  expect(decodeURIComponent(image.getAttribute("src") ?? "")).toContain(
+    sourcePath
+  );
+  expect(image).toHaveAttribute("srcset");
+}
+
 function openAvailableCards() {
   const availableCards = screen.getByTestId("distribution-card-list");
   const toggle = within(availableCards).getByRole("button", {
@@ -429,8 +436,8 @@ describe("CardWorkspace", () => {
       .toBeVisible();
     expect(within(availableCards).getByRole("button", { name: /Bills/i }))
       .toBeVisible();
-    expect(within(availableCards).getByAltText("Lunch cover")).toHaveAttribute(
-      "src",
+    expectOptimizedLocalImage(
+      within(availableCards).getByAltText("Lunch cover"),
       "/assets/fairplay/cards/meals-kids-school-lunch.png"
     );
 
@@ -932,8 +939,8 @@ describe("CardWorkspace", () => {
     expect(screen.getByRole("searchbox", { name: /search your deck/i }))
       .toBeVisible();
     expect(screen.getByTestId("your-card-gallery")).toHaveClass("grid");
-    expect(screen.getByAltText("Lunch cover")).toHaveAttribute(
-      "src",
+    expectOptimizedLocalImage(
+      screen.getByAltText("Lunch cover"),
       "/assets/fairplay/cards/meals-kids-school-lunch.png"
     );
   });
@@ -1054,8 +1061,8 @@ describe("CardWorkspace", () => {
     expect(within(board).queryByRole("heading", { name: "Unassigned" }))
       .not.toBeInTheDocument();
     expect(within(board).queryByText("Unclear")).not.toBeInTheDocument();
-    expect(within(board).getByAltText("Lunch cover")).toHaveAttribute(
-      "src",
+    expectOptimizedLocalImage(
+      within(board).getByAltText("Lunch cover"),
       "/assets/fairplay/cards/meals-kids-school-lunch.png"
     );
     expect(board.className).not.toContain("table");

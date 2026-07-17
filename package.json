@@ -19,6 +19,7 @@
     "assets:generate-little-alex-hair-colors": "node scripts/generate-little-alex-hair-colors.mjs",
     "assets:generate-little-alex-skin-tones": "node scripts/generate-little-alex-skin-tones.mjs",
     "assets:generate-ui": "node --experimental-strip-types scripts/generate-ui-assets.mjs",
+    "assets:optimize-responsive": "node scripts/generate-responsive-image-variants.mjs",
     "test:e2e": "npm run build && playwright test",
     "prisma:generate": "DATABASE_URL=${DATABASE_URL:-postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public} SHADOW_DATABASE_URL=${SHADOW_DATABASE_URL:-postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay_shadow?schema=public} prisma generate",
     "prisma:validate": "DATABASE_URL=${DATABASE_URL:-postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public} SHADOW_DATABASE_URL=${SHADOW_DATABASE_URL:-postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay_shadow?schema=public} prisma validate",

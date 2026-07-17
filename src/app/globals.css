@@ -125,6 +125,17 @@ html[data-theme="dark"] {
 }
 
 @layer utilities {
+  .fp-responsive-image-background {
+    background-image: var(--fp-background-fallback);
+    background-image: var(--fp-background-mobile);
+  }
+
+  @media (min-width: 768px) {
+    .fp-responsive-image-background {
+      background-image: var(--fp-background-desktop);
+    }
+  }
+
   .fp-page-background-wash {
     background:
       linear-gradient(
