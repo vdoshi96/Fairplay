@@ -242,11 +242,11 @@ describe("protected app UI", () => {
     );
   });
 
-  it("renders Little Alex as a decorative physics object on standard protected pages", () => {
+  it("renders Little Alex as a decorative physics object on standard protected pages", async () => {
     stubLittleAlexMedia({ desktop: true });
     renderProtectedUi(<div>Distribution workspace</div>);
 
-    const littleAlex = screen.getByTestId("little-alex-horne");
+    const littleAlex = await screen.findByTestId("little-alex-horne");
     expect(littleAlex).toHaveAttribute("aria-hidden", "true");
     expect(littleAlex).toHaveAttribute("data-physics-engine", "matter-js");
     expect(littleAlex).toHaveAttribute("data-motion-mode", "physics");
@@ -289,7 +289,7 @@ describe("protected app UI", () => {
     });
   });
 
-  it("lets the Theory route use the full app canvas", () => {
+  it("lets the Theory route use the full app canvas", async () => {
     stubLittleAlexMedia({ desktop: true });
     pathname.mockReturnValue("/app/crash-course");
 
@@ -307,15 +307,15 @@ describe("protected app UI", () => {
       "aria-current",
       "page"
     );
-    expect(screen.getByTestId("little-alex-horne")).toBeInTheDocument();
+    expect(await screen.findByTestId("little-alex-horne")).toBeInTheDocument();
   });
 
-  it("settles Little Alex into a draggable-safe static mode for reduced motion", () => {
+  it("settles Little Alex into a draggable-safe static mode for reduced motion", async () => {
     stubLittleAlexMedia({ desktop: true, reducedMotion: true });
 
     renderProtectedUi(<div>Distribution workspace</div>);
 
-    const littleAlex = screen.getByTestId("little-alex-horne");
+    const littleAlex = await screen.findByTestId("little-alex-horne");
     expect(littleAlex).toHaveAttribute("data-motion-mode", "reduced");
     expect(littleAlex).toHaveAttribute("data-physics-engine", "matter-js");
     expect(screen.getByTestId("little-alex-grab-target")).toHaveStyle({
