@@ -194,7 +194,21 @@ describe("responsibility service", () => {
         status: "active"
       })
     );
-    expect(deps.replaceActiveAssignments).toHaveBeenCalled();
+    expect(deps.applyOwnershipAgreement).toHaveBeenCalledWith(
+      expect.objectContaining({
+        householdId,
+        responsibilityId,
+        expectedOwnerPersonaKeys: [],
+        assignments: [
+          {
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          }
+        ]
+      })
+    );
+    expect(deps.replaceActiveAssignments).not.toHaveBeenCalled();
   });
 
   it("rejects private responsibility visibility in v1", async () => {
@@ -263,6 +277,51 @@ describe("responsibility service", () => {
     });
     expect(deps.replaceActiveAssignments).not.toHaveBeenCalled();
     expect(deps.createResponsibilityEvent).not.toHaveBeenCalled();
+  });
+
+  it("routes a first owner through the atomic ownership agreement", async () => {
+    const deps = makeDeps({
+      getResponsibility: vi.fn().mockResolvedValue(
+        detail({
+          status: "unassigned",
+          boardLane: "cards_of_concern",
+          currentAssignments: []
+        })
+      )
+    });
+    const service = createResponsibilityService(deps);
+
+    await service.updateAssignments(session, responsibilityId, {
+      effectiveAt: "2026-05-08T12:00:00.000Z",
+      assignments: [
+        {
+          personaKey: "alex",
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ],
+      handoffNotes: "Alex takes the first agreement.",
+      revisitAt: "2026-05-22T12:00:00.000Z"
+    });
+
+    expect(deps.applyOwnershipAgreement).toHaveBeenCalledWith({
+      householdId,
+      responsibilityId,
+      actorPersonaId: alexId,
+      expectedUpdatedAt,
+      expectedOwnerPersonaKeys: [],
+      assignments: [
+        {
+          personaKey: "alex",
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ],
+      reviewAt: "2026-05-22T12:00:00.000Z",
+      handoffMode: null,
+      handoffNotes: "Alex takes the first agreement."
+    });
+    expect(deps.replaceActiveAssignments).not.toHaveBeenCalled();
   });
 
   it("threads the responsibility revision into an atomic non-owner assignment edit", async () => {

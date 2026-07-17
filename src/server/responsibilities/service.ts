@@ -418,6 +418,38 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
         );
       }
 
+      const requestedOwnerKeys = currentOwnerPersonaKeys(input.assignments);
+      if (currentOwnerKeys.length === 0 && requestedOwnerKeys.length > 0) {
+        const agreement = OwnershipAgreementMutationSchema.safeParse({
+          responsibilityId,
+          expectedUpdatedAt: responsibility.updatedAt,
+          expectedOwnerPersonaKeys: [],
+          assignments: input.assignments,
+          reviewAt: input.revisitAt ?? null,
+          handoffMode: null,
+          handoffNotes: input.handoffNotes ?? null
+        });
+
+        if (!agreement.success) {
+          throw new ResponsibilityServiceError(
+            "INVALID_INPUT",
+            "Initial ownership agreement input is invalid."
+          );
+        }
+
+        return deps.applyOwnershipAgreement({
+          householdId: session.householdId,
+          responsibilityId,
+          actorPersonaId,
+          expectedUpdatedAt: agreement.data.expectedUpdatedAt,
+          expectedOwnerPersonaKeys: agreement.data.expectedOwnerPersonaKeys,
+          assignments: agreement.data.assignments,
+          reviewAt: agreement.data.reviewAt,
+          handoffMode: agreement.data.handoffMode,
+          handoffNotes: agreement.data.handoffNotes
+        });
+      }
+
       const assignments = await assignmentsWithPersonaIds(
         deps,
         session.householdId,
