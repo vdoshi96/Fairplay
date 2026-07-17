@@ -466,8 +466,13 @@ function DistributeView({
           />
           <input
             aria-label="Search cards to deal"
-            className="fp-input w-full py-3 pl-10 pr-3 text-[16px] font-semibold"
+            className="fp-input w-full py-3 pl-10 pr-3 text-[16px] font-semibold disabled:cursor-wait disabled:opacity-60"
+            disabled={pendingId !== null}
             onChange={(event) => {
+              if (pendingId) {
+                return;
+              }
+
               setQuery(event.target.value);
               setShowAddedStatus(false);
             }}
@@ -538,7 +543,12 @@ function DistributeView({
           </div>
           <AvailableCardList
             cards={deck}
+            interactionDisabled={pendingId !== null}
             onSelect={(cardId) => {
+              if (pendingId) {
+                return;
+              }
+
               setSelectedId(cardId);
               setFlippedId(null);
               setShowAddedStatus(false);
@@ -1269,29 +1279,37 @@ function CompactCard({
   const hasActiveAssignments = card.currentAssignments.length > 0;
 
   return (
-    <article className="grid min-w-0 overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
-      <Link
-        className="grid min-h-[8.25rem] grid-cols-[5.25rem_minmax(0,1fr)] sm:grid-cols-[5.75rem_minmax(0,1fr)]"
-        href={`/app/responsibilities/${card.id}`}
+    <article className="grid min-w-0 overflow-visible rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
+      <div
+        className={[
+          "overflow-hidden",
+          onMove ? "rounded-t-[7px]" : "rounded-[7px]"
+        ].join(" ")}
+        data-testid="compact-card-content"
       >
-        <CardCoverImage
-          card={card}
-          className="min-h-0 border-r border-fp-line bg-fp-surface p-1.5"
-        />
-        <span className="grid min-w-0 content-start gap-2 p-3">
-          <span className="text-[16px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
-            {card.title}
+        <Link
+          className="grid min-h-[8.25rem] grid-cols-[5.25rem_minmax(0,1fr)] sm:grid-cols-[5.75rem_minmax(0,1fr)]"
+          href={`/app/responsibilities/${card.id}`}
+        >
+          <CardCoverImage
+            card={card}
+            className="min-h-0 border-r border-fp-line bg-fp-surface p-1.5"
+          />
+          <span className="grid min-w-0 content-start gap-2 p-3">
+            <span className="text-[16px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
+              {card.title}
+            </span>
+            <span className="line-clamp-2 text-[12px] font-semibold leading-5 text-fp-muted-ink">
+              {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
+            </span>
+            <span className="w-fit rounded-full border border-fp-line bg-[var(--fp-surface)] px-2.5 py-1 text-[11px] font-bold text-fp-muted-ink">
+              {card.cadence.replaceAll("_", " ")}
+            </span>
           </span>
-          <span className="line-clamp-2 text-[12px] font-semibold leading-5 text-fp-muted-ink">
-            {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
-          </span>
-          <span className="w-fit rounded-full border border-fp-line bg-[var(--fp-surface)] px-2.5 py-1 text-[11px] font-bold text-fp-muted-ink">
-            {card.cadence.replaceAll("_", " ")}
-          </span>
-        </span>
-      </Link>
+        </Link>
+      </div>
       {onMove ? (
-        <div className="grid gap-2 border-t border-fp-line bg-[var(--fp-surface-strong)] p-2">
+        <div className="grid gap-2 rounded-b-[7px] border-t border-fp-line bg-[var(--fp-surface-strong)] p-2">
           <CardMoveMenu
             bucket={bucket}
             card={card}
@@ -1370,12 +1388,16 @@ function CardMoveMenu({
     <div className="relative grid">
       <button
         aria-controls={menuId}
+        aria-disabled={pending}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label={`Move ${card.title}`}
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:cursor-wait disabled:opacity-60"
-        disabled={pending}
-        onClick={() => setOpen((current) => !current)}
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink aria-disabled:cursor-wait aria-disabled:opacity-60"
+        onClick={() => {
+          if (!pending) {
+            setOpen((current) => !current);
+          }
+        }}
         ref={buttonRef}
         type="button"
       >
@@ -1407,6 +1429,7 @@ function CardMoveMenu({
                 key={nextBucket}
                 onClick={() => {
                   setOpen(false);
+                  buttonRef.current?.focus();
                   void onMove(nextBucket);
                 }}
                 role="menuitem"
@@ -1426,10 +1449,12 @@ function CardMoveMenu({
 
 function AvailableCardList({
   cards,
+  interactionDisabled,
   onSelect,
   selectedId
 }: {
   cards: CardWorkspaceCard[];
+  interactionDisabled: boolean;
   onSelect: (cardId: string) => void;
   selectedId: string | null;
 }) {
@@ -1484,8 +1509,13 @@ function AvailableCardList({
         <button
           aria-controls="available-card-window"
           aria-expanded={expanded}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink"
-          onClick={() => setExpanded((current) => !current)}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:cursor-wait disabled:opacity-60"
+          disabled={interactionDisabled}
+          onClick={() => {
+            if (!interactionDisabled) {
+              setExpanded((current) => !current);
+            }
+          }}
           type="button"
         >
           {expanded ? "Hide" : "Show"} {cards.length}
@@ -1517,8 +1547,13 @@ function AvailableCardList({
                       : "border-fp-line bg-[var(--fp-surface)]"
                   ].join(" ")}
                   data-testid="available-card-row"
+                  disabled={interactionDisabled}
                   key={card.id}
-                  onClick={() => onSelect(card.id)}
+                  onClick={() => {
+                    if (!interactionDisabled) {
+                      onSelect(card.id);
+                    }
+                  }}
                   type="button"
                 >
                   <CardCoverImage
@@ -1541,7 +1576,7 @@ function AvailableCardList({
             <div className="grid grid-cols-2 gap-2">
               <button
                 className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:opacity-50"
-                disabled={windowStart === 0}
+                disabled={interactionDisabled || windowStart === 0}
                 onClick={() =>
                   setWindowStart((current) =>
                     Math.max(0, current - AVAILABLE_CARD_WINDOW_SIZE)
@@ -1553,7 +1588,7 @@ function AvailableCardList({
               </button>
               <button
                 className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:opacity-50"
-                disabled={windowEnd >= cards.length}
+                disabled={interactionDisabled || windowEnd >= cards.length}
                 onClick={() =>
                   setWindowStart((current) =>
                     Math.min(

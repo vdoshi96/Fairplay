@@ -302,6 +302,72 @@ describe("CardWorkspace", () => {
     ).toEqual(orderBefore);
   });
 
+  it("locks Deal search and catalog selection until a pending move can roll back", async () => {
+    let rejectMove: ((error: Error) => void) | undefined;
+    const onDistribute = vi.fn(
+      () =>
+        new Promise<void>((_resolve, reject) => {
+          rejectMove = reject;
+        })
+    );
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({ title: "Lunch", boardSortOrder: 0 }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440001",
+            title: "Bills",
+            boardSortOrder: 1
+          }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440002",
+            title: "Laundry",
+            boardSortOrder: 2
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const availableCards = openAvailableCards();
+    fireEvent.click(
+      within(availableCards).getByRole("button", { name: /Bills/i })
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Max" }));
+
+    const search = screen.getByRole("searchbox", { name: /search cards/i });
+    const lunchRow = within(availableCards).getByRole("button", {
+      name: /Lunch/i
+    });
+    const browserToggle = within(availableCards).getByRole("button", {
+      name: "Hide 2"
+    });
+    expect(search).toBeDisabled();
+    expect(lunchRow).toBeDisabled();
+    expect(browserToggle).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Laundry" })).toBeVisible();
+
+    fireEvent.change(search, { target: { value: "Lunch" } });
+    fireEvent.click(lunchRow);
+    fireEvent.click(browserToggle);
+
+    expect(screen.getByRole("button", { name: "Laundry" })).toBeVisible();
+    rejectMove?.(new Error("save failed"));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Bills could not be moved. It is back in the same place."
+    );
+    expect(search).toBeEnabled();
+    expect(search).toHaveValue("");
+    expect(screen.getByRole("button", { name: "Bills" })).toBeVisible();
+    expect(
+      within(availableCards).getByRole("button", { name: /Bills/i })
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
   it("changes Deal state without directional animation in reduced-motion mode", async () => {
     stubMedia({ reducedMotion: true });
     let resolveMove: (() => void) | undefined;
@@ -1076,6 +1142,31 @@ describe("CardWorkspace", () => {
     );
   });
 
+  it("lets the Move menu escape the card while media content stays clipped", () => {
+    render(
+      <CardWorkspace
+        onDistribute={vi.fn().mockResolvedValue(undefined)}
+        responsibilities={[
+          card({ title: "Lunch", boardLane: "player_1" })
+        ]}
+        selectedPersona={selectedPersona}
+        view="board"
+      />
+    );
+
+    const moveButton = screen.getByRole("button", { name: "Move Lunch" });
+    const compactCard = moveButton.closest("article");
+    expect(compactCard).toHaveClass("overflow-visible");
+    expect(
+      compactCard?.querySelector("[data-testid='compact-card-content']")
+    ).toHaveClass("overflow-hidden");
+
+    fireEvent.click(moveButton);
+    expect(screen.getByRole("menu", { name: "Move Lunch" })).toHaveClass(
+      "absolute"
+    );
+  });
+
   it("shows card-level pending and error feedback for Board moves", async () => {
     let rejectMove: ((error: Error) => void) | undefined;
     const onDistribute = vi.fn(
@@ -1100,14 +1191,16 @@ describe("CardWorkspace", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Max" }));
 
     const moveButton = screen.getByRole("button", { name: "Move Lunch" });
-    expect(moveButton).toBeDisabled();
+    expect(moveButton).toHaveFocus();
+    expect(moveButton).toHaveAttribute("aria-disabled", "true");
     expect(moveButton).toHaveTextContent("Moving...");
     rejectMove?.(new Error("save failed"));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Lunch could not be moved. Nothing changed."
     );
-    expect(moveButton).toBeEnabled();
+    expect(moveButton).toHaveAttribute("aria-disabled", "false");
+    expect(moveButton).toHaveFocus();
   });
 
   it("offers Undo for the last successful Board move", async () => {
@@ -1124,12 +1217,14 @@ describe("CardWorkspace", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Move Lunch" }));
+    const moveButton = screen.getByRole("button", { name: "Move Lunch" });
+    fireEvent.click(moveButton);
     fireEvent.click(screen.getByRole("menuitem", { name: "Max" }));
 
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Lunch moved to Max."
     );
+    expect(moveButton).toHaveFocus();
     fireEvent.click(screen.getByRole("button", { name: "Undo last move" }));
 
     await waitFor(() =>
