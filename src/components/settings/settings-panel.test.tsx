@@ -99,11 +99,21 @@ describe("settings panel", () => {
       "aria-hidden",
       "true"
     );
-    expect(screen.getByTestId("settings-preferences-background")).toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/settings-preferences.png')"
-    });
-    expect(screen.getByTestId("settings-preferences-background")).toHaveClass(
+    const preferencesBackground = screen.getByTestId(
+      "settings-preferences-background"
+    );
+    expect(
+      preferencesBackground.style.getPropertyValue("--fp-background-fallback")
+    ).toBe(
+      "url('/assets/fairplay/generated-ui/backgrounds/settings-preferences.png')"
+    );
+    expect(
+      preferencesBackground.style.getPropertyValue("--fp-background-mobile")
+    ).toContain("settings-preferences-768.avif");
+    expect(
+      preferencesBackground.style.getPropertyValue("--fp-background-desktop")
+    ).toContain("settings-preferences-1536.webp");
+    expect(preferencesBackground).toHaveClass(
       "opacity-50"
     );
     const systemSwitch = screen.getByRole("switch", {

@@ -8,7 +8,10 @@ import {
   type CardTemplateSummary
 } from "../../contracts/card-templates";
 import type { HouseholdId, PersonaId } from "../../domain/ids";
-import { FAIRPLAY_SOURCE_CARDS } from "../../seed/fairplay-source-cards";
+import {
+  FAIRPLAY_SOURCE_CARDS,
+  FAIRPLAY_SOURCE_VERSION
+} from "../../seed/fairplay-source-cards";
 import { isUniqueConstraintError, RepositoryError } from "../db/errors";
 import { prisma } from "../db/prisma";
 import {
@@ -18,6 +21,13 @@ import {
 } from "./responsibilities";
 
 const labelSet = new Set<string>(CARD_TEMPLATE_LABELS);
+
+/**
+ * Bump the source version whenever the built-in catalog changes. Household
+ * markers make routine overview reads a single version lookup instead of a
+ * full template/responsibility reconciliation.
+ */
+export const HOUSEHOLD_CATALOG_VERSION = FAIRPLAY_SOURCE_VERSION;
 
 const templateSelect = {
   id: true,
@@ -402,6 +412,23 @@ export async function ensureHouseholdCatalogResponsibilities(input: {
   actorPersonaId: PersonaId;
   householdId: HouseholdId;
 }) {
+  const household = await prisma.household.findUnique({
+    where: {
+      id: input.householdId
+    },
+    select: {
+      catalogVersion: true
+    }
+  });
+
+  if (!household) {
+    throw new RepositoryError("NOT_FOUND", "Household not found.");
+  }
+
+  if (household.catalogVersion === HOUSEHOLD_CATALOG_VERSION) {
+    return;
+  }
+
   const templates = await Promise.all(
     FAIRPLAY_SOURCE_CARDS.map((template) => upsertSourceTemplate(template))
   );
@@ -431,6 +458,17 @@ export async function ensureHouseholdCatalogResponsibilities(input: {
       }
     }
   }
+
+  // Write the marker last. A failed template or responsibility write leaves
+  // the previous version in place so the next request retries idempotently.
+  await prisma.household.update({
+    where: {
+      id: input.householdId
+    },
+    data: {
+      catalogVersion: HOUSEHOLD_CATALOG_VERSION
+    }
+  });
 }
 
 export async function createResponsibilityFromTemplate(

@@ -45,10 +45,13 @@ describe("auth forms", () => {
     expect(screen.getByRole("heading", { name: "Log in to Fairplay" })).toBeVisible();
     const authBackground = container.querySelector("[data-auth-background]");
     expect(authBackground).not.toBeNull();
-    expect(authBackground).toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/auth-warm-threshold.png')"
-    });
+    const responsiveBackground = screen.getByTestId("auth-responsive-background");
+    expect(
+      responsiveBackground.style.getPropertyValue("--fp-background-mobile")
+    ).toContain("auth-warm-threshold-768.avif");
+    expect(
+      responsiveBackground.style.getPropertyValue("--fp-background-desktop")
+    ).toContain("auth-warm-threshold-1536.webp");
     const backgroundWash = container.querySelector(
       "[data-auth-background-wash]"
     );

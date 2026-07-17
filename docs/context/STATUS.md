@@ -4,14 +4,14 @@ Last updated: 2026-07-16
 
 ## Current Phase
 
-The first three Fairplay Improvement Program milestones are implemented through the current verification branch: atomic card distribution and Ask Greg-to-Deal continuity; descriptive household work mapping with explicit ownership agreements; and UI/accessibility/motion polish for Deal, Board, Check-ins, dialogs, controls, authentication surfaces, and decorative backgrounds.
+The first four Fairplay Improvement Program milestones are implemented through the current verification branch: atomic card distribution and Ask Greg-to-Deal continuity; descriptive household work mapping with explicit ownership agreements; UI/accessibility/motion polish; and server, client-bundle, physics, CSS, and responsive-asset efficiency.
 
 The previous tooling follow-up stabilized local verification: Playwright e2e now builds the app and runs against `next start` with explicit local runtime env, and Prisma local migration uses a dedicated `SHADOW_DATABASE_URL` plus a shadow DB setup helper so app roles without `CREATEDB` no longer block `migrate dev`.
 
 ## Branch And Working Tree
 
 - Improvement Program correctness shipped in PR #56 and descriptive equity/ownership agreements shipped in PR #57; local `main` was synchronized to each merge before the next milestone began.
-- The UI/accessibility/motion milestone was developed on `codex/fairplay-ui-accessibility-motion` and gated by the complete regression ladder before merge.
+- UI/accessibility/motion shipped in PR #58. The performance/assets milestone is complete on `codex/fairplay-performance-assets` and gated by the complete local regression ladder before merge.
 - Earlier merged UX/card PRs include #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, #45 focused patch QA/docs, and #47 catalog/deal/board plus Little Alex fix.
 
 ## What Exists
@@ -23,6 +23,14 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Current source inventory includes about 236 TypeScript/TSX files under `src/`, 95 test/spec files across `src` and `e2e`, and 270 Fairplay public asset files.
 
 ## Recent Product State
+
+- Household catalog reconciliation is gated by an additive version marker. Existing households reconcile once; current-version overview reads perform no catalog writes.
+- Summary pages select current assignments without loading assignment history or lifecycle-note payloads; responsibility details retain complete editor/history data.
+- Session resolution is memoized per React server request and activity writes occur at most once every five minutes without weakening revocation or expiration checks.
+- Board, Deal, and Your Deck now ship route-specific card workspaces and shared pure helpers instead of one all-view client module.
+- Little Alex physics loads only for desktop fine-pointer environments and pauses while hidden, settled, standing, dragged, or reduced-motion. Mobile route requests do not load Matter.js.
+- Operational/auth backgrounds have local 768/1536 AVIF and WebP variants with PNG fallback; local card covers use responsive Next image optimization.
+- Global styling is split into ordered token/theme, shell/background, motion, Little Alex, and reduced-motion layers with existing values preserved.
 
 - Board and Deal now show a descriptive household work map derived only from active and needs-review responsibilities; it reports ownership, shared work, high-frequency work, hidden effort, and review timing without scores or partner rankings.
 - Shared-owned responsibilities are derived into a Shared Board section and appear in both owners' decks without adding or renaming a persisted board lane.
@@ -63,6 +71,22 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Active feature-guide launchers, guide practice components, generated UI registry entries, Library/Settings dummy workflows, and the onboarding-preview AI route are removed from active code.
 
 ## Verification From This Pass
+
+Performance/assets milestone verification passed:
+
+```bash
+npm run db:wait
+npm run prisma:validate
+npm run prisma:generate
+npm run prisma:migrate -- --skip-seed
+npm run lint
+npm run typecheck
+npm test -- --run --maxWorkers=4
+npm run build
+npx playwright test --project=chromium --workers=1
+```
+
+The final Vitest run passed 106 files / 637 tests, including DB-backed coverage. The final Chromium Playwright run passed 31/31 scenarios. A mobile production-network gate confirms responsive background requests, optimized card-cover delivery, a bounded 20-row Available Cards window, and no Matter.js request. Current light/dark/responsive and Little Alex captures are retained under ignored `test-results/`; details are in `docs/implementation/2026-07-16-performance-assets.md`.
 
 UI/accessibility/motion milestone verification passed:
 
@@ -152,6 +176,7 @@ The local tooling stability pass replaced the flaky `next dev` Playwright server
 
 - Deprecated `/api/ai-card-drafts/[id]/regenerate-image` route behavior and whether it should remain for compatibility.
 - Browser storage audit beyond theme-only `localStorage`: household data, private drafts, sensitive notes, concern details, session secrets, API keys, credentials, and plaintext passwords must remain out of `localStorage`, `sessionStorage`, and `indexedDB`.
+- Improvement Program security hardening, WebKit/iPhone-like/touch Playwright projects, automated accessibility checks, real Little Alex motion recording, and manual iPhone Add-to-Home-Screen smoke remain in the next milestone/final QA.
 - Local ignored clutter: `.DS_Store`, `docs/.DS_Store`, `docs/agents/.DS_Store`, `docs/superpowers/.DS_Store`, `References/.DS_Store`, and `tsconfig.tsbuildinfo`.
 
 ## Verified This Pass

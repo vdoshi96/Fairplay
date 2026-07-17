@@ -168,8 +168,13 @@ export function CardDetailSheet({
                 }
                 height={isGeneratedCover ? 2044 : 700}
                 priority={false}
+                sizes={
+                  isGeneratedCover
+                    ? "(min-width: 1024px) 44vw, 100vw"
+                    : "(min-width: 1024px) 340px, 100vw"
+                }
                 src={coverAssetPath}
-                unoptimized
+                unoptimized={isGeneratedCover}
                 width={isGeneratedCover ? 1460 : 500}
               />
             ) : (

@@ -71,10 +71,18 @@ describe("CheckInFlow", () => {
       "aria-hidden",
       "true"
     );
-    expect(screen.getByTestId("check-in-new-background")).toHaveStyle({
-      backgroundImage:
-        "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
-    });
+    const checkInBackground = screen.getByTestId("check-in-new-background");
+    expect(
+      checkInBackground.style.getPropertyValue("--fp-background-fallback")
+    ).toBe(
+      "url('/assets/fairplay/generated-ui/backgrounds/check-in-table.png')"
+    );
+    expect(
+      checkInBackground.style.getPropertyValue("--fp-background-mobile")
+    ).toContain("check-in-table-768.avif");
+    expect(
+      checkInBackground.style.getPropertyValue("--fp-background-desktop")
+    ).toContain("check-in-table-1536.webp");
     expect(screen.queryByRole("button", { name: "Preview agenda" }))
       .not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Start check-in" }))

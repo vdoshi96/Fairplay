@@ -1,5 +1,32 @@
 # Fairplay Context Log
 
+## 2026-07-16 - Performance, Bundle, And Asset Efficiency
+
+Requested by the user as milestone 4 of the Fairplay Improvement Program: reduce repeated server/client work, split large modules, optimize artwork, and defer Little Alex physics without changing product behavior.
+
+Actions completed:
+
+- Added an additive household catalog-version marker and current-assignment-only overview query while retaining full responsibility details/history.
+- Memoized session resolution per React server request and limited conditional `lastSeenAt` writes to one per five minutes.
+- Split Board, Deal, and Your Deck into route-specific client entries with shared card presentation and pure transition helpers.
+- Deferred Matter.js until a desktop fine-pointer media query matches and paused physics outside active movement or while hidden.
+- Generated 36 local AVIF/WebP background variants, restored local card-cover optimization, and migrated every active generated page background to the responsive layer.
+- Split global CSS into ordered theme, shell/background, motion, Little Alex, and reduced-motion concerns.
+- Added a mobile production-network gate for responsive art, optimized covers, bounded Available Cards DOM, and absence of Matter.js requests.
+- Updated current context/wiki/implementation documentation. No API keys, live AI calls, or private reference material were used.
+
+Verification:
+
+- `npm run db:wait`
+- `npm run prisma:validate`
+- `npm run prisma:generate`
+- `npm run prisma:migrate -- --skip-seed`
+- `npm run lint`
+- `npm run typecheck`
+- `npm test -- --run --maxWorkers=4` (106 files / 637 tests)
+- `npm run build`
+- `npx playwright test --project=chromium --workers=1` (31 tests)
+
 ## 2026-05-10 - Security Scan Hardening Pass
 
 Requested by the user: run the Codex Security scan on the codebase and make necessary changes without breaking app functionality. CodeRabbit was initially requested, but the user later asked to ignore the CodeRabbit part.

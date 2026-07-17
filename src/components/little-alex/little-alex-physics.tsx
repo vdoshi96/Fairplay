@@ -145,10 +145,11 @@ type PhysicsWorld = {
   bodies: Record<PartKey, Matter.Body>;
   engine: Matter.Engine;
   runner: Matter.Runner;
+  runnerRunning: boolean;
   walls: Matter.Body[];
 };
 
-type LittleAlexPhysicsProps = {
+export type LittleAlexPhysicsProps = {
   chatPhrase?: string;
   genderPresentation?: LittleAlexGenderPresentation;
   hairColor?: LittleAlexHairColor;
@@ -741,8 +742,50 @@ function createRagdoll(anchor: Point, width: number, height: number): PhysicsWor
     bodies,
     engine,
     runner: Matter.Runner.create(),
+    runnerRunning: false,
     walls
   };
+}
+
+function documentIsHidden() {
+  return (
+    typeof document !== "undefined" &&
+    (document.hidden || document.visibilityState === "hidden")
+  );
+}
+
+function startPhysicsRunner(physics: PhysicsWorld) {
+  if (physics.runnerRunning || documentIsHidden()) {
+    return;
+  }
+
+  physics.runnerRunning = true;
+  Matter.Runner.run(physics.runner, physics.engine);
+}
+
+function stopPhysicsRunner(physics: PhysicsWorld) {
+  if (!physics.runnerRunning) {
+    return;
+  }
+
+  Matter.Runner.stop(physics.runner);
+  physics.runnerRunning = false;
+}
+
+function syncPhysicsRunner(
+  physics: PhysicsWorld,
+  idleState: IdleState,
+  ragdollState: RagdollVisualState
+) {
+  if (
+    !documentIsHidden() &&
+    (idleState === "walking" || ragdollState === "flinging")
+  ) {
+    startPhysicsRunner(physics);
+    return;
+  }
+
+  stopPhysicsRunner(physics);
 }
 
 function syncBodyToElement(
@@ -1248,6 +1291,7 @@ export function LittleAlexPhysics({
     const physics = physicsRef.current;
 
     if (physics) {
+      stopPhysicsRunner(physics);
       setRagdollBodiesStatic(physics, true);
     }
 
@@ -1292,6 +1336,7 @@ export function LittleAlexPhysics({
 
       if (reachedTarget && !idleTargetReachedRef.current) {
         idleTargetReachedRef.current = true;
+        idleStateRef.current = "standing";
         setIdleState("standing");
       }
     }
@@ -1534,6 +1579,7 @@ export function LittleAlexPhysics({
       const physics = physicsRef.current;
 
       if (physics) {
+        stopPhysicsRunner(physics);
         setRagdollBodiesStatic(physics, true);
       }
 
@@ -1657,7 +1703,6 @@ export function LittleAlexPhysics({
     };
 
     Matter.Events.on(physics.engine, "afterUpdate", sync);
-    Matter.Runner.run(physics.runner, physics.engine);
     window.addEventListener("resize", handleResize);
     sync();
     setPhysicsReady(true);
@@ -1665,7 +1710,7 @@ export function LittleAlexPhysics({
     return () => {
       window.removeEventListener("resize", handleResize);
       Matter.Events.off(physics.engine, "afterUpdate", sync);
-      Matter.Runner.stop(physics.runner);
+      stopPhysicsRunner(physics);
       Matter.Composite.clear(physics.engine.world, false);
       Matter.Engine.clear(physics.engine);
       if (physicsRef.current === physics) {
@@ -1674,6 +1719,48 @@ export function LittleAlexPhysics({
       setPhysicsReady(false);
     };
   }, [motionPreferenceReady, reducedAnchor, reducedMotion, syncPhysicsDom]);
+
+  useEffect(() => {
+    if (!physicsReady || reducedMotion) {
+      return;
+    }
+
+    const physics = physicsRef.current;
+
+    if (physics) {
+      syncPhysicsRunner(physics, idleState, ragdollVisualState);
+    }
+  }, [idleState, physicsReady, ragdollVisualState, reducedMotion]);
+
+  useEffect(() => {
+    if (!physicsReady || reducedMotion) {
+      return undefined;
+    }
+
+    const handleVisibilityChange = () => {
+      const physics = physicsRef.current;
+
+      if (!physics) {
+        return;
+      }
+
+      syncPhysicsRunner(
+        physics,
+        idleStateRef.current,
+        ragdollVisualStateRef.current
+      );
+
+      if (!documentIsHidden()) {
+        syncPhysicsDom();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [physicsReady, reducedMotion, syncPhysicsDom]);
 
   const handlePointerDown = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {

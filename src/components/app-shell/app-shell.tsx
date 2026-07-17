@@ -18,7 +18,7 @@ import {
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
 import type { LittleAlexPreferences } from "@/contracts/preferences";
-import { LittleAlexPhysics } from "@/components/little-alex/little-alex-physics";
+import { DesktopLittleAlex } from "@/components/little-alex/desktop-little-alex";
 import { FairplayMark, PersonaAvatar } from "@/components/visuals/fairplay-visuals";
 import { PageShell, pageShellBackgroundForPathname } from "./page-shell";
 
@@ -43,9 +43,6 @@ const overflowNavItems = [
   { href: "/app/library", icon: Library, label: "Card Library" }
 ] as const;
 
-const LITTLE_ALEX_DESKTOP_MEDIA =
-  "(min-width: 1024px) and (hover: hover) and (pointer: fine)";
-
 function isActiveRoute(pathname: string, href: string) {
   if (href === "/app/your-cards") {
     return pathname === href;
@@ -68,21 +65,17 @@ export function AppShell({
   const mainClassName = isImmersiveRoute
     ? "w-full pb-24 lg:pb-0"
     : "w-full";
-  const showLittleAlex = useDesktopLittleAlex();
-
   return (
     <div
       className="min-h-[100svh] w-full max-w-full overflow-x-clip bg-transparent text-fp-ink lg:grid lg:grid-cols-[var(--fp-app-sidebar-width)_minmax(0,1fr)]"
       data-testid="app-shell-root"
     >
-      {showLittleAlex ? (
-        <LittleAlexPhysics
-          chatPhrase={littleAlexPreferences.chatPhrase}
-          genderPresentation={littleAlexPreferences.genderPresentation}
-          hairColor={littleAlexPreferences.hairColor}
-          skinTone={littleAlexPreferences.skinTone}
-        />
-      ) : null}
+      <DesktopLittleAlex
+        chatPhrase={littleAlexPreferences.chatPhrase}
+        genderPresentation={littleAlexPreferences.genderPresentation}
+        hairColor={littleAlexPreferences.hairColor}
+        skinTone={littleAlexPreferences.skinTone}
+      />
 
       <aside className="fp-app-chrome fixed inset-y-0 left-0 z-20 hidden w-[var(--fp-app-sidebar-width)] border-r border-fp-line px-4 py-5 backdrop-blur-md lg:flex lg:flex-col">
         <Link
@@ -232,34 +225,6 @@ export function AppShell({
       </div>
     </div>
   );
-}
-
-function useDesktopLittleAlex() {
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    if (typeof window.matchMedia !== "function") {
-      setEnabled(false);
-      return undefined;
-    }
-
-    const media = window.matchMedia(LITTLE_ALEX_DESKTOP_MEDIA);
-    const update = () => setEnabled(media.matches);
-
-    update();
-
-    if (typeof media.addEventListener === "function") {
-      media.addEventListener("change", update);
-
-      return () => media.removeEventListener("change", update);
-    }
-
-    media.addListener(update);
-
-    return () => media.removeListener(update);
-  }, []);
-
-  return enabled;
 }
 
 function OverflowMenu({

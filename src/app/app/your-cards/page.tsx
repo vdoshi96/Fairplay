@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { NextRequest } from "next/server";
 
 import { getAppSessionView } from "@/components/app-shell/session-view";
-import { CardWorkspace } from "@/components/cards/card-workspace";
+import { YourDeckWorkspace } from "@/components/cards/your-deck-workspace";
 import { getCurrentSession } from "@/server/auth/current-session";
 import { responsibilityService } from "@/server/responsibilities/service";
 
@@ -24,10 +24,9 @@ export default async function YourCardsPage() {
   const overview = await responsibilityService.listOverview(session);
 
   return (
-    <CardWorkspace
+    <YourDeckWorkspace
       responsibilities={overview.responsibilities}
       selectedPersona={sessionView.selectedPersona}
-      view="yourCards"
     />
   );
 }

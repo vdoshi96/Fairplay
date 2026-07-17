@@ -175,9 +175,11 @@ describe("LittleAlexPhysics", () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+    Reflect.deleteProperty(document, "hidden");
+    Reflect.deleteProperty(document, "visibilityState");
   });
 
-  it("starts the Matter.js runner for the normal physics mode", () => {
+  it("keeps the Matter.js runner stopped while the character is settled", () => {
     stubReducedMotion(false);
     const runSpy = vi
       .spyOn(Matter.Runner, "run")
@@ -189,7 +191,7 @@ describe("LittleAlexPhysics", () => {
       "data-motion-mode",
       "physics"
     );
-    expect(runSpy).toHaveBeenCalledTimes(1);
+    expect(runSpy).not.toHaveBeenCalled();
   });
 
   it("does not start continuous physics when reduced motion is requested", () => {
@@ -205,6 +207,125 @@ describe("LittleAlexPhysics", () => {
       "reduced"
     );
     expect(runSpy).not.toHaveBeenCalled();
+  });
+
+  it("runs only for active idle walking or a fling and stops again on interaction", () => {
+    vi.useFakeTimers();
+    stubReducedMotion(false);
+    stubPointerCapture();
+    const runSpy = vi
+      .spyOn(Matter.Runner, "run")
+      .mockImplementation(() => Matter.Runner.create());
+    const stopSpy = vi.spyOn(Matter.Runner, "stop");
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    expect(runSpy).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
+    act(() => {
+      vi.advanceTimersByTime(4_000);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-idle-state", "walking");
+    expect(runSpy).toHaveBeenCalledTimes(1);
+
+    dispatchPointer(grabTarget, "pointerdown", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+
+    expect(stopSpy).toHaveBeenCalledTimes(1);
+
+    dispatchPointer(grabTarget, "pointermove", {
+      clientX: 790,
+      clientY: 245,
+      pointerId: 1,
+      timeStamp: 64
+    });
+    dispatchPointer(grabTarget, "pointerup", {
+      clientX: 790,
+      clientY: 245,
+      pointerId: 1,
+      timeStamp: 80
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "flinging");
+    expect(runSpy).toHaveBeenCalledTimes(2);
+
+    act(() => {
+      vi.advanceTimersByTime(6_500);
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "recovering");
+    expect(stopSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("pauses a running fling while hidden and resumes it when visible", () => {
+    stubReducedMotion(false);
+    stubPointerCapture();
+    let hidden = false;
+
+    Object.defineProperty(document, "hidden", {
+      configurable: true,
+      get: () => hidden
+    });
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      get: () => (hidden ? "hidden" : "visible")
+    });
+
+    const runSpy = vi
+      .spyOn(Matter.Runner, "run")
+      .mockImplementation(() => Matter.Runner.create());
+    const stopSpy = vi.spyOn(Matter.Runner, "stop");
+
+    render(<LittleAlexPhysics />);
+    const littleAlex = screen.getByTestId("little-alex-horne");
+    const grabTarget = screen.getByTestId("little-alex-grab-target");
+
+    dispatchPointer(grabTarget, "pointerdown", {
+      clientX: 900,
+      clientY: 200,
+      pointerId: 1,
+      timeStamp: 0
+    });
+    dispatchPointer(grabTarget, "pointermove", {
+      clientX: 790,
+      clientY: 245,
+      pointerId: 1,
+      timeStamp: 64
+    });
+    dispatchPointer(grabTarget, "pointerup", {
+      clientX: 790,
+      clientY: 245,
+      pointerId: 1,
+      timeStamp: 80
+    });
+
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "flinging");
+    expect(runSpy).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      hidden = true;
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+
+    expect(stopSpy).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      hidden = false;
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+
+    expect(runSpy).toHaveBeenCalledTimes(2);
+    expect(littleAlex).toHaveAttribute("data-ragdoll-state", "flinging");
   });
 
   it("reserves mobile bottom navigation space from the play area", () => {

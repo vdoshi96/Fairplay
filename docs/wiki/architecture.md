@@ -24,7 +24,7 @@ Fairplay is a Next.js App Router application. Pages and route handlers live unde
 
 - `app-shell`: navigation, page shell, session view, layout tokens.
 - `auth`: forms, login/create/persona clients, auth page shell.
-- `cards`: card-state mapping, image-first card workspace for Your Deck/Deal/Board, and simplified card detail sheet.
+- `cards`: card-state mapping, route-specific Your Deck/Deal/Board workspaces, shared card presentation/pure transition helpers, and the responsibility detail sheet. A compatibility workspace export remains but is not imported by app routes.
 - `library`: card library and AI task manager.
 - `responsibilities`: responsibility editor; card distribution and board bucket mapping now live in `cards` plus server responsibility services.
 - `check-ins`: lightweight schedule, confirmation, and notes flow.
@@ -57,13 +57,15 @@ Migrations currently include initial schema, legacy Radar timing/removal history
 2. The server stores password/session state through repositories and sets an opaque session cookie.
 3. The user selects a persona through `/api/personas/select`.
 4. Protected pages load `getAppSessionView()`, then service/repository data for the current household/persona.
-5. Responsibility overview reads materialize the household source-card catalog first, then card distribution calls server actions that route through `distributeResponsibilityCard()` and preserve stable persisted lane keys.
+5. Responsibility overview reads reconcile the household source-card catalog only when its version marker is missing/stale, then load summary fields and current assignments. Card distribution calls server actions that route through `distributeResponsibilityCard()` and preserve stable persisted lane keys.
 6. Other client components submit JSON to API route handlers.
 7. Route handlers validate with Zod contracts and call service/repository layers.
 8. Repositories persist through Prisma.
 9. Pages/components refresh or navigate after successful mutation.
 
-Card cover art flows from Library source templates into responsibility summaries as `sourceCoverAssetPath`. Deal, Your Deck, and Board all render from `responsibilityService.listOverview(session)` through `CardWorkspace`, so assignment movement and cover art stay consistent across tabs. Library and Deal represent the same source catalog; `templateId` is the stable card identity when present, and Board display is derived from assignment/categorization rather than duplicated card objects. The Board intentionally excludes the internal unassigned/dealable-pool bucket.
+Card cover art flows from Library source templates into responsibility summaries as `sourceCoverAssetPath`. Deal, Your Deck, and Board all render from `responsibilityService.listOverview(session)` through their own client entry plus shared card primitives, so assignment movement and cover art stay consistent without cross-shipping all three views. Library and Deal represent the same source catalog; `templateId` is the stable card identity when present, and Board display is derived from assignment/categorization rather than duplicated card objects. The Board intentionally excludes the internal unassigned/dealable-pool bucket.
+
+Generated page/auth backgrounds use local AVIF/WebP image sets with PNG fallback. Little Alex's Matter.js implementation is a desktop fine-pointer-only dynamic import; its runner pauses outside active motion and while the document is hidden.
 
 ## Verification Map
 
@@ -78,6 +80,7 @@ Card cover art flows from Library source templates into responsibility summaries
 - Board lane enum values are intentionally stable persisted keys; do not rename them without a dedicated compatibility migration.
 - The card-first UI depends on the compatibility mapping and dedupe helpers in `src/components/cards/card-state.ts`; update tests and docs if persisted lanes or catalog identity ever migrate.
 - Active household catalog responsibilities are protected by a partial `(householdId, templateId)` unique index. Migration/seed changes must preserve the distinction between duplicate rows for the same template and distinct source cards that happen to have similar titles.
+- Built-in catalog changes must bump `FAIRPLAY_SOURCE_VERSION`; otherwise current household markers intentionally skip reconciliation.
 - Some generated assets/prompts may reference retired surfaces: needs verification.
 - `docs/agents/tasks/` is useful history but very large and not a concise onboarding layer.
 - Full DB-backed behavior was verified locally after the Radar removal migration; production deployment should still run normal migration verification.

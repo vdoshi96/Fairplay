@@ -5,7 +5,7 @@ import { LoginSplashIllustration } from "./login-splash-illustration";
 
 describe("LoginSplashIllustration", () => {
   it("renders an accessible richer household garden scene", () => {
-    render(<LoginSplashIllustration />);
+    const { container } = render(<LoginSplashIllustration />);
 
     expect(
       screen.getByRole("img", { name: "Animated Fairplay household garden scene" })
@@ -18,6 +18,18 @@ describe("LoginSplashIllustration", () => {
     expect(screen.getByTestId("login-splash-image")).toHaveAttribute(
       "aria-hidden",
       "true"
+    );
+    expect(
+      container.querySelector('source[type="image/avif"][media]')
+    ).toHaveAttribute(
+      "srcset",
+      expect.stringContaining("login-household-garden-768.avif")
+    );
+    expect(
+      container.querySelector('source[type="image/webp"]:not([media])')
+    ).toHaveAttribute(
+      "srcset",
+      "/assets/fairplay/generated-ui/login-household-garden-1536.webp"
     );
   });
 
