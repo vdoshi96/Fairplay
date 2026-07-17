@@ -56,6 +56,14 @@ describe("OwnershipDetails", () => {
     await userEvent.type(screen.getByLabelText("Optional handoff note"), "Walk through the routine.");
     await userEvent.type(screen.getByLabelText("Review date"), "2026-08-01");
     await userEvent.click(screen.getByRole("button", { name: "Save ownership details" }));
+    const confirmation = await screen.findByRole("alertdialog", {
+      name: "Confirm ownership handoff?"
+    });
+    expect(confirmation).toHaveAccessibleDescription(
+      "The ownership will change, and the former owner will remain recorded as a helper."
+    );
+    expect(onSave).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Confirm handoff" }));
 
     await waitFor(() =>
       expect(onSave).toHaveBeenCalledWith({
@@ -92,6 +100,9 @@ describe("OwnershipDetails", () => {
       screen.getByRole("radio", { name: "Keep the former owner as a helper" })
     );
     await userEvent.click(screen.getByRole("button", { name: "Save ownership details" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Confirm handoff" })
+    );
     await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
 
     rerender(
@@ -197,6 +208,15 @@ describe("OwnershipDetails", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "Return card to Deal" })
     );
+    const confirmation = await screen.findByRole("alertdialog", {
+      name: "Return this card to Deal?"
+    });
+    expect(confirmation).toHaveAccessibleDescription(
+      "The card will return to Deal as unassigned, and the former ownership assignment will end."
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Confirm return to Deal" })
+    );
 
     await waitFor(() =>
       expect(onSave).toHaveBeenCalledWith({
@@ -209,6 +229,67 @@ describe("OwnershipDetails", () => {
       })
     );
     expect(screen.getByRole("status")).toHaveTextContent("Card returned to Deal.");
+  });
+
+  it("cancels an ownership handoff without saving and restores focus", async () => {
+    const onSave = vi.fn();
+    render(
+      <OwnershipDetails
+        currentAssignments={[
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+        ]}
+        expectedUpdatedAt="2026-05-04T12:00:00.000Z"
+        nextReviewAt={null}
+        onSave={onSave}
+        personas={personas}
+      />
+    );
+
+    await userEvent.selectOptions(screen.getByLabelText("Alex role"), "none");
+    await userEvent.selectOptions(screen.getByLabelText("Max role"), "accountable_owner");
+    await userEvent.click(screen.getByRole("radio", { name: "Replace the former owner" }));
+    const save = screen.getByRole("button", { name: "Save ownership details" });
+    await userEvent.click(save);
+    await screen.findByRole("alertdialog", { name: "Confirm ownership handoff?" });
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+      expect(save).toHaveFocus();
+    });
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("keeps a failed confirmed handoff error inside the active dialog", async () => {
+    const onSave = vi.fn().mockRejectedValue(new Error("save failed"));
+    render(
+      <OwnershipDetails
+        currentAssignments={[
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+        ]}
+        expectedUpdatedAt="2026-05-04T12:00:00.000Z"
+        nextReviewAt={null}
+        onSave={onSave}
+        personas={personas}
+      />
+    );
+
+    await userEvent.selectOptions(screen.getByLabelText("Alex role"), "none");
+    await userEvent.selectOptions(screen.getByLabelText("Max role"), "accountable_owner");
+    await userEvent.click(screen.getByRole("radio", { name: "Replace the former owner" }));
+    await userEvent.click(screen.getByRole("button", { name: "Save ownership details" }));
+    const confirmation = await screen.findByRole("alertdialog", {
+      name: "Confirm ownership handoff?"
+    });
+
+    await userEvent.click(screen.getByRole("button", { name: "Confirm handoff" }));
+
+    expect(
+      await screen.findByText("Unable to save the ownership agreement. Try again.")
+    ).toHaveAttribute("role", "alert");
+    expect(confirmation).toContainElement(screen.getByRole("alert"));
+    expect(confirmation).toBeVisible();
+    expect(screen.getByRole("button", { name: "Confirm handoff" })).toBeEnabled();
   });
 
   it("still requires an owner when a card starts without one", async () => {

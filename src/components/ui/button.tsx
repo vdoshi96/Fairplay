@@ -1,15 +1,18 @@
-import type { ButtonHTMLAttributes } from "react";
+import { forwardRef, type ButtonHTMLAttributes } from "react";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "ghost";
 };
 
-export function Button({
-  className,
-  type = "button",
-  variant = "secondary",
-  ...props
-}: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  {
+    className,
+    type = "button",
+    variant = "secondary",
+    ...props
+  },
+  ref
+) {
   return (
     <button
       {...props}
@@ -28,7 +31,8 @@ export function Button({
       ]
         .filter(Boolean)
         .join(" ")}
+      ref={ref}
       type={type}
     />
   );
-}
+});

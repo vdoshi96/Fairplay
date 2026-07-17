@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { PersonaSummary } from "@/contracts/personas";
 import type { ResponsibilitySummary } from "@/contracts/responsibilities";
@@ -62,7 +62,38 @@ function dispatchPointerEvent(
   return event;
 }
 
+function openAvailableCards() {
+  const availableCards = screen.getByTestId("distribution-card-list");
+  const toggle = within(availableCards).getByRole("button", {
+    name: /^Show \d+$/
+  });
+
+  fireEvent.click(toggle);
+  return availableCards;
+}
+
+function stubMedia({ reducedMotion = false }: { reducedMotion?: boolean } = {}) {
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn((query: string) => ({
+      addEventListener: vi.fn(),
+      addListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+      matches:
+        query === "(prefers-reduced-motion: reduce)" ? reducedMotion : false,
+      media: query,
+      onchange: null,
+      removeEventListener: vi.fn(),
+      removeListener: vi.fn()
+    }))
+  );
+}
+
 describe("CardWorkspace", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("shows the distribution empty state when no deck cards remain", () => {
     render(
       <CardWorkspace
@@ -149,9 +180,11 @@ describe("CardWorkspace", () => {
     expect(
       screen.getByText("School lunch -> Alex")
     ).toBeVisible();
-    expect(
-      screen.getByText("No more cards to deal. Generate more cards when ready.")
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(
+        screen.getByText("No more cards to deal. Generate more cards when ready.")
+      ).toBeVisible()
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Undo last assignment" }));
 
@@ -166,7 +199,7 @@ describe("CardWorkspace", () => {
       .not.toBeInTheDocument();
   });
 
-  it("keeps the active card available while its move is still pending", async () => {
+  it("reveals the next card immediately while the prior move is pending", async () => {
     let resolveMove: (() => void) | undefined;
     const onDistribute = vi.fn(
       () =>
@@ -178,7 +211,14 @@ describe("CardWorkspace", () => {
     render(
       <CardWorkspace
         onDistribute={onDistribute}
-        responsibilities={[card()]}
+        responsibilities={[
+          card({ title: "School lunch", boardSortOrder: 0 }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440001",
+            title: "Bills",
+            boardSortOrder: 1
+          })
+        ]}
         selectedPersona={selectedPersona}
         view="distribute"
       />
@@ -187,8 +227,12 @@ describe("CardWorkspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Alex" }));
 
     await waitFor(() => expect(onDistribute).toHaveBeenCalled());
-    expect(screen.getByRole("button", { name: "School lunch" })).toBeVisible();
-    expect(screen.getByText("Moving...")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Bills" })).toBeVisible();
+    expect(screen.getByTestId("deal-outgoing-card")).toHaveAttribute(
+      "data-direction",
+      "alex"
+    );
+    expect(screen.getByText("Moving...")).toBeInTheDocument();
     expect(
       screen.queryByText("No more cards to deal. Generate more cards when ready.")
     ).not.toBeInTheDocument();
@@ -196,9 +240,167 @@ describe("CardWorkspace", () => {
     resolveMove?.();
 
     await waitFor(() =>
-      expect(
-        screen.getByText("No more cards to deal. Generate more cards when ready.")
-      ).toBeVisible()
+      expect(screen.getByRole("button", { name: "Alex" })).toBeEnabled()
+    );
+  });
+
+  it("restores the exact selected card and catalog order when an optimistic move fails", async () => {
+    let rejectMove: ((error: Error) => void) | undefined;
+    const onDistribute = vi.fn(
+      () =>
+        new Promise<void>((_resolve, reject) => {
+          rejectMove = reject;
+        })
+    );
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({ title: "Lunch", boardSortOrder: 0 }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440001",
+            title: "Bills",
+            boardSortOrder: 1
+          }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440002",
+            title: "Laundry",
+            boardSortOrder: 2
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const availableCards = openAvailableCards();
+    fireEvent.click(
+      within(availableCards).getByRole("button", { name: /Bills/i })
+    );
+    const orderBefore = within(availableCards)
+      .getAllByTestId("available-card-row")
+      .map((row) => row.textContent);
+
+    fireEvent.click(screen.getByRole("button", { name: "Max" }));
+
+    expect(screen.getByRole("button", { name: "Laundry" })).toBeVisible();
+    rejectMove?.(new Error("save failed"));
+
+    expect(
+      await screen.findByRole("alert")
+    ).toHaveTextContent("Bills could not be moved. It is back in the same place.");
+    expect(screen.getByRole("button", { name: "Bills" })).toBeVisible();
+    expect(
+      within(availableCards)
+        .getByRole("button", { name: /Bills/i })
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(availableCards)
+        .getAllByTestId("available-card-row")
+        .map((row) => row.textContent)
+    ).toEqual(orderBefore);
+  });
+
+  it("locks Deal search and catalog selection until a pending move can roll back", async () => {
+    let rejectMove: ((error: Error) => void) | undefined;
+    const onDistribute = vi.fn(
+      () =>
+        new Promise<void>((_resolve, reject) => {
+          rejectMove = reject;
+        })
+    );
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({ title: "Lunch", boardSortOrder: 0 }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440001",
+            title: "Bills",
+            boardSortOrder: 1
+          }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440002",
+            title: "Laundry",
+            boardSortOrder: 2
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const availableCards = openAvailableCards();
+    fireEvent.click(
+      within(availableCards).getByRole("button", { name: /Bills/i })
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Max" }));
+
+    const search = screen.getByRole("searchbox", { name: /search cards/i });
+    const lunchRow = within(availableCards).getByRole("button", {
+      name: /Lunch/i
+    });
+    const browserToggle = within(availableCards).getByRole("button", {
+      name: "Hide 2"
+    });
+    expect(search).toBeDisabled();
+    expect(lunchRow).toBeDisabled();
+    expect(browserToggle).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Laundry" })).toBeVisible();
+
+    fireEvent.change(search, { target: { value: "Lunch" } });
+    fireEvent.click(lunchRow);
+    fireEvent.click(browserToggle);
+
+    expect(screen.getByRole("button", { name: "Laundry" })).toBeVisible();
+    rejectMove?.(new Error("save failed"));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Bills could not be moved. It is back in the same place."
+    );
+    expect(search).toBeEnabled();
+    expect(search).toHaveValue("");
+    expect(screen.getByRole("button", { name: "Bills" })).toBeVisible();
+    expect(
+      within(availableCards).getByRole("button", { name: /Bills/i })
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("changes Deal state without directional animation in reduced-motion mode", async () => {
+    stubMedia({ reducedMotion: true });
+    let resolveMove: (() => void) | undefined;
+    const onDistribute = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveMove = resolve;
+        })
+    );
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({ title: "Lunch", boardSortOrder: 0 }),
+          card({
+            id: "550e8400-e29b-41d4-a716-446655440001",
+            title: "Bills",
+            boardSortOrder: 1
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Alex" }));
+
+    expect(screen.getByRole("button", { name: "Bills" })).toBeVisible();
+    expect(screen.queryByTestId("deal-outgoing-card")).not.toBeInTheDocument();
+    resolveMove?.();
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Alex" })).toBeEnabled()
     );
   });
 
@@ -222,7 +424,7 @@ describe("CardWorkspace", () => {
       />
     );
 
-    const availableCards = screen.getByTestId("distribution-card-list");
+    const availableCards = openAvailableCards();
     expect(within(availableCards).getByRole("button", { name: /Lunch/i }))
       .toBeVisible();
     expect(within(availableCards).getByRole("button", { name: /Bills/i }))
@@ -281,8 +483,9 @@ describe("CardWorkspace", () => {
         "Laundry reset was added to Deal and selected."
       );
     });
+    const availableCards = openAvailableCards();
     expect(
-      within(screen.getByTestId("distribution-card-list")).getByRole("button", {
+      within(availableCards).getByRole("button", {
         name: /Laundry reset/i
       })
     ).toHaveAttribute("aria-pressed", "true");
@@ -290,7 +493,7 @@ describe("CardWorkspace", () => {
     expect(window.location.search).toBe("");
 
     fireEvent.click(
-      within(screen.getByTestId("distribution-card-list")).getByRole("button", {
+      within(availableCards).getByRole("button", {
         name: /Lunch/i
       })
     );
@@ -381,7 +584,7 @@ describe("CardWorkspace", () => {
       />
     );
 
-    const availableCards = screen.getByTestId("distribution-card-list");
+    const availableCards = openAvailableCards();
 
     expect(
       within(availableCards).getAllByRole("button", {
@@ -393,6 +596,53 @@ describe("CardWorkspace", () => {
         name: /Adult Friendships \(Max\)/i
       })
     ).toBeVisible();
+  });
+
+  it("keeps the Available Cards DOM bounded while the full catalog stays searchable", async () => {
+    const responsibilities = Array.from({ length: 45 }, (_, index) =>
+      card({
+        boardSortOrder: index,
+        id: `550e8400-e29b-41d4-a716-${String(446655440000 + index).padStart(12, "0")}`,
+        title: `Catalog card ${index + 1}`
+      })
+    );
+
+    render(
+      <CardWorkspace
+        responsibilities={responsibilities}
+        selectedPersona={selectedPersona}
+        view="distribute"
+      />
+    );
+
+    const availableCards = screen.getByTestId("distribution-card-list");
+    expect(within(availableCards).queryAllByTestId("available-card-row"))
+      .toHaveLength(0);
+
+    fireEvent.click(
+      within(availableCards).getByRole("button", { name: "Show 45" })
+    );
+    expect(within(availableCards).getAllByTestId("available-card-row"))
+      .toHaveLength(20);
+    expect(within(availableCards).queryByText("Catalog card 21"))
+      .not.toBeInTheDocument();
+
+    fireEvent.click(
+      within(availableCards).getByRole("button", { name: "Next cards" })
+    );
+    expect(within(availableCards).getAllByTestId("available-card-row"))
+      .toHaveLength(20);
+    expect(within(availableCards).getByText("Catalog card 21")).toBeVisible();
+
+    fireEvent.change(screen.getByRole("searchbox", { name: /search cards/i }), {
+      target: { value: "Catalog card 45" }
+    });
+
+    await waitFor(() =>
+      expect(within(availableCards).getAllByTestId("available-card-row"))
+        .toHaveLength(1)
+    );
+    expect(screen.getByRole("heading", { name: "Catalog card 45" })).toBeVisible();
   });
 
   it("supports arrow keys as desktop gesture fallbacks", async () => {
@@ -881,7 +1131,8 @@ describe("CardWorkspace", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Remove from board" }));
+    fireEvent.click(screen.getByRole("button", { name: "Move Lunch" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Return to Deal" }));
 
     await waitFor(() =>
       expect(onDistribute).toHaveBeenCalledWith({
@@ -889,6 +1140,157 @@ describe("CardWorkspace", () => {
         responsibilityId: "550e8400-e29b-41d4-a716-446655440020"
       })
     );
+  });
+
+  it("lets the Move menu escape the card while media content stays clipped", () => {
+    render(
+      <CardWorkspace
+        onDistribute={vi.fn().mockResolvedValue(undefined)}
+        responsibilities={[
+          card({ title: "Lunch", boardLane: "player_1" })
+        ]}
+        selectedPersona={selectedPersona}
+        view="board"
+      />
+    );
+
+    const moveButton = screen.getByRole("button", { name: "Move Lunch" });
+    const compactCard = moveButton.closest("article");
+    expect(compactCard).toHaveClass("overflow-visible");
+    expect(
+      compactCard?.querySelector("[data-testid='compact-card-content']")
+    ).toHaveClass("overflow-hidden");
+
+    fireEvent.click(moveButton);
+    expect(screen.getByRole("menu", { name: "Move Lunch" })).toHaveClass(
+      "absolute"
+    );
+  });
+
+  it("shows card-level pending and error feedback for Board moves", async () => {
+    let rejectMove: ((error: Error) => void) | undefined;
+    const onDistribute = vi.fn(
+      () =>
+        new Promise<void>((_resolve, reject) => {
+          rejectMove = reject;
+        })
+    );
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({ title: "Lunch", boardLane: "player_1" })
+        ]}
+        selectedPersona={selectedPersona}
+        view="board"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Move Lunch" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Max" }));
+
+    const moveButton = screen.getByRole("button", { name: "Move Lunch" });
+    expect(moveButton).toHaveFocus();
+    expect(moveButton).toHaveAttribute("aria-disabled", "true");
+    expect(moveButton).toHaveTextContent("Moving...");
+    rejectMove?.(new Error("save failed"));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Lunch could not be moved. Nothing changed."
+    );
+    expect(moveButton).toHaveAttribute("aria-disabled", "false");
+    expect(moveButton).toHaveFocus();
+  });
+
+  it("offers Undo for the last successful Board move", async () => {
+    const onDistribute = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({ title: "Lunch", boardLane: "player_1" })
+        ]}
+        selectedPersona={selectedPersona}
+        view="board"
+      />
+    );
+
+    const moveButton = screen.getByRole("button", { name: "Move Lunch" });
+    fireEvent.click(moveButton);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Max" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Lunch moved to Max."
+    );
+    const undoButton = screen.getByRole("button", { name: "Undo last move" });
+    expect(undoButton).toHaveFocus();
+    fireEvent.click(undoButton);
+
+    await waitFor(() =>
+      expect(onDistribute).toHaveBeenLastCalledWith({
+        bucket: "alex",
+        responsibilityId: "550e8400-e29b-41d4-a716-446655440000"
+      })
+    );
+    expect(screen.queryByRole("button", { name: "Undo last move" }))
+      .not.toBeInTheDocument();
+    const undoStatus = screen.getByRole("status");
+    expect(undoStatus).toHaveTextContent("Lunch restored to Alex.");
+    await waitFor(() => expect(undoStatus).toHaveFocus());
+  });
+
+  it("focuses the persistent Undo action after a successful server refresh moves the card", async () => {
+    let resolveMove: (() => void) | undefined;
+    const onDistribute = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveMove = resolve;
+        })
+    );
+    const props = {
+      onDistribute,
+      selectedPersona,
+      view: "board" as const
+    };
+    const { rerender } = render(
+      <CardWorkspace
+        {...props}
+        responsibilities={[card({ title: "Lunch", boardLane: "player_1" })]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Move Lunch" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Max" }));
+    await waitFor(() => expect(onDistribute).toHaveBeenCalledOnce());
+
+    rerender(
+      <CardWorkspace
+        {...props}
+        responsibilities={[card({ title: "Lunch", boardLane: "player_2" })]}
+      />
+    );
+    resolveMove?.();
+
+    const undoButton = await screen.findByRole("button", {
+      name: "Undo last move"
+    });
+    await waitFor(() => expect(undoButton).toHaveFocus());
+  });
+
+  it("keeps empty Board lanes compact on mobile", () => {
+    render(
+      <CardWorkspace
+        responsibilities={[]}
+        selectedPersona={selectedPersona}
+        view="board"
+      />
+    );
+
+    const alexEmpty = screen.getByTestId("empty-board-lane-alex");
+    expect(alexEmpty).not.toHaveClass("min-h-24");
+    expect(alexEmpty.closest("details")?.className).not.toContain("lg:min-h");
   });
 
   it("routes owned board cards to ownership details instead of a quick move", () => {
@@ -922,14 +1324,19 @@ describe("CardWorkspace", () => {
       />
     );
 
+    const moveButton = screen.getByRole("button", {
+      name: "Move Shared school plan"
+    });
+    expect(moveButton).toHaveAttribute("aria-haspopup", "menu");
+    fireEvent.click(moveButton);
     expect(
-      screen.getByRole("link", { name: "Move with ownership details" })
+      screen.getByRole("menuitem", { name: "Update ownership details" })
     ).toHaveAttribute(
       "href",
       `/app/responsibilities/${responsibilityId}#ownership-details`
     );
     expect(
-      screen.queryByRole("button", { name: "Remove from board" })
+      screen.queryByRole("menuitem", { name: "Return to Deal" })
     ).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Max" })).not.toBeInTheDocument();
     expect(onDistribute).not.toHaveBeenCalled();

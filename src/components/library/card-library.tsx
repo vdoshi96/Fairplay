@@ -104,6 +104,7 @@ export function CardLibrary({
         className="flex flex-wrap gap-2 pb-1"
       >
         <button
+          aria-pressed={selectedLabel === "all"}
           className={filterButtonClass(selectedLabel === "all")}
           onClick={() => setSelectedLabel("all")}
           type="button"
@@ -112,6 +113,7 @@ export function CardLibrary({
         </button>
         {CARD_TEMPLATE_LABELS.map((label) => (
           <button
+            aria-pressed={selectedLabel === label}
             className={filterButtonClass(selectedLabel === label)}
             key={label}
             onClick={() => setSelectedLabel(label)}
@@ -252,7 +254,7 @@ function LibraryCardBack({ template }: { template: LibraryCardTemplate }) {
 
 function filterButtonClass(active: boolean) {
   return [
-    "inline-flex min-h-10 shrink-0 items-center rounded-[8px] border px-3 text-[13px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
+    "inline-flex min-h-11 shrink-0 items-center rounded-[8px] border px-3 text-[13px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
     active
       ? "border-fp-primary bg-fp-primary text-fp-on-primary"
       : "border-fp-line bg-[var(--fp-surface)] text-fp-ink hover:bg-[var(--fp-surface-strong)]"

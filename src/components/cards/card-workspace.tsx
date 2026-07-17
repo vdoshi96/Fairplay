@@ -9,11 +9,14 @@ import {
   ArrowUp,
   Archive,
   CheckCircle2,
+  ChevronDown,
   Search,
-  Sparkles
+  Sparkles,
+  Undo2
 } from "lucide-react";
 import {
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -100,12 +103,29 @@ type LastDealAction = {
   card: CardWorkspaceCard;
 };
 
+type OutgoingDealCard = {
+  bucket: DealActionBucket;
+  card: CardWorkspaceCard;
+  exiting: boolean;
+  flipped: boolean;
+};
+
+type LastBoardMove = {
+  card: CardWorkspaceCard;
+  fromBucket: PersistedBoardSection;
+  toBucket: CardDistributionBucket;
+};
+
 const TOUCH_SCROLL_DISTANCE_PX = 12;
 const TOUCH_DRAG_LOCK_DISTANCE_PX = 18;
 const HORIZONTAL_SWIPE_DISTANCE_PX = 112;
 const VERTICAL_SWIPE_DISTANCE_PX = 176;
 const HORIZONTAL_DOMINANCE_RATIO = 1.25;
 const VERTICAL_DOMINANCE_RATIO = 1.45;
+const DEAL_EXIT_DURATION_MS = 200;
+const AVAILABLE_CARD_WINDOW_SIZE = 20;
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const DESKTOP_CARD_BROWSER_QUERY = "(min-width: 1024px)";
 
 export function CardWorkspace({
   addedToDeal = false,
@@ -164,6 +184,7 @@ function DistributeView({
   const [drag, setDrag] = useState<DragState | null>(null);
   const [flippedId, setFlippedId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [outgoingCard, setOutgoingCard] = useState<OutgoingDealCard | null>(null);
   const [lastAction, setLastAction] = useState<LastDealAction | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -173,6 +194,7 @@ function DistributeView({
   );
   const dragRef = useRef<DragState | null>(null);
   const deckRef = useRef<HTMLDivElement | null>(null);
+  const prefersReducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
   const allDeck = useMemo(
     () =>
       getDistributableCards(responsibilities).filter(
@@ -190,6 +212,27 @@ function DistributeView({
   const addedCard = showAddedStatus && topCard?.id === initialSelectedId
     ? allDeck.find((card) => card.id === initialSelectedId) ?? null
     : null;
+  const outgoingCardId = outgoingCard?.card.id ?? null;
+
+  useEffect(() => {
+    if (!outgoingCardId) {
+      return undefined;
+    }
+
+    if (prefersReducedMotion) {
+      setOutgoingCard(null);
+      return undefined;
+    }
+
+    setOutgoingCard((current) =>
+      current ? { ...current, exiting: true } : current
+    );
+    const timeout = window.setTimeout(() => {
+      setOutgoingCard(null);
+    }, DEAL_EXIT_DURATION_MS);
+
+    return () => window.clearTimeout(timeout);
+  }, [outgoingCardId, prefersReducedMotion]);
 
   useEffect(() => {
     if (!addedToDeal) {
@@ -208,11 +251,30 @@ function DistributeView({
     }
 
     const card = topCard;
+    const cardIndex = deck.findIndex((candidate) => candidate.id === card.id);
+    const nextCard =
+      deck.length > 1
+        ? deck[(cardIndex + 1 + deck.length) % deck.length] ?? null
+        : null;
+    const wasFlipped = flippedId === card.id;
     setShowAddedStatus(false);
     setPendingId(card.id);
     setError(null);
     dragRef.current = null;
     setDrag(null);
+    setRemovedIds((current) => new Set(current).add(card.id));
+    setSelectedId(nextCard?.id ?? null);
+    setFlippedId((current) => (current === card.id ? null : current));
+    setOutgoingCard(
+      prefersReducedMotion
+        ? null
+        : {
+            bucket,
+            card,
+            exiting: false,
+            flipped: wasFlipped
+          }
+    );
 
     try {
       await onDistribute?.({
@@ -220,11 +282,16 @@ function DistributeView({
         responsibilityId: card.id
       });
       setLastAction({ bucket, card });
-      setRemovedIds((current) => new Set(current).add(card.id));
-      setSelectedId((current) => (current === card.id ? null : current));
-      setFlippedId((current) => (current === card.id ? null : current));
     } catch {
-      setError("That card could not be moved. Try again.");
+      setOutgoingCard(null);
+      setRemovedIds((current) => {
+        const next = new Set(current);
+        next.delete(card.id);
+        return next;
+      });
+      setSelectedId(card.id);
+      setFlippedId(wasFlipped ? card.id : null);
+      setError(`${card.title} could not be moved. It is back in the same place.`);
     } finally {
       setPendingId(null);
     }
@@ -238,6 +305,7 @@ function DistributeView({
     const card = lastAction.card;
     setPendingId(card.id);
     setError(null);
+    setOutgoingCard(null);
 
     try {
       await onDistribute?.({
@@ -398,8 +466,13 @@ function DistributeView({
           />
           <input
             aria-label="Search cards to deal"
-            className="fp-input w-full py-3 pl-10 pr-3 text-[16px] font-semibold"
+            className="fp-input w-full py-3 pl-10 pr-3 text-[16px] font-semibold disabled:cursor-wait disabled:opacity-60"
+            disabled={pendingId !== null}
             onChange={(event) => {
+              if (pendingId) {
+                return;
+              }
+
               setQuery(event.target.value);
               setShowAddedStatus(false);
             }}
@@ -413,9 +486,9 @@ function DistributeView({
         </span>
       </label>
 
-      {topCard ? <DealGestureInstructions /> : null}
+      {topCard || outgoingCard ? <DealGestureInstructions /> : null}
 
-      {topCard ? (
+      {topCard || outgoingCard ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
           <div
             aria-label="Responsibility deal deck"
@@ -427,29 +500,60 @@ function DistributeView({
           >
             <div aria-hidden className="absolute inset-x-8 top-10 h-[24rem] rounded-[8px] border border-fp-line bg-[var(--fp-card-muted)] shadow-[var(--fp-shadow-soft)] rotate-[-3deg]" />
             <div aria-hidden className="absolute inset-x-6 top-8 h-[24rem] rounded-[8px] border border-fp-line bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)] rotate-[2deg]" />
-            <SwipeCard
-              card={topCard}
-              flipped={flippedId === topCard.id}
-              onFlip={() =>
-                setFlippedId((current) => (current === topCard.id ? null : topCard.id))
-              }
-              onPointerCancel={handlePointerEnd}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerEnd}
-              pending={pendingId === topCard.id}
-              previewBucket={previewBucket}
-              style={styleForDrag(dragOffset)}
-            />
+            {topCard ? (
+              <SwipeCard
+                card={topCard}
+                flipped={flippedId === topCard.id}
+                onFlip={() =>
+                  setFlippedId((current) =>
+                    current === topCard.id ? null : topCard.id
+                  )
+                }
+                onPointerCancel={handlePointerEnd}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerEnd}
+                pending={false}
+                previewBucket={previewBucket}
+                style={styleForDrag(dragOffset)}
+              />
+            ) : null}
+            {outgoingCard ? (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 z-20 grid place-items-center p-3"
+                data-direction={outgoingCard.bucket}
+                data-testid="deal-outgoing-card"
+                style={styleForDealExit(outgoingCard)}
+              >
+                <SwipeCard
+                  card={outgoingCard.card}
+                  decorative
+                  flipped={outgoingCard.flipped}
+                  onFlip={() => undefined}
+                  onPointerCancel={() => undefined}
+                  onPointerDown={() => undefined}
+                  onPointerMove={() => undefined}
+                  onPointerUp={() => undefined}
+                  pending
+                  previewBucket={outgoingCard.bucket}
+                />
+              </div>
+            ) : null}
           </div>
           <AvailableCardList
             cards={deck}
+            interactionDisabled={pendingId !== null}
             onSelect={(cardId) => {
+              if (pendingId) {
+                return;
+              }
+
               setSelectedId(cardId);
               setFlippedId(null);
               setShowAddedStatus(false);
             }}
-            selectedId={topCard.id}
+            selectedId={topCard?.id ?? null}
           />
         </div>
       ) : hasSearch && allDeck.length > 0 ? (
@@ -464,6 +568,11 @@ function DistributeView({
       )}
 
       <div className="grid gap-2" aria-label="Deal buttons">
+        <p aria-live="polite" className="sr-only">
+          {pendingId
+            ? `Moving ${responsibilities.find((card) => card.id === pendingId)?.title ?? "card"}. The next card is ready.`
+            : ""}
+        </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {(["alex", "max", "savedForLater", "notApplicable"] as const).map(
             (bucket) => (
@@ -488,7 +597,7 @@ function DistributeView({
               {lastAction.card.title} -&gt; {CARD_BUCKET_LABELS[lastAction.bucket]}
             </span>
             <button
-              className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:cursor-not-allowed disabled:opacity-60"
+              className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:cursor-not-allowed disabled:opacity-60"
               disabled={pendingId !== null}
               onClick={() => void undoLastAction()}
               type="button"
@@ -567,8 +676,9 @@ function YourCardsView({
             >
               {cadenceOptions.map((cadence) => (
                 <button
+                  aria-pressed={cadenceFilter === cadence}
                   className={[
-                    "min-h-10 rounded-[8px] border px-3 text-[13px] font-bold",
+                    "min-h-11 rounded-[8px] border px-3 text-[13px] font-bold",
                     cadenceFilter === cadence
                       ? "border-fp-primary bg-fp-primary text-fp-on-primary"
                       : "border-fp-line bg-[var(--fp-surface)] text-fp-ink"
@@ -639,6 +749,15 @@ function BoardView({
   responsibilities,
   workMap
 }: Pick<CardWorkspaceProps, "onDistribute" | "responsibilities" | "workMap">) {
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [cardError, setCardError] = useState<{
+    cardId: string;
+    message: string;
+  } | null>(null);
+  const [lastMove, setLastMove] = useState<LastBoardMove | null>(null);
+  const [undoMessage, setUndoMessage] = useState<string | null>(null);
+  const undoButtonRef = useRef<HTMLButtonElement | null>(null);
+  const undoStatusRef = useRef<HTMLDivElement | null>(null);
   const groups = groupCardsByBucket(responsibilities);
   const sharedCards = getSharedOwnerCards(responsibilities);
   const sharedCardIds = new Set(sharedCards.map((card) => card.id));
@@ -647,6 +766,74 @@ function BoardView({
     "savedForLater",
     "notApplicable"
   ];
+
+  useEffect(() => {
+    if (pendingId !== null) {
+      return;
+    }
+
+    if (lastMove) {
+      undoButtonRef.current?.focus();
+    } else if (undoMessage) {
+      undoStatusRef.current?.focus();
+    }
+  }, [lastMove, pendingId, undoMessage]);
+
+  async function moveCard(
+    card: CardWorkspaceCard,
+    fromBucket: PersistedBoardSection,
+    toBucket: CardDistributionBucket
+  ) {
+    if (!onDistribute || pendingId) {
+      return;
+    }
+
+    setPendingId(card.id);
+    setCardError(null);
+    setUndoMessage(null);
+
+    try {
+      await onDistribute({
+        bucket: toBucket,
+        responsibilityId: card.id
+      });
+      setLastMove({ card, fromBucket, toBucket });
+    } catch {
+      setCardError({
+        cardId: card.id,
+        message: `${card.title} could not be moved. Nothing changed.`
+      });
+    } finally {
+      setPendingId(null);
+    }
+  }
+
+  async function undoLastMove() {
+    if (!lastMove || !onDistribute || pendingId) {
+      return;
+    }
+
+    setPendingId(lastMove.card.id);
+    setCardError(null);
+
+    try {
+      await onDistribute({
+        bucket: lastMove.fromBucket,
+        responsibilityId: lastMove.card.id
+      });
+      setUndoMessage(
+        `${lastMove.card.title} restored to ${CARD_BUCKET_LABELS[lastMove.fromBucket]}.`
+      );
+      setLastMove(null);
+    } catch {
+      setCardError({
+        cardId: lastMove.card.id,
+        message: `${lastMove.card.title} could not be restored. Try Undo again.`
+      });
+    } finally {
+      setPendingId(null);
+    }
+  }
 
   return (
     <section className="grid gap-3 lg:gap-4">
@@ -669,8 +856,10 @@ function BoardView({
         data-testid="card-board"
       >
         <BoardLane
+          cardError={cardError}
           cards={sharedCards}
-          onDistribute={onDistribute}
+          onMove={onDistribute ? moveCard : undefined}
+          pendingId={pendingId}
           priority="shared"
           section="shared"
         />
@@ -683,11 +872,13 @@ function BoardView({
           >
             {primarySections.map((section) => (
               <BoardLane
+                cardError={cardError}
                 cards={groups[section].filter(
                   (card) => !sharedCardIds.has(card.id)
                 )}
                 key={section}
-                onDistribute={onDistribute}
+                onMove={onDistribute ? moveCard : undefined}
+                pendingId={pendingId}
                 priority="primary"
                 section={section}
               />
@@ -699,9 +890,11 @@ function BoardView({
           >
             {secondarySections.map((section) => (
               <BoardLane
+                cardError={cardError}
                 cards={groups[section]}
                 key={section}
-                onDistribute={onDistribute}
+                onMove={onDistribute ? moveCard : undefined}
+                pendingId={pendingId}
                 priority="secondary"
                 section={section}
               />
@@ -709,6 +902,32 @@ function BoardView({
           </div>
         </div>
       </div>
+      {lastMove || undoMessage ? (
+        <div
+          className="flex flex-wrap items-center justify-between gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] font-bold text-fp-muted-ink"
+          ref={undoStatusRef}
+          role="status"
+          tabIndex={lastMove ? undefined : -1}
+        >
+          <span>
+            {lastMove
+              ? `${lastMove.card.title} moved to ${CARD_BUCKET_LABELS[lastMove.toBucket]}.`
+              : undoMessage}
+          </span>
+          {lastMove ? (
+            <button
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={pendingId !== null}
+              onClick={() => void undoLastMove()}
+              ref={undoButtonRef}
+              type="button"
+            >
+              <Undo2 aria-hidden className="h-4 w-4" />
+              Undo last move
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -741,13 +960,21 @@ const BOARD_SECTION_TONES: Record<BoardSectionKey, string> = {
 };
 
 function BoardLane({
+  cardError,
   cards,
-  onDistribute,
+  onMove,
+  pendingId,
   priority,
   section
 }: {
+  cardError: { cardId: string; message: string } | null;
   cards: CardWorkspaceCard[];
-  onDistribute?: (move: CardDistributionMove) => Promise<void> | void;
+  onMove?: (
+    card: CardWorkspaceCard,
+    fromBucket: PersistedBoardSection,
+    toBucket: CardDistributionBucket
+  ) => Promise<void>;
+  pendingId: string | null;
   priority: "primary" | "secondary" | "shared";
   section: BoardSectionKey;
 }) {
@@ -757,7 +984,9 @@ function BoardLane({
       data-testid={section === "shared" ? "shared-board-lane" : undefined}
       className={[
         "grid min-w-0 content-start rounded-[8px] border shadow-[var(--fp-shadow-soft)] [&>summary::-webkit-details-marker]:hidden",
-        priority === "primary"
+        cards.length === 0
+          ? "gap-2 p-3"
+          : priority === "primary"
           ? "gap-4 p-3 sm:p-4 lg:min-h-[24rem] xl:min-h-[30rem]"
           : "gap-3 p-3 lg:shadow-[var(--fp-shadow-soft)]",
         BOARD_SECTION_TONES[section]
@@ -788,12 +1017,23 @@ function BoardLane({
           <CompactCard
             bucket={section === "shared" ? bucketForCard(card) : section}
             card={card}
+            error={cardError?.cardId === card.id ? cardError.message : null}
             key={card.id}
-            onDistribute={onDistribute}
+            onMove={
+              onMove
+                ? section === "shared"
+                  ? async () => undefined
+                  : (toBucket) => onMove(card, section, toBucket)
+                : undefined
+            }
+            pending={pendingId === card.id}
           />
         ))}
         {cards.length === 0 ? (
-          <p className="min-h-24 rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] p-3 text-[13px] font-semibold leading-5 text-fp-muted-ink">
+          <p
+            className="rounded-[8px] border border-dashed border-fp-line bg-[var(--fp-surface-strong)] px-3 py-2 text-[13px] font-semibold leading-5 text-fp-muted-ink sm:min-h-16 sm:py-3"
+            data-testid={`empty-board-lane-${section}`}
+          >
             Empty
           </p>
         ) : null}
@@ -804,6 +1044,7 @@ function BoardLane({
 
 function SwipeCard({
   card,
+  decorative = false,
   flipped,
   onFlip,
   pending,
@@ -812,6 +1053,7 @@ function SwipeCard({
   ...handlers
 }: {
   card: CardWorkspaceCard;
+  decorative?: boolean;
   flipped: boolean;
   onFlip: () => void;
   onPointerCancel: (event: PointerEvent<HTMLDivElement>) => void;
@@ -824,20 +1066,25 @@ function SwipeCard({
 }) {
   return (
     <article
-      {...handlers}
-      aria-label={card.title}
-      aria-pressed={flipped}
+      {...(decorative ? {} : handlers)}
+      aria-hidden={decorative || undefined}
+      aria-label={decorative ? undefined : card.title}
+      aria-pressed={decorative ? undefined : flipped}
       className="relative z-10 grid aspect-[5/7] w-[min(82vw,23rem)] touch-pan-y select-none content-stretch overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-elevated)] transition-transform duration-150 will-change-transform"
-      onClick={onFlip}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onFlip();
-        }
-      }}
-      role="button"
+      onClick={decorative ? undefined : onFlip}
+      onKeyDown={
+        decorative
+          ? undefined
+          : (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onFlip();
+              }
+            }
+      }
+      role={decorative ? undefined : "button"}
       style={style}
-      tabIndex={0}
+      tabIndex={decorative ? -1 : 0}
     >
       {flipped ? (
         <CardBack card={card} className="p-5" />
@@ -1045,145 +1292,345 @@ function CardBack({
 function CompactCard({
   bucket,
   card,
-  onDistribute
+  error,
+  onMove,
+  pending
 }: {
   bucket: CardBucket;
   card: CardWorkspaceCard;
-  onDistribute?: (move: CardDistributionMove) => Promise<void> | void;
+  error: string | null;
+  onMove?: (bucket: CardDistributionBucket) => Promise<void>;
+  pending: boolean;
 }) {
-  const moveBuckets = (["alex", "max", "savedForLater", "notApplicable"] as const).filter(
-    (candidate) => candidate !== bucket
-  );
   const hasActiveAssignments = card.currentAssignments.length > 0;
 
   return (
-    <article className="grid min-w-0 overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
-      <Link
-        className="grid min-h-[8.25rem] grid-cols-[5.25rem_minmax(0,1fr)] sm:grid-cols-[5.75rem_minmax(0,1fr)]"
-        href={`/app/responsibilities/${card.id}`}
+    <article className="grid min-w-0 overflow-visible rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
+      <div
+        className={[
+          "overflow-hidden",
+          onMove ? "rounded-t-[7px]" : "rounded-[7px]"
+        ].join(" ")}
+        data-testid="compact-card-content"
       >
-        <CardCoverImage
-          card={card}
-          className="min-h-0 border-r border-fp-line bg-fp-surface p-1.5"
-        />
-        <span className="grid min-w-0 content-start gap-2 p-3">
-          <span className="text-[16px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
-            {card.title}
+        <Link
+          className="grid min-h-[8.25rem] grid-cols-[5.25rem_minmax(0,1fr)] sm:grid-cols-[5.75rem_minmax(0,1fr)]"
+          href={`/app/responsibilities/${card.id}`}
+        >
+          <CardCoverImage
+            card={card}
+            className="min-h-0 border-r border-fp-line bg-fp-surface p-1.5"
+          />
+          <span className="grid min-w-0 content-start gap-2 p-3">
+            <span className="text-[16px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
+              {card.title}
+            </span>
+            <span className="line-clamp-2 text-[12px] font-semibold leading-5 text-fp-muted-ink">
+              {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
+            </span>
+            <span className="w-fit rounded-full border border-fp-line bg-[var(--fp-surface)] px-2.5 py-1 text-[11px] font-bold text-fp-muted-ink">
+              {card.cadence.replaceAll("_", " ")}
+            </span>
           </span>
-          <span className="line-clamp-2 text-[12px] font-semibold leading-5 text-fp-muted-ink">
-            {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
-          </span>
-          <span className="w-fit rounded-full border border-fp-line bg-[var(--fp-surface)] px-2.5 py-1 text-[11px] font-bold text-fp-muted-ink">
-            {card.cadence.replaceAll("_", " ")}
-          </span>
-        </span>
-      </Link>
-      {onDistribute ? (
-        <div className="grid gap-2 border-t border-fp-line bg-[var(--fp-surface-strong)] p-2">
-          {hasActiveAssignments ? (
-            <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-center text-[12px] font-bold text-fp-ink underline-offset-4 hover:underline"
-              href={`/app/responsibilities/${card.id}#ownership-details`}
+        </Link>
+      </div>
+      {onMove ? (
+        <div className="grid gap-2 rounded-b-[7px] border-t border-fp-line bg-[var(--fp-surface-strong)] p-2">
+          <CardMoveMenu
+            bucket={bucket}
+            card={card}
+            onMove={onMove}
+            ownershipOnly={hasActiveAssignments}
+            pending={pending}
+          />
+          {error ? (
+            <p
+              className="rounded-[8px] border border-fp-danger/40 bg-[var(--fp-surface)] p-2 text-[12px] font-bold leading-5 text-fp-danger"
+              role="alert"
             >
-              Move with ownership details
-            </Link>
-          ) : (
-            <>
-              {bucket !== "unassigned" ? (
-                <button
-                  className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
-                  onClick={() =>
-                    void onDistribute({
-                      bucket: "unassigned",
-                      responsibilityId: card.id
-                    })
-                  }
-                  type="button"
-                >
-                  Remove from board
-                </button>
-              ) : null}
-              <div className="grid grid-cols-2 gap-1">
-                {moveBuckets.map((nextBucket) => (
-                  <button
-                    className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
-                    key={nextBucket}
-                    onClick={() =>
-                      void onDistribute({
-                        bucket: nextBucket,
-                        responsibilityId: card.id
-                      })
-                    }
-                    type="button"
-                  >
-                    {CARD_BUCKET_LABELS[nextBucket]}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+              {error}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </article>
   );
 }
 
+function CardMoveMenu({
+  bucket,
+  card,
+  onMove,
+  ownershipOnly,
+  pending
+}: {
+  bucket: CardBucket;
+  card: CardWorkspaceCard;
+  onMove: (bucket: CardDistributionBucket) => Promise<void>;
+  ownershipOnly: boolean;
+  pending: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const menuId = useId();
+  const moveBuckets = (
+    ["unassigned", "alex", "max", "savedForLater", "notApplicable"] as const
+  ).filter((candidate) => candidate !== bucket);
+
+  useEffect(() => {
+    if (open) {
+      menuRef.current
+        ?.querySelector<HTMLElement>("[role='menuitem']")
+        ?.focus();
+    }
+  }, [open]);
+
+  function handleMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const items = Array.from(
+      menuRef.current?.querySelectorAll<HTMLElement>("[role='menuitem']") ?? []
+    );
+    const currentIndex = items.indexOf(document.activeElement as HTMLElement);
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setOpen(false);
+      buttonRef.current?.focus();
+      return;
+    }
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+      const nextIndex =
+        currentIndex < 0
+          ? 0
+          : (currentIndex + direction + items.length) % items.length;
+      items[nextIndex]?.focus();
+    }
+  }
+
+  return (
+    <div className="relative grid">
+      <button
+        aria-controls={menuId}
+        aria-disabled={pending}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label={`Move ${card.title}`}
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink aria-disabled:cursor-wait aria-disabled:opacity-60"
+        onClick={() => {
+          if (!pending) {
+            setOpen((current) => !current);
+          }
+        }}
+        ref={buttonRef}
+        type="button"
+      >
+        {pending ? "Moving..." : "Move"}
+        <ChevronDown aria-hidden className="h-4 w-4" />
+      </button>
+      {open ? (
+        <div
+          aria-label={`Move ${card.title}`}
+          className="absolute bottom-[calc(100%+0.25rem)] right-0 z-30 grid min-w-[13rem] gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-1 shadow-[var(--fp-shadow-elevated)]"
+          id={menuId}
+          onKeyDown={handleMenuKeyDown}
+          ref={menuRef}
+          role="menu"
+        >
+          {ownershipOnly ? (
+            <Link
+              className="inline-flex min-h-11 items-center rounded-[8px] px-3 text-[12px] font-bold text-fp-ink outline-none hover:bg-[var(--fp-surface)] focus:bg-[var(--fp-surface)]"
+              href={`/app/responsibilities/${card.id}#ownership-details`}
+              onClick={() => setOpen(false)}
+              role="menuitem"
+            >
+              Update ownership details
+            </Link>
+          ) : (
+            moveBuckets.map((nextBucket) => (
+              <button
+                className="min-h-11 rounded-[8px] px-3 text-left text-[12px] font-bold text-fp-ink outline-none hover:bg-[var(--fp-surface)] focus:bg-[var(--fp-surface)]"
+                key={nextBucket}
+                onClick={() => {
+                  setOpen(false);
+                  buttonRef.current?.focus();
+                  void onMove(nextBucket);
+                }}
+                role="menuitem"
+                type="button"
+              >
+                {nextBucket === "unassigned"
+                  ? "Return to Deal"
+                  : CARD_BUCKET_LABELS[nextBucket]}
+              </button>
+            ))
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function AvailableCardList({
   cards,
+  interactionDisabled,
   onSelect,
   selectedId
 }: {
   cards: CardWorkspaceCard[];
+  interactionDisabled: boolean;
   onSelect: (cardId: string) => void;
-  selectedId: string;
+  selectedId: string | null;
 }) {
+  const isDesktop = useMediaQuery(DESKTOP_CARD_BROWSER_QUERY);
+  const [expanded, setExpanded] = useState(false);
+  const [windowStart, setWindowStart] = useState(0);
+  const previousDesktop = useRef<boolean | null>(null);
+
+  useEffect(() => {
+    if (previousDesktop.current !== isDesktop) {
+      setExpanded(isDesktop);
+      previousDesktop.current = isDesktop;
+    }
+  }, [isDesktop]);
+
+  useEffect(() => {
+    const selectedIndex = selectedId
+      ? cards.findIndex((card) => card.id === selectedId)
+      : -1;
+    const lastWindowStart = Math.max(
+      0,
+      Math.floor(Math.max(0, cards.length - 1) / AVAILABLE_CARD_WINDOW_SIZE) *
+        AVAILABLE_CARD_WINDOW_SIZE
+    );
+
+    if (selectedIndex >= 0) {
+      setWindowStart(
+        Math.floor(selectedIndex / AVAILABLE_CARD_WINDOW_SIZE) *
+          AVAILABLE_CARD_WINDOW_SIZE
+      );
+    } else {
+      setWindowStart((current) => Math.min(current, lastWindowStart));
+    }
+  }, [cards, selectedId]);
+
+  const visibleCards = cards.slice(
+    windowStart,
+    windowStart + AVAILABLE_CARD_WINDOW_SIZE
+  );
+  const windowEnd = Math.min(cards.length, windowStart + AVAILABLE_CARD_WINDOW_SIZE);
+
   return (
     <section
       aria-label="Available cards to deal"
       className="grid content-start gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 shadow-[var(--fp-shadow-soft)]"
       data-testid="distribution-card-list"
     >
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <h2 className="text-[16px] font-bold text-fp-ink">
           Available cards
         </h2>
-        <span className="text-[12px] font-bold text-fp-muted-ink">
-          {cards.length}
-        </span>
+        <button
+          aria-controls="available-card-window"
+          aria-expanded={expanded}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:cursor-wait disabled:opacity-60"
+          disabled={interactionDisabled}
+          onClick={() => {
+            if (!interactionDisabled) {
+              setExpanded((current) => !current);
+            }
+          }}
+          type="button"
+        >
+          {expanded ? "Hide" : "Show"} {cards.length}
+          <ChevronDown
+            aria-hidden
+            className={[
+              "h-4 w-4 transition-transform",
+              expanded ? "rotate-180" : ""
+            ].join(" ")}
+          />
+        </button>
       </div>
-      <div className="grid max-h-[min(38rem,70svh)] gap-2 overflow-y-auto pr-1">
-        {cards.map((card) => {
-          const selected = card.id === selectedId;
+      {expanded ? (
+        <div className="grid gap-2" id="available-card-window">
+          <p className="text-[12px] font-bold text-fp-muted-ink">
+            Showing {cards.length === 0 ? 0 : windowStart + 1}-{windowEnd} of {cards.length}
+          </p>
+          <div className="grid max-h-[min(38rem,70svh)] gap-2 overflow-y-auto pr-1">
+            {visibleCards.map((card) => {
+              const selected = card.id === selectedId;
 
-          return (
-            <button
-              aria-pressed={selected}
-              className={[
-                "grid min-w-0 grid-cols-[4rem_minmax(0,1fr)] gap-3 rounded-[8px] border p-2 text-left outline-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
-                selected
-                  ? "border-fp-primary bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)]"
-                  : "border-fp-line bg-[var(--fp-surface)]"
-              ].join(" ")}
-              key={card.id}
-              onClick={() => onSelect(card.id)}
-              type="button"
-            >
-              <CardCoverImage
-                card={card}
-                className="aspect-[5/7] rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-1"
-              />
-              <span className="grid min-w-0 content-center gap-1">
-                <span className="line-clamp-2 text-[13px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
-                  {card.title}
-                </span>
-                <span className="text-[11px] font-semibold text-fp-muted-ink">
-                  {card.areaKeys.map(humanize).slice(0, 2).join(" / ") || "Household"}
-                </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              return (
+                <button
+                  aria-pressed={selected}
+                  className={[
+                    "grid min-h-11 min-w-0 grid-cols-[4rem_minmax(0,1fr)] gap-3 rounded-[8px] border p-2 text-left outline-none transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]",
+                    selected
+                      ? "border-fp-primary bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)]"
+                      : "border-fp-line bg-[var(--fp-surface)]"
+                  ].join(" ")}
+                  data-testid="available-card-row"
+                  disabled={interactionDisabled}
+                  key={card.id}
+                  onClick={() => {
+                    if (!interactionDisabled) {
+                      onSelect(card.id);
+                    }
+                  }}
+                  type="button"
+                >
+                  <CardCoverImage
+                    card={card}
+                    className="aspect-[5/7] rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-1"
+                  />
+                  <span className="grid min-w-0 content-center gap-1">
+                    <span className="line-clamp-2 text-[13px] font-bold leading-5 text-fp-ink [overflow-wrap:anywhere]">
+                      {card.title}
+                    </span>
+                    <span className="text-[11px] font-semibold text-fp-muted-ink">
+                      {card.areaKeys.map(humanize).slice(0, 2).join(" / ") || "Household"}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {cards.length > AVAILABLE_CARD_WINDOW_SIZE ? (
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:opacity-50"
+                disabled={interactionDisabled || windowStart === 0}
+                onClick={() =>
+                  setWindowStart((current) =>
+                    Math.max(0, current - AVAILABLE_CARD_WINDOW_SIZE)
+                  )
+                }
+                type="button"
+              >
+                Previous cards
+              </button>
+              <button
+                className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-[12px] font-bold text-fp-ink disabled:opacity-50"
+                disabled={interactionDisabled || windowEnd >= cards.length}
+                onClick={() =>
+                  setWindowStart((current) =>
+                    Math.min(
+                      current + AVAILABLE_CARD_WINDOW_SIZE,
+                      Math.max(0, cards.length - 1)
+                    )
+                  )
+                }
+                type="button"
+              >
+                Next cards
+              </button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -1362,6 +1809,53 @@ function styleForDrag(offset: { x: number; y: number } | null): CSSProperties {
   return {
     transform: `translate3d(${offset.x}px, ${offset.y}px, 0) rotate(${rotate}deg)`
   };
+}
+
+function styleForDealExit(outgoing: OutgoingDealCard): CSSProperties {
+  return {
+    opacity: outgoing.exiting ? 0 : 1,
+    transform: outgoing.exiting
+      ? dealExitTransform(outgoing.bucket)
+      : "translate3d(0, 0, 0)",
+    transition: `transform ${DEAL_EXIT_DURATION_MS}ms ease-out, opacity ${DEAL_EXIT_DURATION_MS}ms ease-out`
+  };
+}
+
+function dealExitTransform(bucket: DealActionBucket) {
+  switch (bucket) {
+    case "alex":
+      return "translate3d(-115%, 0, 0) rotate(-8deg)";
+    case "max":
+      return "translate3d(115%, 0, 0) rotate(8deg)";
+    case "savedForLater":
+      return "translate3d(0, -115%, 0)";
+    case "notApplicable":
+      return "translate3d(0, 115%, 0)";
+  }
+}
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") {
+      return undefined;
+    }
+
+    const media = window.matchMedia(query);
+    const update = () => setMatches(media.matches);
+    update();
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", update);
+      return () => media.removeEventListener("change", update);
+    }
+
+    media.addListener(update);
+    return () => media.removeListener(update);
+  }, [query]);
+
+  return matches;
 }
 
 function searchCards<T extends CardWorkspaceCard>(cards: readonly T[], query: string): T[] {

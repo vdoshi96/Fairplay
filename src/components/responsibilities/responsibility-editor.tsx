@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
+import { AlertDialog } from "@/components/ui/dialog";
 import type { PersonaSummary } from "@/contracts/personas";
 import type {
   ResponsibilityAssignmentSummary,
@@ -184,6 +185,8 @@ export function ResponsibilityEditor({
   const [handoffNotes, setHandoffNotes] = useState("");
   const [revisitAt, setRevisitAt] = useState("");
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const archiveTriggerRef = useRef<HTMLButtonElement>(null);
+  const archiveCancelRef = useRef<HTMLButtonElement>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [pendingAction, setPendingAction] = useState<"save" | "status" | null>(
     null
@@ -636,6 +639,7 @@ export function ResponsibilityEditor({
               className="min-h-11 rounded-[8px] border border-fp-danger bg-[var(--fp-card)] px-4 text-[14px] font-bold text-fp-danger"
               disabled={actionDisabled}
               onClick={() => setArchiveOpen(true)}
+              ref={archiveTriggerRef}
               type="button"
             >
               Archive
@@ -644,40 +648,35 @@ export function ResponsibilityEditor({
         ) : null}
       </div>
 
-      {archiveOpen ? (
-        <div
-          aria-label="Archive responsibility?"
-          aria-modal="true"
-          className="fixed inset-0 z-20 grid place-items-center bg-fp-ink/30 p-4"
-          role="dialog"
-        >
-          <div className="grid w-full max-w-sm gap-4 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4">
-            <h2 className="text-[18px] font-bold">Archive responsibility?</h2>
-            <p className="text-[14px] leading-6 text-fp-muted-ink">
-              This keeps the history but removes it from the active planning view.
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-4 text-[14px] font-bold"
-                onClick={() => setArchiveOpen(false)}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="min-h-11 rounded-[8px] bg-fp-danger px-4 text-[14px] font-bold text-white"
-                onClick={() => {
-                  setArchiveOpen(false);
-                  void updateStatus("archived", true);
-                }}
-                type="button"
-              >
-                Confirm archive
-              </button>
-            </div>
-          </div>
+      <AlertDialog
+        description="This keeps the history but removes it from the active planning view."
+        initialFocusRef={archiveCancelRef}
+        onClose={() => setArchiveOpen(false)}
+        open={archiveOpen}
+        title="Archive responsibility?"
+        triggerRef={archiveTriggerRef}
+      >
+        <div className="flex justify-end gap-2">
+          <button
+            className="min-h-11 rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-4 text-[14px] font-bold"
+            onClick={() => setArchiveOpen(false)}
+            ref={archiveCancelRef}
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            className="min-h-11 rounded-[8px] bg-fp-danger px-4 text-[14px] font-bold text-white"
+            onClick={() => {
+              setArchiveOpen(false);
+              void updateStatus("archived", true);
+            }}
+            type="button"
+          >
+            Confirm archive
+          </button>
         </div>
-      ) : null}
+      </AlertDialog>
     </section>
   );
 }

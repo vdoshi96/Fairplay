@@ -121,6 +121,50 @@ async function expectNoDocumentHorizontalOverflow(page: Page, label: string) {
     .toBeLessThanOrEqual(1);
 }
 
+async function expectActionTargetsAtLeast44Pixels(page: Page, label: string) {
+  const undersizedTargets = await page.evaluate(() =>
+    Array.from(
+      document.querySelectorAll<HTMLElement>(
+        "button, [role='button'], input:not([type='hidden']):not([type='checkbox']):not([type='radio']), select, textarea"
+      )
+    )
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+
+        return (
+          style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          rect.width > 0 &&
+          rect.height > 0
+        );
+      })
+      .flatMap((element) => {
+        const rect = element.getBoundingClientRect();
+
+        if (rect.width >= 43.5 && rect.height >= 43.5) {
+          return [];
+        }
+
+        return [
+          {
+            height: Math.round(rect.height * 10) / 10,
+            label:
+              element.getAttribute("aria-label") ??
+              element.textContent?.trim().slice(0, 48) ??
+              element.tagName.toLowerCase(),
+            width: Math.round(rect.width * 10) / 10
+          }
+        ];
+      })
+  );
+
+  expect(
+    undersizedTargets,
+    `${label} should keep buttons, form controls, and button-like controls at least 44px`
+  ).toEqual([]);
+}
+
 async function expectLittleAlexFullyVisible(page: Page, label: string) {
   const failures = await page.evaluate(() => {
     const desktopLittleAlex = window.matchMedia(
@@ -430,6 +474,10 @@ test.describe("corrective responsive visual QA", () => {
           page,
           `${viewport.name} ${appPage.name}`
         );
+        await expectActionTargetsAtLeast44Pixels(
+          page,
+          `${viewport.name} ${appPage.name}`
+        );
         expect(
           await page.evaluate(() => document.body.innerText.includes("1 Issue")),
           `${viewport.name} ${appPage.name} should not show the dev issue overlay`
@@ -491,6 +539,34 @@ test.describe("corrective responsive visual QA", () => {
     }
   });
 
+  test("core workflows reflow at a 200% desktop-zoom equivalent", async ({ page }) => {
+    // At 200% browser zoom, a 1280px desktop viewport exposes roughly 640 CSS
+    // pixels to layout. Exercising that effective viewport keeps the assertion
+    // deterministic in headless Chromium, where browser chrome zoom controls
+    // are not available to Playwright.
+    await page.setViewportSize({ height: 450, width: 640 });
+    await createHouseholdAndChooseAlex(page);
+    await closeWelcomeIfPresent(page);
+
+    for (const appPage of appPages) {
+      await page.goto(appPage.path);
+      await closeWelcomeIfPresent(page);
+      await expect(
+        page.getByRole("heading", { name: appPage.heading })
+      ).toBeVisible();
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await expectNoDocumentHorizontalOverflow(
+        page,
+        `${appPage.name} at 200% zoom`
+      );
+
+      await page.screenshot({
+        fullPage: true,
+        path: `${screenshotDir}/zoom-200-${appPage.name}.png`
+      });
+    }
+  });
+
   test("an explicit ownership handoff returns a Board card to Deal while Library stays catalog-only", async ({ page }) => {
     await createHouseholdAndChooseAlex(page);
     await closeWelcomeIfPresent(page);
@@ -499,12 +575,16 @@ test.describe("corrective responsive visual QA", () => {
     await page.goto("/app/board");
     await closeWelcomeIfPresent(page);
     await expect(page.getByRole("heading", { name: "Card board" })).toBeVisible();
-    await page.getByRole("link", { name: "Move with ownership details" }).click();
+    await page.getByRole("button", { name: "Move Adult Friendships" }).click();
+    await page.getByRole("menuitem", { name: "Update ownership details" }).click();
     await expect(page.getByRole("heading", { name: "Ownership details" }))
       .toBeVisible();
     await page.getByRole("button", { name: "Clear roles for Deal" }).click();
     await page.getByRole("radio", { name: "Remove the former owner" }).click();
     await page.getByRole("button", { name: "Return card to Deal" }).click();
+    await expect(page.getByRole("alertdialog", { name: "Return this card to Deal?" }))
+      .toBeVisible();
+    await page.getByRole("button", { name: "Confirm return to Deal" }).click();
     await expect(page.getByRole("status")).toHaveText("Card returned to Deal.");
 
     await page.goto("/app/distribute");

@@ -281,7 +281,7 @@ function StoryIndexTabs({
           aria-current={index === activeStep ? "step" : undefined}
           aria-label={`Go to lesson ${index + 1}: ${lesson.title}`}
           className={[
-            "grid h-9 min-w-9 place-items-center rounded-[8px] border text-[12px] font-bold outline-none transition focus:ring-2 focus:ring-fp-ink/25",
+            "grid h-11 min-w-11 place-items-center rounded-[8px] border text-[12px] font-bold outline-none transition focus:ring-2 focus:ring-fp-ink/25",
             index === activeStep
               ? "border-fp-primary bg-fp-primary text-fp-on-primary"
               : "border-fp-line bg-[var(--fp-surface)] text-fp-muted-ink hover:bg-[var(--fp-surface-muted)] hover:text-fp-ink"

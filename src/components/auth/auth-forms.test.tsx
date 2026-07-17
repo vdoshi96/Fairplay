@@ -49,6 +49,23 @@ describe("auth forms", () => {
       backgroundImage:
         "url('/assets/fairplay/generated-ui/backgrounds/auth-warm-threshold.png')"
     });
+    const backgroundWash = container.querySelector(
+      "[data-auth-background-wash]"
+    );
+    expect(backgroundWash).toHaveClass(
+      "fp-auth-background-wash",
+      "pointer-events-none"
+    );
+    expect(backgroundWash?.className).not.toContain("mix-blend");
+
+    const authSurface = container.querySelector("[data-auth-surface]");
+    expect(authSurface).toHaveClass("fp-auth-surface");
+    expect(authSurface).toContainElement(
+      screen.getByRole("heading", { name: "Log in to Fairplay" })
+    );
+    expect(authSurface).toContainElement(
+      screen.getByLabelText("Household username")
+    );
     expect(
       screen.getByRole("img", { name: "Animated Fairplay household garden scene" })
     ).toBeVisible();

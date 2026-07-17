@@ -6,6 +6,7 @@ Last updated: 2026-07-16
 
 | Date | Decision | Rationale | Status |
 | --- | --- | --- | --- |
+| 2026-07-16 | Use one accessible modal primitive for destructive/ownership confirmations, optimistic single-flight Deal transitions, and ownership-safe Board move menus. | Focus isolation and restoration make confirmations dependable; single-flight optimistic state keeps Deal responsive without stale rollback; assigned cards must change owners through the explicit agreement instead of a shortcut. | Accepted |
 | 2026-07-16 | Keep household equity descriptive and route every existing-owner change through one revision-guarded ownership agreement. | Counts make hidden and due work visible without scoring partners; a row-locked agreement preserves helpers/backups, requires an explicit former-owner handoff, and derives shared presentation without changing persisted lane values. | Accepted |
 | 2026-05-08 | Make cards the primary product surface and retire the homepage. | The user requested a full mobile-first product rethink around card distribution; direct action beats a learning/dashboard landing page. | Accepted |
 | 2026-05-08 | Treat Library and Deal as the same source catalog, with assignment/status stored separately. | The user rejected the put-in-play workflow and duplicate card instances; source template identity should be stable while Board display is derived from assignment/categorization. | Accepted |
@@ -31,6 +32,6 @@ Last updated: 2026-07-16
 ## Naming And Compatibility Notes
 
 - Database and contract board lane enums intentionally keep persisted keys such as `cards_of_concern`, `player_1`, `player_2`, and `kid_split`; use UI label mapping for display and defer any rename to a dedicated migration.
-- Card-first product buckets live in `src/components/cards/card-state.ts`; `unassigned` remains an internal dealable-pool bucket, while Board renders only Alex, Max, Saved for Later, and Not Applicable.
+- Platform-neutral card bucket/lane contracts live in `src/domain/card-distribution.ts`, with compatibility and UI-only presentation helpers retained in `src/components/cards/card-state.ts`; `unassigned` remains an internal dealable-pool bucket.
 - Catalog card identity is `Responsibility.templateId` when present. Do not dedupe source cards by title; there are intentional same-title variants such as Alex/Max source cards.
 - Deprecated AI routes and media fields may be compatibility scaffolding: needs verification before removal.

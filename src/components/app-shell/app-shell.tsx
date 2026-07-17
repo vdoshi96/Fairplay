@@ -136,7 +136,7 @@ export function AppShell({
               <Link
                 aria-current={isActive ? "page" : undefined}
                 className={[
-                  "flex min-h-10 items-center gap-3 rounded-[8px] px-3 text-[13px] font-bold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
+                  "flex min-h-11 items-center gap-3 rounded-[8px] px-3 text-[13px] font-bold outline-none transition focus:ring-2 focus:ring-fp-ink/20",
                   isActive
                     ? "bg-[var(--fp-surface)] text-fp-ink"
                     : "text-fp-muted-ink hover:bg-[var(--fp-surface)] hover:text-fp-ink"
@@ -172,7 +172,7 @@ export function AppShell({
               href="/app/your-cards"
             >
               <FairplayMark
-                className="h-10 w-10 shrink-0 rounded-[8px] border border-fp-line bg-[var(--fp-card)]"
+                className="h-11 w-11 shrink-0 rounded-[8px] border border-fp-line bg-[var(--fp-card)]"
                 decorative
               />
               <span className="min-w-0">
