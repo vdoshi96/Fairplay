@@ -31,4 +31,6 @@ This milestone improves the core card workflow, visual hierarchy, responsive beh
 - Focused component tests cover optimistic success/failure, reduced motion, bounded Available Cards DOM, Board pending/error/Undo, menu keyboard focus, dialog focus trapping/restoration, modal error announcements, mobile Check-in history, auth surfaces, and control semantics.
 - Corrective responsive browser QA covers 320, 390, 768, 1024, 1280, and 1366 widths, populated Board state, 44px controls, and a deterministic 200% desktop-zoom layout equivalent.
 - Light and dark production-rendered checks retain readable foreground surfaces over decorative artwork.
-- Full Prisma, lint, typecheck, Vitest, production build, and Playwright regression gates run before merge.
+- Prisma validation/generation, lint, typecheck, and the production build passed.
+- Full Vitest passed 98 files / 612 tests, including DB-backed integration coverage.
+- Full Chromium Playwright passed 30/30 scenarios.

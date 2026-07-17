@@ -64,6 +64,20 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 
 ## Verification From This Pass
 
+UI/accessibility/motion milestone verification passed:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+npm run lint
+npm run typecheck
+npm test -- --run --maxWorkers=4
+npm run build
+npx playwright test
+```
+
+The full Vitest run passed 98 files / 612 tests, including DB-backed integration coverage. The full Chromium Playwright run passed 30/30 scenarios. Corrective browser QA covered 320, 390, 768, 1024, 1280, and 1366 widths, a 200% desktop-zoom layout equivalent, rendered 44px action-target checks, populated Board behavior, explicit ownership return-to-Deal, light/dark surfaces, reduced motion, touch behavior, and the Little Alex regressions.
+
 Mobile UX/card workflow verification passed:
 
 ```bash
