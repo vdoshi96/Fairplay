@@ -36,6 +36,7 @@ This is a practical index, not a reorganization plan.
 - `src/app/api/`: JSON route handlers for auth, personas, preferences, responsibilities, load snapshot, card templates, AI drafts, and check-ins.
 - `src/app/globals.css`: ordered global-style entrypoint; `src/app/styles/` owns Tailwind boundaries, tokens/theme, shell/background, motion, Little Alex, and reduced-motion layers.
 - `src/app/icon.tsx`, `src/app/apple-icon.tsx`, `src/app/manifest.ts`: PWA metadata/assets.
+- `src/middleware.ts`: anonymous app gate, per-request CSP nonce/security headers, malformed-cookie fallback handling, and same-origin cookie-mutation enforcement.
 
 ## Components
 
@@ -59,9 +60,9 @@ This is a practical index, not a reorganization plan.
 
 - `src/contracts/`: Zod contracts for auth, personas, preferences, responsibilities, check-ins, card templates, AI drafts, and Little Alex.
 - `src/domain/`: ids, enums, visibility helpers, load signals, and time helpers.
-- `src/lib/`: formatting and safety copy.
+- `src/lib/`: formatting, safety copy, and centralized HTTP security-policy helpers.
 - `src/seed/`: demo content and source-card seed data. Name/source policy needs verification before expanding.
-- `src/server/auth/`: cookies, session current-state, token handling, password hashing, throttling.
+- `src/server/auth/`: cookies, session current-state, token handling, password hashing, throttling, household-creation body limits, and bounded creation rate limiting.
 - `src/server/db/`: Prisma client and repository error helpers.
 - `src/server/repositories/`: Prisma repository functions.
 - `src/server/responsibilities/`: responsibility service and load snapshot.
@@ -80,8 +81,9 @@ This is a practical index, not a reorganization plan.
 
 - `src/**/*.test.ts(x)`: Vitest unit/component/service/route/repository tests.
 - `src/server/repositories/persistence.integration.test.ts`: DB-backed integration test requiring Postgres.
-- `e2e/*.spec.ts`: Playwright tests for auth/onboarding, check-ins, retired feature-guide absence, visual responsive behavior, root redirects, Little Alex, Board, legacy Load Map compatibility, and mobile bundle/asset delivery.
-- `e2e/helpers/`: Playwright helper utilities.
+- `e2e/*.spec.ts`: Playwright tests for auth/onboarding, mutation-based cross-browser accessibility, check-ins, retired feature-guide absence, visual responsive behavior, root redirects, Little Alex, Board, legacy Load Map compatibility, and mobile bundle/asset delivery.
+- `e2e/helpers/`: Playwright helper utilities, including full-report WCAG A/AA Axe assertions.
+- `playwright.config.ts`: full Chromium project plus focused desktop WebKit, iPhone WebKit, and touch Chromium release projects; optional video capture uses `PLAYWRIGHT_VIDEO=on`.
 
 ## Docs
 
@@ -119,7 +121,7 @@ This is a practical index, not a reorganization plan.
 
 - Deprecated `/api/ai-card-drafts/[id]/regenerate-image` route and AI media columns.
 - `src/seed/fairplay-source-cards.ts` naming and content provenance before expanding templates.
-- Browser storage audit beyond theme-only `localStorage`; household/private/secrets storage remains prohibited.
+- Shared signup throttling for multi-instance deployments; the in-process limiter is intentionally bounded but not cross-instance.
 - Local ignored `.DS_Store` files and `tsconfig.tsbuildinfo` cleanup.
 
 ## Board Lane Compatibility Note

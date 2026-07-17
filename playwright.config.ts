@@ -10,6 +10,13 @@ const e2eShadowDatabaseUrl =
 const e2eSessionSecret =
   process.env.SESSION_SECRET ??
   "fairplay-e2e-session-secret-with-at-least-32-bytes";
+const videoMode = process.env.PLAYWRIGHT_VIDEO === "on" ? "on" : "off";
+
+const crossBrowserCoreFlow = /accessibility-core-flow\.spec\.ts/;
+const touchBrowserSmoke = [
+  crossBrowserCoreFlow,
+  /performance-assets\.spec\.ts/
+];
 
 export default defineConfig({
   testDir: "./e2e",
@@ -17,12 +24,14 @@ export default defineConfig({
   reporter: "list",
   use: {
     baseURL: e2eBaseUrl,
-    trace: "on-first-retry"
+    trace: "on-first-retry",
+    video: videoMode
   },
   webServer: {
     command: "next start --port 3101",
     env: {
       ...process.env,
+      ALLOW_INSECURE_LOOPBACK_SESSION_COOKIE: "true",
       APP_BASE_URL: e2eBaseUrl,
       DATABASE_URL: e2eDatabaseUrl,
       SESSION_SECRET: e2eSessionSecret,
@@ -35,7 +44,26 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      testIgnore: /performance-assets\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] }
+    },
+    {
+      name: "webkit",
+      // Cross-browser projects intentionally run the complete core workflow
+      // without multiplying desktop-only visual and Little Alex suites.
+      testMatch: crossBrowserCoreFlow,
+      use: { ...devices["Desktop Safari"] }
+    },
+    {
+      name: "iphone-webkit",
+      testMatch: crossBrowserCoreFlow,
+      use: { ...devices["iPhone 13"] }
+    },
+    {
+      name: "touch-chromium",
+      // The touch project also owns the mobile bundle/artwork performance gate.
+      testMatch: touchBrowserSmoke,
+      use: { ...devices["Pixel 7"] }
     }
   ]
 });

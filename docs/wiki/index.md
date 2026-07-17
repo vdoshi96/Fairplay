@@ -1,10 +1,10 @@
 # Fairplay Wiki
 
-Last updated: 2026-05-08
+Last updated: 2026-07-16
 
 ## System Summary
 
-Fairplay is a Next.js App Router household planning app with Prisma/Postgres persistence, server-managed household sessions, persona-aware app state, a mobile-first card app shell, image-first Your Deck/Deal/Board/Ask Greg primary tabs, lightweight check-in records, Theory/onboarding/Crash Course learning surfaces, settings, and Little Alex helper preferences.
+Fairplay is a Next.js App Router household planning app with Prisma/Postgres persistence, server-managed household sessions, nonce-protected browser responses, persona-aware app state, a mobile-first card app shell, image-first Your Deck/Deal/Board/Ask Greg primary tabs, descriptive household work mapping, explicit ownership agreements, lightweight check-in records, learning surfaces, settings, and desktop-only Little Alex physics.
 
 ## Wiki Pages
 
@@ -13,7 +13,7 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 
 ## High-Level Feature Map
 
-- Auth and session: household create/login/logout/me, persona selection, middleware protection, server session refresh.
+- Auth and session: bounded household creation, login/logout/me, persona selection, opaque sessions, request-cached resolution, nonce CSP/security headers, and same-origin cookie-mutation enforcement.
 - Card workflow: Your Deck searchable assigned-card gallery, Deal swipe deck plus available-card list, Board bucket sections, Ask Greg card generation.
 - Learning: Theory, onboarding, and Crash Course; the retired feature-guide practice workflow is not mounted.
 - Responsibilities: stable persisted lanes, product bucket mapping, assignment/status/visibility/placement routes, simplified card detail.
@@ -34,10 +34,11 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 - `../product/card-first-mobile-redesign.md`: current card-first redesign rationale, IA, state model, gestures, PWA notes, QA, limitations, and future work.
 - `../implementation/2026-05-08-mobile-card-ui-state-fix.md`: mobile card UI/state fix report, changed files, state flow, PR order, and QA notes.
 - `../implementation/2026-05-08-mobile-ux-card-workflow.md`: Little Alex desktop-only behavior, Ask Greg mobile layout, Deal gesture/Undo thresholds, editable Fogging Estandards, and manual QA steps.
+- `../implementation/2026-07-16-security-reliability.md`: request hardening, signup limits, browser matrix, accessibility policy, motion recording, and iOS Add-to-Home-Screen evidence.
 
 ## Current Cleanup Priority
 
-1. Inventory generated assets for live usage after the Radar asset removal.
-2. Separate current docs from historical agent logs.
-3. Complete manual iOS Add to Home Screen verification before production release.
+1. Add coordinated shared signup throttling only if production runs multiple instances and requires a cross-instance ceiling.
+2. Repeat the completed simulator Add-to-Home-Screen smoke on the physical iPhone when it is available.
+3. Separate current docs from historical agent logs.
 4. Revisit board lane enum renames only as a dedicated compatibility migration.

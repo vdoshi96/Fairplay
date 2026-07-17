@@ -8,6 +8,32 @@ export function getSessionCookieValue(request: NextRequest): string | null {
   return request.cookies.get(getAuthCookieName())?.value ?? null;
 }
 
+export function shouldUseSecureSessionCookie(): boolean {
+  if (process.env.NODE_ENV !== "production") {
+    return false;
+  }
+
+  if (process.env.ALLOW_INSECURE_LOOPBACK_SESSION_COOKIE !== "true") {
+    return true;
+  }
+
+  try {
+    const appBaseUrl = new URL(process.env.APP_BASE_URL ?? "");
+    const loopbackHost = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+    if (
+      appBaseUrl.protocol === "http:" &&
+      loopbackHost.has(appBaseUrl.hostname.toLowerCase())
+    ) {
+      return false;
+    }
+  } catch {
+    // Missing or invalid canonical origins fail closed in production.
+  }
+
+  return true;
+}
+
 export function setSessionCookie(
   response: NextResponse,
   rawToken: string,
@@ -29,7 +55,7 @@ export function setSessionCookie(
 
   response.cookies.set(getAuthCookieName(), rawToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureSessionCookie(),
     sameSite: "lax",
     path: "/",
     maxAge
@@ -39,7 +65,7 @@ export function setSessionCookie(
 export function clearSessionCookie(response: NextResponse): void {
   response.cookies.set(getAuthCookieName(), "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureSessionCookie(),
     sameSite: "lax",
     path: "/",
     maxAge: 0

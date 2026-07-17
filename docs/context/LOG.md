@@ -1,5 +1,33 @@
 # Fairplay Context Log
 
+## 2026-07-16 - Security, Reliability, And Final Improvement Program QA
+
+Task: complete milestone 5 and final QA for the Fairplay Improvement Program without API keys, live provider calls, or private reference material.
+
+Outcome:
+
+- Added nonce-based CSP and centralized browser response protections, exact same-origin enforcement for cookie-authenticated mutations, and fail-closed malformed-cookie handling.
+- Added an 8 KiB household-creation body limit and bounded privacy-hashed client/process attempt limits before Argon2 and database work; quota gates commit atomically so rejected clients cannot drain unrelated capacity.
+- Kept production cookies secure by default while allowing an explicit HTTP-loopback-only Playwright production-server opt-in.
+- Added Chromium, desktop WebKit, iPhone WebKit, and touch Chromium projects plus full WCAG A/AA Axe reports.
+- Made the cross-browser scenario perform a real Deal assignment, Board persistence check, and Check-in schedule, and verified the response CSP nonce matches the rendered theme bootstrap nonce.
+- Corrected the transient Deal movement overlay contrast exposed by the iPhone WebKit scan.
+- Retained only the latest completed visual/motion/device evidence under ignored `test-results/`.
+
+Files changed: `src/middleware.ts`, `src/lib/http-security.ts`, root layout/theme bootstrap, auth cookie and household-creation guards, Playwright configuration/helpers/specs, Deal movement presentation, package dependencies, and current context/wiki/implementation docs.
+
+Verification:
+
+- Prisma ready/validate/generate/migrate: passed and already synchronized.
+- ESLint and TypeScript: passed.
+- Vitest: 110 files / 679 tests passed, including DB integration.
+- Production build: passed with 38 pages and middleware.
+- Playwright: 35/35 passed across four projects.
+- Real Chromium Little Alex drag/fling recording: passed; retained VP8 WebM is 800x450 and 2.52 seconds.
+- Connected iPhone 15 Pro Max: unavailable. iOS 26.5 iPhone 17 simulator fallback successfully installed Fairplay from Safari and launched it standalone without browser chrome.
+
+Next handoff: merge the security/reliability PR, synchronize local `main`, prune completed branches/worktrees, and use a physical iPhone for an optional final device repeat when it becomes available.
+
 ## 2026-07-16 - Performance, Bundle, And Asset Efficiency
 
 Requested by the user as milestone 4 of the Fairplay Improvement Program: reduce repeated server/client work, split large modules, optimize artwork, and defer Little Alex physics without changing product behavior.
