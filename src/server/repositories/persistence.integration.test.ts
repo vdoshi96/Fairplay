@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { ResponsibilityBoardLane } from "@prisma/client";
 import { afterEach, beforeAll, describe, expect, test } from "vitest";
 
+import { computeHouseholdWorkMap } from "../../domain/household-work-map";
 import { prisma } from "../db/prisma";
 import { createHouseholdWithPersonas } from "./households";
 import { listPersonasForHousehold } from "./personas";
@@ -234,6 +235,152 @@ describe("responsibility repository", () => {
       })
     ).resolves.toBeNull();
   });
+
+  test("atomically activates a first ownership agreement and makes it eligible for the work map", async () => {
+    const { household, personas } = await createTestHousehold(
+      "ownership-first-activation"
+    );
+    const [alex] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "First ownership card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "unassigned",
+      visibility: "shared_household",
+      boardLane: "cards_of_concern",
+      nextReviewAt: null
+    });
+
+    const updated = await applyResponsibilityOwnershipAgreement({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      actorPersonaId: alex.id,
+      expectedUpdatedAt: responsibility.updatedAt,
+      expectedOwnerPersonaKeys: [],
+      assignments: [
+        { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+      ],
+      reviewAt: null
+    });
+
+    expect(updated).toMatchObject({
+      status: "active",
+      boardLane: "player_2",
+      currentAssignments: [
+        { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+      ]
+    });
+    expect(
+      computeHouseholdWorkMap({ responsibilities: [updated] })
+    ).toMatchObject({
+      personas: {
+        max: {
+          owned: 1,
+          highFrequency: 1,
+          hiddenEffort: { planning: 1 }
+        }
+      },
+      household: {
+        unassigned: 0
+      }
+    });
+
+    const events = await prisma.responsibilityEvent.findMany({
+      where: { responsibilityId: responsibility.id },
+      select: { eventType: true, payload: true }
+    });
+    expect(events).toHaveLength(3);
+    expect(events).toEqual(
+      expect.arrayContaining([
+        {
+          eventType: "assignment_changed",
+          payload: expect.objectContaining({
+            assignments: [
+              {
+                personaKey: "max",
+                role: "accountable_owner",
+                scope: "outcome"
+              }
+            ],
+            formerOwnerPersonaKeys: []
+          })
+        },
+        {
+          eventType: "status_changed",
+          payload: {
+            status: "active",
+            note: null,
+            reviewOn: null
+          }
+        },
+        {
+          eventType: "board_lane_changed",
+          payload: {
+            fromLane: "cards_of_concern",
+            toLane: "player_2",
+            fromSortOrder: 0,
+            toSortOrder: 0,
+            note: null
+          }
+        }
+      ])
+    );
+  });
+
+  test.each(["paused", "not_relevant"] as const)(
+    "preserves %s when adding a first owner",
+    async (status) => {
+      const { household, personas } = await createTestHousehold(
+        `ownership-preserve-${status}`
+      );
+      const [alex] = personas;
+      const responsibility = await createResponsibility({
+        householdId: household.id,
+        createdByPersonaId: alex.id,
+        title: `Preserve ${status} card`,
+        summary: null,
+        areaKeys: ["home_base"],
+        hiddenEffortKeys: ["planning"],
+        cadence: "weekly",
+        status,
+        visibility: "shared_household",
+        boardLane: "cards_of_concern",
+        nextReviewAt: null
+      });
+
+      const updated = await applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        expectedUpdatedAt: responsibility.updatedAt,
+        expectedOwnerPersonaKeys: [],
+        assignments: [
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+        ],
+        reviewAt: null
+      });
+
+      expect(updated).toMatchObject({
+        status,
+        boardLane: "player_1",
+        currentAssignments: [
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+        ]
+      });
+      await expect(
+        prisma.responsibilityEvent.count({
+          where: {
+            responsibilityId: responsibility.id,
+            eventType: "status_changed"
+          }
+        })
+      ).resolves.toBe(0);
+    }
+  );
 
   test("atomically replaces a former owner and records the ownership agreement", async () => {
     const { household, personas } = await createTestHousehold("ownership-replace");

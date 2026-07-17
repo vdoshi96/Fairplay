@@ -672,8 +672,10 @@ function assignmentSignature(
  * The responsibility row is locked before current ownership is inspected so a
  * stale client cannot silently remove an owner that another request just added.
  * Single-owner and ownerless agreements align the existing persisted lane to
- * the owner or Deal pool. Shared presentation remains derived from assignments
- * rather than introducing a new persisted lane.
+ * the owner or Deal pool. A first owner also activates an unassigned catalog
+ * card, while paused and not-relevant cards keep their explicit lifecycle
+ * state. Shared presentation remains derived from assignments rather than
+ * introducing a new persisted lane.
  */
 export async function applyResponsibilityOwnershipAgreement(
   input: ApplyResponsibilityOwnershipAgreementInput
@@ -960,7 +962,11 @@ export async function applyResponsibilityOwnershipAgreement(
     }
     const boardLaneChanged = nextBoardLane !== existing.boardLane;
     const nextStatus: ResponsibilityStatus =
-      finalOwnerKeys.length === 0 ? "unassigned" : existing.status;
+      finalOwnerKeys.length === 0
+        ? "unassigned"
+        : existing.status === "unassigned"
+          ? "active"
+          : existing.status;
     const statusChanged = nextStatus !== existing.status;
 
     const latestActiveStart = existing.assignments.reduce(

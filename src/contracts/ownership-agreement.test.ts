@@ -71,7 +71,7 @@ describe("ownership agreement JSON contract", () => {
     });
   });
 
-  it("keeps handoff mode optional at the JSON boundary for initially unowned cards", () => {
+  it("accepts a first-owner agreement that can activate an unassigned card", () => {
     expect(
       OwnershipAgreementMutationSchema.parse({
         responsibilityId,
@@ -82,7 +82,15 @@ describe("ownership agreement JSON contract", () => {
         ],
         reviewAt: null
       })
-    ).not.toHaveProperty("handoffMode");
+    ).toEqual({
+      responsibilityId,
+      expectedUpdatedAt: "2026-05-04T12:00:00.000Z",
+      expectedOwnerPersonaKeys: [],
+      assignments: [
+        { personaKey: "max", role: "accountable_owner", scope: "outcome" }
+      ],
+      reviewAt: null
+    });
   });
 
   it("accepts an explicit return to Deal for a card that currently has an owner", () => {
