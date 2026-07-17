@@ -116,6 +116,25 @@ describe("HouseholdCreationRateLimiter", () => {
     });
   });
 
+  it("does not let one locally limited client consume unrelated global capacity", () => {
+    const limiter = new HouseholdCreationRateLimiter({
+      attemptLimit: 1,
+      globalAttemptLimit: 2,
+      windowMs: 10_000
+    });
+
+    expect(limiter.consume("client-a")).toEqual({ allowed: true });
+    expect(limiter.consume("client-a")).toEqual({
+      allowed: false,
+      retryAfterSeconds: 10
+    });
+    expect(limiter.consume("client-b")).toEqual({ allowed: true });
+    expect(limiter.consume("client-c")).toEqual({
+      allowed: false,
+      retryAfterSeconds: 10
+    });
+  });
+
   it("uses one bounded overflow bucket instead of growing without limit", () => {
     const limiter = new HouseholdCreationRateLimiter({
       attemptLimit: 2,

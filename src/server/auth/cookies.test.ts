@@ -60,6 +60,7 @@ describe("session cookies", () => {
 
   it("keeps production cookies secure for deployed and invalid origins", () => {
     vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("ALLOW_INSECURE_LOOPBACK_SESSION_COOKIE", "true");
 
     vi.stubEnv("APP_BASE_URL", "https://fairplay.example");
     expect(shouldUseSecureSessionCookie()).toBe(true);
@@ -71,8 +72,13 @@ describe("session cookies", () => {
     expect(shouldUseSecureSessionCookie()).toBe(true);
   });
 
-  it("allows local production-server QA over loopback HTTP", () => {
+  it("requires an explicit opt-in for local production-server QA", () => {
     vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("APP_BASE_URL", "http://localhost:3101");
+
+    expect(shouldUseSecureSessionCookie()).toBe(true);
+
+    vi.stubEnv("ALLOW_INSECURE_LOOPBACK_SESSION_COOKIE", "true");
 
     for (const appBaseUrl of [
       "http://localhost:3101",

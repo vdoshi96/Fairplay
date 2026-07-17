@@ -68,6 +68,22 @@ export class HouseholdCreationRateLimiter {
   consume(clientKey: string): HouseholdCreationRateLimitResult {
     const nowMs = this.clock();
     this.pruneExpired(nowMs);
+    const existingBucket = this.clientBuckets.get(clientKey);
+    const usesOverflowBucket =
+      !existingBucket && this.clientBuckets.size >= this.maxTrackedClients;
+    const clientResult = consumeBucket(
+      usesOverflowBucket ? this.overflowBucket : existingBucket ?? null,
+      this.attemptLimit,
+      this.windowMs,
+      nowMs
+    );
+
+    if (!clientResult.allowed) {
+      return {
+        allowed: false,
+        retryAfterSeconds: clientResult.retryAfterSeconds
+      };
+    }
 
     const globalResult = consumeBucket(
       this.globalBucket,
@@ -75,7 +91,6 @@ export class HouseholdCreationRateLimiter {
       this.windowMs,
       nowMs
     );
-    this.globalBucket = globalResult.bucket;
 
     if (!globalResult.allowed) {
       return {
@@ -84,56 +99,22 @@ export class HouseholdCreationRateLimiter {
       };
     }
 
-    const existingBucket = this.clientBuckets.get(clientKey);
-    if (existingBucket) {
-      return this.consumeClientBucket(clientKey, existingBucket, nowMs);
+    // Commit the two counters together. Requests rejected by either gate do
+    // not consume capacity from the other gate or penalize unrelated clients.
+    this.globalBucket = globalResult.bucket;
+    if (usesOverflowBucket) {
+      this.overflowBucket = clientResult.bucket;
+    } else {
+      this.clientBuckets.set(clientKey, clientResult.bucket);
     }
 
-    if (this.clientBuckets.size < this.maxTrackedClients) {
-      return this.consumeClientBucket(clientKey, null, nowMs);
-    }
-
-    const overflowResult = consumeBucket(
-      this.overflowBucket,
-      this.attemptLimit,
-      this.windowMs,
-      nowMs
-    );
-    this.overflowBucket = overflowResult.bucket;
-
-    return overflowResult.allowed
-      ? { allowed: true }
-      : {
-          allowed: false,
-          retryAfterSeconds: overflowResult.retryAfterSeconds
-        };
+    return { allowed: true };
   }
 
   reset(): void {
     this.clientBuckets.clear();
     this.globalBucket = null;
     this.overflowBucket = null;
-  }
-
-  private consumeClientBucket(
-    clientKey: string,
-    bucket: FixedWindowBucket | null,
-    nowMs: number
-  ): HouseholdCreationRateLimitResult {
-    const result = consumeBucket(
-      bucket,
-      this.attemptLimit,
-      this.windowMs,
-      nowMs
-    );
-    this.clientBuckets.set(clientKey, result.bucket);
-
-    return result.allowed
-      ? { allowed: true }
-      : {
-          allowed: false,
-          retryAfterSeconds: result.retryAfterSeconds
-        };
   }
 
   private pruneExpired(nowMs: number): void {

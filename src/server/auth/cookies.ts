@@ -13,6 +13,10 @@ export function shouldUseSecureSessionCookie(): boolean {
     return false;
   }
 
+  if (process.env.ALLOW_INSECURE_LOOPBACK_SESSION_COOKIE !== "true") {
+    return true;
+  }
+
   try {
     const appBaseUrl = new URL(process.env.APP_BASE_URL ?? "");
     const loopbackHost = new Set(["localhost", "127.0.0.1", "[::1]"]);

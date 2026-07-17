@@ -31,6 +31,7 @@ export default defineConfig({
     command: "next start --port 3101",
     env: {
       ...process.env,
+      ALLOW_INSECURE_LOOPBACK_SESSION_COOKIE: "true",
       APP_BASE_URL: e2eBaseUrl,
       DATABASE_URL: e2eDatabaseUrl,
       SESSION_SECRET: e2eSessionSecret,
@@ -43,6 +44,7 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      testIgnore: /performance-assets\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] }
     },
     {

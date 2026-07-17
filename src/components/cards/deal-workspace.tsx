@@ -624,7 +624,7 @@ function SwipeCard({
         </div>
       ) : null}
       {pending ? (
-        <div className="absolute inset-0 grid place-items-center bg-[color:var(--fp-card)]/80 text-[15px] font-bold text-fp-ink">
+        <div className="absolute inset-0 grid place-items-center bg-[var(--fp-surface-strong)] text-[15px] font-bold text-fp-ink">
           Moving...
         </div>
       ) : null}
