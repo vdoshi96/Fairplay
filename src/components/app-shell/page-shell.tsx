@@ -129,12 +129,18 @@ export const PageShell = forwardRef<HTMLElement, PageShellProps>(
         ref={ref}
       >
         {background ? (
-          <DecorativeBackgroundLayer
-            className="opacity-45 [background-position:center_top] [mask-image:linear-gradient(125deg,black_0%,rgba(0,0,0,0.62)_48%,rgba(0,0,0,0.18)_100%)]"
-            src={background.src}
-            testId={background.testId}
-            washClassName="fp-page-background-wash"
-          />
+          <>
+            <DecorativeBackgroundLayer
+              className="opacity-40 [background-position:center_top] [mask-image:linear-gradient(125deg,black_0%,rgba(0,0,0,0.58)_48%,rgba(0,0,0,0.12)_100%)]"
+              src={background.src}
+              testId={background.testId}
+            />
+            <div
+              aria-hidden="true"
+              className="fp-page-background-wash pointer-events-none absolute inset-0"
+              data-page-background-wash
+            />
+          </>
         ) : null}
         <div
           className="relative z-10 mx-auto grid w-full max-w-full min-w-0 gap-5 pr-[var(--fp-little-alex-inline-reserve)] lg:max-w-7xl lg:pl-8"

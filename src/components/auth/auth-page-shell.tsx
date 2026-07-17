@@ -25,13 +25,14 @@ export function AuthPageShell({
 
   return (
     <main
-      className="relative min-h-[100svh] overflow-hidden bg-fp-paper bg-cover bg-center px-4 py-6 text-fp-ink sm:px-6"
+      className="relative isolate min-h-[100svh] overflow-hidden bg-fp-paper bg-cover bg-center px-4 py-6 text-fp-ink sm:px-6"
       data-auth-background
       style={{ backgroundImage: `url('${AUTH_BACKGROUND}')` }}
     >
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[var(--fp-page-gradient)] opacity-80 mix-blend-screen"
+        className="fp-auth-background-wash pointer-events-none absolute inset-0"
+        data-auth-background-wash
       />
       <section
         className={
@@ -40,7 +41,10 @@ export function AuthPageShell({
             : "relative mx-auto grid min-h-[calc(100svh-3rem)] w-full max-w-md content-center gap-6"
         }
       >
-        <div className="grid gap-6">
+        <div
+          className="fp-auth-surface grid gap-6 p-4 backdrop-blur-sm sm:p-6"
+          data-auth-surface
+        >
           <Link
             className="inline-flex w-fit items-center gap-2 rounded-[8px] text-[15px] font-bold outline-none focus:ring-2 focus:ring-fp-ink/25"
             href="/"
@@ -67,7 +71,7 @@ export function AuthPageShell({
             <p className="text-[15px] font-medium leading-6 text-fp-muted-ink">{summary}</p>
           </div>
 
-          <div className="fp-panel p-4 backdrop-blur-md sm:p-5">
+          <div className="fp-panel-flat p-4 sm:p-5">
             {children}
           </div>
 
