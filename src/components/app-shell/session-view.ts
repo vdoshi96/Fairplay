@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { NextRequest } from "next/server";
+import { cache } from "react";
 
 import type { HouseholdSummary } from "@/contracts/auth";
 import type { PersonaSummary } from "@/contracts/personas";
@@ -14,7 +15,7 @@ export type AppSessionView = {
   selectedPersonaId: string | null;
 };
 
-export async function getAppSessionView(): Promise<AppSessionView | null> {
+export const getAppSessionView = cache(async (): Promise<AppSessionView | null> => {
   const requestHeaders = await headers();
   const request = new NextRequest("http://fairplay.local", {
     headers: requestHeaders
@@ -41,4 +42,4 @@ export async function getAppSessionView(): Promise<AppSessionView | null> {
       personas.find((persona) => persona.id === session.selectedPersonaId) ?? null,
     selectedPersonaId: session.selectedPersonaId
   };
-}
+});

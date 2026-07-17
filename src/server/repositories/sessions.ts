@@ -77,25 +77,30 @@ export async function touchSessionActivity(input: {
   sessionId: string;
   householdId: HouseholdId;
   seenAt: string | Date;
+  lastSeenAtOrBefore: string | Date;
 }): Promise<SessionSummary | null> {
   const updated = await prisma.session.updateMany({
     where: {
       id: input.sessionId,
       householdId: input.householdId,
-      revokedAt: null
+      revokedAt: null,
+      lastSeenAt: {
+        lte: new Date(input.lastSeenAtOrBefore)
+      }
     },
     data: {
       lastSeenAt: new Date(input.seenAt)
     }
   });
 
-  if (updated.count !== 1) {
+  if (updated.count !== 0 && updated.count !== 1) {
     return null;
   }
 
-  const session = await prisma.session.findUnique({
+  const session = await prisma.session.findFirst({
     where: {
-      id: input.sessionId
+      id: input.sessionId,
+      householdId: input.householdId
     }
   });
 
