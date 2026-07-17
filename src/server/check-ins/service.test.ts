@@ -351,6 +351,42 @@ describe("check-in service", () => {
     );
   });
 
+  it("preserves helper and backup edits when a check-in delegates a role change", async () => {
+    const deps = makeDeps();
+    const service = createCheckInService(deps);
+    const decision = {
+      decisionType: "change_role" as const,
+      summary: "Max will provide backup while Alex remains accountable.",
+      effectiveAt: "2026-05-08T12:00:00.000Z",
+      responsibilityId,
+      responsibilityEffect: {
+        kind: "change_role" as const,
+        assignments: [
+          {
+            personaKey: "alex" as const,
+            role: "accountable_owner" as const,
+            scope: "outcome" as const
+          },
+          {
+            personaKey: "max" as const,
+            role: "backup" as const,
+            scope: "temporary" as const
+          }
+        ],
+        handoffNotes: "Max has the fallback checklist.",
+        revisitAt: "2026-05-22T12:00:00.000Z"
+      }
+    };
+
+    await service.recordDecision(session, checkInId, itemId, decision);
+
+    expect(deps.applyResponsibilityDecision).toHaveBeenCalledWith({
+      session,
+      responsibilityId,
+      decision
+    });
+  });
+
   it("rejects responsibility effects for custom agenda items", async () => {
     const deps = makeDeps({
       getCheckIn: vi.fn().mockResolvedValue(

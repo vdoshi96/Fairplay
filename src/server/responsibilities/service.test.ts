@@ -265,7 +265,7 @@ describe("responsibility service", () => {
     expect(deps.createResponsibilityEvent).not.toHaveBeenCalled();
   });
 
-  it("keeps non-owner legacy assignment edits serialized against the owner set", async () => {
+  it("threads the responsibility revision into an atomic non-owner assignment edit", async () => {
     const deps = makeDeps({
       getResponsibility: vi.fn().mockResolvedValue(
         detail({
@@ -302,7 +302,10 @@ describe("responsibility service", () => {
         householdId,
         responsibilityId,
         createdByPersonaId: alexId,
+        expectedUpdatedAt,
         expectedOwnerPersonaKeys: ["alex"],
+        handoffNotes: null,
+        revisitAt: null,
         assignments: [
           {
             personaId: alexId,
@@ -319,15 +322,51 @@ describe("responsibility service", () => {
         ]
       })
     );
-    expect(deps.createResponsibilityEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        householdId,
-        responsibilityId,
-        actorPersonaId: alexId,
-        eventType: "assignment_changed",
-        payload: expect.objectContaining({ handoffNotes: null, revisitAt: null })
+    expect(deps.createResponsibilityEvent).not.toHaveBeenCalled();
+  });
+
+  it("does not retry a helper edit when its internal responsibility revision is stale", async () => {
+    const conflict = Object.assign(new Error("stale revision"), {
+      code: "CONFLICT"
+    });
+    const deps = makeDeps({
+      getResponsibility: vi.fn().mockResolvedValue(
+        detail({
+          currentAssignments: [
+            {
+              personaKey: "alex",
+              role: "accountable_owner",
+              scope: "outcome"
+            }
+          ]
+        })
+      ),
+      replaceActiveAssignments: vi.fn().mockRejectedValue(conflict)
+    });
+    const service = createResponsibilityService(deps);
+
+    await expect(
+      service.updateAssignments(session, responsibilityId, {
+        effectiveAt: "2026-05-08T12:00:00.000Z",
+        assignments: [
+          {
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          },
+          {
+            personaKey: "max",
+            role: "backup",
+            scope: "temporary"
+          }
+        ]
       })
+    ).rejects.toBe(conflict);
+
+    expect(deps.replaceActiveAssignments).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedUpdatedAt })
     );
+    expect(deps.createResponsibilityEvent).not.toHaveBeenCalled();
   });
 
   it("routes ownership agreements through one atomic repository operation", async () => {

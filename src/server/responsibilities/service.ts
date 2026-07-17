@@ -24,7 +24,7 @@ import type { CurrentSession } from "@/server/auth/current-session";
 import { prisma } from "@/server/db/prisma";
 import { ensureHouseholdCatalogResponsibilities } from "@/server/repositories/card-templates";
 import {
-  addResponsibilityAssignments,
+  applyResponsibilityAssignmentRevision,
   applyResponsibilityOwnershipAgreement,
   type ApplyResponsibilityOwnershipAgreementInput,
   createResponsibility,
@@ -75,8 +75,11 @@ export type ReplaceActiveAssignmentsInput = {
   responsibilityId: ResponsibilityId;
   createdByPersonaId: PersonaId;
   effectiveAt: string;
-  expectedOwnerPersonaKeys?: ("alex" | "max")[];
+  expectedUpdatedAt: string;
+  expectedOwnerPersonaKeys: ("alex" | "max")[];
   assignments: AssignmentReplacement[];
+  handoffNotes?: string | null;
+  revisitAt?: string | null;
 };
 
 export type ResponsibilityEventInput = {
@@ -425,21 +428,11 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
         responsibilityId,
         createdByPersonaId: actorPersonaId,
         effectiveAt: input.effectiveAt,
+        expectedUpdatedAt: responsibility.updatedAt,
         expectedOwnerPersonaKeys: currentOwnerKeys,
-        assignments
-      });
-
-      await deps.createResponsibilityEvent({
-        householdId: session.householdId,
-        responsibilityId,
-        actorPersonaId,
-        eventType: "assignment_changed",
-        occurredAt: input.effectiveAt,
-        payload: {
-          assignments: input.assignments,
-          handoffNotes: input.handoffNotes ?? null,
-          revisitAt: input.revisitAt ?? null
-        }
+        assignments,
+        handoffNotes: input.handoffNotes ?? null,
+        revisitAt: input.revisitAt ?? null
       });
 
       return updated;
@@ -580,17 +573,21 @@ export const responsibilityService = createResponsibilityService({
   ensureCatalogResponsibilities: ensureHouseholdCatalogResponsibilities,
   applyOwnershipAgreement: applyResponsibilityOwnershipAgreement,
   async replaceActiveAssignments(input) {
-    return addResponsibilityAssignments({
+    return applyResponsibilityAssignmentRevision({
       householdId: input.householdId,
       responsibilityId: input.responsibilityId,
-      createdByPersonaId: input.createdByPersonaId,
-      startsAt: input.effectiveAt,
+      actorPersonaId: input.createdByPersonaId,
+      effectiveAt: input.effectiveAt,
+      expectedUpdatedAt: input.expectedUpdatedAt,
       expectedOwnerPersonaKeys: input.expectedOwnerPersonaKeys,
       assignments: input.assignments.map((assignment) => ({
         personaId: assignment.personaId,
+        personaKey: assignment.personaKey,
         role: assignment.role,
         scope: assignment.scope
-      }))
+      })),
+      handoffNotes: input.handoffNotes,
+      revisitAt: input.revisitAt
     });
   },
   async createResponsibilityEvent(input) {

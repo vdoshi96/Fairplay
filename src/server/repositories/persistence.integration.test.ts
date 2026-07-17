@@ -8,6 +8,7 @@ import { createHouseholdWithPersonas } from "./households";
 import { listPersonasForHousehold } from "./personas";
 import {
   addResponsibilityAssignments,
+  applyResponsibilityAssignmentRevision,
   applyResponsibilityCardDistribution,
   applyResponsibilityOwnershipAgreement,
   createResponsibility,
@@ -930,6 +931,121 @@ describe("responsibility repository", () => {
         }
       })
     ).resolves.toBe(1);
+  });
+
+  test("prevents a concurrently opened ownership agreement from erasing a newer helper edit", async () => {
+    const { household, personas } = await createTestHousehold(
+      "ownership-legacy-helper-cas"
+    );
+    const [alex, max] = personas;
+    const responsibility = await createResponsibility({
+      householdId: household.id,
+      createdByPersonaId: alex.id,
+      title: "Legacy helper revision card",
+      summary: null,
+      areaKeys: ["home_base"],
+      hiddenEffortKeys: ["planning"],
+      cadence: "weekly",
+      status: "active",
+      visibility: "shared_household",
+      nextReviewAt: null
+    });
+    await addResponsibilityAssignments({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      createdByPersonaId: alex.id,
+      startsAt: "2026-05-01T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ]
+    });
+
+    // This revision represents an ownership sheet that was already open when
+    // the compatibility/check-in path added a helper.
+    const openedAgreementRevision = responsibility.updatedAt;
+    const helperEdit = await applyResponsibilityAssignmentRevision({
+      householdId: household.id,
+      responsibilityId: responsibility.id,
+      actorPersonaId: max.id,
+      expectedUpdatedAt: openedAgreementRevision,
+      expectedOwnerPersonaKeys: ["alex"],
+      effectiveAt: "2026-05-10T12:00:00.000Z",
+      assignments: [
+        {
+          personaId: alex.id,
+          personaKey: "alex",
+          role: "accountable_owner",
+          scope: "outcome"
+        },
+        {
+          personaId: max.id,
+          personaKey: "max",
+          role: "helper",
+          scope: "support"
+        }
+      ],
+      handoffNotes: "Max has the supply context.",
+      revisitAt: "2026-06-01T12:00:00.000Z"
+    });
+
+    expect(new Date(helperEdit.updatedAt).getTime()).toBeGreaterThan(
+      new Date(openedAgreementRevision).getTime()
+    );
+    await expect(
+      applyResponsibilityOwnershipAgreement({
+        householdId: household.id,
+        responsibilityId: responsibility.id,
+        actorPersonaId: alex.id,
+        expectedUpdatedAt: openedAgreementRevision,
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+        ],
+        reviewAt: "2026-08-01T12:00:00.000Z"
+      })
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+
+    await expect(
+      getResponsibilityDetail({
+        householdId: household.id,
+        responsibilityId: responsibility.id
+      })
+    ).resolves.toMatchObject({
+      updatedAt: helperEdit.updatedAt,
+      nextReviewAt: null,
+      currentAssignments: expect.arrayContaining([
+        { personaKey: "alex", role: "accountable_owner", scope: "outcome" },
+        { personaKey: "max", role: "helper", scope: "support" }
+      ])
+    });
+    await expect(
+      prisma.responsibilityEvent.findMany({
+        where: {
+          responsibilityId: responsibility.id,
+          eventType: "assignment_changed"
+        },
+        select: { payload: true }
+      })
+    ).resolves.toEqual([
+      {
+        payload: {
+          assignments: [
+            {
+              personaKey: "alex",
+              role: "accountable_owner",
+              scope: "outcome"
+            },
+            { personaKey: "max", role: "helper", scope: "support" }
+          ],
+          handoffNotes: "Max has the supply context.",
+          revisitAt: "2026-06-01T12:00:00.000Z"
+        }
+      }
+    ]);
   });
 
   test("rejects a stale handoff even when both concurrent requests chose a mode", async () => {
