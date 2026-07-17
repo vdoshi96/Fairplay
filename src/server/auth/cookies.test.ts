@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { setSessionCookie } from "./cookies";
+import {
+  setSessionCookie,
+  shouldUseSecureSessionCookie
+} from "./cookies";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe("session cookies", () => {
   it("sets a positive max age for future expirations", () => {
@@ -49,5 +56,38 @@ describe("session cookies", () => {
     expect(() =>
       setSessionCookie(response, "raw-session-token", "not-a-date")
     ).toThrow("Invalid session expiration.");
+  });
+
+  it("keeps production cookies secure for deployed and invalid origins", () => {
+    vi.stubEnv("NODE_ENV", "production");
+
+    vi.stubEnv("APP_BASE_URL", "https://fairplay.example");
+    expect(shouldUseSecureSessionCookie()).toBe(true);
+
+    vi.stubEnv("APP_BASE_URL", "http://fairplay.example");
+    expect(shouldUseSecureSessionCookie()).toBe(true);
+
+    vi.stubEnv("APP_BASE_URL", "not-a-url");
+    expect(shouldUseSecureSessionCookie()).toBe(true);
+  });
+
+  it("allows local production-server QA over loopback HTTP", () => {
+    vi.stubEnv("NODE_ENV", "production");
+
+    for (const appBaseUrl of [
+      "http://localhost:3101",
+      "http://127.0.0.1:3101",
+      "http://[::1]:3101"
+    ]) {
+      vi.stubEnv("APP_BASE_URL", appBaseUrl);
+      expect(shouldUseSecureSessionCookie()).toBe(false);
+    }
+  });
+
+  it("does not require Secure cookies in development", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("APP_BASE_URL", "https://fairplay.example");
+
+    expect(shouldUseSecureSessionCookie()).toBe(false);
   });
 });
