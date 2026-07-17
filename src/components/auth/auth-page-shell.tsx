@@ -51,7 +51,7 @@ export function AuthPageShell({
           >
             <span
               aria-hidden="true"
-              className="grid h-10 w-10 place-items-center rounded-[8px] border border-fp-line bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)]"
+              className="grid h-11 w-11 place-items-center rounded-[8px] border border-fp-line bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)]"
             >
               <span className="relative h-5 w-5 rounded-full border-2 border-fp-shared">
                 <span className="absolute -left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-fp-alex" />
