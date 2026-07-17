@@ -4,14 +4,14 @@ Last updated: 2026-07-16
 
 ## Current Phase
 
-The first four Fairplay Improvement Program milestones are implemented through the current verification branch: atomic card distribution and Ask Greg-to-Deal continuity; descriptive household work mapping with explicit ownership agreements; UI/accessibility/motion polish; and server, client-bundle, physics, CSS, and responsive-asset efficiency.
+All five Fairplay Improvement Program milestones are implemented in the current code: atomic card distribution and Ask Greg-to-Deal continuity; descriptive household work mapping with explicit ownership agreements; UI/accessibility/motion polish; server, client-bundle, physics, CSS, and responsive-asset efficiency; and security/reliability hardening with cross-browser accessibility coverage.
 
 The previous tooling follow-up stabilized local verification: Playwright e2e now builds the app and runs against `next start` with explicit local runtime env, and Prisma local migration uses a dedicated `SHADOW_DATABASE_URL` plus a shadow DB setup helper so app roles without `CREATEDB` no longer block `migrate dev`.
 
 ## Branch And Working Tree
 
 - Improvement Program correctness shipped in PR #56 and descriptive equity/ownership agreements shipped in PR #57; local `main` was synchronized to each merge before the next milestone began.
-- UI/accessibility/motion shipped in PR #58. The performance/assets milestone is complete on `codex/fairplay-performance-assets` and gated by the complete local regression ladder before merge.
+- UI/accessibility/motion shipped in PR #58 and performance/assets shipped in PR #59. Security/reliability is complete in the final milestone and passed the complete local regression ladder.
 - Earlier merged UX/card PRs include #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, #45 focused patch QA/docs, and #47 catalog/deal/board plus Little Alex fix.
 
 ## What Exists
@@ -24,6 +24,10 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 
 ## Recent Product State
 
+- Browser document responses use a per-request nonce CSP with centralized frame, referrer, permissions, and content-type protections; cookie-authenticated unsafe methods require exact same-origin requests.
+- Household creation enforces an 8 KiB streamed body ceiling and bounded privacy-hashed client/process attempt limits before Argon2id or database work. The application limiter is process-local.
+- Production session cookies remain secure by default; only the local Playwright production server opts into the HTTP-loopback exception.
+- Chromium, desktop WebKit, iPhone WebKit, and touch Chromium verify the real Deal-to-Board-to-Check-in path with full-report WCAG A/AA Axe scans.
 - Household catalog reconciliation is gated by an additive version marker. Existing households reconcile once; current-version overview reads perform no catalog writes.
 - Summary pages select current assignments without loading assignment history or lifecycle-note payloads; responsibility details retain complete editor/history data.
 - Session resolution is memoized per React server request and activity writes occur at most once every five minutes without weakening revocation or expiration checks.
@@ -71,6 +75,22 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Active feature-guide launchers, guide practice components, generated UI registry entries, Library/Settings dummy workflows, and the onboarding-preview AI route are removed from active code.
 
 ## Verification From This Pass
+
+Security/reliability milestone verification passed:
+
+```bash
+npm run db:wait
+npm run prisma:validate
+npm run prisma:generate
+npm run prisma:migrate -- --skip-seed
+npm run lint
+npm run typecheck
+npm test -- --run --maxWorkers=4
+npm run build
+npx playwright test --workers=1
+```
+
+The final Vitest run passed 110 files / 679 tests, including DB-backed integration coverage. The production build completed with 38 pages and middleware. Playwright passed 35/35 scenarios across Chromium, desktop WebKit, iPhone WebKit, and touch Chromium; the cross-browser scenario performs a real Deal assignment, verifies Board persistence, schedules a Check-in, validates the response/theme CSP nonce integration, and fails every scoped WCAG A/AA violation. A dedicated real-browser Little Alex recording and an iOS 26.5 simulator Add-to-Home-Screen/standalone-launch smoke are retained under ignored `test-results/`. The connected physical iPhone was unavailable. Details are in `docs/implementation/2026-07-16-security-reliability.md`.
 
 Performance/assets milestone verification passed:
 
@@ -175,8 +195,8 @@ The local tooling stability pass replaced the flaky `next dev` Playwright server
 ## Needs Verification
 
 - Deprecated `/api/ai-card-drafts/[id]/regenerate-image` route behavior and whether it should remain for compatibility.
-- Browser storage audit beyond theme-only `localStorage`: household data, private drafts, sensitive notes, concern details, session secrets, API keys, credentials, and plaintext passwords must remain out of `localStorage`, `sessionStorage`, and `indexedDB`.
-- Improvement Program security hardening, WebKit/iPhone-like/touch Playwright projects, automated accessibility checks, real Little Alex motion recording, and manual iPhone Add-to-Home-Screen smoke remain in the next milestone/final QA.
+- Shared signup throttling across multiple production processes remains an infrastructure follow-up; the application limiter is intentionally bounded and process-local.
+- A physical-iPhone Add-to-Home-Screen smoke remains desirable when the connected iPhone is available; the completed fallback used an iOS 26.5 iPhone 17 simulator.
 - Local ignored clutter: `.DS_Store`, `docs/.DS_Store`, `docs/agents/.DS_Store`, `docs/superpowers/.DS_Store`, `References/.DS_Store`, and `tsconfig.tsbuildinfo`.
 
 ## Verified This Pass
@@ -196,6 +216,7 @@ The local tooling stability pass replaced the flaky `next dev` Playwright server
 - Catalog/deal/board and Little Alex verification passed: `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (89 files, 538 tests), `npm run build`, targeted corrective responsive/Little Alex/guided-learning/auth Playwright specs, and full `npm run test:e2e -- --workers=1` (28 tests). `npm run prisma:migrate -- --skip-seed` hit local shadow DB permission `P3014`; `prisma migrate deploy` applied the catalog identity migration successfully.
 - Local e2e/Prisma stability verification passed: `git diff --check`, `npm run prisma:validate`, `npm run typecheck`, `npm run lint`, `npm test -- --run` (90 files, 540 tests), `npm run prisma:migrate -- --skip-seed`, and full `npm run test:e2e` (28 tests). The previous local shadow DB permission `P3014` is resolved by `SHADOW_DATABASE_URL` and `npm run db:shadow`.
 - Dynamic redesign verification passed: `git diff --check`, `npm run prisma:validate`, `npm run lint`, `npm run typecheck`, `npm test -- --run` (84 files, 496 tests), `npm run build`, targeted dark-mode visual QA, targeted reduced-motion Little Alex QA, full `npm run test:e2e` (28 tests), and Browser-rendered authenticated QA across the main app pages with zero console errors. Details are tracked in `docs/implementation/2026-05-09-dynamic-redesign.md`.
+- Current browser storage inspection found only the allowed theme-mode key in runtime `localStorage` calls and no runtime `sessionStorage` or IndexedDB use.
 
 ## Suggested Cleanup Plan
 
