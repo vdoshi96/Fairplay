@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
-import { THEME_STORAGE_KEY } from "@/components/theme/theme-constants";
+import { headers } from "next/headers";
+import { THEME_INIT_SCRIPT } from "@/components/theme/theme-init-script";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { REQUEST_NONCE_HEADER } from "@/lib/http-security";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,36 +48,21 @@ export const viewport: Viewport = {
   colorScheme: "light dark"
 };
 
-const themeInitScript = `
-(function() {
-  try {
-    var mode = window.localStorage.getItem("${THEME_STORAGE_KEY}");
-    if (mode !== "system" && mode !== "light" && mode !== "dark") {
-      mode = "system";
-    }
-    var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    var theme = mode === "dark" || (mode === "system" && prefersDark) ? "dark" : "light";
-    var root = document.documentElement;
-    root.dataset.theme = theme;
-    root.dataset.themeMode = mode;
-    root.style.colorScheme = theme;
-  } catch (error) {
-    document.documentElement.dataset.theme = "light";
-    document.documentElement.dataset.themeMode = "system";
-    document.documentElement.style.colorScheme = "light";
-  }
-})();
-`;
-
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const nonce = requestHeaders.get(REQUEST_NONCE_HEADER) ?? undefined;
+
   return (
     <html lang="en" className={geistSans.variable} suppressHydrationWarning>
       <body>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
