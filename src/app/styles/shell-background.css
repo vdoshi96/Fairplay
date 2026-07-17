@@ -1,0 +1,348 @@
+@tailwind utilities;
+
+@layer utilities {
+  .fp-responsive-image-background {
+    background-image: var(--fp-background-fallback);
+    background-image: var(--fp-background-mobile);
+  }
+
+  @media (min-width: 768px) {
+    .fp-responsive-image-background {
+      background-image: var(--fp-background-desktop);
+    }
+  }
+
+  .fp-page-background-wash {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--fp-paper) 90%, transparent),
+        color-mix(in srgb, var(--fp-paper) 82%, transparent) 44%,
+        color-mix(in srgb, var(--fp-paper) 74%, transparent)
+      ),
+      radial-gradient(
+        circle at 22% 18%,
+        color-mix(in srgb, var(--fp-surface-strong) 72%, transparent),
+        transparent 48%
+      );
+  }
+
+  .fp-auth-background-wash {
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--fp-paper) 92%, transparent),
+        color-mix(in srgb, var(--fp-paper) 80%, transparent) 58%,
+        color-mix(in srgb, var(--fp-paper) 66%, transparent)
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--fp-paper) 62%, transparent),
+        color-mix(in srgb, var(--fp-paper) 76%, transparent)
+      );
+  }
+
+  .fp-auth-surface {
+    background: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 97%,
+      var(--fp-paper)
+    );
+    border: 1px solid var(--fp-line);
+    border-radius: 8px;
+    box-shadow: var(--fp-shadow-elevated);
+  }
+
+  .fp-page-hero-wash {
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--fp-surface-strong) 92%, transparent),
+        color-mix(in srgb, var(--fp-surface-strong) 74%, transparent) 54%,
+        color-mix(in srgb, var(--fp-surface-strong) 48%, transparent)
+      ),
+      radial-gradient(
+        circle at 82% 20%,
+        color-mix(in srgb, var(--fp-primary) 16%, transparent),
+        transparent 34%
+      );
+  }
+
+  .fp-generated-surface-wash {
+    background-color: var(--fp-surface-strong);
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--fp-surface-strong) 96%, transparent),
+      color-mix(in srgb, var(--fp-surface-strong) 88%, transparent) 58%,
+      color-mix(in srgb, var(--fp-surface) 62%, transparent)
+    );
+  }
+
+  .fp-app-chrome {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--fp-chrome) 96%, transparent),
+        color-mix(in srgb, var(--fp-chrome) 84%, transparent)
+      );
+    border-color: var(--fp-line);
+    box-shadow: var(--fp-shadow-soft);
+  }
+
+  .fp-panel {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--fp-card) 96%, transparent),
+        color-mix(in srgb, var(--fp-card-muted) 82%, transparent)
+      );
+    border: 1px solid var(--fp-line);
+    border-radius: 8px;
+    box-shadow: var(--fp-shadow-crisp);
+  }
+
+  .fp-panel-flat {
+    background: var(--fp-card);
+    border: 1px solid var(--fp-line);
+    border-radius: 8px;
+  }
+
+  .fp-input {
+    min-height: 2.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--fp-line);
+    background: color-mix(in srgb, var(--fp-surface-strong) 88%, transparent);
+    color: var(--fp-ink);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--fp-ink) 5%, transparent) inset;
+    outline: none;
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .fp-input:focus,
+  .fp-input:focus-visible {
+    border-color: var(--fp-focus);
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--fp-focus) 18%, transparent),
+      0 1px 0 color-mix(in srgb, var(--fp-ink) 5%, transparent) inset;
+  }
+
+  .fp-asset-edge-wash {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.06),
+        color-mix(in srgb, var(--fp-paper) 18%, transparent) 58%,
+        color-mix(in srgb, var(--fp-ink) 10%, transparent)
+      );
+  }
+
+  html[data-theme="dark"] .fp-generated-surface-wash {
+    background-color: rgba(45, 41, 35, 0.94);
+    background-image: linear-gradient(
+      90deg,
+      rgba(45, 41, 35, 0.98),
+      rgba(45, 41, 35, 0.92) 58%,
+      rgba(45, 41, 35, 0.72)
+    );
+  }
+
+  html[data-theme="dark"] .fp-page-background-wash {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--fp-paper) 92%, transparent),
+        color-mix(in srgb, var(--fp-paper) 84%, transparent) 44%,
+        color-mix(in srgb, var(--fp-paper) 78%, transparent)
+      ),
+      radial-gradient(
+        circle at 22% 18%,
+        color-mix(in srgb, var(--fp-surface-strong) 68%, transparent),
+        transparent 48%
+      );
+  }
+
+  html[data-theme="dark"] .fp-auth-background-wash {
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--fp-paper) 94%, transparent),
+        color-mix(in srgb, var(--fp-paper) 84%, transparent) 58%,
+        color-mix(in srgb, var(--fp-paper) 72%, transparent)
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--fp-paper) 68%, transparent),
+        color-mix(in srgb, var(--fp-paper) 82%, transparent)
+      );
+  }
+
+  html[data-theme="dark"] .fp-page-hero-wash {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(45, 41, 35, 0.9),
+        rgba(45, 41, 35, 0.76) 54%,
+        rgba(45, 41, 35, 0.52)
+      ),
+      radial-gradient(
+        circle at 82% 20%,
+        rgba(244, 239, 231, 0.1),
+        transparent 34%
+      );
+  }
+
+  html[data-theme="dark"] :is(.bg-white, .hover\:bg-white:hover) {
+    background-color: var(--fp-surface-strong) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/55) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 55%,
+      transparent
+    ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/70) {
+    background-color: rgba(45, 41, 35, 0.7) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/72) {
+    background-color: rgba(45, 41, 35, 0.72) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/75) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 75%,
+      transparent
+    ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/80) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 80%,
+      transparent
+    ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/82) {
+    background-color: rgba(45, 41, 35, 0.82) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/88) {
+    background-color: rgba(45, 41, 35, 0.88) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/90) {
+    background-color: rgba(45, 41, 35, 0.9) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/95) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 95%,
+      transparent
+    ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-white\/\[0\.92\]) {
+    background-color: color-mix(
+      in srgb,
+      var(--fp-surface-strong) 92%,
+      transparent
+    ) !important;
+  }
+
+  html[data-theme="dark"] :is(.bg-stone-50\/80) {
+    background-color: var(--fp-surface-muted) !important;
+  }
+
+  html[data-theme="dark"]
+    :is(
+      .bg-amber-50\/80,
+      .bg-amber-50\/90,
+      .bg-sky-50\/80,
+      .bg-sky-50\/90,
+      .bg-rose-50\/80,
+      .bg-rose-50\/90,
+      .bg-violet-50\/80,
+      .bg-violet-50\/90,
+      .bg-emerald-50\/80,
+      .bg-emerald-50\/90,
+      .bg-indigo-50\/90,
+      .bg-teal-50\/90,
+      .bg-stone-50\/90
+    ) {
+    background-color: rgba(45, 41, 35, 0.96) !important;
+  }
+
+  html[data-theme="dark"]
+    :is(
+      .border-amber-200,
+      .border-sky-200,
+      .border-rose-200,
+      .border-violet-200,
+      .border-emerald-200,
+      .border-indigo-200,
+      .border-teal-200,
+      .border-white\/70,
+      .border-white\/80
+    ) {
+    border-color: var(--fp-line) !important;
+  }
+
+  html[data-theme="dark"] :is(.text-stone-950) {
+    color: var(--fp-ink) !important;
+  }
+
+  html[data-theme="dark"] :is(.text-stone-700, .text-stone-600) {
+    color: var(--fp-muted-ink) !important;
+  }
+
+  html[data-theme="dark"] :is(.border-stone-300, .border-stone-200) {
+    border-color: var(--fp-line) !important;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--fp-paper);
+  overflow-x: clip;
+}
+
+body {
+  min-height: 100svh;
+  margin: 0;
+  background: var(--fp-page-gradient);
+  background-attachment: scroll;
+  color: var(--fp-ink);
+  font-family: var(--font-geist-sans), Inter, ui-sans-serif, system-ui,
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: clip;
+  padding-left: var(--fp-app-safe-area-left);
+  padding-right: var(--fp-app-safe-area-right);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  body {
+    background-attachment: fixed;
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

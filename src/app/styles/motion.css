@@ -1,0 +1,119 @@
+@keyframes fp-persona-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes fp-assignment-shift {
+  0% {
+    opacity: 0.72;
+    transform: translateX(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fp-checkin-spark {
+  0% {
+    opacity: 0;
+    transform: scale(0.82) translateY(4px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fp-cloud-drift {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(8px);
+  }
+}
+
+@keyframes fp-leaf-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes fp-character-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.012);
+  }
+}
+
+@keyframes fp-card-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes fp-panel-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fp-motion-persona-bob {
+  animation: fp-persona-bob 4s ease-in-out infinite;
+}
+
+.fp-motion-assignment-shift {
+  animation: fp-assignment-shift 260ms ease-out both;
+}
+
+.fp-motion-checkin-spark {
+  animation: fp-checkin-spark 480ms ease-out both;
+}
+
+.fp-motion-cloud-drift {
+  animation: fp-cloud-drift 8s ease-in-out infinite;
+}
+
+.fp-motion-leaf-sway {
+  animation: fp-leaf-sway 4s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.fp-motion-character-breathe {
+  animation: fp-character-breathe 5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.fp-motion-card-float {
+  animation: fp-card-float 5.5s ease-in-out infinite;
+}
+
+.fp-motion-panel-enter {
+  animation: fp-panel-enter 180ms ease-out both;
+}

@@ -1,0 +1,22 @@
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .fp-motion-persona-bob,
+  .fp-motion-assignment-shift,
+  .fp-motion-checkin-spark,
+  .fp-motion-cloud-drift,
+  .fp-motion-leaf-sway,
+  .fp-motion-character-breathe,
+  .fp-motion-card-float,
+  .fp-motion-panel-enter {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
