@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { PersonaSummary } from "@/contracts/personas";
 import type { ResponsibilityAssignmentSummary } from "@/contracts/responsibilities";
 import type { AssignmentRole, AssignmentScope, PersonaKey } from "@/domain/enums";
 import { Button } from "@/components/ui/button";
+import { AlertDialog } from "@/components/ui/dialog";
 
 const roleOptions = [
   "none",
@@ -79,6 +80,9 @@ export function OwnershipDetails({
   >(null);
   const [handoffNotes, setHandoffNotes] = useState("");
   const [pending, setPending] = useState(false);
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const saveTriggerRef = useRef<HTMLButtonElement>(null);
+  const confirmationCancelRef = useRef<HTMLButtonElement>(null);
   const [feedback, setFeedback] = useState<
     { message: string; tone: "error" | "success" } | null
   >(null);
@@ -126,6 +130,33 @@ export function OwnershipDetails({
   );
   const returnsToDeal = currentOwnerKeys.size > 0 && nextOwnerKeys.size === 0;
 
+  async function persistAgreement() {
+    if (!onSave) {
+      return;
+    }
+
+    setPending(true);
+    try {
+      await onSave({
+        assignments,
+        expectedUpdatedAt,
+        expectedOwnerPersonaKeys: [...currentOwnerKeys].sort(),
+        handoffMode: removesCurrentOwner ? handoffMode : null,
+        handoffNotes: handoffNotes.trim() || null,
+        reviewAt: reviewDate ? `${reviewDate}T12:00:00.000Z` : null
+      });
+      setConfirmationOpen(false);
+      setFeedback({
+        tone: "success",
+        message: returnsToDeal ? "Card returned to Deal." : "Ownership agreement saved."
+      });
+    } catch {
+      setFeedback({ tone: "error", message: "Unable to save the ownership agreement. Try again." });
+    } finally {
+      setPending(false);
+    }
+  }
+
   async function save() {
     setFeedback(null);
 
@@ -169,33 +200,21 @@ export function OwnershipDetails({
       return;
     }
 
-    setPending(true);
-    try {
-      await onSave({
-        assignments,
-        expectedUpdatedAt,
-        expectedOwnerPersonaKeys: [...currentOwnerKeys].sort(),
-        handoffMode: removesCurrentOwner ? handoffMode : null,
-        handoffNotes: handoffNotes.trim() || null,
-        reviewAt: reviewDate ? `${reviewDate}T12:00:00.000Z` : null
-      });
-      setFeedback({
-        tone: "success",
-        message: returnsToDeal ? "Card returned to Deal." : "Ownership agreement saved."
-      });
-    } catch {
-      setFeedback({ tone: "error", message: "Unable to save the ownership agreement. Try again." });
-    } finally {
-      setPending(false);
+    if (removesCurrentOwner) {
+      setConfirmationOpen(true);
+      return;
     }
+
+    await persistAgreement();
   }
 
   return (
-    <section
-      aria-labelledby="ownership-details-heading"
-      className="grid gap-4 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4"
-      id="ownership-details"
-    >
+    <>
+      <section
+        aria-labelledby="ownership-details-heading"
+        className="grid gap-4 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4"
+        id="ownership-details"
+      >
       <div className="grid gap-1">
         <h2 className="text-[18px] font-bold text-fp-ink" id="ownership-details-heading">
           Ownership details
@@ -301,7 +320,12 @@ export function OwnershipDetails({
       </label>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button disabled={!onSave || pending} onClick={() => void save()} variant="primary">
+        <Button
+          disabled={!onSave || pending}
+          onClick={() => void save()}
+          ref={saveTriggerRef}
+          variant="primary"
+        >
           {pending
             ? returnsToDeal
               ? "Returning..."
@@ -319,6 +343,50 @@ export function OwnershipDetails({
           </p>
         ) : null}
       </div>
-    </section>
+      </section>
+      <AlertDialog
+        description={
+          returnsToDeal
+            ? handoffMode === "retain_former_owner_as_helper"
+              ? "The card will return to Deal as unassigned, and the former owner will remain recorded as a helper."
+              : "The card will return to Deal as unassigned, and the former ownership assignment will end."
+            : handoffMode === "retain_former_owner_as_helper"
+              ? "The ownership will change, and the former owner will remain recorded as a helper."
+              : "The ownership will change, and the former ownership assignment will end."
+        }
+        initialFocusRef={confirmationCancelRef}
+        onClose={() => {
+          if (!pending) {
+            setConfirmationOpen(false);
+          }
+        }}
+        open={confirmationOpen}
+        title={returnsToDeal ? "Return this card to Deal?" : "Confirm ownership handoff?"}
+        triggerRef={saveTriggerRef}
+      >
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            disabled={pending}
+            onClick={() => setConfirmationOpen(false)}
+            ref={confirmationCancelRef}
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={pending}
+            onClick={() => void persistAgreement()}
+            variant="primary"
+          >
+            {pending
+              ? returnsToDeal
+                ? "Returning..."
+                : "Saving..."
+              : returnsToDeal
+                ? "Confirm return to Deal"
+                : "Confirm handoff"}
+          </Button>
+        </div>
+      </AlertDialog>
+    </>
   );
 }

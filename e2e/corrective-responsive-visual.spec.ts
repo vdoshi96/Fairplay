@@ -505,6 +505,9 @@ test.describe("corrective responsive visual QA", () => {
     await page.getByRole("button", { name: "Clear roles for Deal" }).click();
     await page.getByRole("radio", { name: "Remove the former owner" }).click();
     await page.getByRole("button", { name: "Return card to Deal" }).click();
+    await expect(page.getByRole("alertdialog", { name: "Return this card to Deal?" }))
+      .toBeVisible();
+    await page.getByRole("button", { name: "Confirm return to Deal" }).click();
     await expect(page.getByRole("status")).toHaveText("Card returned to Deal.");
 
     await page.goto("/app/distribute");
