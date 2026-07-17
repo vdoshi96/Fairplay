@@ -1119,17 +1119,16 @@ async function dragLittleAlex(page: Page, deltaX: number, deltaY: number) {
     })
     .toBe(true);
 
-  const box = await grabTarget.boundingBox();
-
-  expect(box).not.toBeNull();
-
-  if (!box) {
-    return;
-  }
-
   let startPoint = "";
   await expect
     .poll(async () => {
+      const box = await grabTarget.boundingBox();
+
+      if (!box) {
+        startPoint = "";
+        return startPoint;
+      }
+
       startPoint = await page.evaluate(({ height, width, x, y }) => {
         const viewport = {
           height: window.innerHeight,

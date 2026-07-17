@@ -1,11 +1,12 @@
 # Fairplay Decisions
 
-Last updated: 2026-05-08
+Last updated: 2026-07-16
 
 ## Decision Log
 
 | Date | Decision | Rationale | Status |
 | --- | --- | --- | --- |
+| 2026-07-16 | Keep household equity descriptive and route every existing-owner change through one revision-guarded ownership agreement. | Counts make hidden and due work visible without scoring partners; a row-locked agreement preserves helpers/backups, requires an explicit former-owner handoff, and derives shared presentation without changing persisted lane values. | Accepted |
 | 2026-05-08 | Make cards the primary product surface and retire the homepage. | The user requested a full mobile-first product rethink around card distribution; direct action beats a learning/dashboard landing page. | Accepted |
 | 2026-05-08 | Treat Library and Deal as the same source catalog, with assignment/status stored separately. | The user rejected the put-in-play workflow and duplicate card instances; source template identity should be stable while Board display is derived from assignment/categorization. | Accepted |
 | 2026-05-08 | Enforce one active household responsibility per source template. | A partial unique index plus duplicate archival migration prevents repeated Library/Deal actions from creating duplicate catalog cards while preserving distinct source cards with similar titles. | Accepted |

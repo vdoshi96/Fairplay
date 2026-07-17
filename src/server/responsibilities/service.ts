@@ -1,6 +1,10 @@
 import type { Prisma } from "@prisma/client";
 
 import type { PersonaSummary } from "@/contracts/personas";
+import {
+  OwnershipAgreementMutationSchema,
+  type OwnershipAgreementMutation
+} from "@/contracts/ownership-agreement";
 import type {
   LoadSnapshotSummary,
   ResponsibilityAssignmentSummary,
@@ -20,7 +24,9 @@ import type { CurrentSession } from "@/server/auth/current-session";
 import { prisma } from "@/server/db/prisma";
 import { ensureHouseholdCatalogResponsibilities } from "@/server/repositories/card-templates";
 import {
-  addResponsibilityAssignments,
+  applyResponsibilityAssignmentRevision,
+  applyResponsibilityOwnershipAgreement,
+  type ApplyResponsibilityOwnershipAgreementInput,
   createResponsibility,
   getResponsibilityDetail,
   listResponsibilitiesForHousehold
@@ -69,7 +75,11 @@ export type ReplaceActiveAssignmentsInput = {
   responsibilityId: ResponsibilityId;
   createdByPersonaId: PersonaId;
   effectiveAt: string;
+  expectedUpdatedAt: string;
+  expectedOwnerPersonaKeys: ("alex" | "max")[];
   assignments: AssignmentReplacement[];
+  handoffNotes?: string | null;
+  revisitAt?: string | null;
 };
 
 export type ResponsibilityEventInput = {
@@ -100,6 +110,9 @@ export type ResponsibilityServiceDeps = {
   ) => Promise<ResponsibilitySummary[]>;
   replaceActiveAssignments: (
     input: ReplaceActiveAssignmentsInput
+  ) => Promise<ResponsibilityDetail>;
+  applyOwnershipAgreement: (
+    input: ApplyResponsibilityOwnershipAgreementInput
   ) => Promise<ResponsibilityDetail>;
   createResponsibilityEvent: (
     input: ResponsibilityEventInput
@@ -147,21 +160,41 @@ function assertSharedResponsibilityVisibility(visibility: Visibility) {
   }
 }
 
-function currentAccountableOwners(assignments: readonly ResponsibilityAssignmentSummary[]) {
+function currentOwnerPersonaKeys(
+  assignments: readonly ResponsibilityAssignmentSummary[]
+) {
   return assignments
-    .filter((assignment) => assignment.role === "accountable_owner")
+    .filter(
+      (assignment) =>
+        assignment.role === "accountable_owner" ||
+        assignment.role === "shared_owner"
+    )
     .map((assignment) => assignment.personaKey)
     .sort();
 }
 
-function accountableOwnerChanged(
+function ownerAgreementSignature(
+  assignments: readonly ResponsibilityAssignmentSummary[]
+) {
+  return assignments
+    .filter(
+      (assignment) =>
+        assignment.role === "accountable_owner" ||
+        assignment.role === "shared_owner"
+    )
+    .map(
+      (assignment) =>
+        `${assignment.personaKey}:${assignment.role}:${assignment.scope}`
+    )
+    .sort()
+    .join("|");
+}
+
+function ownerAgreementChanged(
   previous: readonly ResponsibilityAssignmentSummary[],
   next: readonly ResponsibilityAssignmentSummary[]
 ) {
-  return (
-    currentAccountableOwners(previous).join(",") !==
-    currentAccountableOwners(next).join(",")
-  );
+  return ownerAgreementSignature(previous) !== ownerAgreementSignature(next);
 }
 
 async function getRequiredResponsibility(
@@ -372,18 +405,49 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
         responsibilityId
       );
 
+      const currentOwnerKeys = currentOwnerPersonaKeys(
+        responsibility.currentAssignments
+      );
       if (
-        currentAccountableOwners(responsibility.currentAssignments).length > 0 &&
-        accountableOwnerChanged(
-          responsibility.currentAssignments,
-          input.assignments
-        ) &&
-        (!input.handoffNotes || !input.revisitAt)
+        currentOwnerKeys.length > 0 &&
+        ownerAgreementChanged(responsibility.currentAssignments, input.assignments)
       ) {
         throw new ResponsibilityServiceError(
           "INVALID_INPUT",
-          "Accountable owner changes need handoff context and a revisit date."
+          "Owner changes must use the ownership agreement endpoint."
         );
+      }
+
+      const requestedOwnerKeys = currentOwnerPersonaKeys(input.assignments);
+      if (currentOwnerKeys.length === 0 && requestedOwnerKeys.length > 0) {
+        const agreement = OwnershipAgreementMutationSchema.safeParse({
+          responsibilityId,
+          expectedUpdatedAt: responsibility.updatedAt,
+          expectedOwnerPersonaKeys: [],
+          assignments: input.assignments,
+          reviewAt: input.revisitAt ?? null,
+          handoffMode: null,
+          handoffNotes: input.handoffNotes ?? null
+        });
+
+        if (!agreement.success) {
+          throw new ResponsibilityServiceError(
+            "INVALID_INPUT",
+            "Initial ownership agreement input is invalid."
+          );
+        }
+
+        return deps.applyOwnershipAgreement({
+          householdId: session.householdId,
+          responsibilityId,
+          actorPersonaId,
+          expectedUpdatedAt: agreement.data.expectedUpdatedAt,
+          expectedOwnerPersonaKeys: agreement.data.expectedOwnerPersonaKeys,
+          assignments: agreement.data.assignments,
+          reviewAt: agreement.data.reviewAt,
+          handoffMode: agreement.data.handoffMode,
+          handoffNotes: agreement.data.handoffNotes
+        });
       }
 
       const assignments = await assignmentsWithPersonaIds(
@@ -396,23 +460,49 @@ export function createResponsibilityService(deps: ResponsibilityServiceDeps) {
         responsibilityId,
         createdByPersonaId: actorPersonaId,
         effectiveAt: input.effectiveAt,
-        assignments
-      });
-
-      await deps.createResponsibilityEvent({
-        householdId: session.householdId,
-        responsibilityId,
-        actorPersonaId,
-        eventType: "assignment_changed",
-        occurredAt: input.effectiveAt,
-        payload: {
-          assignments: input.assignments,
-          handoffNotes: input.handoffNotes ?? null,
-          revisitAt: input.revisitAt ?? null
-        }
+        expectedUpdatedAt: responsibility.updatedAt,
+        expectedOwnerPersonaKeys: currentOwnerKeys,
+        assignments,
+        handoffNotes: input.handoffNotes ?? null,
+        revisitAt: input.revisitAt ?? null
       });
 
       return updated;
+    },
+
+    async updateOwnershipAgreement(
+      session: CurrentSession,
+      responsibilityId: ResponsibilityId,
+      input: OwnershipAgreementMutation
+    ): Promise<ResponsibilityDetail> {
+      const actorPersonaId = requireSelectedPersona(session);
+      const agreement = OwnershipAgreementMutationSchema.safeParse(input);
+
+      if (!agreement.success) {
+        throw new ResponsibilityServiceError(
+          "INVALID_INPUT",
+          "Ownership agreement input is invalid."
+        );
+      }
+
+      if (agreement.data.responsibilityId !== responsibilityId) {
+        throw new ResponsibilityServiceError(
+          "INVALID_INPUT",
+          "Ownership agreement does not match this responsibility."
+        );
+      }
+
+      return deps.applyOwnershipAgreement({
+        householdId: session.householdId,
+        responsibilityId,
+        actorPersonaId,
+        expectedUpdatedAt: agreement.data.expectedUpdatedAt,
+        expectedOwnerPersonaKeys: agreement.data.expectedOwnerPersonaKeys,
+        assignments: agreement.data.assignments,
+        reviewAt: agreement.data.reviewAt,
+        handoffMode: agreement.data.handoffMode,
+        handoffNotes: agreement.data.handoffNotes
+      });
     },
 
     async updateStatus(
@@ -513,17 +603,23 @@ export const responsibilityService = createResponsibilityService({
   getResponsibility: getResponsibilityDetail,
   listResponsibilities: listResponsibilitiesForHousehold,
   ensureCatalogResponsibilities: ensureHouseholdCatalogResponsibilities,
+  applyOwnershipAgreement: applyResponsibilityOwnershipAgreement,
   async replaceActiveAssignments(input) {
-    return addResponsibilityAssignments({
+    return applyResponsibilityAssignmentRevision({
       householdId: input.householdId,
       responsibilityId: input.responsibilityId,
-      createdByPersonaId: input.createdByPersonaId,
-      startsAt: input.effectiveAt,
+      actorPersonaId: input.createdByPersonaId,
+      effectiveAt: input.effectiveAt,
+      expectedUpdatedAt: input.expectedUpdatedAt,
+      expectedOwnerPersonaKeys: input.expectedOwnerPersonaKeys,
       assignments: input.assignments.map((assignment) => ({
         personaId: assignment.personaId,
+        personaKey: assignment.personaKey,
         role: assignment.role,
         scope: assignment.scope
-      }))
+      })),
+      handoffNotes: input.handoffNotes,
+      revisitAt: input.revisitAt
     });
   },
   async createResponsibilityEvent(input) {

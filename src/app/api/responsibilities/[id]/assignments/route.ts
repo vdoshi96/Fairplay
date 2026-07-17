@@ -90,6 +90,17 @@ function serviceErrorResponse(error: unknown): NextResponse {
     return invalidRequest();
   }
 
+  if (code === "AUTH_REQUIRED") {
+    return authRequired();
+  }
+
+  if (code === "CONFLICT") {
+    return NextResponse.json(
+      { error: "Ownership agreement changed. Refresh and try again." },
+      { status: 409 }
+    );
+  }
+
   if (code === "NOT_FOUND") {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }

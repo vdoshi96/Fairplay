@@ -17,6 +17,10 @@ import type {
   ResponsibilityDetail,
   ResponsibilitySummary
 } from "../../contracts/responsibilities";
+import type {
+  OwnershipAgreementAssignment,
+  OwnershipHandoffMode
+} from "../../contracts/ownership-agreement";
 import type { PersonaKey } from "../../domain/enums";
 import type { HouseholdId, PersonaId, ResponsibilityId } from "../../domain/ids";
 import { RepositoryError } from "../db/errors";
@@ -112,6 +116,9 @@ function toResponsibilitySummary(
     nextReviewAt: nullableIso(responsibility.nextReviewAt),
     householdStandard: responsibility.householdStandard,
     sourceDefinition: responsibility.sourceDefinition,
+    sourceConception: responsibility.sourceConception,
+    sourcePlanning: responsibility.sourcePlanning,
+    sourceExecution: responsibility.sourceExecution,
     sourceMinimumStandard: responsibility.sourceMinimumStandard,
     sourceCoverAssetPath: responsibility.sourceCoverAssetPath
   };
@@ -250,6 +257,7 @@ export async function addResponsibilityAssignments(input: {
   responsibilityId: ResponsibilityId;
   createdByPersonaId: PersonaId;
   startsAt: string | Date;
+  expectedOwnerPersonaKeys?: PersonaKey[];
   assignments: {
     personaId: PersonaId;
     role: AssignmentRole;
@@ -276,7 +284,13 @@ export async function addResponsibilityAssignments(input: {
             endsAt: null
           },
           select: {
-            startsAt: true
+            startsAt: true,
+            role: true,
+            persona: {
+              select: {
+                key: true
+              }
+            }
           }
         }
       }
@@ -294,6 +308,25 @@ export async function addResponsibilityAssignments(input: {
         "INVALID_INPUT",
         "Assignment effective date cannot predate the current assignment."
       );
+    }
+
+    if (input.expectedOwnerPersonaKeys) {
+      const currentOwnerPersonaKeys = [
+        ...new Set(
+          responsibility.assignments
+            .filter((assignment) => isOwnerRole(assignment.role))
+            .map((assignment) => assignment.persona.key)
+        )
+      ];
+      if (
+        currentOwnerPersonaKeys.sort().join("|") !==
+        [...input.expectedOwnerPersonaKeys].sort().join("|")
+      ) {
+        throw new RepositoryError(
+          "CONFLICT",
+          "Ownership agreement changed before the legacy assignment write."
+        );
+      }
     }
 
     const personaIds = [
@@ -352,6 +385,211 @@ export async function addResponsibilityAssignments(input: {
   return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
 }
 
+export type ApplyResponsibilityAssignmentRevisionInput = {
+  householdId: HouseholdId;
+  responsibilityId: ResponsibilityId;
+  actorPersonaId: PersonaId;
+  expectedUpdatedAt: string;
+  expectedOwnerPersonaKeys: PersonaKey[];
+  effectiveAt: string | Date;
+  assignments: {
+    personaId: PersonaId;
+    personaKey: PersonaKey;
+    role: AssignmentRole;
+    scope: AssignmentScope;
+  }[];
+  handoffNotes?: string | null;
+  revisitAt?: string | null;
+};
+
+/**
+ * Applies a compatibility assignment edit as one revision-guarded write.
+ *
+ * Legacy callers do not send a revision over the wire. The service reads the
+ * current responsibility first and threads that revision into this operation,
+ * which then compares it under the responsibility row lock. Assignment
+ * history, its audit event, and the responsibility revision advance together,
+ * so an ownership agreement opened before a helper/backup edit cannot erase it.
+ */
+export async function applyResponsibilityAssignmentRevision(
+  input: ApplyResponsibilityAssignmentRevisionInput
+): Promise<ResponsibilityDetail> {
+  const requestedEffectiveAt = new Date(input.effectiveAt);
+  if (Number.isNaN(requestedEffectiveAt.getTime())) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Assignment effective date must be valid."
+    );
+  }
+
+  const expectedUpdatedAt = new Date(input.expectedUpdatedAt);
+  if (Number.isNaN(expectedUpdatedAt.getTime())) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Expected responsibility revision must be valid."
+    );
+  }
+
+  const revisitAt = input.revisitAt ? new Date(input.revisitAt) : null;
+  if (revisitAt && Number.isNaN(revisitAt.getTime())) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Assignment revisit date must be valid."
+    );
+  }
+
+  const responsibility = await prisma.$transaction(async (tx) => {
+    await lockResponsibilityForUpdate(tx, input);
+
+    const existing = await tx.responsibility.findFirst({
+      where: {
+        id: input.responsibilityId,
+        householdId: input.householdId
+      },
+      select: {
+        id: true,
+        updatedAt: true,
+        assignments: {
+          where: {
+            endsAt: null
+          },
+          select: {
+            startsAt: true,
+            role: true,
+            persona: {
+              select: {
+                key: true
+              }
+            }
+          }
+        }
+      }
+    });
+    if (!existing) {
+      throw new RepositoryError(
+        "NOT_FOUND",
+        "Responsibility not found for household."
+      );
+    }
+
+    if (existing.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+      throw new RepositoryError(
+        "CONFLICT",
+        "Responsibility changed before the legacy assignment write."
+      );
+    }
+
+    const currentOwnerPersonaKeys = [
+      ...new Set(
+        existing.assignments
+          .filter((assignment) => isOwnerRole(assignment.role))
+          .map((assignment) => assignment.persona.key)
+      )
+    ];
+    if (
+      currentOwnerPersonaKeys.sort().join("|") !==
+      [...input.expectedOwnerPersonaKeys].sort().join("|")
+    ) {
+      throw new RepositoryError(
+        "CONFLICT",
+        "Ownership agreement changed before the legacy assignment write."
+      );
+    }
+
+    const latestActiveStart = existing.assignments.reduce(
+      (latest, assignment) => Math.max(latest, assignment.startsAt.getTime()),
+      Number.NEGATIVE_INFINITY
+    );
+    if (requestedEffectiveAt.getTime() < latestActiveStart) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Assignment effective date cannot predate the current assignment."
+      );
+    }
+
+    const personaIds = [
+      ...new Set([
+        input.actorPersonaId,
+        ...input.assignments.map((assignment) => assignment.personaId)
+      ])
+    ];
+    const householdPersonaCount = await tx.persona.count({
+      where: {
+        householdId: input.householdId,
+        id: {
+          in: personaIds
+        }
+      }
+    });
+    if (householdPersonaCount !== personaIds.length) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Assignment personas must belong to the responsibility household."
+      );
+    }
+
+    const revisionAt = new Date(
+      Math.max(Date.now(), existing.updatedAt.getTime() + 1)
+    );
+
+    await tx.responsibilityAssignment.updateMany({
+      where: {
+        responsibilityId: input.responsibilityId,
+        responsibility: {
+          householdId: input.householdId
+        },
+        endsAt: null
+      },
+      data: {
+        endsAt: requestedEffectiveAt
+      }
+    });
+    if (input.assignments.length > 0) {
+      await tx.responsibilityAssignment.createMany({
+        data: input.assignments.map((assignment) => ({
+          responsibilityId: input.responsibilityId,
+          personaId: assignment.personaId,
+          role: assignment.role,
+          scope: assignment.scope,
+          startsAt: requestedEffectiveAt,
+          createdByPersonaId: input.actorPersonaId
+        }))
+      });
+    }
+
+    await tx.responsibilityEvent.create({
+      data: {
+        householdId: input.householdId,
+        responsibilityId: input.responsibilityId,
+        actorPersonaId: input.actorPersonaId,
+        eventType: "assignment_changed",
+        payload: {
+          assignments: input.assignments.map((assignment) => ({
+            personaKey: assignment.personaKey,
+            role: assignment.role,
+            scope: assignment.scope
+          })),
+          handoffNotes: input.handoffNotes ?? null,
+          revisitAt: input.revisitAt ?? null
+        },
+        occurredAt: requestedEffectiveAt
+      }
+    });
+
+    return tx.responsibility.update({
+      where: {
+        id: input.responsibilityId
+      },
+      data: {
+        updatedAt: revisionAt
+      },
+      include: responsibilityInclude
+    });
+  });
+
+  return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
+}
+
 export async function getResponsibilityDetail(input: {
   householdId: HouseholdId;
   responsibilityId: ResponsibilityId;
@@ -396,6 +634,445 @@ export async function applyResponsibilityCardDistribution(
   const responsibility = await prisma.$transaction((tx) =>
     applyResponsibilityCardDistributionWithClient(tx, input)
   );
+
+  return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
+}
+
+export type ApplyResponsibilityOwnershipAgreementInput = {
+  householdId: HouseholdId;
+  responsibilityId: ResponsibilityId;
+  actorPersonaId: PersonaId;
+  expectedUpdatedAt: string;
+  expectedOwnerPersonaKeys: PersonaKey[];
+  assignments: OwnershipAgreementAssignment[];
+  reviewAt: string | null;
+  handoffMode?: OwnershipHandoffMode | null;
+  handoffNotes?: string | null;
+};
+
+function isOwnerRole(role: AssignmentRole) {
+  return role === "accountable_owner" || role === "shared_owner";
+}
+
+function assignmentSignature(
+  assignments: readonly OwnershipAgreementAssignment[]
+) {
+  return assignments
+    .map(
+      (assignment) =>
+        `${assignment.personaKey}:${assignment.role}:${assignment.scope}`
+    )
+    .sort()
+    .join("|");
+}
+
+/**
+ * Replaces a card's complete ownership agreement and review date atomically.
+ *
+ * The responsibility row is locked before current ownership is inspected so a
+ * stale client cannot silently remove an owner that another request just added.
+ * Single-owner and ownerless agreements align the existing persisted lane to
+ * the owner or Deal pool. A first owner also activates an unassigned catalog
+ * card, while paused and not-relevant cards keep their explicit lifecycle
+ * state. Shared presentation remains derived from assignments rather than
+ * introducing a new persisted lane.
+ */
+export async function applyResponsibilityOwnershipAgreement(
+  input: ApplyResponsibilityOwnershipAgreementInput
+): Promise<ResponsibilityDetail> {
+  const expectedUpdatedAt = new Date(input.expectedUpdatedAt);
+  if (Number.isNaN(expectedUpdatedAt.getTime())) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Expected responsibility revision must be valid."
+    );
+  }
+
+  const reviewAt = input.reviewAt === null ? null : new Date(input.reviewAt);
+  if (reviewAt && Number.isNaN(reviewAt.getTime())) {
+    throw new RepositoryError(
+      "INVALID_INPUT",
+      "Ownership review date must be valid."
+    );
+  }
+
+  const responsibility = await prisma.$transaction(async (tx) => {
+    await lockResponsibilityForUpdate(tx, input);
+
+    const [existing, actorPersona, agreementPersonas] = await Promise.all([
+      tx.responsibility.findFirst({
+        where: {
+          id: input.responsibilityId,
+          householdId: input.householdId
+        },
+        select: {
+          id: true,
+          updatedAt: true,
+          status: true,
+          boardLane: true,
+          boardSortOrder: true,
+          assignments: {
+            where: {
+              endsAt: null
+            },
+            select: {
+              role: true,
+              scope: true,
+              startsAt: true,
+              persona: {
+                select: {
+                  key: true
+                }
+              }
+            }
+          }
+        }
+      }),
+      tx.persona.findFirst({
+        where: {
+          id: input.actorPersonaId,
+          householdId: input.householdId
+        },
+        select: {
+          id: true
+        }
+      }),
+      tx.persona.findMany({
+        where: {
+          householdId: input.householdId,
+          key: {
+            in: input.assignments.map((assignment) => assignment.personaKey)
+          }
+        },
+        select: {
+          id: true,
+          key: true
+        }
+      })
+    ]);
+
+    if (!existing) {
+      throw new RepositoryError(
+        "NOT_FOUND",
+        "Responsibility disappeared during ownership update."
+      );
+    }
+
+    if (existing.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+      throw new RepositoryError(
+        "CONFLICT",
+        "Responsibility changed since the ownership agreement was opened."
+      );
+    }
+
+    if (!actorPersona) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Actor persona does not belong to the responsibility household."
+      );
+    }
+
+    const requestedPersonaKeys = input.assignments.map(
+      (assignment) => assignment.personaKey
+    );
+    if (
+      new Set(requestedPersonaKeys).size !== requestedPersonaKeys.length ||
+      agreementPersonas.length !== requestedPersonaKeys.length
+    ) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Ownership agreement personas must be unique members of the household."
+      );
+    }
+
+    const requestedOwnerKeys = new Set(
+      input.assignments
+        .filter((assignment) => isOwnerRole(assignment.role))
+        .map((assignment) => assignment.personaKey)
+    );
+    if (
+      new Set(input.expectedOwnerPersonaKeys).size !==
+      input.expectedOwnerPersonaKeys.length
+    ) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Expected owner personas must be unique."
+      );
+    }
+    if (
+      input.assignments.filter(
+        (assignment) => assignment.role === "accountable_owner"
+      ).length > 1
+    ) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Use shared-owner roles when more than one persona owns the work."
+      );
+    }
+    if (
+      input.assignments.some(
+        (assignment) => assignment.role === "shared_owner"
+      ) &&
+      requestedOwnerKeys.size < 2
+    ) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "A shared owner needs another owner in the agreement."
+      );
+    }
+
+    const previousOwnerKeys = [
+      ...new Set(
+        existing.assignments
+          .filter((assignment) => isOwnerRole(assignment.role))
+          .map((assignment) => assignment.persona.key)
+      )
+    ];
+    const removedOwnerKeys = previousOwnerKeys.filter(
+      (personaKey) => !requestedOwnerKeys.has(personaKey)
+    );
+
+    if (
+      [...previousOwnerKeys].sort().join("|") !==
+      [...input.expectedOwnerPersonaKeys].sort().join("|")
+    ) {
+      throw new RepositoryError(
+        "CONFLICT",
+        "Ownership agreement changed since it was opened."
+      );
+    }
+
+    if (requestedOwnerKeys.size === 0) {
+      if (previousOwnerKeys.length === 0) {
+        throw new RepositoryError(
+          "INVALID_INPUT",
+          "An initially unowned card needs at least one owner."
+        );
+      }
+
+      if (input.assignments.length > 0) {
+        throw new RepositoryError(
+          "INVALID_INPUT",
+          "Clear non-owner roles before returning the card to Deal."
+        );
+      }
+    }
+
+    if (removedOwnerKeys.length > 0 && !input.handoffMode) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Choose whether to replace each former owner or retain them as a helper."
+      );
+    }
+
+    if (
+      removedOwnerKeys.length > 0 &&
+      input.handoffMode === "replace_former_owner" &&
+      removedOwnerKeys.some((personaKey) =>
+        input.assignments.some(
+          (assignment) => assignment.personaKey === personaKey
+        )
+      )
+    ) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "Replace-owner handoff cannot also keep the former owner in the agreement."
+      );
+    }
+
+    const finalAssignments = input.assignments.map((assignment) => ({
+      ...assignment
+    }));
+    if (
+      removedOwnerKeys.length > 0 &&
+      input.handoffMode === "retain_former_owner_as_helper"
+    ) {
+      removedOwnerKeys.forEach((personaKey) => {
+        const existingIndex = finalAssignments.findIndex(
+          (assignment) => assignment.personaKey === personaKey
+        );
+        const helperAssignment: OwnershipAgreementAssignment = {
+          personaKey,
+          role: "helper",
+          scope: "support"
+        };
+
+        if (existingIndex >= 0) {
+          finalAssignments[existingIndex] = helperAssignment;
+        } else {
+          finalAssignments.push(helperAssignment);
+        }
+      });
+    }
+
+    const personaIdByKey = new Map(
+      agreementPersonas.map((persona) => [persona.key, persona.id])
+    );
+    const missingRetainedPersonaKeys = finalAssignments
+      .map((assignment) => assignment.personaKey)
+      .filter((personaKey) => !personaIdByKey.has(personaKey));
+    if (missingRetainedPersonaKeys.length > 0) {
+      const retainedPersonas = await tx.persona.findMany({
+        where: {
+          householdId: input.householdId,
+          key: {
+            in: missingRetainedPersonaKeys
+          }
+        },
+        select: {
+          id: true,
+          key: true
+        }
+      });
+      retainedPersonas.forEach((persona) => {
+        personaIdByKey.set(persona.key, persona.id);
+      });
+    }
+    if (
+      personaIdByKey.size <
+      new Set(finalAssignments.map((item) => item.personaKey)).size
+    ) {
+      throw new RepositoryError(
+        "INVALID_INPUT",
+        "A retained former owner is not available in this household."
+      );
+    }
+
+    const currentAssignments: OwnershipAgreementAssignment[] =
+      existing.assignments.map((assignment) => ({
+        personaKey: assignment.persona.key,
+        role: assignment.role,
+        scope: assignment.scope
+      }));
+    const assignmentsChanged =
+      assignmentSignature(currentAssignments) !==
+      assignmentSignature(finalAssignments);
+    const finalOwnerKeys = [
+      ...new Set(
+        finalAssignments
+          .filter((assignment) => isOwnerRole(assignment.role))
+          .map((assignment) => assignment.personaKey)
+      )
+    ];
+    let nextBoardLane: ResponsibilityBoardLane = existing.boardLane;
+    if (finalOwnerKeys.length === 0) {
+      nextBoardLane = "cards_of_concern";
+    } else if (finalOwnerKeys.length === 1) {
+      nextBoardLane = finalOwnerKeys[0] === "alex" ? "player_1" : "player_2";
+    }
+    const boardLaneChanged = nextBoardLane !== existing.boardLane;
+    const nextStatus: ResponsibilityStatus =
+      finalOwnerKeys.length === 0
+        ? "unassigned"
+        : existing.status === "unassigned"
+          ? "active"
+          : existing.status;
+    const statusChanged = nextStatus !== existing.status;
+
+    const latestActiveStart = existing.assignments.reduce(
+      (latest, assignment) => Math.max(latest, assignment.startsAt.getTime()),
+      Number.NEGATIVE_INFINITY
+    );
+    const effectiveAt = new Date(
+      Math.max(Date.now(), latestActiveStart, existing.updatedAt.getTime() + 1)
+    );
+
+    if (assignmentsChanged) {
+      await tx.responsibilityAssignment.updateMany({
+        where: {
+          responsibilityId: input.responsibilityId,
+          responsibility: {
+            householdId: input.householdId
+          },
+          endsAt: null
+        },
+        data: {
+          endsAt: effectiveAt
+        }
+      });
+
+      if (finalAssignments.length > 0) {
+        await tx.responsibilityAssignment.createMany({
+          data: finalAssignments.map((assignment) => ({
+            responsibilityId: input.responsibilityId,
+            personaId: personaIdByKey.get(assignment.personaKey)!,
+            role: assignment.role,
+            scope: assignment.scope,
+            startsAt: effectiveAt,
+            createdByPersonaId: input.actorPersonaId
+          }))
+        });
+      }
+    }
+
+    await tx.responsibilityEvent.create({
+      data: {
+        householdId: input.householdId,
+        responsibilityId: input.responsibilityId,
+        actorPersonaId: input.actorPersonaId,
+        eventType: "assignment_changed",
+        payload: {
+          assignments: finalAssignments,
+          handoffNotes: input.handoffNotes ?? null,
+          revisitAt: input.reviewAt,
+          reviewAt: input.reviewAt,
+          handoffMode:
+            removedOwnerKeys.length > 0 ? input.handoffMode ?? null : null,
+          formerOwnerPersonaKeys: removedOwnerKeys
+        },
+        occurredAt: effectiveAt
+      }
+    });
+
+    if (statusChanged) {
+      await tx.responsibilityEvent.create({
+        data: {
+          householdId: input.householdId,
+          responsibilityId: input.responsibilityId,
+          actorPersonaId: input.actorPersonaId,
+          eventType: "status_changed",
+          payload: {
+            status: nextStatus,
+            note: null,
+            reviewOn: null
+          },
+          occurredAt: effectiveAt
+        }
+      });
+    }
+
+    if (boardLaneChanged) {
+      await tx.responsibilityEvent.create({
+        data: {
+          householdId: input.householdId,
+          responsibilityId: input.responsibilityId,
+          actorPersonaId: input.actorPersonaId,
+          eventType: "board_lane_changed",
+          payload: {
+            fromLane: existing.boardLane,
+            toLane: nextBoardLane,
+            fromSortOrder: existing.boardSortOrder,
+            toSortOrder: existing.boardSortOrder,
+            note: null
+          },
+          occurredAt: effectiveAt
+        }
+      });
+    }
+
+    return tx.responsibility.update({
+      where: {
+        id: input.responsibilityId
+      },
+      data: {
+        nextReviewAt: reviewAt,
+        status: nextStatus,
+        boardLane: nextBoardLane,
+        updatedAt: effectiveAt
+      },
+      include: responsibilityInclude
+    });
+  });
 
   return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
 }
@@ -504,14 +1181,10 @@ async function applyResponsibilityCardDistributionWithClient(
     : currentOwnerKeys.length !== 0;
   const hasCurrentOwner = currentOwnerKeys.length > 0;
 
-  if (
-    assignmentChanged &&
-    hasCurrentOwner &&
-    !input.handoffNotes
-  ) {
+  if (assignmentChanged && existing.assignments.length > 0) {
     throw new RepositoryError(
       "INVALID_INPUT",
-      "Accountable owner changes need handoff context."
+      "Use ownership details to change an owned or collaborative card."
     );
   }
 

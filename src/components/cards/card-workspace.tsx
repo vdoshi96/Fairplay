@@ -22,8 +22,10 @@ import {
   type PointerEvent
 } from "react";
 
+import type { HouseholdWorkMap } from "@/contracts/household-work-map";
 import type { PersonaSummary } from "@/contracts/personas";
 import type { ResponsibilitySummary } from "@/contracts/responsibilities";
+import { HouseholdWorkMapSummary } from "./household-work-map-summary";
 import type { CardBucket, CardDistributionBucket, CardDistributionMove } from "./card-state";
 import {
   CARD_BUCKET_HELP,
@@ -32,6 +34,7 @@ import {
   bucketForCard,
   getCardsForPersona,
   getDistributableCards,
+  getSharedOwnerCards,
   groupCardsByBucket
 } from "./card-state";
 
@@ -42,6 +45,7 @@ type CardWorkspaceProps = {
   responsibilities: CardWorkspaceCard[];
   selectedPersona: PersonaSummary;
   view: "board" | "distribute" | "yourCards";
+  workMap?: HouseholdWorkMap;
 };
 
 type CardWorkspaceCard = ResponsibilitySummary & {
@@ -109,7 +113,8 @@ export function CardWorkspace({
   onDistribute,
   responsibilities,
   selectedPersona,
-  view
+  view,
+  workMap
 }: CardWorkspaceProps) {
   if (view === "yourCards") {
     return (
@@ -125,6 +130,7 @@ export function CardWorkspace({
       <BoardView
         onDistribute={onDistribute}
         responsibilities={responsibilities}
+        workMap={workMap}
       />
     );
   }
@@ -135,6 +141,7 @@ export function CardWorkspace({
       initialSelectedId={initialSelectedId}
       onDistribute={onDistribute}
       responsibilities={responsibilities}
+      workMap={workMap}
     />
   );
 }
@@ -143,10 +150,15 @@ function DistributeView({
   addedToDeal,
   initialSelectedId,
   onDistribute,
-  responsibilities
+  responsibilities,
+  workMap
 }: Pick<
   CardWorkspaceProps,
-  "addedToDeal" | "initialSelectedId" | "onDistribute" | "responsibilities"
+  | "addedToDeal"
+  | "initialSelectedId"
+  | "onDistribute"
+  | "responsibilities"
+  | "workMap"
 >) {
   const [removedIds, setRemovedIds] = useState<Set<string>>(() => new Set());
   const [drag, setDrag] = useState<DragState | null>(null);
@@ -371,6 +383,10 @@ function DistributeView({
         <p className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-3 text-[14px] font-semibold text-fp-ink shadow-[var(--fp-shadow-soft)]">
           {addedCard.title} was added to Deal and selected.
         </p>
+      ) : null}
+
+      {workMap ? (
+        <HouseholdWorkMapSummary variant="deal" workMap={workMap} />
       ) : null}
 
       <label className="fp-panel grid gap-2 p-3 text-[13px] font-bold text-fp-muted-ink sm:p-4">
@@ -620,11 +636,17 @@ function YourCardsView({
 
 function BoardView({
   onDistribute,
-  responsibilities
-}: Pick<CardWorkspaceProps, "onDistribute" | "responsibilities">) {
+  responsibilities,
+  workMap
+}: Pick<CardWorkspaceProps, "onDistribute" | "responsibilities" | "workMap">) {
   const groups = groupCardsByBucket(responsibilities);
-  const primaryBuckets: CardBucket[] = ["alex", "max"];
-  const secondaryBuckets: CardBucket[] = ["savedForLater", "notApplicable"];
+  const sharedCards = getSharedOwnerCards(responsibilities);
+  const sharedCardIds = new Set(sharedCards.map((card) => card.id));
+  const primarySections: PersistedBoardSection[] = ["alex", "max"];
+  const secondarySections: PersistedBoardSection[] = [
+    "savedForLater",
+    "notApplicable"
+  ];
 
   return (
     <section className="grid gap-3 lg:gap-4">
@@ -638,63 +660,107 @@ function BoardView({
         </p>
       </header>
 
+      {workMap ? (
+        <HouseholdWorkMapSummary variant="board" workMap={workMap} />
+      ) : null}
+
       <div
-        className="grid max-w-full gap-3 xl:grid-cols-[minmax(0,1fr)_17rem] xl:items-start"
+        className="grid max-w-full gap-3"
         data-testid="card-board"
       >
+        <BoardLane
+          cards={sharedCards}
+          onDistribute={onDistribute}
+          priority="shared"
+          section="shared"
+        />
         <div
-          className="grid min-w-0 gap-3 lg:grid-cols-2"
-          data-testid="primary-board-lanes"
+          className="grid max-w-full gap-3 xl:grid-cols-[minmax(0,1fr)_17rem] xl:items-start"
         >
-          {primaryBuckets.map((bucket) => (
-            <BoardLane
-              bucket={bucket}
-              cards={groups[bucket]}
-              key={bucket}
-              onDistribute={onDistribute}
-              priority="primary"
-            />
-          ))}
-        </div>
-        <div
-          className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1"
-          data-testid="secondary-board-lanes"
-        >
-          {secondaryBuckets.map((bucket) => (
-            <BoardLane
-              bucket={bucket}
-              cards={groups[bucket]}
-              key={bucket}
-              onDistribute={onDistribute}
-              priority="secondary"
-            />
-          ))}
+          <div
+            className="grid min-w-0 gap-3 lg:grid-cols-2"
+            data-testid="primary-board-lanes"
+          >
+            {primarySections.map((section) => (
+              <BoardLane
+                cards={groups[section].filter(
+                  (card) => !sharedCardIds.has(card.id)
+                )}
+                key={section}
+                onDistribute={onDistribute}
+                priority="primary"
+                section={section}
+              />
+            ))}
+          </div>
+          <div
+            className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1"
+            data-testid="secondary-board-lanes"
+          >
+            {secondarySections.map((section) => (
+              <BoardLane
+                cards={groups[section]}
+                key={section}
+                onDistribute={onDistribute}
+                priority="secondary"
+                section={section}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
+type PersistedBoardSection = Exclude<CardBucket, "unassigned">;
+type BoardSectionKey = PersistedBoardSection | "shared";
+
+const BOARD_SECTION_LABELS: Record<BoardSectionKey, string> = {
+  alex: CARD_BUCKET_LABELS.alex,
+  max: CARD_BUCKET_LABELS.max,
+  notApplicable: CARD_BUCKET_LABELS.notApplicable,
+  savedForLater: CARD_BUCKET_LABELS.savedForLater,
+  shared: "Shared"
+};
+
+const BOARD_SECTION_HELP: Record<BoardSectionKey, string> = {
+  alex: CARD_BUCKET_HELP.alex,
+  max: CARD_BUCKET_HELP.max,
+  notApplicable: CARD_BUCKET_HELP.notApplicable,
+  savedForLater: CARD_BUCKET_HELP.savedForLater,
+  shared: "Responsibilities with an explicit shared-owner agreement"
+};
+
+const BOARD_SECTION_TONES: Record<BoardSectionKey, string> = {
+  alex: CARD_BUCKET_TONES.alex,
+  max: CARD_BUCKET_TONES.max,
+  notApplicable: CARD_BUCKET_TONES.notApplicable,
+  savedForLater: CARD_BUCKET_TONES.savedForLater,
+  shared: "border-[color:var(--fp-shared)]/35 bg-[color:var(--fp-shared)]/10"
+};
+
 function BoardLane({
-  bucket,
   cards,
   onDistribute,
-  priority
+  priority,
+  section
 }: {
-  bucket: CardBucket;
   cards: CardWorkspaceCard[];
   onDistribute?: (move: CardDistributionMove) => Promise<void> | void;
-  priority: "primary" | "secondary";
+  priority: "primary" | "secondary" | "shared";
+  section: BoardSectionKey;
 }) {
   return (
     <details
       open
+      data-testid={section === "shared" ? "shared-board-lane" : undefined}
       className={[
         "grid min-w-0 content-start rounded-[8px] border shadow-[var(--fp-shadow-soft)] [&>summary::-webkit-details-marker]:hidden",
         priority === "primary"
           ? "gap-4 p-3 sm:p-4 lg:min-h-[24rem] xl:min-h-[30rem]"
           : "gap-3 p-3 lg:shadow-[var(--fp-shadow-soft)]",
-        CARD_BUCKET_TONES[bucket]
+        BOARD_SECTION_TONES[section]
       ].join(" ")}
     >
       <summary className="flex cursor-pointer list-none items-start justify-between gap-3 rounded-[8px] outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fp-focus)]">
@@ -707,10 +773,10 @@ function BoardLane({
                 : "text-[15px] leading-5"
             ].join(" ")}
           >
-            {CARD_BUCKET_LABELS[bucket]}
+            {BOARD_SECTION_LABELS[section]}
           </h2>
           <p className="mt-1 text-[12px] font-semibold leading-5 text-fp-muted-ink">
-            {CARD_BUCKET_HELP[bucket]}
+            {BOARD_SECTION_HELP[section]}
           </p>
         </div>
         <span className="rounded-[8px] border border-fp-line bg-[var(--fp-surface-strong)] px-2 py-1 text-[12px] font-bold text-fp-ink">
@@ -720,7 +786,7 @@ function BoardLane({
       <div className="grid gap-3">
         {cards.map((card) => (
           <CompactCard
-            bucket={bucket}
+            bucket={section === "shared" ? bucketForCard(card) : section}
             card={card}
             key={card.id}
             onDistribute={onDistribute}
@@ -849,39 +915,42 @@ function CardFileItem({
   const [flipped, setFlipped] = useState(false);
 
   return (
-    <article
-      aria-label={card.title}
-      aria-pressed={flipped}
-      className="grid min-h-[20rem] overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]"
-      onClick={() => setFlipped((current) => !current)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          setFlipped((current) => !current);
-        }
-      }}
-      role="button"
-      tabIndex={0}
-    >
-      {flipped ? (
-        <CardBack card={card} className="p-4" />
-      ) : (
-        <div className="grid grid-rows-[minmax(0,1fr)_auto]">
-          <CardCoverImage card={card} className="min-h-0 bg-fp-surface p-2" />
-          <div className="grid gap-2 p-3">
-            <div className="flex items-start justify-between gap-3">
-              <h2 className="text-[18px] font-bold leading-6 [overflow-wrap:anywhere]">
-                {card.title}
-              </h2>
-              <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-[var(--fp-alex)]" />
+    <article className="grid min-h-[20rem] grid-rows-[minmax(0,1fr)_auto] overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
+      <button
+        aria-label={card.title}
+        aria-pressed={flipped}
+        className="grid min-h-0 min-w-0 overflow-hidden text-left"
+        onClick={() => setFlipped((current) => !current)}
+        type="button"
+      >
+        {flipped ? (
+          <CardBack card={card} className="p-4" />
+        ) : (
+          <div className="grid grid-rows-[minmax(0,1fr)_auto]">
+            <CardCoverImage card={card} className="min-h-0 bg-fp-surface p-2" />
+            <div className="grid gap-2 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-[18px] font-bold leading-6 [overflow-wrap:anywhere]">
+                  {card.title}
+                </h2>
+                <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-[var(--fp-alex)]" />
+              </div>
+              <p className="line-clamp-2 text-[12px] font-semibold leading-5 text-fp-muted-ink">
+                {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
+              </p>
+              <p className="text-[12px] font-bold text-fp-muted-ink">Tap to flip</p>
             </div>
-            <p className="line-clamp-2 text-[12px] font-semibold leading-5 text-fp-muted-ink">
-              {card.areaKeys.map(humanize).slice(0, 3).join(" / ") || "Household"}
-            </p>
-            <p className="text-[12px] font-bold text-fp-muted-ink">Tap to flip</p>
           </div>
-        </div>
-      )}
+        )}
+      </button>
+      {flipped ? (
+        <Link
+          className="inline-flex min-h-11 items-center justify-center border-t border-fp-line bg-[var(--fp-card)] px-3 text-center text-[13px] font-bold text-fp-ink underline-offset-4 hover:underline"
+          href={`/app/responsibilities/${card.id}`}
+        >
+          View or update agreement
+        </Link>
+      ) : null}
     </article>
   );
 }
@@ -898,7 +967,7 @@ function CardBack({
   return (
     <div
       className={[
-        "grid content-start gap-3 bg-[var(--fp-surface-strong)]",
+        "grid h-full content-start gap-3 overflow-y-auto bg-[var(--fp-surface-strong)]",
         className ?? ""
       ].join(" ")}
     >
@@ -928,6 +997,39 @@ function CardBack({
         </p>
       </section>
 
+      <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3">
+        <h3 className="text-[13px] font-bold text-fp-ink">Full ownership includes</h3>
+        <dl className="grid gap-2 text-[12px] leading-5 text-fp-muted-ink">
+          {[
+            ["Conception", card.sourceConception],
+            ["Planning", card.sourcePlanning],
+            ["Execution", card.sourceExecution]
+          ].map(([phase, value]) => (
+            <div className="grid gap-0.5" key={phase}>
+              <dt className="font-bold text-fp-ink">{phase}</dt>
+              <dd className="whitespace-pre-wrap [overflow-wrap:anywhere]">
+                {value || `No ${phase?.toLowerCase()} notes yet.`}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <div className="flex flex-wrap gap-1.5" aria-label="Hidden effort">
+          {card.hiddenEffortKeys.map((effort) => (
+            <span
+              className="rounded-full border border-fp-line bg-[var(--fp-card)] px-2 py-1 text-[11px] font-bold text-fp-muted-ink"
+              key={effort}
+            >
+              {humanize(effort)}
+            </span>
+          ))}
+        </div>
+        <p className="text-[12px] font-semibold text-fp-muted-ink">
+          {card.nextReviewAt
+            ? `Review by ${formatCardReviewDate(card.nextReviewAt)}`
+            : "No review date set."}
+        </p>
+      </section>
+
       <section className="grid gap-1 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-3">
         <h3 className="text-[13px] font-bold text-fp-ink">
           Fogging Estandards
@@ -952,6 +1054,7 @@ function CompactCard({
   const moveBuckets = (["alex", "max", "savedForLater", "notApplicable"] as const).filter(
     (candidate) => candidate !== bucket
   );
+  const hasActiveAssignments = card.currentAssignments.length > 0;
 
   return (
     <article className="grid min-w-0 overflow-hidden rounded-[8px] border border-fp-line bg-[var(--fp-card)] text-left text-fp-ink shadow-[var(--fp-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--fp-shadow-elevated)]">
@@ -977,37 +1080,48 @@ function CompactCard({
       </Link>
       {onDistribute ? (
         <div className="grid gap-2 border-t border-fp-line bg-[var(--fp-surface-strong)] p-2">
-          {bucket !== "unassigned" ? (
-            <button
-              className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
-              onClick={() =>
-                void onDistribute({
-                  bucket: "unassigned",
-                  responsibilityId: card.id
-                })
-              }
-              type="button"
+          {hasActiveAssignments ? (
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-3 text-center text-[12px] font-bold text-fp-ink underline-offset-4 hover:underline"
+              href={`/app/responsibilities/${card.id}#ownership-details`}
             >
-              Remove from board
-            </button>
-          ) : null}
-          <div className="grid grid-cols-2 gap-1">
-            {moveBuckets.map((nextBucket) => (
-              <button
-                className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
-                key={nextBucket}
-                onClick={() =>
-                  void onDistribute({
-                    bucket: nextBucket,
-                    responsibilityId: card.id
-                  })
-                }
-                type="button"
-              >
-                {CARD_BUCKET_LABELS[nextBucket]}
-              </button>
-            ))}
-          </div>
+              Move with ownership details
+            </Link>
+          ) : (
+            <>
+              {bucket !== "unassigned" ? (
+                <button
+                  className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
+                  onClick={() =>
+                    void onDistribute({
+                      bucket: "unassigned",
+                      responsibilityId: card.id
+                    })
+                  }
+                  type="button"
+                >
+                  Remove from board
+                </button>
+              ) : null}
+              <div className="grid grid-cols-2 gap-1">
+                {moveBuckets.map((nextBucket) => (
+                  <button
+                    className="min-h-9 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] px-2 text-[11px] font-bold text-fp-ink"
+                    key={nextBucket}
+                    onClick={() =>
+                      void onDistribute({
+                        bucket: nextBucket,
+                        responsibilityId: card.id
+                      })
+                    }
+                    type="button"
+                  >
+                    {CARD_BUCKET_LABELS[nextBucket]}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       ) : null}
     </article>
@@ -1309,4 +1423,13 @@ function humanize(value: string) {
     .split("_")
     .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatCardReviewDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    year: "numeric"
+  }).format(new Date(value));
 }

@@ -6,22 +6,28 @@ import { CardDetailSheet } from "./card-detail-sheet";
 
 const card = {
   id: "resp_123",
+  updatedAt: "2026-05-04T12:00:00.000Z",
   title: "Auto",
   labels: ["Out", "Daily Grind"],
   boardLane: "cards_of_concern",
   ownerLabel: "Cards of Concern",
   definition: "Keep vehicle needs visible and handled.",
   conception: "Notice repairs and timing.",
+  currentAssignments: [
+    { personaKey: "alex", role: "accountable_owner", scope: "outcome" }
+  ],
   planning: "Schedule service and arrange transport.",
   execution: "Complete service and follow-through.",
   minimumStandard: "Vehicle is safe, legal, and available.",
   householdStandard: "Both drivers can use the car safely each weekday.",
+  hiddenEffortKeys: ["noticing", "planning"],
+  nextReviewAt: "2026-06-15T12:00:00.000Z",
   notes: "Insurance card lives in the glove box.",
   coverAssetPath: "/assets/fairplay/cards/auto.png"
 } as const;
 
 describe("CardDetailSheet", () => {
-  it("shows source cover, ownership, purpose, Fogging Estandards, and lane move", async () => {
+  it("shows card details and routes owned moves through ownership details", () => {
     const onMove = vi.fn();
     render(
       <CardDetailSheet
@@ -45,8 +51,37 @@ describe("CardDetailSheet", () => {
     expect(screen.getByLabelText("Fogging Estandards")).toHaveValue(
       "Both drivers can use the car safely each weekday."
     );
-    expect(screen.queryByText("CPE")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Full ownership includes" })).toBeVisible();
+    expect(screen.getByText("Conception")).toBeVisible();
+    expect(screen.getByText("Notice repairs and timing.")).toBeVisible();
+    expect(screen.getByText("Planning", { selector: "dt" })).toBeVisible();
+    expect(screen.getByText("Schedule service and arrange transport.")).toBeVisible();
+    expect(screen.getByText("Execution")).toBeVisible();
+    expect(screen.getByText("Complete service and follow-through.")).toBeVisible();
+    expect(screen.getByText("Noticing")).toBeVisible();
+    expect(screen.getByText(/Review by/)).toHaveTextContent("Review by Jun 15, 2026");
     expect(screen.queryByText("Insurance card lives in the glove box.")).not.toBeInTheDocument();
+
+    expect(
+      screen.getByRole("link", { name: "Update ownership details" })
+    ).toHaveAttribute("href", "#ownership-details");
+    expect(screen.queryByLabelText("Move destination")).not.toBeInTheDocument();
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it("keeps quick lane assignment available for an ownerless card", async () => {
+    const onMove = vi.fn();
+
+    render(
+      <CardDetailSheet
+        card={{
+          ...card,
+          currentAssignments: [],
+          ownerLabel: "Unassigned"
+        }}
+        onMove={onMove}
+      />
+    );
 
     await userEvent.selectOptions(screen.getByLabelText("Move destination"), "alex");
     await userEvent.click(screen.getByRole("button", { name: "Move" }));
@@ -75,6 +110,33 @@ describe("CardDetailSheet", () => {
     expect(screen.getByRole("img", { name: /dog medicine cover/i })).toHaveClass(
       "object-cover"
     );
+  });
+
+  it("shows editable ownership details when household personas are provided", () => {
+    const onSaveOwnership = vi.fn();
+    render(
+      <CardDetailSheet
+        card={card}
+        onSaveOwnership={onSaveOwnership}
+        personas={[
+          {
+            id: "550e8400-e29b-41d4-a716-446655440001",
+            key: "alex",
+            displayName: "Alex"
+          },
+          {
+            id: "550e8400-e29b-41d4-a716-446655440002",
+            key: "max",
+            displayName: "Max"
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Ownership details" })).toBeVisible();
+    expect(screen.getByLabelText("Alex role")).toHaveValue("accountable_owner");
+    expect(screen.getByLabelText("Max role")).toHaveValue("none");
+    expect(screen.getByRole("button", { name: "Save ownership details" })).toBeEnabled();
   });
 
   it("renders source-card sourceCoverAssetPath with legacy object-contain art treatment", () => {
@@ -125,7 +187,14 @@ describe("CardDetailSheet", () => {
   });
 
   it("keeps lane movement disabled when no move hook is wired", () => {
-    render(<CardDetailSheet card={card} />);
+    render(
+      <CardDetailSheet
+        card={{
+          ...card,
+          currentAssignments: []
+        }}
+      />
+    );
 
     expect(screen.getByText("What is this card for?")).toBeVisible();
     expect(screen.getByText("Fogging Estandards")).toBeVisible();

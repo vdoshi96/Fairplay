@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import type { CardTemplateLabel } from "@/contracts/card-templates";
+import type { PersonaSummary } from "@/contracts/personas";
+import type { ResponsibilityAssignmentSummary } from "@/contracts/responsibilities";
 import type { ResponsibilityBoardLane } from "@/domain/enums";
 import type { CardDistributionBucket } from "@/components/cards/card-state";
 import {
@@ -15,19 +17,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Sheet } from "@/components/ui/sheet";
+import {
+  OwnershipDetails,
+  type OwnershipAgreementSubmission
+} from "@/components/responsibilities/ownership-details";
 
 export type CardDetailCard = {
   id: string;
+  updatedAt: string;
   title: string;
   labels?: readonly CardTemplateLabel[];
   boardLane?: ResponsibilityBoardLane;
   ownerLabel?: string | null;
   definition?: string | null;
   conception?: string | null;
+  currentAssignments?: readonly ResponsibilityAssignmentSummary[];
   planning?: string | null;
   execution?: string | null;
   minimumStandard?: string | null;
   householdStandard?: string | null;
+  hiddenEffortKeys?: readonly string[];
+  nextReviewAt?: string | null;
   notes?: string | null;
   coverAssetPath?: string | null;
   sourceCoverAssetPath?: string | null;
@@ -36,7 +46,11 @@ export type CardDetailCard = {
 type CardDetailSheetProps = {
   card: CardDetailCard;
   onMove?: (bucket: CardDistributionBucket) => void;
+  onSaveOwnership?: (
+    agreement: OwnershipAgreementSubmission
+  ) => Promise<void> | void;
   onSaveStandards?: (standard: string) => Promise<void> | void;
+  personas?: readonly PersonaSummary[];
 };
 
 const aiDraftCoverPathPattern =
@@ -56,7 +70,13 @@ const labelTone: Record<CardTemplateLabel, Parameters<typeof Chip>[0]["tone"]> =
 
 const moveBuckets = ["alex", "max", "savedForLater", "notApplicable"] as const;
 
-export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailSheetProps) {
+export function CardDetailSheet({
+  card,
+  onMove,
+  onSaveOwnership,
+  onSaveStandards,
+  personas
+}: CardDetailSheetProps) {
   const standardsDefaultText = standardsTextFor(card);
   const [selectedBucket, setSelectedBucket] = useState<CardDistributionBucket | "">("");
   const [standardsDraft, setStandardsDraft] = useState(() => standardsDefaultText);
@@ -69,9 +89,15 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
   const ownerLabel = card.ownerLabel ?? laneLabel;
   const isGeneratedCover = aiDraftCoverPathPattern.test(card.sourceCoverAssetPath ?? "");
   const coverAssetPath = card.sourceCoverAssetPath ?? card.coverAssetPath ?? null;
+  const hasActiveAssignments = (card.currentAssignments?.length ?? 0) > 0;
   const availableMoveBuckets = moveBuckets.filter(
     (bucket) => laneForBucket(bucket) !== card.boardLane
   );
+  const ownershipPhases = [
+    { label: "Conception", value: card.conception },
+    { label: "Planning", value: card.planning },
+    { label: "Execution", value: card.execution }
+  ];
 
   function moveSelectedCard() {
     if (!selectedBucket) {
@@ -188,6 +214,49 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
             </p>
           </section>
 
+          <section className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4">
+            <div className="grid gap-1">
+              <h2 className="text-[16px] font-bold text-fp-ink">
+                Full ownership includes
+              </h2>
+              <p className="text-[13px] leading-5 text-fp-muted-ink">
+                The thinking and follow-through that sit behind the visible task.
+              </p>
+            </div>
+            <dl className="grid gap-3">
+              {ownershipPhases.map(({ label, value }) => (
+                <div className="grid gap-1" key={label}>
+                  <dt className="text-[13px] font-bold text-fp-ink">{label}</dt>
+                  <dd className="whitespace-pre-wrap text-[13px] leading-5 text-fp-muted-ink [overflow-wrap:anywhere]">
+                    {value || `No ${label.toLowerCase()} notes yet.`}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <div className="flex flex-wrap gap-2" aria-label="Hidden effort">
+              {(card.hiddenEffortKeys ?? []).map((effort) => (
+                <Chip key={effort}>{humanize(effort)}</Chip>
+              ))}
+              {(card.hiddenEffortKeys ?? []).length === 0 ? (
+                <span className="text-[13px] font-semibold text-fp-muted-ink">
+                  No hidden-effort tags yet.
+                </span>
+              ) : null}
+            </div>
+            <p className="text-[13px] font-semibold text-fp-muted-ink">
+              {card.nextReviewAt ? (
+                <>
+                  Review by{" "}
+                  <time dateTime={card.nextReviewAt}>
+                    {formatReviewDate(card.nextReviewAt)}
+                  </time>
+                </>
+              ) : (
+                "No review date set."
+              )}
+            </p>
+          </section>
+
           <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4">
             <h2 className="text-[16px] font-bold text-fp-ink">
               Fogging Estandards
@@ -222,38 +291,64 @@ export function CardDetailSheet({ card, onMove, onSaveStandards }: CardDetailShe
             </div>
           </section>
 
-          <section className="grid gap-3">
-            <h2 className="text-[18px] font-bold text-fp-ink">Assign lane</h2>
-            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-              <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
-                Destination
-                <select
-                  aria-label="Move destination"
-                  className="fp-input px-3 text-[15px] disabled:opacity-60"
-                  disabled={!onMove}
-                  onChange={(event) =>
-                    setSelectedBucket(event.target.value as CardDistributionBucket | "")
-                  }
-                  value={selectedBucket}
-                >
-                  <option value="">Choose lane</option>
-                  {availableMoveBuckets.map((bucket) => (
-                    <option key={bucket} value={bucket}>
-                      {CARD_BUCKET_LABELS[bucket]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <Button
-                className="self-end"
-                disabled={!onMove || !selectedBucket}
-                onClick={moveSelectedCard}
+          {personas ? (
+            <OwnershipDetails
+              currentAssignments={card.currentAssignments ?? []}
+              expectedUpdatedAt={card.updatedAt}
+              nextReviewAt={card.nextReviewAt ?? null}
+              onSave={onSaveOwnership}
+              personas={personas}
+            />
+          ) : null}
+
+          {hasActiveAssignments ? (
+            <section className="grid gap-2 rounded-[8px] border border-fp-line bg-[var(--fp-surface)] p-4">
+              <h2 className="text-[18px] font-bold text-fp-ink">Move card</h2>
+              <p className="text-[13px] leading-5 text-fp-muted-ink">
+                This card already has an ownership agreement. Update that agreement so
+                helpers, backups, and former owners are handled explicitly.
+              </p>
+              <a
+                className="inline-flex min-h-11 w-fit items-center justify-center rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-4 text-[14px] font-bold text-fp-ink underline-offset-4 hover:underline"
+                href="#ownership-details"
               >
-                <MoveRight aria-hidden="true" size={16} />
-                Move
-              </Button>
-            </div>
-          </section>
+                Update ownership details
+              </a>
+            </section>
+          ) : (
+            <section className="grid gap-3">
+              <h2 className="text-[18px] font-bold text-fp-ink">Assign lane</h2>
+              <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
+                  Destination
+                  <select
+                    aria-label="Move destination"
+                    className="fp-input px-3 text-[15px] disabled:opacity-60"
+                    disabled={!onMove}
+                    onChange={(event) =>
+                      setSelectedBucket(event.target.value as CardDistributionBucket | "")
+                    }
+                    value={selectedBucket}
+                  >
+                    <option value="">Choose lane</option>
+                    {availableMoveBuckets.map((bucket) => (
+                      <option key={bucket} value={bucket}>
+                        {CARD_BUCKET_LABELS[bucket]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <Button
+                  className="self-end"
+                  disabled={!onMove || !selectedBucket}
+                  onClick={moveSelectedCard}
+                >
+                  <MoveRight aria-hidden="true" size={16} />
+                  Move
+                </Button>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </Sheet>
@@ -266,4 +361,20 @@ function standardsTextFor(card: CardDetailCard) {
     card.minimumStandard ??
     "No standard has been written for this card yet."
   );
+}
+
+function formatReviewDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    year: "numeric"
+  }).format(new Date(value));
+}
+
+function humanize(value: string) {
+  return value
+    .split("_")
+    .map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
+    .join(" ");
 }

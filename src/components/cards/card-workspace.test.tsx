@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { PersonaSummary } from "@/contracts/personas";
 import type { ResponsibilitySummary } from "@/contracts/responsibilities";
+import { computeHouseholdWorkMap } from "@/domain/household-work-map";
 import { CardWorkspace } from "./card-workspace";
 
 const selectedPersona: PersonaSummary = {
@@ -735,6 +736,39 @@ describe("CardWorkspace", () => {
     expect(screen.getByText("What is this card for?")).toBeVisible();
     expect(screen.getByText("Fogging Estandards")).toBeVisible();
     expect(screen.getByText(/Assigned to Alex/i)).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "View or update agreement" })
+    ).toHaveAttribute(
+      "href",
+      "/app/responsibilities/550e8400-e29b-41d4-a716-446655440012"
+    );
+  });
+
+  it("shows ownership phases, hidden effort, and review timing on card backs", () => {
+    render(
+      <CardWorkspace
+        responsibilities={[
+          card({
+            boardLane: "player_1",
+            hiddenEffortKeys: ["noticing", "planning"],
+            nextReviewAt: "2026-08-01T12:00:00.000Z",
+            sourceConception: "Notice supplies running low.",
+            sourceExecution: "Restock and put everything away.",
+            sourcePlanning: "Make the list and choose a shopping window."
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="yourCards"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "School lunch" }));
+
+    expect(screen.getByText("Notice supplies running low.")).toBeVisible();
+    expect(screen.getByText("Make the list and choose a shopping window.")).toBeVisible();
+    expect(screen.getByText("Restock and put everything away.")).toBeVisible();
+    expect(screen.getByText("Noticing")).toBeVisible();
+    expect(screen.getByText("Review by Aug 1, 2026")).toBeVisible();
   });
 
   it("renders the grouped board as card buckets", () => {
@@ -777,6 +811,58 @@ describe("CardWorkspace", () => {
     expect(board.className).not.toContain("table");
   });
 
+  it("shows shared-owner agreements in a derived Shared section and work map", () => {
+    const responsibilities = [
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440030",
+        title: "Shared plan",
+        boardLane: "player_1",
+        currentAssignments: [
+          { personaKey: "alex", role: "shared_owner", scope: "part" },
+          { personaKey: "max", role: "shared_owner", scope: "part" }
+        ]
+      }),
+      card({
+        id: "550e8400-e29b-41d4-a716-446655440031",
+        title: "Alex plan",
+        boardLane: "player_1",
+        currentAssignments: [
+          {
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          }
+        ]
+      })
+    ];
+
+    render(
+      <CardWorkspace
+        responsibilities={responsibilities}
+        selectedPersona={selectedPersona}
+        view="board"
+        workMap={computeHouseholdWorkMap({
+          asOf: "2026-07-16T00:00:00.000Z",
+          responsibilities
+        })}
+      />
+    );
+
+    const shared = screen.getByTestId("shared-board-lane");
+    const primary = screen.getByTestId("primary-board-lanes");
+
+    expect(within(shared).getByRole("heading", { name: "Shared" })).toBeVisible();
+    expect(within(shared).getByText("Shared plan")).toBeVisible();
+    expect(within(primary).queryByText("Shared plan")).not.toBeInTheDocument();
+    expect(within(primary).getByText("Alex plan")).toBeVisible();
+    expect(screen.getByTestId("board-work-map")).toBeVisible();
+    expect(
+      screen.getAllByText("Shared-owned").map((label) =>
+        label.parentElement?.querySelector("dd")?.textContent
+      )
+    ).toEqual(["1", "1"]);
+  });
+
   it("lets board cards return to the unclassified deal pool", async () => {
     const onDistribute = vi.fn().mockResolvedValue(undefined);
 
@@ -803,5 +889,49 @@ describe("CardWorkspace", () => {
         responsibilityId: "550e8400-e29b-41d4-a716-446655440020"
       })
     );
+  });
+
+  it("routes owned board cards to ownership details instead of a quick move", () => {
+    const onDistribute = vi.fn().mockResolvedValue(undefined);
+    const responsibilityId = "550e8400-e29b-41d4-a716-446655440025";
+
+    render(
+      <CardWorkspace
+        onDistribute={onDistribute}
+        responsibilities={[
+          card({
+            id: responsibilityId,
+            title: "Shared school plan",
+            boardLane: "player_1",
+            currentAssignments: [
+              {
+                personaKey: "alex",
+                role: "accountable_owner",
+                scope: "outcome"
+              },
+              {
+                personaKey: "max",
+                role: "helper",
+                scope: "support"
+              }
+            ]
+          })
+        ]}
+        selectedPersona={selectedPersona}
+        view="board"
+      />
+    );
+
+    expect(
+      screen.getByRole("link", { name: "Move with ownership details" })
+    ).toHaveAttribute(
+      "href",
+      `/app/responsibilities/${responsibilityId}#ownership-details`
+    );
+    expect(
+      screen.queryByRole("button", { name: "Remove from board" })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Max" })).not.toBeInTheDocument();
+    expect(onDistribute).not.toHaveBeenCalled();
   });
 });

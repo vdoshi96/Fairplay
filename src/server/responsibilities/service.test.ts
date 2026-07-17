@@ -17,6 +17,7 @@ const householdId = "550e8400-e29b-41d4-a716-446655440000";
 const alexId = "550e8400-e29b-41d4-a716-446655440001";
 const maxId = "550e8400-e29b-41d4-a716-446655440002";
 const responsibilityId = "550e8400-e29b-41d4-a716-446655440010";
+const expectedUpdatedAt = "2026-05-04T12:00:00.000Z";
 
 const session: CurrentSession = {
   id: "550e8400-e29b-41d4-a716-446655440030",
@@ -114,7 +115,13 @@ function makeDeps(
           personaKey: assignment.personaKey,
           role: assignment.role,
           scope: assignment.scope
-        }))
+          }))
+        })
+      ),
+    applyOwnershipAgreement: vi.fn().mockImplementation(async (input) =>
+      detail({
+        currentAssignments: input.assignments,
+        nextReviewAt: input.reviewAt
       })
     ),
     createResponsibilityEvent: vi.fn().mockResolvedValue(undefined),
@@ -187,7 +194,21 @@ describe("responsibility service", () => {
         status: "active"
       })
     );
-    expect(deps.replaceActiveAssignments).toHaveBeenCalled();
+    expect(deps.applyOwnershipAgreement).toHaveBeenCalledWith(
+      expect.objectContaining({
+        householdId,
+        responsibilityId,
+        expectedOwnerPersonaKeys: [],
+        assignments: [
+          {
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          }
+        ]
+      })
+    );
+    expect(deps.replaceActiveAssignments).not.toHaveBeenCalled();
   });
 
   it("rejects private responsibility visibility in v1", async () => {
@@ -222,28 +243,27 @@ describe("responsibility service", () => {
     ).rejects.toBeInstanceOf(ResponsibilityServiceError);
   });
 
-  it("closes prior active assignments, records a neutral event, and requires handoff context for accountable owner changes", async () => {
+  it("rejects owner changes on the legacy assignment path even with handoff context", async () => {
     const deps = makeDeps({
-      getResponsibility: vi
-        .fn()
-        .mockResolvedValueOnce(
-          detail({
-            currentAssignments: [
-              {
-                personaKey: "alex",
-                role: "accountable_owner",
-                scope: "outcome"
-              }
-            ]
-          })
-        )
-        .mockResolvedValue(detail())
+      getResponsibility: vi.fn().mockResolvedValue(
+        detail({
+          currentAssignments: [
+            {
+              personaKey: "alex",
+              role: "accountable_owner",
+              scope: "outcome"
+            }
+          ]
+        })
+      )
     });
     const service = createResponsibilityService(deps);
 
     await expect(
       service.updateAssignments(session, responsibilityId, {
         effectiveAt: "2026-05-08T12:00:00.000Z",
+        handoffNotes: "Max has the next shop list and budget range.",
+        revisitAt: "2026-05-22T12:00:00.000Z",
         assignments: [
           {
             personaKey: "max",
@@ -255,16 +275,83 @@ describe("responsibility service", () => {
     ).rejects.toMatchObject({
       code: "INVALID_INPUT"
     });
+    expect(deps.replaceActiveAssignments).not.toHaveBeenCalled();
+    expect(deps.createResponsibilityEvent).not.toHaveBeenCalled();
+  });
+
+  it("routes a first owner through the atomic ownership agreement", async () => {
+    const deps = makeDeps({
+      getResponsibility: vi.fn().mockResolvedValue(
+        detail({
+          status: "unassigned",
+          boardLane: "cards_of_concern",
+          currentAssignments: []
+        })
+      )
+    });
+    const service = createResponsibilityService(deps);
 
     await service.updateAssignments(session, responsibilityId, {
       effectiveAt: "2026-05-08T12:00:00.000Z",
-      handoffNotes: "Max has the next shop list and budget range.",
-      revisitAt: "2026-05-22T12:00:00.000Z",
       assignments: [
         {
-          personaKey: "max",
+          personaKey: "alex",
           role: "accountable_owner",
           scope: "outcome"
+        }
+      ],
+      handoffNotes: "Alex takes the first agreement.",
+      revisitAt: "2026-05-22T12:00:00.000Z"
+    });
+
+    expect(deps.applyOwnershipAgreement).toHaveBeenCalledWith({
+      householdId,
+      responsibilityId,
+      actorPersonaId: alexId,
+      expectedUpdatedAt,
+      expectedOwnerPersonaKeys: [],
+      assignments: [
+        {
+          personaKey: "alex",
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ],
+      reviewAt: "2026-05-22T12:00:00.000Z",
+      handoffMode: null,
+      handoffNotes: "Alex takes the first agreement."
+    });
+    expect(deps.replaceActiveAssignments).not.toHaveBeenCalled();
+  });
+
+  it("threads the responsibility revision into an atomic non-owner assignment edit", async () => {
+    const deps = makeDeps({
+      getResponsibility: vi.fn().mockResolvedValue(
+        detail({
+          currentAssignments: [
+            {
+              personaKey: "alex",
+              role: "accountable_owner",
+              scope: "outcome"
+            }
+          ]
+        })
+      )
+    });
+    const service = createResponsibilityService(deps);
+
+    await service.updateAssignments(session, responsibilityId, {
+      effectiveAt: "2026-05-08T12:00:00.000Z",
+      assignments: [
+        {
+          personaKey: "alex",
+          role: "accountable_owner",
+          scope: "outcome"
+        },
+        {
+          personaKey: "max",
+          role: "helper",
+          scope: "support"
         }
       ]
     });
@@ -274,28 +361,179 @@ describe("responsibility service", () => {
         householdId,
         responsibilityId,
         createdByPersonaId: alexId,
+        expectedUpdatedAt,
+        expectedOwnerPersonaKeys: ["alex"],
+        handoffNotes: null,
+        revisitAt: null,
         assignments: [
+          {
+            personaId: alexId,
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          },
           {
             personaId: maxId,
             personaKey: "max",
-            role: "accountable_owner",
-            scope: "outcome"
+            role: "helper",
+            scope: "support"
           }
         ]
       })
     );
-    expect(deps.createResponsibilityEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        householdId,
-        responsibilityId,
-        actorPersonaId: alexId,
-        eventType: "assignment_changed",
-        payload: expect.objectContaining({
-          handoffNotes: "Max has the next shop list and budget range.",
-          revisitAt: "2026-05-22T12:00:00.000Z"
+    expect(deps.createResponsibilityEvent).not.toHaveBeenCalled();
+  });
+
+  it("does not retry a helper edit when its internal responsibility revision is stale", async () => {
+    const conflict = Object.assign(new Error("stale revision"), {
+      code: "CONFLICT"
+    });
+    const deps = makeDeps({
+      getResponsibility: vi.fn().mockResolvedValue(
+        detail({
+          currentAssignments: [
+            {
+              personaKey: "alex",
+              role: "accountable_owner",
+              scope: "outcome"
+            }
+          ]
         })
+      ),
+      replaceActiveAssignments: vi.fn().mockRejectedValue(conflict)
+    });
+    const service = createResponsibilityService(deps);
+
+    await expect(
+      service.updateAssignments(session, responsibilityId, {
+        effectiveAt: "2026-05-08T12:00:00.000Z",
+        assignments: [
+          {
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          },
+          {
+            personaKey: "max",
+            role: "backup",
+            scope: "temporary"
+          }
+        ]
       })
+    ).rejects.toBe(conflict);
+
+    expect(deps.replaceActiveAssignments).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedUpdatedAt })
     );
+    expect(deps.createResponsibilityEvent).not.toHaveBeenCalled();
+  });
+
+  it("routes ownership agreements through one atomic repository operation", async () => {
+    const deps = makeDeps();
+    const service = createResponsibilityService(deps);
+
+    const result = await service.updateOwnershipAgreement(session, responsibilityId, {
+      responsibilityId,
+      expectedUpdatedAt,
+      expectedOwnerPersonaKeys: ["alex"],
+      assignments: [
+        {
+          personaKey: "max",
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ],
+      reviewAt: "2026-08-01T12:00:00.000Z",
+      handoffMode: "replace_former_owner",
+      handoffNotes: "Max has the timing and supply context."
+    });
+
+    expect(deps.applyOwnershipAgreement).toHaveBeenCalledWith({
+      householdId,
+      responsibilityId,
+      actorPersonaId: alexId,
+      expectedUpdatedAt,
+      expectedOwnerPersonaKeys: ["alex"],
+      assignments: [
+        {
+          personaKey: "max",
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ],
+      reviewAt: "2026-08-01T12:00:00.000Z",
+      handoffMode: "replace_former_owner",
+      handoffNotes: "Max has the timing and supply context."
+    });
+    expect(result).toMatchObject({
+      currentAssignments: [
+        {
+          personaKey: "max",
+          role: "accountable_owner",
+          scope: "outcome"
+        }
+      ],
+      nextReviewAt: "2026-08-01T12:00:00.000Z"
+    });
+    expect(deps.getResponsibility).not.toHaveBeenCalled();
+    expect(deps.createResponsibilityEvent).not.toHaveBeenCalled();
+  });
+
+  it("rejects mismatched ownership agreement ids and requires a selected persona", async () => {
+    const deps = makeDeps();
+    const service = createResponsibilityService(deps);
+    const input = {
+      responsibilityId: "550e8400-e29b-41d4-a716-446655440011",
+      expectedUpdatedAt,
+      expectedOwnerPersonaKeys: [],
+      assignments: [
+        {
+          personaKey: "alex" as const,
+          role: "accountable_owner" as const,
+          scope: "outcome" as const
+        }
+      ],
+      reviewAt: null
+    };
+
+    await expect(
+      service.updateOwnershipAgreement(session, responsibilityId, input)
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    await expect(
+      service.updateOwnershipAgreement(
+        { ...session, selectedPersonaId: null },
+        input.responsibilityId,
+        input
+      )
+    ).rejects.toMatchObject({ code: "AUTH_REQUIRED" });
+    expect(deps.applyOwnershipAgreement).not.toHaveBeenCalled();
+  });
+
+  it("strictly validates ownership agreements inside the service", async () => {
+    const deps = makeDeps();
+    const service = createResponsibilityService(deps);
+
+    await expect(
+      service.updateOwnershipAgreement(session, responsibilityId, {
+        responsibilityId,
+        expectedUpdatedAt,
+        expectedOwnerPersonaKeys: ["alex"],
+        assignments: [
+          {
+            personaKey: "alex",
+            role: "accountable_owner",
+            scope: "outcome"
+          }
+        ],
+        reviewAt: null,
+        unexpected: "server actions must not bypass the strict contract"
+      } as unknown as Parameters<
+        typeof service.updateOwnershipAgreement
+      >[2])
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+
+    expect(deps.applyOwnershipAgreement).not.toHaveBeenCalled();
   });
 
   it("returns load snapshot aggregate fields without scores or comparison labels", async () => {

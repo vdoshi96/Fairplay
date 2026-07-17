@@ -10,6 +10,7 @@ import {
   type CardDistributionMove
 } from "@/components/cards/card-state";
 import { ResponsibilityIdSchema } from "@/domain/ids";
+import { computeHouseholdWorkMap } from "@/domain/household-work-map";
 import { getCurrentSession } from "@/server/auth/current-session";
 import { distributeResponsibilityCard } from "@/server/responsibilities/card-distribution";
 import { responsibilityService } from "@/server/responsibilities/service";
@@ -34,6 +35,9 @@ export default async function DistributePage({ searchParams }: DistributePagePro
   }
 
   const overview = await responsibilityService.listOverview(session);
+  const workMap = computeHouseholdWorkMap({
+    responsibilities: overview.responsibilities
+  });
   const requestedId = parseSelectedResponsibilityId(query.selected);
   const selectedCard = requestedId
     ? getDistributableCards(overview.responsibilities).find(
@@ -69,6 +73,7 @@ export default async function DistributePage({ searchParams }: DistributePagePro
       responsibilities={overview.responsibilities}
       selectedPersona={sessionView.selectedPersona}
       view="distribute"
+      workMap={workMap}
     />
   );
 }

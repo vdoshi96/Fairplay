@@ -51,9 +51,11 @@ export function detailCardFor(responsibility: ResponsibilityDetail): CardDetailC
 
   return {
     id: responsibility.id,
+    updatedAt: responsibility.updatedAt,
     title: responsibility.title,
     labels: sourceCard?.labels ?? [],
     boardLane: responsibility.boardLane,
+    currentAssignments: responsibility.currentAssignments,
     ownerLabel: ownerLabelFor(responsibility),
     definition: sourceFields.definition,
     conception: sourceFields.conception,
@@ -61,6 +63,8 @@ export function detailCardFor(responsibility: ResponsibilityDetail): CardDetailC
     execution: sourceFields.execution,
     minimumStandard: sourceFields.minimumStandard,
     householdStandard: responsibility.householdStandard,
+    hiddenEffortKeys: responsibility.hiddenEffortKeys,
+    nextReviewAt: responsibility.nextReviewAt,
     notes: responsibility.notes,
     coverAssetPath: sourceCoverAssetPath ? null : sourceCard?.coverAssetPath ?? null,
     sourceCoverAssetPath
