@@ -9,6 +9,7 @@ import {
   createResponsibilityFromTemplate,
   ensureHouseholdCatalogResponsibilities,
   getCardTemplate,
+  HOUSEHOLD_CATALOG_VERSION,
   listCardTemplates
 } from "./card-templates";
 import { listResponsibilitiesForHousehold } from "./responsibilities";
@@ -264,6 +265,31 @@ describe("card template repository", () => {
       actorPersonaId: personas[0].id,
       householdId: household.id
     });
+
+    const trackedTemplate = await prisma.responsibilityTemplate.findFirstOrThrow({
+      where: {
+        slug: FAIRPLAY_SOURCE_CARDS[0].slug
+      },
+      select: {
+        id: true
+      }
+    });
+    const noOpTimestamp = new Date("2001-01-01T00:00:00.000Z");
+    await prisma.responsibilityTemplate.update({
+      where: {
+        id: trackedTemplate.id
+      },
+      data: {
+        updatedAt: noOpTimestamp
+      }
+    });
+    const deletedCatalogCard = await prisma.responsibility.deleteMany({
+      where: {
+        householdId: household.id,
+        templateId: trackedTemplate.id
+      }
+    });
+
     await ensureHouseholdCatalogResponsibilities({
       actorPersonaId: personas[0].id,
       householdId: household.id
@@ -272,12 +298,51 @@ describe("card template repository", () => {
     const householdCards = await listResponsibilitiesForHousehold(household.id);
     const catalogCards = householdCards.filter((card) => card.templateId);
     const templateIds = new Set(catalogCards.map((card) => card.templateId));
+    const catalogState = await prisma.household.findUniqueOrThrow({
+      where: { id: household.id },
+      select: { catalogVersion: true }
+    });
+    const templateAfterNoOp = await prisma.responsibilityTemplate.findUniqueOrThrow({
+      where: { id: trackedTemplate.id },
+      select: { updatedAt: true }
+    });
 
-    expect(catalogCards).toHaveLength(FAIRPLAY_SOURCE_CARDS.length);
-    expect(templateIds.size).toBe(FAIRPLAY_SOURCE_CARDS.length);
+    expect(catalogState.catalogVersion).toBe(HOUSEHOLD_CATALOG_VERSION);
+    expect(templateAfterNoOp.updatedAt).toEqual(noOpTimestamp);
+    expect(deletedCatalogCard.count).toBe(1);
+    expect(catalogCards).toHaveLength(FAIRPLAY_SOURCE_CARDS.length - 1);
+    expect(templateIds.size).toBe(FAIRPLAY_SOURCE_CARDS.length - 1);
     expect(catalogCards.every((card) => card.status === "unassigned")).toBe(true);
     expect(catalogCards.every((card) => card.boardLane === "cards_of_concern"))
       .toBe(true);
+
+    // A changed marker runs the safe reconciliation again and restores the
+    // source template data before advancing the household marker.
+    await prisma.household.update({
+      where: { id: household.id },
+      data: { catalogVersion: "stale-test-version" }
+    });
+    await ensureHouseholdCatalogResponsibilities({
+      actorPersonaId: personas[0].id,
+      householdId: household.id
+    });
+    const reconciledState = await prisma.household.findUniqueOrThrow({
+      where: { id: household.id },
+      select: { catalogVersion: true }
+    });
+    const reconciledTemplate = await prisma.responsibilityTemplate.findUniqueOrThrow({
+      where: { id: trackedTemplate.id },
+      select: { updatedAt: true }
+    });
+    const reconciledCards = await listResponsibilitiesForHousehold(household.id);
+
+    expect(reconciledState.catalogVersion).toBe(HOUSEHOLD_CATALOG_VERSION);
+    expect(reconciledTemplate.updatedAt.getTime()).toBeGreaterThan(
+      noOpTimestamp.getTime()
+    );
+    expect(reconciledCards.filter((card) => card.templateId)).toHaveLength(
+      FAIRPLAY_SOURCE_CARDS.length
+    );
   });
 
   it("enforces stable source-template identity without merging different templates", async () => {

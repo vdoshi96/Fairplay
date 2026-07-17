@@ -159,6 +159,7 @@ model Household {
   name               String
   usernameNormalized String                 @unique
   timezone           String
+  catalogVersion     String?
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
   credential         HouseholdCredential?

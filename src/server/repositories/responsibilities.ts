@@ -26,6 +26,52 @@ import type { HouseholdId, PersonaId, ResponsibilityId } from "../../domain/ids"
 import { RepositoryError } from "../db/errors";
 import { prisma } from "../db/prisma";
 
+const responsibilitySummarySelect = {
+  id: true,
+  templateId: true,
+  title: true,
+  summary: true,
+  areaKeys: true,
+  hiddenEffortKeys: true,
+  cadence: true,
+  relevantDays: true,
+  status: true,
+  visibility: true,
+  boardLane: true,
+  boardSortOrder: true,
+  nextReviewAt: true,
+  householdStandard: true,
+  sourceDefinition: true,
+  sourceConception: true,
+  sourcePlanning: true,
+  sourceExecution: true,
+  sourceMinimumStandard: true,
+  sourceCoverAssetPath: true,
+  assignments: {
+    where: {
+      endsAt: null
+    },
+    select: {
+      createdAt: true,
+      endsAt: true,
+      role: true,
+      scope: true,
+      persona: {
+        select: {
+          key: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "asc"
+    }
+  }
+} satisfies Prisma.ResponsibilitySelect;
+
+type ResponsibilitySummaryRecord = Prisma.ResponsibilityGetPayload<{
+  select: typeof responsibilitySummarySelect;
+}>;
+
 type ResponsibilityWithRelations = Responsibility & {
   assignments: (ResponsibilityAssignment & {
     persona: {
@@ -65,7 +111,7 @@ function nullableIso(date: Date | null): string | null {
 }
 
 function currentAssignments(
-  assignments: ResponsibilityWithRelations["assignments"]
+  assignments: ResponsibilitySummaryRecord["assignments"]
 ): ResponsibilityAssignmentSummary[] {
   return assignments
     .filter((assignment) => assignment.endsAt === null)
@@ -97,7 +143,7 @@ function toLifecycleNotes(
 }
 
 function toResponsibilitySummary(
-  responsibility: ResponsibilityWithRelations
+  responsibility: ResponsibilitySummaryRecord
 ): ResponsibilitySummary {
   return {
     id: responsibility.id,
@@ -1360,13 +1406,11 @@ export async function listResponsibilitiesForHousehold(
       archivedAt: null,
       householdId
     },
-    include: responsibilityInclude,
+    select: responsibilitySummarySelect,
     orderBy: {
       createdAt: "asc"
     }
   });
 
-  return responsibilities.map((responsibility) =>
-    toResponsibilitySummary(responsibility as ResponsibilityWithRelations)
-  );
+  return responsibilities.map(toResponsibilitySummary);
 }
