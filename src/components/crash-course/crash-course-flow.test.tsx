@@ -113,6 +113,11 @@ describe("crash course flow", () => {
     );
     expect(screen.getByRole("heading", { name: "Concepts first. Tools after." }))
       .toBeVisible();
+    expect(
+      screen.getByRole("button", {
+        name: `Go to lesson 2: ${CRASH_COURSE_LESSONS[1]?.title}`
+      })
+    ).toHaveClass("h-11", "min-w-11");
     expect(storyboardFrame).toContainElement(scene);
     expect(storyboardFrame).toContainElement(subtitlePanel);
     expect(subtitlePanel.className).toContain("backdrop-blur-md");
