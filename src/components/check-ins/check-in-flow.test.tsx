@@ -260,5 +260,17 @@ describe("CheckInFlow", () => {
     expect(within(table).getByText("Discussed summer routines.")).toBeVisible();
     expect(within(table).getByText("Yes")).toBeVisible();
     expect(within(table).getByText("No")).toBeVisible();
+
+    const cards = screen.getByRole("list", { name: "Check-in history cards" });
+    expect(cards).toHaveClass("md:hidden");
+    expect(within(cards).getAllByRole("article")).toHaveLength(2);
+    expect(within(cards).getAllByRole("link")[0]).toHaveClass("min-h-11");
+    expect(within(cards).getAllByRole("link")[0]).toHaveAttribute(
+      "href",
+      "/app/check-ins/550e8400-e29b-41d4-a716-446655440081"
+    );
+    expect(within(cards).getByText("Discussed summer routines.")).toBeVisible();
+    expect(within(cards).getByText("No notes recorded.")).toBeVisible();
+    expect(table.parentElement).toHaveClass("hidden", "md:block");
   });
 });

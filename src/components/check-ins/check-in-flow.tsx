@@ -294,7 +294,7 @@ export function NewCheckInLauncher({
           <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
             Check-in date
             <input
-              className="fp-input px-3 text-[15px]"
+              className="fp-input min-h-11 px-3 text-[15px]"
               onChange={(event) => setScheduledDate(event.target.value)}
               type="date"
               value={scheduledDate}
@@ -303,7 +303,7 @@ export function NewCheckInLauncher({
           <label className="grid gap-2 text-[13px] font-semibold text-fp-muted-ink">
             Check-in time
             <input
-              className="fp-input px-3 text-[15px]"
+              className="fp-input min-h-11 px-3 text-[15px]"
               onChange={(event) => setScheduledTime(event.target.value)}
               type="time"
               value={scheduledTime}
@@ -340,7 +340,53 @@ export function CheckInHistoryTable({
           Past check-ins and scheduled records.
         </p>
       </div>
-      <div className="overflow-x-auto rounded-[8px] border border-fp-line bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)]">
+      {records.length > 0 ? (
+        <ul
+          aria-label="Check-in history cards"
+          className="grid gap-3 md:hidden"
+          data-testid="check-in-history-cards"
+        >
+          {records.map((record) => {
+            const headingId = `check-in-history-${record.id}`;
+
+            return (
+              <li key={record.id}>
+                <article
+                  aria-labelledby={headingId}
+                  className="grid gap-3 rounded-[8px] border border-fp-line bg-[var(--fp-card)] p-4 shadow-[var(--fp-shadow-soft)]"
+                >
+                  <Link
+                    className="inline-flex min-h-11 items-center font-bold text-fp-ink underline-offset-4 hover:underline"
+                    href={`/app/check-ins/${record.id}`}
+                    id={headingId}
+                  >
+                    {formatWhen(record.previousCheckInDate)}
+                  </Link>
+                  <dl className="grid gap-3 text-[13px]">
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
+                      <dt className="font-semibold text-fp-muted-ink">Occurred</dt>
+                      <dd className="font-bold text-fp-ink">
+                        {record.occurred ? "Yes" : "No"}
+                      </dd>
+                    </div>
+                    <div className="grid gap-1 border-t border-fp-line pt-3">
+                      <dt className="font-semibold text-fp-muted-ink">Minutes</dt>
+                      <dd className="leading-5 text-fp-ink">
+                        {record.minutes || "No notes recorded."}
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="rounded-[8px] border border-fp-line bg-[var(--fp-card)] px-3 py-5 text-center text-[13px] font-semibold text-fp-muted-ink shadow-[var(--fp-shadow-soft)] md:hidden">
+          No check-ins recorded yet.
+        </p>
+      )}
+      <div className="hidden overflow-x-auto rounded-[8px] border border-fp-line bg-[var(--fp-card)] shadow-[var(--fp-shadow-soft)] md:block">
         <table
           aria-label="Check-in history"
           className="w-full min-w-[34rem] border-collapse text-left text-[13px]"
