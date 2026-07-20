@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-05-generated-ui-assets/work-log.md">
+  <meta name="fairplay-document-source-sha256" content="45079786d3e03df1ab0e6e79129679ab2599ec661a77c34bbe0ba075a777dcb4">
+  <title>docs/agents/tasks/2026-05-05-generated-ui-assets/work-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="work-log.md"><code>docs/agents/tasks/2026-05-05-generated-ui-assets/work-log.md</code></a></p>
+    <article>
+<h1 id="work-log-generated-ui-assets">Work Log: Generated UI Assets</h1>
+<h2 id="2026-05-05">2026-05-05</h2>
+<h3 id="setup">Setup</h3>
+<ul>
+<li>Created isolated worktree <code>/Users/vishal/Developer/Fairplay/.worktrees/generated-ui-assets</code>.</li>
+<li>Branch: <code>codex/generated-ui-assets</code>.</li>
+<li>Confirmed root <code>main</code> and <code>origin/main</code> matched at <code>24ddcc5ccd9e974a03be35d4082e71a5e70114b0</code> before branching.</li>
+</ul>
+<h3 id="superpowers">Superpowers</h3>
+<ul>
+<li>Used <code>using-git-worktrees</code> for branch isolation.</li>
+<li>Used <code>brainstorming</code> to frame scope and design.</li>
+<li>Used <code>writing-plans</code> to record implementation tasks.</li>
+<li>Used <code>subagent-driven-development</code> by dispatching independent read-only inventory, generation, and QA subagents.</li>
+<li>Used <code>test-driven-development</code> for code changes.</li>
+</ul>
+<h3 id="subagents">Subagents</h3>
+<h4 id="visual-inventory-subagent">Visual Inventory Subagent</h4>
+<p>Found the main non-card surfaces:</p>
+<ul>
+<li>Shared visual wrapper: avatars, mascot, radar visual, app mark, check-in spark.</li>
+<li>Login splash CSS illustration.</li>
+<li>Ten crash-course SVG scenes.</li>
+<li>Five feature-guide helper CSS scenelets.</li>
+<li>AI task manager sidekick.</li>
+<li>App shell/auth/persona chooser consumers of shared visuals.</li>
+</ul>
+<p>Recommended stable paths under <code>public/assets/fairplay/generated-ui/</code>, excluding <code>public/assets/fairplay/cards/**</code>.</p>
+<h4 id="promptgeneration-subagent">Prompt/Generation Subagent</h4>
+<p>Recommended a separate non-card UI generator because <code>scripts/generate-visible-assets.mjs</code> is source-card-specific and enforces <code>5:7</code>.</p>
+<p>Proposed cute flat 2D prompts for:</p>
+<ul>
+<li>Login household garden.</li>
+<li>Alex and Max abstract sidekick avatars.</li>
+<li>Helper mascot.</li>
+<li>Crash-course backgrounds.</li>
+<li>Onboarding/home/load-map/radar/library/check-in scenes.</li>
+</ul>
+<h4 id="qa-subagent">QA Subagent</h4>
+<p>Recommended tests for:</p>
+<ul>
+<li>New PNG paths and decorative alt behavior.</li>
+<li>Asset integrity and dimensions.</li>
+<li>Login/crash-course/guide helper public contracts instead of internal SVG/CSS implementation details.</li>
+<li>Browser checks for login, crash course, onboarding, home, load map, radar, and check-ins.</li>
+</ul>
+<h3 id="decisions">Decisions</h3>
+<ul>
+<li>Use <code>public/assets/fairplay/generated-ui/</code> instead of <code>public/assets/fairplay/ui/</code> to make generated asset provenance explicit.</li>
+<li>Generate PNGs with Qwen production env.</li>
+<li>Keep generated art decorative where possible and retain existing accessible labels in DOM.</li>
+</ul>
+<h3 id="implementation">Implementation</h3>
+<ul>
+<li>Added <code>src/server/ai/generated-ui-assets.ts</code> as the central asset spec and prompt builder for 24 non-card UI assets.</li>
+<li>Added <code>scripts/generate-ui-assets.mjs</code> as a Qwen-only generator guarded to <code>qwen-image-2.0-pro</code>.</li>
+<li>Added generator options for <code>--dry-run</code>, <code>--slugs</code>, <code>--limit</code>, <code>--output-dir</code>, <code>--skip-existing</code>, retry/backoff, and existing-file resume.</li>
+<li>Generated 24 PNGs under <code>public/assets/fairplay/generated-ui/</code> and refreshed <code>generation-manifest.json</code> with repo-relative paths.</li>
+<li>Added asset integrity tests that verify generated PNG existence, file size, and expected dimensions.</li>
+<li>Replaced non-card SVG/CSS drawings in shared visuals, login splash, crash-course scenes, crash-course completion splash, guide helper thumbnails, and the library AI task manager sidekick.</li>
+<li>Left <code>public/assets/fairplay/cards/**</code> untouched.</li>
+</ul>
+<h3 id="qa-follow-up">QA Follow-Up</h3>
+<ul>
+<li>Reused the QA subagent for a final read-only audit after local wiring.</li>
+<li>Fixed the subagent&#39;s real P2 finding by wiring <code>crash-course/completion-celebration.png</code> into the completed crash-course splash.</li>
+<li>Kept the visible <code>greg - the taskmaster</code> and <code>hi im little alex horne</code> labels because those were explicit product-copy requirements from the user; the generated image itself remains stylized and original.</li>
+<li>Retained old public non-card SVG files as inert legacy assets because runtime and E2E references now point at generated PNGs; removing them can be a separate cleanup PR if desired.</li>
+</ul>
+<h3 id="verification">Verification</h3>
+<ul>
+<li><code>npm run assets:generate-ui -- --skip-existing</code>: passed; skipped provider setup because every generated asset already existed.</li>
+<li><code>npm run test -- src/server/ai/generated-ui-assets.test.ts src/server/ai/generated-ui-asset-files.test.ts</code>: passed.</li>
+<li><code>npm run test -- src/components/crash-course/crash-course-flow.test.tsx src/components/crash-course/crash-course-page-client.test.tsx src/components/crash-course/crash-course-scene.test.tsx</code>: passed.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm run test</code>: passed, 90 files and 433 tests.</li>
+<li><code>npm run build</code>: passed. Next.js warns about nested worktree lockfile root inference.</li>
+<li><code>npm run test:e2e</code>: passed, 11 Playwright tests.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

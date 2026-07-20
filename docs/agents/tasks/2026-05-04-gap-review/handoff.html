@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-gap-review/handoff.md">
+  <meta name="fairplay-document-source-sha256" content="b1626f992ca11b91beb76cea242b00e151b8675530db716faa962a96a987ec7d">
+  <title>docs/agents/tasks/2026-05-04-gap-review/handoff.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="handoff.md"><code>docs/agents/tasks/2026-05-04-gap-review/handoff.md</code></a></p>
+    <article>
+<h1 id="handoff">Handoff</h1>
+<h2 id="status">Status</h2>
+<p>Gap review is complete. Implementation planning can proceed with concerns noted, but no blocking contradiction was found.</p>
+<h2 id="do-before-task-decomposition">Do Before Task Decomposition</h2>
+<ul>
+<li>Carry the implementation decisions in <code>gaps.md</code> into the implementation plan instead of leaving them as implicit choices.</li>
+<li>Include an explicit <code>/app/onboarding</code> route or rename the onboarding flow to an existing route.</li>
+<li>Decide whether custom persona display names are in v1. The conservative default is no.</li>
+<li>Define server-side behavior for persona-private radar drafts and make clear they are not true secrecy from someone with household credentials.</li>
+<li>Specify Argon2id, session expiration, logout, and failed-login defaults in the auth task.</li>
+<li>Keep PWA work limited to safe installability and responsive UX; do not cache sensitive household data offline in v1.</li>
+</ul>
+<h2 id="implementation-agents-must-preserve">Implementation Agents Must Preserve</h2>
+<ul>
+<li>No production code should consult private <code>References/</code> materials.</li>
+<li>Do not add a source-like starter deck, copied category system, copied prompt set, copied assessment, workbook clone, or card/deck visual metaphor.</li>
+<li>Read <code>docs/product/ip-safety-review.md</code> before implementing copy, seed data, templates, prompts, auth/session behavior, radar, check-ins, metrics, or relationship-support flows.</li>
+<li>Do not add partner invites, individual accounts, export/deletion controls, paid features, or native iOS implementation unless a new task explicitly scopes them.</li>
+</ul>
+<h2 id="recommended-next-step">Recommended Next Step</h2>
+<p>Create a separate implementation plan that decomposes v1 into auth/session, Prisma schema, domain services, JSON routes, UI flows, seed/demo review, PWA metadata, README/Vercel setup, and safety/IP copy review tasks.</p>
+    </article>
+  </main>
+</body>
+</html>

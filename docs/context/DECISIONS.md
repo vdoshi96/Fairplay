@@ -1,11 +1,12 @@
 # Fairplay Decisions
 
-Last updated: 2026-07-16
+Last updated: 2026-07-20
 
 ## Decision Log
 
 | Date | Decision | Rationale | Status |
 | --- | --- | --- | --- |
+| 2026-07-20 | Keep project prose sources canonical and generate every same-directory HTML counterpart through one Git-scoped deterministic command, with exact deterministic generated-output parity enforced before lint and tests. | The global parity rule covers hundreds of intentional historical artifacts; one source-derived renderer preserves that history, avoids hand-maintained drift, excludes private/ignored material, and makes missing, stale, orphaned, or colliding outputs fail loudly. | Accepted |
 | 2026-07-16 | Enforce one middleware-owned nonce CSP and same-origin checks for cookie-authenticated mutations; keep production cookies secure unless an explicit HTTP-loopback QA opt-in is active. | Browser security policy must match App Router scripts without inline-policy drift, and local WebKit verification must not create a production cookie downgrade path. | Accepted |
 | 2026-07-16 | Bound household-creation bodies and process-local attempts before Argon2 or database work, committing client/global quota only when both gates allow. | Expensive unauthenticated work needs predictable resource limits, privacy-preserving client keys, bounded memory, and isolation so one rejected client cannot consume another client's capacity. | Accepted; shared multi-instance limiting remains an infrastructure option |
 | 2026-07-16 | Gate releases with one real mutation workflow across Chromium, WebKit, iPhone WebKit, and touch Chromium, failing every scoped WCAG A/AA Axe violation. | Navigation-only smoke tests and severity filtering could miss engine-specific persistence, touch, nonce, and standards failures. | Accepted |

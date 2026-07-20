@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-08-ux-foundation-background-copy.md">
+  <meta name="fairplay-document-source-sha256" content="724cfc0915936754d91161f5144a51b3cc35ec439580ec2fa81021611b7112ac">
+  <title>docs/implementation/2026-05-08-ux-foundation-background-copy.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-08-ux-foundation-background-copy.md"><code>docs/implementation/2026-05-08-ux-foundation-background-copy.md</code></a></p>
+    <article>
+<h1 id="ux-foundation-backgrounds-and-copy">UX Foundation: Backgrounds And Copy</h1>
+<p>Date: 2026-05-08</p>
+<h2 id="what-changed">What Changed</h2>
+<ul>
+<li>Increased global generated background visibility in the app shell.</li>
+<li>Added theme-aware page and hero washes so artwork is visible without reducing text contrast.</li>
+<li>Reworked the Home learning hub background treatment so the art spans the page surface and the main tile stays readable.</li>
+<li>Shortened Home and Settings copy while preserving the same navigation, guide, persona, theme, and learning actions.</li>
+<li>Added the ordered multi-PR implementation plan at <code>docs/superpowers/plans/2026-05-08-app-ux-polish-pr-plan.md</code>.</li>
+</ul>
+<h2 id="why">Why</h2>
+<p>The generated backgrounds were present but too muted to read as intentional. Home and Settings also carried more explanatory copy than the workflow needed. This branch creates a visual/copy foundation before page-specific redesign branches build on it.</p>
+<h2 id="design-decisions">Design Decisions</h2>
+<ul>
+<li>Use existing generated assets; no private <code>References/</code> files were opened.</li>
+<li>Keep 8px radii, Fairplay tokens, and mobile-first density.</li>
+<li>Use stronger artwork opacity plus lighter/darker washes rather than placing text directly on raw art.</li>
+<li>Keep feature-guide button labels stable where tests and onboarding flows expect them.</li>
+</ul>
+<h2 id="qa">QA</h2>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/app-shell/app-shell.test.tsx src/components/settings/settings-panel.test.tsx --run
+</code></pre>
+<p>Result: 2 files, 25 tests passed after the red run failed on the old copy/background assertions.</p>
+<h2 id="remaining-risks">Remaining Risks</h2>
+<ul>
+<li>Browser visual QA for desktop/mobile backgrounds will happen after all page-specific branches are merged.</li>
+<li>Load Map, Library, Check-ins, and Crash Course copy/polish are intentionally left for later PRs in the documented order.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-04-fairplay-v1-implementation.md">
+  <meta name="fairplay-document-source-sha256" content="91783ec0ce31b444cbb2ba8d6c8ebea4c3ab4e8f8dd17717e913eb85d704b0bb">
+  <title>docs/superpowers/plans/2026-05-04-fairplay-v1-implementation.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-04-fairplay-v1-implementation.md"><code>docs/superpowers/plans/2026-05-04-fairplay-v1-implementation.md</code></a></p>
+    <article>
+<h1 id="fairplay-v1-implementation-plan">Fairplay v1 Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Build Fairplay v1 as a mobile-first household responsibility planning web app with shared household auth, persona-aware sessions, persisted responsibilities, radar items, and guided check-ins.</p>
+<p><strong>Architecture:</strong> Use a Next.js App Router app with explicit JSON Route Handlers, platform-neutral TypeScript contracts, Prisma-backed Postgres persistence, and a mobile-first PWA baseline. Keep sensitive household data on the server, use neutral non-clinical language, and preserve future iOS compatibility by separating domain/contracts from React UI.</p>
+<p><strong>Tech Stack:</strong> Next.js App Router, TypeScript, Tailwind CSS, Prisma, Postgres-compatible Vercel Marketplace storage, Docker Compose local Postgres, Vitest, React Testing Library, Playwright, ESLint, Vercel.</p>
+<hr>
+<h2 id="required-reading-for-every-worker">Required Reading For Every Worker</h2>
+<ul>
+<li><code>README.md</code></li>
+<li><code>docs/product/ip-safety-review.md</code></li>
+<li><code>docs/product/v1-scope.md</code></li>
+<li><code>docs/product/user-flows.md</code></li>
+<li><code>docs/product/data-model.md</code></li>
+<li><code>docs/product/visual-system.md</code></li>
+<li><code>docs/superpowers/specs/2026-05-04-fairplay-v1-design.md</code></li>
+<li><code>docs/agents/tasks/2026-05-04-gap-review/handoff.md</code></li>
+</ul>
+<p>Every worker must preserve these boundaries:</p>
+<ul>
+<li>Do not consult or copy private <code>References/</code> materials.</li>
+<li>Do not add source-derived category systems, prompts, assessment copy, public app labels, deck/card visuals, workbook wording, starter catalogs, or source-like examples.</li>
+<li>Do not add partner scores, winner/loser comparisons, morality grades, diagnosis, clinical advice, legal/medical/financial advice, crisis support, or unsafe-confrontation coaching.</li>
+<li>Do not store household records, drafts, concern details, or session secrets in <code>localStorage</code>.</li>
+<li>Treat persona-private radar drafts as server-persisted and persona-filtered UX records, not as true secrecy from someone with the shared household credentials.</li>
+<li>Keep PWA work limited to responsive installability, metadata, and icons; do not add offline caching of sensitive household data in v1.</li>
+</ul>
+<h2 id="branch-and-commit-strategy">Branch And Commit Strategy</h2>
+<ul>
+<li>Docs/spec PR: open from <code>codex/research-and-spec</code> to <code>main</code>.</li>
+<li>Implementation branch: create <code>codex/v1-app</code> from <code>codex/research-and-spec</code> if implementation begins before the docs PR merges; otherwise create it from updated <code>main</code>.</li>
+<li>Keep commits task-scoped. Each implementation task below names the expected commit scope.</li>
+<li>If parallel subagents are used, dispatch only tasks with disjoint owned files or tasks whose dependencies are already merged into the implementation branch.</li>
+<li>Never revert edits made by another worker. If ownership conflicts appear, stop and ask the controller to serialize the tasks.</li>
+</ul>
+<h2 id="file-ownership-map">File Ownership Map</h2>
+<p>These ownership boundaries are the default. A later task may modify a file created by an earlier task only when the task explicitly lists that file under &quot;Modify&quot;.</p>
+<ul>
+<li>Scaffold/config: <code>package.json</code>, lockfile, <code>next.config.*</code>, <code>tsconfig.json</code>, <code>eslint.config.*</code>, <code>postcss.config.*</code>, <code>tailwind.config.*</code>, <code>src/app/layout.tsx</code>, <code>src/app/page.tsx</code>, <code>src/app/globals.css</code>, <code>src/app/manifest.ts</code>, <code>src/app/icon.tsx</code>, <code>src/app/apple-icon.tsx</code>, <code>.env.example</code>, <code>.gitignore</code>.</li>
+<li>Shared domain/contracts: <code>src/domain/**</code>, <code>src/contracts/**</code>, <code>src/seed/**</code>, <code>src/lib/safety-copy.ts</code>, <code>src/lib/formatting.ts</code>, <code>src/test/factories/**</code>.</li>
+<li>Persistence: <code>prisma/**</code>, <code>src/server/db/**</code>, <code>src/server/repositories/**</code>, <code>compose.yaml</code>, <code>scripts/db/**</code>.</li>
+<li>Auth/session/persona APIs: <code>src/server/auth/**</code>, <code>src/app/api/auth/**</code>, <code>src/app/api/personas/**</code>, <code>src/middleware.ts</code>, auth-focused tests.</li>
+<li>App shell/auth/persona/onboarding UI: <code>src/app/(auth)/**</code>, <code>src/app/app/layout.tsx</code>, <code>src/app/app/home/page.tsx</code>, <code>src/app/app/onboarding/page.tsx</code>, <code>src/app/app/settings/page.tsx</code>, <code>src/components/app-shell/**</code>, <code>src/components/auth/**</code>, <code>src/components/onboarding/**</code>.</li>
+<li>Load map/responsibilities: <code>src/server/responsibilities/**</code>, <code>src/app/api/responsibilities/**</code>, <code>src/app/api/load-snapshot/**</code>, <code>src/app/app/load-map/**</code>, <code>src/app/app/responsibilities/**</code>, <code>src/components/responsibilities/**</code>.</li>
+<li>Radar: <code>src/server/radar/**</code>, <code>src/app/api/radar/**</code>, <code>src/app/app/radar/**</code>, <code>src/components/radar/**</code>.</li>
+<li>Check-ins: <code>src/server/check-ins/**</code>, <code>src/app/api/check-ins/**</code>, <code>src/app/app/check-ins/**</code>, <code>src/components/check-ins/**</code>.</li>
+<li>Visual integration: <code>public/assets/fairplay/**</code>, <code>src/components/visuals/**</code>, <code>src/components/motion/**</code>, <code>src/app/globals.css</code>, <code>tailwind.config.*</code>.</li>
+<li>README/Vercel readiness: <code>README.md</code>, <code>vercel.json</code>, <code>.env.example</code>, <code>docs/deployment/**</code>.</li>
+<li>Final verification: no production source ownership except small docs updates approved by the controller.</li>
+</ul>
+<h2 id="review-requirement-for-every-implementation-task">Review Requirement For Every Implementation Task</h2>
+<p>After a worker finishes a task and its checks pass, request reviews in this order:</p>
+<ol>
+<li>Spec compliance review: verify behavior against <code>docs/product/ip-safety-review.md</code>, <code>docs/product/v1-scope.md</code>, <code>docs/product/user-flows.md</code>, <code>docs/product/data-model.md</code>, and <code>docs/superpowers/specs/2026-05-04-fairplay-v1-design.md</code>.</li>
+<li>Code quality review: verify correctness, security, maintainability, test coverage, accessibility, performance, and Vercel readiness.</li>
+</ol>
+<p>Do not start the next dependent task until blocking findings from both reviews are resolved.</p>
+<hr>
+<h3 id="task-t01-app-scaffold-dependencies-config-and-pwa-baseline">Task T01: App Scaffold, Dependencies, Config, And PWA Baseline</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>chore: scaffold Fairplay app baseline</code></p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>Create/modify: <code>package.json</code>, lockfile, <code>next.config.*</code>, <code>tsconfig.json</code>, <code>eslint.config.*</code>, <code>postcss.config.*</code>, <code>tailwind.config.*</code>, <code>src/app/layout.tsx</code>, <code>src/app/page.tsx</code>, <code>src/app/globals.css</code>, <code>src/app/manifest.ts</code>, <code>src/app/icon.tsx</code>, <code>src/app/apple-icon.tsx</code>, <code>.env.example</code>, <code>.gitignore</code></li>
+<li>Create: <code>vitest.config.*</code>, <code>playwright.config.*</code>, <code>src/test/setup.ts</code></li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li><code>src/domain/**</code>, <code>src/contracts/**</code>, <code>src/server/**</code>, <code>prisma/**</code>, feature route folders beyond root app files, README deployment content.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li><code>README.md</code></li>
+<li><code>docs/product/v1-scope.md</code></li>
+<li><code>docs/superpowers/specs/2026-05-04-fairplay-v1-design.md</code></li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>Scaffold a Next.js App Router app with TypeScript, Tailwind CSS, ESLint, and <code>src/</code>.</li>
+<li>Use Node.js <code>&gt;=20.9.0</code>; document this in <code>package.json</code> <code>engines</code>.</li>
+<li>Add scripts:<ul>
+<li><code>dev</code>: run Next.js locally.</li>
+<li><code>build</code>: build the app.</li>
+<li><code>start</code>: run the production build.</li>
+<li><code>lint</code>: run ESLint.</li>
+<li><code>typecheck</code>: run <code>tsc --noEmit</code>.</li>
+<li><code>test</code>: run Vitest once.</li>
+<li><code>test:watch</code>: run Vitest watch mode.</li>
+<li><code>test:e2e</code>: run Playwright tests.</li>
+</ul>
+</li>
+<li>Install baseline dependencies for planned tasks: Next.js, React, Tailwind, Prisma CLI/client, Zod, <code>@node-rs/argon2</code>, <code>nanoid</code> or <code>crypto</code>-based id helpers, Vitest, Testing Library, Playwright.</li>
+<li>Add PWA-friendly metadata, <code>manifest.ts</code>, generated icon routes, responsive viewport settings, and a root page that redirects signed-out users toward <code>/login</code> after auth exists.</li>
+<li>Do not add a service worker or offline caching of household data.</li>
+<li>Add <code>.env.example</code> keys with placeholder values only:<ul>
+<li><code>DATABASE_URL</code></li>
+<li><code>SESSION_SECRET</code></li>
+<li><code>AUTH_COOKIE_NAME=fairplay_session</code></li>
+<li><code>APP_BASE_URL=http://localhost:3000</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run</code></li>
+<li>Run: <code>npm run build</code></li>
+<li>Run: <code>npm run test:e2e</code> after adding a smoke test that confirms <code>/</code> returns a non-error page.</li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must confirm the scaffold does not add source-derived copy, app code beyond baseline, offline sensitive-data caching, or unsupported product scope.</li>
+<li>Code quality review must confirm package scripts work, TypeScript config is strict enough for app work, and the PWA baseline is install-friendly without caching sensitive data.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>First implementation task.</li>
+<li>All later tasks depend on this scaffold.</li>
+</ul>
+<hr>
+<h3 id="task-t02-shared-domain-contracts-and-reviewed-seed-content">Task T02: Shared Domain Contracts And Reviewed Seed Content</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>feat: add shared domain contracts</code></p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>Create: <code>src/domain/enums.ts</code></li>
+<li>Create: <code>src/domain/ids.ts</code></li>
+<li>Create: <code>src/domain/time.ts</code></li>
+<li>Create: <code>src/domain/visibility.ts</code></li>
+<li>Create: <code>src/domain/load-signals.ts</code></li>
+<li>Create: <code>src/contracts/auth.ts</code></li>
+<li>Create: <code>src/contracts/personas.ts</code></li>
+<li>Create: <code>src/contracts/responsibilities.ts</code></li>
+<li>Create: <code>src/contracts/radar.ts</code></li>
+<li>Create: <code>src/contracts/check-ins.ts</code></li>
+<li>Create: <code>src/seed/demo-content.ts</code></li>
+<li>Create: <code>src/lib/safety-copy.ts</code></li>
+<li>Create: <code>src/lib/formatting.ts</code></li>
+<li>Create: <code>src/test/factories/domain.ts</code></li>
+<li>Create tests under <code>src/domain/**/*.test.ts</code>, <code>src/contracts/**/*.test.ts</code>, and <code>src/seed/demo-content.test.ts</code></li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li><code>src/app/**</code> route UI, <code>src/server/**</code>, <code>prisma/**</code>, auth/session implementation, package/dependency files unless a test dependency is missing and approved by the controller.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li><code>docs/product/data-model.md</code></li>
+<li><code>docs/product/ip-safety-review.md</code></li>
+<li><code>docs/product/v1-scope.md</code></li>
+<li><code>docs/product/user-flows.md</code></li>
+<li><code>docs/superpowers/specs/2026-05-04-fairplay-v1-design.md</code></li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>Define stable TypeScript string enums matching the data model:<ul>
+<li><code>PersonaKey</code>: <code>alex</code>, <code>max</code></li>
+<li><code>ResponsibilityStatus</code>: <code>unassigned</code>, <code>active</code>, <code>needs_review</code>, <code>paused</code>, <code>not_relevant</code>, <code>archived</code></li>
+<li><code>AssignmentRole</code>: <code>accountable_owner</code>, <code>shared_owner</code>, <code>helper</code>, <code>backup</code></li>
+<li><code>AssignmentScope</code>: <code>outcome</code>, <code>part</code>, <code>support</code>, <code>temporary</code></li>
+<li><code>Visibility</code>: <code>private</code>, <code>shared_household</code>, <code>partner_visible</code>, <code>check_in_only</code></li>
+<li><code>Cadence</code>: <code>daily</code>, <code>weekly</code>, <code>monthly</code>, <code>seasonal</code>, <code>event_based</code>, <code>as_needed</code>, <code>one_time</code></li>
+<li><code>HiddenEffortKey</code>: <code>noticing</code>, <code>planning</code>, <code>doing</code>, <code>follow_through</code>, <code>emotional_attention</code></li>
+<li><code>RadarReasonKey</code>: <code>unclear_expectation</code>, <code>blocked</code>, <code>too_much</code>, <code>handoff_needed</code>, <code>review_due</code>, <code>other</code></li>
+<li><code>Urgency</code>: <code>low</code>, <code>normal</code>, <code>soon</code></li>
+<li><code>RadarState</code>: <code>draft</code>, <code>open</code>, <code>scheduled</code>, <code>discussed</code>, <code>resolved</code>, <code>dismissed</code>, <code>deferred</code></li>
+<li><code>CheckInState</code>: <code>draft</code>, <code>scheduled</code>, <code>active</code>, <code>completed</code>, <code>skipped</code></li>
+<li><code>CheckInItemState</code>: <code>queued</code>, <code>discussed</code>, <code>deferred</code>, <code>skipped</code></li>
+<li><code>DecisionType</code>: <code>assign_owner</code>, <code>change_role</code>, <code>change_standard</code>, <code>change_cadence</code>, <code>pause</code>, <code>mark_not_relevant</code>, <code>archive</code>, <code>schedule_review</code>, <code>custom_note</code></li>
+<li><code>SourceReviewStatus</code>: <code>not_reviewed</code>, <code>approved_original</code>, <code>blocked</code>, <code>needs_review</code></li>
+</ul>
+</li>
+<li>Define Zod schemas and exported TypeScript types for JSON contracts:<ul>
+<li>create household request/response</li>
+<li>login request/response</li>
+<li>select persona request/response</li>
+<li>responsibility summary/detail/create/update/archive/pause/assignment mutation</li>
+<li>radar summary/detail/create/update/publish/defer/resolve mutation</li>
+<li>check-in create/agenda/item decision/complete mutation</li>
+<li>load snapshot summary</li>
+</ul>
+</li>
+<li>Add domain helpers:<ul>
+<li>normalize usernames by trimming, lowercasing, and collapsing internal whitespace/hyphen differences consistently.</li>
+<li>assert valid persona key and visibility transitions.</li>
+<li>compute load signals without producing any per-person score or winner/loser result.</li>
+</ul>
+</li>
+<li>Add the tiny approved-original demo content only:<ul>
+<li>Areas: <code>home_base</code>, <code>food_flow</code>, <code>calendar_lane</code>, <code>care_circle</code>, <code>paper_trail</code>, <code>fix_and_fetch</code>, <code>recharge</code>, <code>big_shifts</code>.</li>
+<li>Examples: <code>Evening kitchen reset</code>, <code>Weekly meal outline</code>, <code>Appointment follow-through</code>, <code>Laundry rhythm</code>, <code>Supply restock</code>, <code>Weekend plan check</code>, <code>Shared space reset</code>, <code>Bill due-date review</code>.</li>
+<li>Mark every seed template with <code>sourceReviewStatus: &quot;approved_original&quot;</code> and a <code>contentVersion</code>.</li>
+</ul>
+</li>
+<li>Add <code>src/lib/safety-copy.ts</code> with short original copy snippets for non-clinical boundary, unsafe relationship caution, private draft publishing confirmation, and defer/pause language. Copy must be neutral and practical.</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Unit test enum arrays and Zod schemas accept documented examples from <code>docs/product/data-model.md</code>.</li>
+<li>Unit test invalid visibility transitions fail, especially publishing <code>private</code> to shared/partner-visible without an explicit confirmation flag in the mutation schema.</li>
+<li>Unit test load signal calculations return aggregate counts only and contain no <code>score</code>, <code>winner</code>, <code>loser</code>, <code>grade</code>, or diagnostic labels.</li>
+<li>Unit test seed content includes exactly the approved areas/examples and no larger starter catalog.</li>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run src/domain src/contracts src/seed</code></li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must inspect every user-facing seed/copy string against the IP and relationship-safety review.</li>
+<li>Code quality review must confirm schemas are reusable by Route Handlers and future iOS clients because they do not depend on React or browser state.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>Depends on T01.</li>
+<li>T03 through T08 depend on these enums and contracts.</li>
+</ul>
+<hr>
+<h3 id="task-t03-persistence-layer-prisma-schema-and-local-postgres-verification">Task T03: Persistence Layer, Prisma Schema, And Local Postgres Verification</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>feat: add Prisma persistence layer</code></p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>Create: <code>prisma/schema.prisma</code></li>
+<li>Create: <code>prisma/seed.ts</code></li>
+<li>Create: <code>src/server/db/prisma.ts</code></li>
+<li>Create: <code>src/server/db/errors.ts</code></li>
+<li>Create: <code>src/server/repositories/households.ts</code></li>
+<li>Create: <code>src/server/repositories/personas.ts</code></li>
+<li>Create: <code>src/server/repositories/sessions.ts</code></li>
+<li>Create: <code>src/server/repositories/responsibilities.ts</code></li>
+<li>Create: <code>src/server/repositories/radar.ts</code></li>
+<li>Create: <code>src/server/repositories/check-ins.ts</code></li>
+<li>Create: <code>src/server/repositories/load-snapshots.ts</code></li>
+<li>Create: <code>src/server/repositories/auth-throttle.ts</code></li>
+<li>Create: <code>compose.yaml</code></li>
+<li>Create: <code>scripts/db/wait-for-db.mjs</code></li>
+<li>Modify: <code>.env.example</code></li>
+<li>Modify: <code>package.json</code> scripts only for Prisma/db commands</li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li>UI routes/components under <code>src/app/**</code> and <code>src/components/**</code>.</li>
+<li>Auth password hashing/session-cookie logic under <code>src/server/auth/**</code>.</li>
+<li>Contract enum names from T02 unless coordinated with the controller and reflected in all downstream tasks.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>T02 domain/contracts.</li>
+<li><code>docs/product/data-model.md</code>.</li>
+<li><code>docs/product/ip-safety-review.md</code>.</li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>Use Prisma provider <code>postgresql</code>.</li>
+<li>Model all v1 entities from the data model:<ul>
+<li><code>Household</code>, <code>HouseholdCredential</code>, <code>Persona</code>, <code>Session</code>, <code>Responsibility</code>, <code>ResponsibilityAssignment</code>, <code>ResponsibilityLifecycleNotes</code>, <code>ResponsibilityTemplate</code>, <code>RadarItem</code>, <code>CheckIn</code>, <code>CheckInItem</code>, <code>Decision</code>, <code>ResponsibilityEvent</code>, <code>LoadSnapshot</code>.</li>
+</ul>
+</li>
+<li>Add an implementation-support model for failed login protection, named <code>AuthThrottle</code> or <code>LoginAttempt</code>, keyed by normalized username and IP hash.</li>
+<li>Use UUID string ids, <code>createdAt</code>, and <code>updatedAt</code> consistently.</li>
+<li>Enforce unique household usernames with <code>usernameNormalized</code>.</li>
+<li>Enforce one <code>alex</code> and one <code>max</code> persona per household through a compound uniqueness rule.</li>
+<li>Store password hashes and session ids only as hashes or opaque references. The schema must not include plaintext password fields.</li>
+<li>Store radar visibility and state explicitly.</li>
+<li>Store responsibility assignment history with <code>startsAt</code> and nullable <code>endsAt</code>.</li>
+<li>Keep load snapshots aggregate and free of scoring fields.</li>
+<li>Add <code>compose.yaml</code> for local Postgres so workers can verify without Vercel credentials.</li>
+<li>Extend <code>.env.example</code> with a local Docker <code>DATABASE_URL</code> example and comments that real credentials stay outside source.</li>
+<li>Add scripts:<ul>
+<li><code>prisma:generate</code></li>
+<li><code>prisma:validate</code></li>
+<li><code>prisma:migrate</code></li>
+<li><code>prisma:seed</code></li>
+<li><code>db:up</code></li>
+<li><code>db:down</code></li>
+<li><code>db:wait</code></li>
+</ul>
+</li>
+<li>Add repository functions that map Prisma records to T02 contract/domain types and hide Prisma internals from API handlers.</li>
+<li>Add seed behavior that creates only the approved demo templates, not a full catalog.</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Run: <code>npm run prisma:validate</code></li>
+<li>Run: <code>npm run prisma:generate</code></li>
+<li>Run: <code>npm run db:up</code></li>
+<li>Run: <code>npm run db:wait</code></li>
+<li>Run: <code>npm run prisma:migrate -- --name init</code></li>
+<li>Run: <code>npm run prisma:seed</code></li>
+<li>Run repository integration tests against local Postgres:<ul>
+<li>create household with Alex/Max personas.</li>
+<li>reject duplicate normalized username.</li>
+<li>create responsibility with assignments and derive current assignments.</li>
+<li>create private radar draft and ensure repository queries filter by selected persona.</li>
+<li>create check-in, item, decision, and completed summary.</li>
+<li>compute load snapshot without scores.</li>
+</ul>
+</li>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run src/server/repositories</code></li>
+<li>Run: <code>npm run db:down</code></li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must verify schema fields preserve the documented data model and privacy requirements.</li>
+<li>Code quality review must inspect repository boundaries, Prisma connection reuse for serverless, migration safety, test isolation, and no plaintext secret storage.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>Depends on T01 and T02.</li>
+<li>T04 through T08 depend on the repository layer.</li>
+</ul>
+<hr>
+<h3 id="task-t04-auth-session-persona-apis-password-hashing-cookies-and-throttling">Task T04: Auth, Session, Persona APIs, Password Hashing, Cookies, And Throttling</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>feat: add household auth APIs</code></p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>Create: <code>src/server/auth/passwords.ts</code></li>
+<li>Create: <code>src/server/auth/sessions.ts</code></li>
+<li>Create: <code>src/server/auth/cookies.ts</code></li>
+<li>Create: <code>src/server/auth/throttle.ts</code></li>
+<li>Create: <code>src/server/auth/current-session.ts</code></li>
+<li>Create: <code>src/app/api/auth/create-household/route.ts</code></li>
+<li>Create: <code>src/app/api/auth/login/route.ts</code></li>
+<li>Create: <code>src/app/api/auth/logout/route.ts</code></li>
+<li>Create: <code>src/app/api/auth/me/route.ts</code></li>
+<li>Create: <code>src/app/api/personas/select/route.ts</code></li>
+<li>Create: <code>src/middleware.ts</code></li>
+<li>Create tests under <code>src/server/auth/**/*.test.ts</code> and <code>src/app/api/auth/**/*.test.ts</code></li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li>Auth UI pages/components from T05.</li>
+<li>Prisma schema from T03 unless a blocker is found and the controller approves a schema patch.</li>
+<li>Responsibility, radar, or check-in feature logic.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>T02 contracts.</li>
+<li>T03 repositories.</li>
+<li><code>docs/product/user-flows.md</code>.</li>
+<li><code>docs/product/ip-safety-review.md</code>.</li>
+<li><code>docs/agents/tasks/2026-05-04-gap-review/handoff.md</code>.</li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>Create household API:<ul>
+<li>Validate household name, username, password, and timezone with T02 schema.</li>
+<li>Normalize username.</li>
+<li>Require password length of at least 12 characters.</li>
+<li>Hash passwords with Argon2id using versioned parameters:<ul>
+<li>algorithm <code>argon2id</code></li>
+<li>memory cost <code>19456</code></li>
+<li>time cost <code>2</code></li>
+<li>parallelism <code>1</code></li>
+<li>hash length <code>32</code></li>
+<li>params version <code>v1</code></li>
+</ul>
+</li>
+<li>Store only the password hash and hash metadata.</li>
+<li>Create default personas <code>Alex</code> and <code>Max</code> with keys <code>alex</code> and <code>max</code>.</li>
+<li>Create an opaque server-managed session.</li>
+<li>Return household/persona summary and <code>requiresPersonaSelection: true</code>.</li>
+</ul>
+</li>
+<li>Login API:<ul>
+<li>Use generic error messages that do not reveal whether username or password failed.</li>
+<li>Apply failed-login throttling by normalized username and IP hash.</li>
+<li>Defaults: 5 failed attempts in 15 minutes triggers a 15-minute throttle window.</li>
+<li>Reset throttle counter after successful login.</li>
+<li>Create a session requiring persona selection.</li>
+</ul>
+</li>
+<li>Session behavior:<ul>
+<li>Cookie name from <code>AUTH_COOKIE_NAME</code>, default <code>fairplay_session</code>.</li>
+<li>Cookie is <code>HttpOnly</code>, <code>Secure</code> in production, <code>SameSite=Lax</code>, <code>Path=/</code>, max age matching absolute expiration.</li>
+<li>Session idle expiration: 7 days since <code>lastSeenAt</code>.</li>
+<li>Session absolute expiration: 30 days since <code>createdAt</code>.</li>
+<li>Store only an opaque session token in the browser and only a token hash in the database.</li>
+<li>Logout revokes the session and clears the cookie.</li>
+<li><code>me</code> returns household and selected persona state without sensitive fields.</li>
+</ul>
+</li>
+<li>Persona selection:<ul>
+<li>Only accepts persona ids belonging to the session household.</li>
+<li>Updates the session with <code>selectedPersonaId</code>.</li>
+<li>Allows explicit persona switch with the same route.</li>
+</ul>
+</li>
+<li>Middleware:<ul>
+<li>Redirect signed-out users away from <code>/app/**</code> to <code>/login</code>.</li>
+<li>Redirect signed-in users without selected persona to <code>/choose-persona</code> except for auth/persona APIs.</li>
+<li>Never expose household data or secrets in client storage.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Unit test password hashing verifies <code>verify(hash, password)</code> succeeds and wrong passwords fail.</li>
+<li>Unit test session token hashing confirms raw token is never persisted.</li>
+<li>API tests:<ul>
+<li>create household stores hash, creates two personas, sets cookie, and returns no password/hash.</li>
+<li>duplicate username returns conflict without echoing password.</li>
+<li>login success sets cookie and returns <code>requiresPersonaSelection</code>.</li>
+<li>5 failed attempts throttle the sixth attempt for the same username/IP.</li>
+<li>logout revokes session and clears cookie.</li>
+<li>persona selection rejects persona ids from another household.</li>
+</ul>
+</li>
+<li>Middleware tests or e2e route tests cover redirects for signed out, signed in without persona, and signed in with persona.</li>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run src/server/auth src/app/api/auth src/app/api/personas</code></li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must focus on auth privacy, session requirements, household credential model, and no misleading per-person secrecy.</li>
+<li>Code quality review must focus on crypto usage, cookie flags, throttle correctness, generic errors, token hashing, and test isolation.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>Depends on T02 and T03.</li>
+<li>T05 and all <code>/app/**</code> feature routes depend on this task.</li>
+</ul>
+<hr>
+<h3 id="task-t05-mobile-first-app-shell-auth-ui-persona-selection-and-onboarding">Task T05: Mobile-First App Shell, Auth UI, Persona Selection, And Onboarding</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>feat: add auth and onboarding UI</code></p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>Create: <code>src/app/(auth)/login/page.tsx</code></li>
+<li>Create: <code>src/app/(auth)/create-household/page.tsx</code></li>
+<li>Create: <code>src/app/(auth)/choose-persona/page.tsx</code></li>
+<li>Create: <code>src/app/app/layout.tsx</code></li>
+<li>Create: <code>src/app/app/home/page.tsx</code></li>
+<li>Create: <code>src/app/app/onboarding/page.tsx</code></li>
+<li>Create: <code>src/app/app/settings/page.tsx</code></li>
+<li>Create: <code>src/components/app-shell/**</code></li>
+<li>Create: <code>src/components/auth/**</code></li>
+<li>Create: <code>src/components/onboarding/**</code></li>
+<li>Create: <code>src/components/settings/**</code></li>
+<li>Modify: <code>src/app/page.tsx</code></li>
+<li>Add UI tests under <code>src/components/auth/**</code> and e2e tests for create/login/persona/onboarding.</li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li><code>src/server/auth/**</code> and auth API route internals from T04.</li>
+<li>Prisma schema/repositories.</li>
+<li>Responsibility, radar, or check-in feature folders except links/placeholders in the app shell navigation.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>T04 auth/persona APIs.</li>
+<li><code>docs/product/user-flows.md</code>.</li>
+<li><code>src/lib/safety-copy.ts</code> from T02.</li>
+<li><code>docs/product/visual-system.md</code>.</li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>Build mobile-first pages for:<ul>
+<li><code>/create-household</code></li>
+<li><code>/login</code></li>
+<li><code>/choose-persona</code></li>
+<li><code>/app/onboarding</code></li>
+<li><code>/app/home</code></li>
+<li><code>/app/settings</code></li>
+</ul>
+</li>
+<li>Root <code>/</code> routes signed-out users to <code>/login</code>; signed-in users with persona go to <code>/app/home</code>; signed-in users without persona go to <code>/choose-persona</code>.</li>
+<li>Auth forms:<ul>
+<li>Never echo passwords in errors.</li>
+<li>Show generic login failure text.</li>
+<li>Disable submit while pending.</li>
+<li>Preserve entered household name/username on recoverable errors, not password.</li>
+</ul>
+</li>
+<li>Persona selection:<ul>
+<li>Show only Alex and Max from the API response/session.</li>
+<li>Make active persona visible in the app shell.</li>
+<li>Persona switch from settings requires an explicit click and confirmation screen or dialog.</li>
+</ul>
+</li>
+<li>Onboarding:<ul>
+<li>Explain Fairplay as practical household planning, not therapy or crisis support.</li>
+<li>Include the unsafe-relationship caution from <code>src/lib/safety-copy.ts</code>.</li>
+<li>Show a short setup path: map responsibilities, assign ownership, add radar concerns, schedule check-in.</li>
+<li>Provide skip action to <code>/app/home</code>.</li>
+<li>Use original copy only.</li>
+</ul>
+</li>
+<li>App shell:<ul>
+<li>Mobile bottom navigation or compact nav for Home, Load Map, Radar, Check-ins, Settings.</li>
+<li>No decorative card/deck metaphor.</li>
+<li>Accessible focus states, labels, and form errors.</li>
+</ul>
+</li>
+<li>Settings:<ul>
+<li>Show household display name and active persona.</li>
+<li>Provide logout.</li>
+<li>Mention export/deletion/household exit as not available in v1 only if phrased as future data controls already identified in product docs.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Component tests for form validation, pending state, generic auth errors, and persona choice.</li>
+<li>E2E flow:<ul>
+<li>create household -&gt; choose persona -&gt; onboarding -&gt; home.</li>
+<li>logout -&gt; login -&gt; choose persona -&gt; home.</li>
+<li>expired/cleared cookie redirects <code>/app/home</code> to <code>/login</code>.</li>
+</ul>
+</li>
+<li>Accessibility check with Playwright for keyboard navigation through auth and persona screens.</li>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run src/components/auth src/components/onboarding</code></li>
+<li>Run: <code>npm run test:e2e -- --grep \&quot;auth|onboarding\&quot;</code></li>
+<li>Run: <code>npm run build</code></li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must inspect every onboarding/auth/settings string for non-clinical, non-accusatory, and privacy-honest wording.</li>
+<li>Code quality review must inspect mobile layout, accessible forms, error handling, no sensitive browser storage, and route protection UX.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>Depends on T04.</li>
+<li>T06 through T08 can reuse the app shell and navigation after this task.</li>
+</ul>
+<hr>
+<h3 id="task-t06-load-overview-responsibility-assignment-ui-and-api-mutations">Task T06: Load Overview, Responsibility Assignment UI, And API Mutations</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>feat: add responsibilities and load map</code></p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>Create: <code>src/server/responsibilities/service.ts</code></li>
+<li>Create: <code>src/server/responsibilities/load-snapshot.ts</code></li>
+<li>Create: <code>src/app/api/responsibilities/route.ts</code></li>
+<li>Create: <code>src/app/api/responsibilities/[id]/route.ts</code></li>
+<li>Create: <code>src/app/api/responsibilities/[id]/assignments/route.ts</code></li>
+<li>Create: <code>src/app/api/responsibilities/[id]/status/route.ts</code></li>
+<li>Create: <code>src/app/api/responsibilities/[id]/radar-flag/route.ts</code></li>
+<li>Create: <code>src/app/api/load-snapshot/route.ts</code></li>
+<li>Create: <code>src/app/app/load-map/page.tsx</code></li>
+<li>Create: <code>src/app/app/responsibilities/new/page.tsx</code></li>
+<li>Create: <code>src/app/app/responsibilities/[id]/page.tsx</code></li>
+<li>Create: <code>src/components/responsibilities/**</code></li>
+<li>Add tests under <code>src/server/responsibilities/**</code>, API route tests, component tests, and e2e tests.</li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li>Auth internals except calling <code>current-session</code>.</li>
+<li>Radar UI pages except creating a radar item through the <code>radar-flag</code> API using repository/service boundaries.</li>
+<li>Check-in feature files.</li>
+<li>Seed content list from T02.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>T02 responsibility contracts and enums.</li>
+<li>T03 repositories.</li>
+<li>T04 current session helper.</li>
+<li>T05 app shell.</li>
+<li><code>docs/product/user-flows.md</code>.</li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>API list/detail:<ul>
+<li>Return only records for the active session household.</li>
+<li>Include current assignments derived from assignment history.</li>
+<li>Include load snapshot aggregates with no scores or winner/loser labels.</li>
+</ul>
+</li>
+<li>Create/edit responsibility:<ul>
+<li>Accept user-authored title, summary, area keys, hidden effort keys, cadence, relevant days, status, visibility, household standard, notes, and next review date.</li>
+<li>Default status to <code>unassigned</code> unless a valid assignment is included.</li>
+<li>Default visibility to <code>shared_household</code>.</li>
+<li>Reject private responsibility visibility unless a product review explicitly adds private responsibility drafts; v1 private draft behavior belongs to radar.</li>
+</ul>
+</li>
+<li>Assignment mutation:<ul>
+<li>Allow accountable owner, shared owner, helper, and backup roles for Alex/Max.</li>
+<li>Close prior active assignments when roles change.</li>
+<li>Require handoff context and revisit date when accountable owner changes.</li>
+<li>Record a neutral <code>ResponsibilityEvent</code>.</li>
+</ul>
+</li>
+<li>Status mutation:<ul>
+<li>Support <code>active</code>, <code>needs_review</code>, <code>paused</code>, <code>not_relevant</code>, and <code>archived</code>.</li>
+<li>Require confirmation for archive.</li>
+<li>Keep pause/not relevant language non-shaming.</li>
+</ul>
+</li>
+<li>Radar flag mutation:<ul>
+<li>Create a radar item with reason <code>review_due</code> or <code>unclear_expectation</code> linked to the responsibility.</li>
+<li>Let user choose <code>private</code> draft or shared/check-in visibility with explicit confirmation for publishing.</li>
+</ul>
+</li>
+<li>Load map UI:<ul>
+<li>Mobile-first responsibility list with filters for owner, status, cadence, area, hidden effort, radar flag, and review timing.</li>
+<li>Summary signals: owner distribution, shared count, high-frequency count, open radar count, due review count, paused/not-relevant count, hidden effort mix, area mix.</li>
+<li>Do not display a partner score, blame label, diagnosis, morality grade, or winner/loser comparison.</li>
+</ul>
+</li>
+<li>Responsibility editor UI:<ul>
+<li>Create and edit all v1 fields.</li>
+<li>Show assignment role controls for Alex and Max.</li>
+<li>Show handoff/revisit prompts only when ownership changes.</li>
+<li>Support pause, archive, not relevant, and flag for radar.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Service tests:<ul>
+<li>create responsibility scoped to household.</li>
+<li>reject cross-household reads/mutations.</li>
+<li>assignment changes close old assignments and record event.</li>
+<li>accountable owner changes require handoff context and revisit date.</li>
+<li>load snapshot contains only aggregate fields and no score fields.</li>
+</ul>
+</li>
+<li>API tests for create/edit/assign/status/radar flag.</li>
+<li>Component tests for filters, empty state, assignment controls, and archive confirmation.</li>
+<li>E2E flow:<ul>
+<li>create responsibility.</li>
+<li>assign Alex accountable owner.</li>
+<li>change to Max with handoff and revisit date.</li>
+<li>pause and restore active.</li>
+<li>archive with confirmation.</li>
+</ul>
+</li>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run src/server/responsibilities src/components/responsibilities src/app/api/responsibilities</code></li>
+<li>Run: <code>npm run test:e2e -- --grep \&quot;responsibility|load map\&quot;</code></li>
+<li>Run: <code>npm run build</code></li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must focus on non-punitive load signals, assignment semantics, visibility, and neutral lifecycle language.</li>
+<li>Code quality review must inspect household scoping, mutation validation, event consistency, responsive UI, and test coverage.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>Depends on T02 through T05.</li>
+<li>T07 can run after this task because radar links may reference responsibilities.</li>
+<li>T08 depends on responsibilities for agenda suggestions and decisions.</li>
+</ul>
+<hr>
+<h3 id="task-t07-radar-concern-board-ui-and-api-mutations">Task T07: Radar Concern Board UI And API Mutations</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>feat: add radar board</code></p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>Create: <code>src/server/radar/service.ts</code></li>
+<li>Create: <code>src/app/api/radar/route.ts</code></li>
+<li>Create: <code>src/app/api/radar/[id]/route.ts</code></li>
+<li>Create: <code>src/app/api/radar/[id]/publish/route.ts</code></li>
+<li>Create: <code>src/app/api/radar/[id]/defer/route.ts</code></li>
+<li>Create: <code>src/app/api/radar/[id]/resolve/route.ts</code></li>
+<li>Create: <code>src/app/api/radar/[id]/schedule/route.ts</code></li>
+<li>Create: <code>src/app/app/radar/page.tsx</code></li>
+<li>Create: <code>src/components/radar/**</code></li>
+<li>Add tests under <code>src/server/radar/**</code>, API route tests, component tests, and e2e tests.</li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li>Responsibility editor internals except consuming linked responsibility summaries through existing APIs/services.</li>
+<li>Check-in feature files except setting <code>targetCheckInId</code> through repository/service boundaries.</li>
+<li>Auth internals.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>T02 radar contracts and safety copy.</li>
+<li>T03 repositories.</li>
+<li>T04 current session helper.</li>
+<li>T05 app shell.</li>
+<li>T06 responsibility summaries.</li>
+<li><code>docs/product/user-flows.md</code>.</li>
+<li><code>docs/product/ip-safety-review.md</code>.</li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>API list/detail:<ul>
+<li>Return shared household, partner-visible, check-in-only, and selected-persona private drafts according to visibility rules.</li>
+<li>Never return another persona&#39;s private drafts in persona-filtered views.</li>
+<li>Do not imply private drafts are secret from someone who controls the shared login; use honest product copy.</li>
+</ul>
+</li>
+<li>Create/update radar item:<ul>
+<li>Fields: topic, optional notes, optional linked responsibility, reason key, urgency, desired timing, visibility.</li>
+<li>Default state <code>draft</code> for <code>private</code>; default state <code>open</code> for confirmed shared/partner/check-in visibility.</li>
+<li>Require explicit confirmation when publishing a private draft to <code>shared_household</code>, <code>partner_visible</code>, or <code>check_in_only</code>.</li>
+</ul>
+</li>
+<li>Publish/defer/resolve/schedule:<ul>
+<li>Publish changes visibility and state only with confirmation.</li>
+<li>Defer sets state <code>deferred</code> with optional revisit date.</li>
+<li>Resolve sets <code>resolvedAt</code>.</li>
+<li>Schedule attaches the item to a check-in or marks it ready for check-in.</li>
+</ul>
+</li>
+<li>Radar UI:<ul>
+<li>Mobile-first board with sections for private drafts, shared/open items, check-in topics, deferred/resolved filters.</li>
+<li>Visibility labels must be visible on every item.</li>
+<li>Use neutral reason labels: unclear expectation, blocked, too much, handoff needed, review due, other.</li>
+<li>Provide create, edit, publish, defer, resolve, dismiss, and schedule actions.</li>
+<li>Publishing private drafts must show a confirmation that names the new visibility.</li>
+<li>Do not use complaint/proof/failure/blame labels.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Service tests:<ul>
+<li>selected persona sees own private drafts and shared items.</li>
+<li>selected persona does not see the other persona&#39;s private drafts in default radar list.</li>
+<li>publish requires confirmation.</li>
+<li>defer and resolve update state and timestamps.</li>
+<li>cross-household access is rejected.</li>
+</ul>
+</li>
+<li>API tests for list/create/update/publish/defer/resolve/schedule.</li>
+<li>Component tests for visibility labels and publish confirmation.</li>
+<li>E2E flow:<ul>
+<li>create private draft.</li>
+<li>verify it appears under private drafts.</li>
+<li>publish to check-in-only with confirmation.</li>
+<li>defer it.</li>
+<li>resolve it.</li>
+</ul>
+</li>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run src/server/radar src/components/radar src/app/api/radar</code></li>
+<li>Run: <code>npm run test:e2e -- --grep \&quot;radar\&quot;</code></li>
+<li>Run: <code>npm run build</code></li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must focus on explicit visibility, private draft confirmation, non-blaming concern language, and no unsafe-confrontation prompts.</li>
+<li>Code quality review must inspect access control, state transitions, UI confirmations, and tests around persona filtering.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>Depends on T02 through T06.</li>
+<li>T08 depends on radar agenda sources.</li>
+</ul>
+<hr>
+<h3 id="task-t08-guided-check-in-ui-decisions-and-persisted-summaries">Task T08: Guided Check-In UI, Decisions, And Persisted Summaries</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>feat: add guided check-ins</code></p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>Create: <code>src/server/check-ins/agenda.ts</code></li>
+<li>Create: <code>src/server/check-ins/service.ts</code></li>
+<li>Create: <code>src/server/check-ins/summary.ts</code></li>
+<li>Create: <code>src/app/api/check-ins/route.ts</code></li>
+<li>Create: <code>src/app/api/check-ins/[id]/route.ts</code></li>
+<li>Create: <code>src/app/api/check-ins/[id]/items/[itemId]/route.ts</code></li>
+<li>Create: <code>src/app/api/check-ins/[id]/decisions/route.ts</code></li>
+<li>Create: <code>src/app/api/check-ins/[id]/complete/route.ts</code></li>
+<li>Create: <code>src/app/app/check-ins/new/page.tsx</code></li>
+<li>Create: <code>src/app/app/check-ins/[id]/page.tsx</code></li>
+<li>Create: <code>src/components/check-ins/**</code></li>
+<li>Add tests under <code>src/server/check-ins/**</code>, API route tests, component tests, and e2e tests.</li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li>Auth internals.</li>
+<li>Prisma schema unless a blocker is found and approved by the controller.</li>
+<li>Radar or responsibility service internals except calling their public service/repository methods for explicit decisions.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>T02 check-in contracts and safety copy.</li>
+<li>T03 repositories.</li>
+<li>T04 current session helper.</li>
+<li>T06 responsibilities.</li>
+<li>T07 radar.</li>
+<li><code>docs/product/user-flows.md</code>.</li>
+<li><code>docs/product/ip-safety-review.md</code>.</li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>Agenda creation:<ul>
+<li>Suggest a short agenda from open radar items, due reviews, recent responsibility changes, and optional appreciation/acknowledgement.</li>
+<li>Keep agenda short: default maximum 5 items.</li>
+<li>Allow users to remove or skip any suggested item.</li>
+</ul>
+</li>
+<li>Check-in state:<ul>
+<li>Create check-ins in <code>draft</code> or <code>active</code>.</li>
+<li>Resume active check-ins.</li>
+<li>Complete check-ins with factual summary.</li>
+<li>Support item states <code>queued</code>, <code>discussed</code>, <code>deferred</code>, and <code>skipped</code>.</li>
+</ul>
+</li>
+<li>Decision capture:<ul>
+<li>Decision types from T02 only.</li>
+<li>Decisions may update responsibility owner, role, cadence, status, household standard, visibility, or review date only through explicit user action.</li>
+<li>Decisions record <code>createdByPersonaId</code>, effective date, optional review date, and neutral summary.</li>
+<li>Deferred or skipped items are not failures.</li>
+</ul>
+</li>
+<li>Summary:<ul>
+<li>Persist a calm decision-focused summary of decisions, deferred topics, and next review dates.</li>
+<li>Avoid grievance archive framing, accusations, clinical advice, or score-like language.</li>
+</ul>
+</li>
+<li>UI:<ul>
+<li>Mobile-first stepper or compact guided flow.</li>
+<li>Show current item, skip/defer controls, decision form, and completion summary.</li>
+<li>Make pause/defer normal and easy.</li>
+<li>Preserve visibility labels for radar items.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Service tests:<ul>
+<li>agenda includes open radar and due reviews, capped at 5.</li>
+<li>skip/defer updates item state without creating decision.</li>
+<li>decision updates responsibility only through explicit decision route.</li>
+<li>complete check-in persists summary and timestamps.</li>
+<li>cross-household access is rejected.</li>
+<li>summary text does not contain score/winner/loser/diagnosis labels.</li>
+</ul>
+</li>
+<li>API tests for create/resume/item update/decision/complete.</li>
+<li>Component tests for agenda selection, skip/defer controls, decision form, and summary.</li>
+<li>E2E flow:<ul>
+<li>create responsibility and radar item.</li>
+<li>start check-in.</li>
+<li>discuss one item and defer one item.</li>
+<li>record owner/review-date decision.</li>
+<li>complete and view persisted summary.</li>
+</ul>
+</li>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run src/server/check-ins src/components/check-ins src/app/api/check-ins</code></li>
+<li>Run: <code>npm run test:e2e -- --grep \&quot;check-in\&quot;</code></li>
+<li>Run: <code>npm run build</code></li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must focus on check-in safety, defer/skip affordances, factual summaries, and explicit decision updates.</li>
+<li>Code quality review must inspect state machine correctness, transactional updates, access control, and e2e coverage.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>Depends on T02 through T07.</li>
+</ul>
+<hr>
+<h3 id="task-t09-visual-assets-and-motion-integration">Task T09: Visual Assets And Motion Integration</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>feat: integrate Fairplay visuals</code></p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>Create: <code>public/assets/fairplay/**</code> only with assets supplied or approved by the visual agent.</li>
+<li>Create: <code>src/components/visuals/**</code></li>
+<li>Create: <code>src/components/motion/**</code></li>
+<li>Modify: <code>src/app/globals.css</code></li>
+<li>Modify: <code>tailwind.config.*</code></li>
+<li>Modify feature components only to replace placeholders with approved visual components:<ul>
+<li><code>src/components/app-shell/**</code></li>
+<li><code>src/components/onboarding/**</code></li>
+<li><code>src/components/responsibilities/**</code></li>
+<li><code>src/components/radar/**</code></li>
+<li><code>src/components/check-ins/**</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li>Auth/session/server logic.</li>
+<li>Prisma schema/repositories.</li>
+<li>Domain enum/contract names.</li>
+<li>Any private reference assets or source-derived visuals.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>A completed visual-agent handoff under <code>docs/agents/tasks/**/handoff.md</code> that explicitly approves original assets/direction for Fairplay.</li>
+<li>Approved assets committed or provided for <code>public/assets/fairplay/**</code>.</li>
+<li><code>docs/product/visual-system.md</code>.</li>
+<li><code>docs/product/ip-safety-review.md</code>.</li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>If either the visual-agent handoff or the approved asset set is absent, stop and report <code>NEEDS_CONTEXT</code> to the controller. Do not invent character art in this task.</li>
+<li>Integrate original Alex/Max character or household illustrations only if approved as original and not source-derived.</li>
+<li>Add lightweight animations for transitions, check-in progress, empty states, and success states.</li>
+<li>Respect reduced-motion preferences with <code>prefers-reduced-motion</code>.</li>
+<li>Keep visuals supportive and calm; avoid deck/card-game metaphors, source-like printed cards, source iconography, or copied public app art.</li>
+<li>Keep dense operational screens scanable; visual elements must not obscure forms, lists, controls, or state labels.</li>
+<li>Use accessible alt text for meaningful images and empty alt text for decorative images.</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Component tests confirm visual components render with accessible labels or decorative empty alt text.</li>
+<li>E2E visual smoke tests at mobile and desktop widths:<ul>
+<li><code>/app/onboarding</code></li>
+<li><code>/app/home</code></li>
+<li><code>/app/load-map</code></li>
+<li><code>/app/radar</code></li>
+<li><code>/app/check-ins/new</code></li>
+</ul>
+</li>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run src/components/visuals src/components/motion</code></li>
+<li>Run: <code>npm run test:e2e -- --grep \&quot;visual|responsive\&quot;</code></li>
+<li>Run: <code>npm run build</code></li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must verify visual originality, no source-derived art, no deck metaphor, and safety-compatible tone.</li>
+<li>Code quality review must inspect responsive layout, reduced-motion handling, asset loading, alt text, and no layout overlap.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>Depends on T05 through T08 for integration targets.</li>
+<li>Also depends on a visual-agent handoff. Without that handoff, this task is blocked by design context, not by code.</li>
+</ul>
+<hr>
+<h3 id="task-t10-readme-deployment-instructions-and-vercel-readiness">Task T10: README Deployment Instructions And Vercel Readiness</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>docs: add deployment and Vercel readiness notes</code></p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>Modify: <code>README.md</code></li>
+<li>Modify: <code>.env.example</code></li>
+<li>Create/modify: <code>vercel.json</code> only when the app needs non-default Vercel runtime or build configuration; otherwise leave it absent and record that default Vercel behavior is intentional in the PR notes.</li>
+<li>Create: <code>docs/deployment/vercel.md</code></li>
+<li>Create: <code>docs/deployment/local-development.md</code></li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li>Feature implementation files under <code>src/server/**</code>, <code>src/app/**</code>, <code>src/components/**</code>, or <code>prisma/schema.prisma</code> unless a documented command is missing and the owning worker approves the small change.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>T01 scaffold scripts.</li>
+<li>T03 database setup.</li>
+<li>T04 auth/session environment variables.</li>
+<li>All feature tasks for current route list and verification commands.</li>
+<li><code>README.md</code>.</li>
+<li><code>docs/superpowers/specs/2026-05-04-fairplay-v1-design.md</code>.</li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>README must cover:<ul>
+<li>Node.js 20.9 or newer.</li>
+<li>Install command.</li>
+<li>Local development command.</li>
+<li>Test, lint, typecheck, build, Prisma, and Playwright commands.</li>
+<li>Environment variables configured outside source.</li>
+<li>Vercel Marketplace Postgres-compatible storage connection through <code>DATABASE_URL</code>.</li>
+<li>Prisma generate/migrate/seed commands.</li>
+<li>Password/session secret setup.</li>
+<li>Cookie security expectations.</li>
+<li>Vercel deploy flow.</li>
+<li>Local Postgres verification with Docker Compose.</li>
+</ul>
+</li>
+<li><code>.env.example</code> must include placeholders only and must not contain real secrets.</li>
+<li>Deployment docs must state that Vercel environment variables should be configured in project settings and encrypted at rest by Vercel.</li>
+<li>Deployment docs must state no private reference materials, plaintext passwords, seed real household records, or local env files may be committed.</li>
+<li>Add a Vercel readiness checklist:<ul>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm test -- --run</code></li>
+<li><code>npm run test:e2e</code></li>
+<li><code>npm run build</code></li>
+<li><code>npm run prisma:validate</code></li>
+<li>migration command against the selected database.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Run all commands documented in README that do not require cloud credentials.</li>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run</code></li>
+<li>Run: <code>npm run build</code></li>
+<li>Run: <code>npm run prisma:validate</code></li>
+<li>Manually inspect docs for secrets and source-reference leakage.</li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must verify deployment docs include required README notes and preserve privacy/IP boundaries.</li>
+<li>Code quality review must verify documented commands match actual package scripts and Vercel configuration is minimal and correct.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>Depends on T01, T03, T04, and preferably T06 through T08 so documented routes/features match the app.</li>
+<li>Can run before T09 if visual work is blocked.</li>
+</ul>
+<hr>
+<h3 id="task-t11-final-verification-release-candidate-review-and-draft-pr">Task T11: Final Verification, Release Candidate Review, And Draft PR</h3>
+<p><strong>Expected branch/commit scope:</strong> <code>codex/v1-app</code>, commit <code>test: verify Fairplay v1 release candidate</code> only if verification docs or test snapshots are updated; otherwise no commit required.</p>
+<p><strong>Owned files/directories:</strong></p>
+<ul>
+<li>No production source ownership by default.</li>
+<li>May create/modify: <code>docs/deployment/release-checklist.md</code> if the controller wants a recorded verification artifact.</li>
+<li>May update README only for discovered command corrections approved by the owning docs worker.</li>
+</ul>
+<p><strong>Must not touch:</strong></p>
+<ul>
+<li>Production app code to &quot;quick fix&quot; failures. If verification fails, assign the failure back to the owning task worker or create a focused fix task.</li>
+</ul>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>Completed T01 through T10.</li>
+<li>All spec compliance and code quality review results.</li>
+</ul>
+<p><strong>Behavior requirements:</strong></p>
+<ul>
+<li>Verify the full app story end to end:<ul>
+<li>Create household.</li>
+<li>Choose Alex.</li>
+<li>Complete or skip onboarding.</li>
+<li>Create responsibility.</li>
+<li>Assign owner and review date.</li>
+<li>Create private radar draft.</li>
+<li>Publish radar item with confirmation.</li>
+<li>Start check-in.</li>
+<li>Defer one item and decide one item.</li>
+<li>Complete check-in and confirm persisted summary.</li>
+<li>Logout and login again.</li>
+<li>Choose Max and confirm shared household state.</li>
+</ul>
+</li>
+<li>Confirm security/privacy basics:<ul>
+<li>Password hash only in database.</li>
+<li>No plaintext password in logs, responses, or seed data.</li>
+<li>Session cookie is <code>HttpOnly</code>, <code>Secure</code> in production, and <code>SameSite=Lax</code>.</li>
+<li><code>localStorage</code> contains no household data, drafts, concern details, or secrets.</li>
+<li>Cross-household API access is rejected.</li>
+</ul>
+</li>
+<li>Confirm IP/safety basics:<ul>
+<li>No full starter catalog.</li>
+<li>No copied source labels or source-like category system.</li>
+<li>No partner score, morality grade, diagnosis, winner/loser view, or confrontation prompt.</li>
+<li>Private draft publishing requires confirmation.</li>
+<li>Check-in allows skip/defer.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Tests/checks expected:</strong></p>
+<ul>
+<li>Run: <code>git status --short</code></li>
+<li>Run: <code>npm run lint</code></li>
+<li>Run: <code>npm run typecheck</code></li>
+<li>Run: <code>npm test -- --run</code></li>
+<li>Run: <code>npm run test:e2e</code></li>
+<li>Run: <code>npm run prisma:validate</code></li>
+<li>Run: <code>npm run build</code></li>
+<li>Run local app and complete manual browser verification at mobile and desktop widths.</li>
+<li>Inspect browser devtools storage and cookies during manual verification.</li>
+<li>Search for blocked terms and risky labels:<ul>
+<li><code>rg -n &quot;score|winner|loser|diagnos|therapy|crisis|bad partner|proof|deck|card game|worksheet|assessment&quot; src README.md docs</code></li>
+<li>Any legitimate matches must be in safety/disclaimer context, not product scoring or source-derived UI.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Review points:</strong></p>
+<ul>
+<li>Spec compliance review must run after final verification and before draft PR is marked ready for broader review.</li>
+<li>Code quality review must run after spec compliance issues are fixed.</li>
+<li>Draft PR description must include verification command results and known residual risks.</li>
+</ul>
+<p><strong>Order/dependencies:</strong></p>
+<ul>
+<li>Runs after all implementation tasks and blocking reviews are complete.</li>
+</ul>
+<hr>
+<h2 id="pr-strategy">PR Strategy</h2>
+<h3 id="docsspec-pr">Docs/Spec PR</h3>
+<ul>
+<li>Source branch: <code>codex/research-and-spec</code></li>
+<li>Target branch: <code>main</code></li>
+<li>Purpose: land product architecture, safety/IP review, data model, user flows, and this implementation plan.</li>
+<li>Expected validation:<ul>
+<li>Docs diff only.</li>
+<li>Review confirms no private reference text/assets are committed.</li>
+<li>Review confirms implementation plan honors the design spec, v1 scope, data model, and IP/privacy/safety guardrails.</li>
+</ul>
+</li>
+</ul>
+<h3 id="implementation-pr">Implementation PR</h3>
+<ul>
+<li>Branch: <code>codex/v1-app</code></li>
+<li>Base:<ul>
+<li>Prefer updated <code>main</code> after the docs/spec PR merges.</li>
+<li>If implementation begins before docs merge, branch from <code>codex/research-and-spec</code> and rebase onto <code>main</code> after docs merge.</li>
+</ul>
+</li>
+<li>PR state: open as draft after T01 or T03 so CI and reviewers can track incremental work.</li>
+<li>Draft PR expectations:<ul>
+<li>Keep task ids in commit messages or PR checklist.</li>
+<li>Include a checklist for T01 through T11.</li>
+<li>Link the docs/spec PR.</li>
+<li>List environment variables with placeholder names only.</li>
+<li>Record which spec compliance and code quality reviews have passed.</li>
+</ul>
+</li>
+<li>Ready-for-review expectations:<ul>
+<li>T01 through T10 complete or explicitly deferred with controller approval.</li>
+<li>T11 final verification complete.</li>
+<li>All tests/checks listed in T11 pass or failures are documented with exact command output and owner.</li>
+<li>No production secrets, private reference materials, plaintext passwords, source-derived content, or sensitive offline caching.</li>
+</ul>
+</li>
+</ul>
+<h2 id="controller-review-gates">Controller Review Gates</h2>
+<ul>
+<li>Gate A after T03: database/auth foundation is ready for sensitive API work.</li>
+<li>Gate B after T05: auth UI/onboarding copy is safe before feature surfaces add more user-facing relationship-support copy.</li>
+<li>Gate C after T08: full core product path is implemented before visual polish and deployment docs.</li>
+<li>Gate D after T11: release candidate is ready for non-draft PR review or deploy preview.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/wiki/file-map.md">
+  <meta name="fairplay-document-source-sha256" content="f757e6039d0040d7882cc715b03e74651761476ee9e1090c39de870489bcd62d">
+  <title>docs/wiki/file-map.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="file-map.md"><code>docs/wiki/file-map.md</code></a></p>
+    <article>
+<h1 id="fairplay-file-map">Fairplay File Map</h1>
+<p>Last updated: 2026-07-20</p>
+<p>This is a practical index, not a reorganization plan.</p>
+<h2 id="root">Root</h2>
+<ul>
+<li><code>README.md</code>: install, env, commands, sessions, Vercel, readiness checklist, reference policy.</li>
+<li><code>README.html</code>: deterministic accessible counterpart generated from <code>README.md</code>.</li>
+<li><code>package.json</code>: npm scripts and dependencies.</li>
+<li><code>package-lock.json</code>: npm lockfile.</li>
+<li><code>.env.example</code>: placeholder env values for DB, sessions, Qwen, and optional OpenAI fallback.</li>
+<li><code>.gitattributes</code>: enforces LF for canonical prose sources, generated HTML, and documentation tooling so parity is stable across platforms.</li>
+<li><code>.gitignore</code>: ignores env files, builds, coverage, Playwright output, <code>.worktrees/</code>, <code>.superpowers/</code>, <code>.DS_Store</code>, and <code>References/</code>.</li>
+<li><code>compose.yaml</code>: local Postgres service.</li>
+<li><code>next.config.ts</code>, <code>tsconfig.json</code>, <code>eslint.config.mjs</code>, <code>tailwind.config.ts</code>, <code>postcss.config.mjs</code>, <code>vitest.config.ts</code>, <code>playwright.config.ts</code>: framework, lint, styling, test, and e2e config.</li>
+<li><code>next-env.d.ts</code>, <code>tsconfig.tsbuildinfo</code>: generated TypeScript/Next files. <code>tsconfig.tsbuildinfo</code> is ignored and needs cleanup if committed accidentally.</li>
+</ul>
+<h2 id="app-source">App Source</h2>
+<ul>
+<li><code>src/app/layout.tsx</code>: root metadata, font, theme init script, global provider.</li>
+<li><code>src/app/page.tsx</code>: redirects users to login, persona selection, or Deal.</li>
+<li><code>src/app/(auth)/</code>: auth route pages.</li>
+<li><code>src/app/app/layout.tsx</code>: protected app layout and app shell wrapper.</li>
+<li><code>src/app/app/home/page.tsx</code>: legacy redirect to Deal.</li>
+<li><code>src/app/app/your-cards/page.tsx</code>: Your Deck, a searchable image-first assigned-card gallery for the selected persona.</li>
+<li><code>src/app/app/distribute/page.tsx</code>: Deal, a searchable swipe deck with an available-card list.</li>
+<li><code>src/app/app/board/page.tsx</code>: grouped image-first card bucket board.</li>
+<li><code>src/app/app/ask-greg/page.tsx</code>: card generation/advisor surface.</li>
+<li><code>src/app/app/load-map/page.tsx</code>: legacy redirect to Board.</li>
+<li><code>src/app/app/library/page.tsx</code>: library and AI draft page.</li>
+<li><code>src/app/app/check-ins/</code>: check-in list/new/detail pages.</li>
+<li><code>src/app/app/crash-course/page.tsx</code>: immersive crash-course route.</li>
+<li><code>src/app/app/onboarding/page.tsx</code>: onboarding page.</li>
+<li><code>src/app/app/responsibilities/</code>: responsibility create/detail pages.</li>
+<li><code>src/app/app/settings/page.tsx</code>: settings page.</li>
+<li><code>src/app/api/</code>: JSON route handlers for auth, personas, preferences, responsibilities, load snapshot, card templates, AI drafts, and check-ins.</li>
+<li><code>src/app/globals.css</code>: ordered global-style entrypoint; <code>src/app/styles/</code> owns Tailwind boundaries, tokens/theme, shell/background, motion, Little Alex, and reduced-motion layers.</li>
+<li><code>src/app/icon.tsx</code>, <code>src/app/apple-icon.tsx</code>, <code>src/app/manifest.ts</code>: PWA metadata/assets.</li>
+<li><code>src/middleware.ts</code>: anonymous app gate, per-request CSP nonce/security headers, malformed-cookie fallback handling, and same-origin cookie-mutation enforcement.</li>
+</ul>
+<h2 id="components">Components</h2>
+<ul>
+<li><code>src/components/app-shell/</code>: desktop/sidebar/mobile nav shell, page shell, session view.</li>
+<li><code>src/components/auth/</code>: create/login/persona UI and auth helpers.</li>
+<li><code>src/components/cards/</code>: card state mapping, route-specific Board/Deal/Your Deck workspaces, compatibility workspace export, shared card cover/back presentation, pure search/transition helpers, household work map, and responsibility detail sheet.</li>
+<li><code>src/components/library/</code>: card library and AI Task Manager.</li>
+<li><code>src/components/responsibilities/</code>: responsibility editor.</li>
+<li><code>src/components/check-ins/</code>: check-in flow.</li>
+<li><code>src/components/crash-course/</code>: crash course content, scene, and flow.</li>
+<li><code>src/components/onboarding/</code>: onboarding flow and client page.</li>
+<li><code>src/components/little-alex/</code>: desktop fine-pointer loader plus lazy Matter.js helper/avatar physics.</li>
+<li><code>src/components/settings/</code>: settings panel.</li>
+<li><code>src/components/theme/</code>: theme provider and constants.</li>
+<li><code>src/components/ui/</code>: shared UI primitives.</li>
+<li><code>src/components/visuals/</code>: generated/inline Fairplay visuals.</li>
+<li><code>src/components/motion/</code>: shared motion primitives.</li>
+<li><code>src/components/welcome/</code>: retired persistent welcome compatibility UI; not mounted in the protected app shell.</li>
+</ul>
+<h2 id="domain-contracts-server">Domain, Contracts, Server</h2>
+<ul>
+<li><code>src/contracts/</code>: Zod contracts for auth, personas, preferences, responsibilities, check-ins, card templates, AI drafts, and Little Alex.</li>
+<li><code>src/domain/</code>: ids, enums, visibility helpers, load signals, and time helpers.</li>
+<li><code>src/lib/</code>: formatting, safety copy, and centralized HTTP security-policy helpers.</li>
+<li><code>src/seed/</code>: demo content and source-card seed data. Name/source policy needs verification before expanding.</li>
+<li><code>src/server/auth/</code>: cookies, session current-state, token handling, password hashing, throttling, household-creation body limits, and bounded creation rate limiting.</li>
+<li><code>src/server/db/</code>: Prisma client and repository error helpers.</li>
+<li><code>src/server/repositories/</code>: Prisma repository functions.</li>
+<li><code>src/server/responsibilities/</code>: responsibility service and load snapshot.</li>
+<li><code>src/server/check-ins/</code>: check-in scheduling/completion service plus compatibility item/decision logic.</li>
+<li><code>src/server/ai-card-drafts/</code>: AI draft service.</li>
+<li><code>src/server/ai/</code>: AI provider adapters, diagnostics, generated asset metadata.</li>
+<li><code>src/test/</code>: shared test setup and factories.</li>
+</ul>
+<h2 id="database">Database</h2>
+<ul>
+<li><code>prisma/schema.prisma</code>: full Prisma schema.</li>
+<li><code>prisma/migrations/</code>: migration SQL and lock file.</li>
+<li><code>prisma/seed.ts</code>: seed entrypoint.</li>
+</ul>
+<h2 id="tests">Tests</h2>
+<ul>
+<li><code>src/**/*.test.ts(x)</code>: Vitest unit/component/service/route/repository tests.</li>
+<li><code>src/server/repositories/persistence.integration.test.ts</code>: DB-backed integration test requiring Postgres.</li>
+<li><code>e2e/*.spec.ts</code>: Playwright tests for auth/onboarding, mutation-based cross-browser accessibility, check-ins, retired feature-guide absence, visual responsive behavior, root redirects, Little Alex, Board, legacy Load Map compatibility, and mobile bundle/asset delivery.</li>
+<li><code>e2e/helpers/</code>: Playwright helper utilities, including full-report WCAG A/AA Axe assertions.</li>
+<li><code>playwright.config.ts</code>: full Chromium project plus focused desktop WebKit, iPhone WebKit, and touch Chromium release projects; optional video capture uses <code>PLAYWRIGHT_VIDEO=on</code>.</li>
+</ul>
+<h2 id="docs">Docs</h2>
+<ul>
+<li>Every project-owned Markdown source in the areas below has a generated same-directory <code>.html</code> counterpart with the same basename. Markdown remains canonical.</li>
+<li><code>docs/context/</code>: durable memory created by this pass.</li>
+<li><code>docs/wiki/</code>: compiled project wiki created by this pass.</li>
+<li><code>docs/product/</code>: product scope, data model, flows, IP/privacy/safety review, visual system.</li>
+<li><code>docs/deployment/</code>: local development, release checklist, Vercel notes.</li>
+<li><code>docs/helper-system/</code>: Little Alex architecture, assets, QA, and handoff.</li>
+<li><code>docs/implementation/</code>: implementation notes and task logs.</li>
+<li><code>docs/research/</code>: paraphrased research reports.</li>
+<li><code>docs/superpowers/</code>: project-owned specs, plans, and outcomes; distinct from ignored root <code>.superpowers/</code>.</li>
+<li><code>docs/agents/</code>: large intentional historical agent task registry and work logs.</li>
+</ul>
+<h2 id="assets-and-scripts">Assets And Scripts</h2>
+<ul>
+<li><code>public/assets/fairplay/cards/</code>: card cover assets.</li>
+<li><code>public/assets/fairplay/generated-ui/</code>: generated backgrounds, crash-course art, historical feature-guide art, and illustrations. Retired Radar generated entries/assets have been removed.</li>
+<li><code>public/assets/fairplay/little-alex-sprites/</code>: Little Alex generated sprites and manifests.</li>
+<li><code>scripts/db/wait-for-db.mjs</code>: local DB wait helper.</li>
+<li><code>scripts/docs-html.mjs</code>: canonical deterministic bulk HTML generator and exact completeness/content-parity checker for project documentation.</li>
+<li><code>scripts/docs-html.node-tests.mjs</code>: focused renderer, discovery-boundary, link, accessibility, determinism, and collision tests.</li>
+<li><code>scripts/generate-responsive-image-variants.mjs</code>: deterministic AVIF/WebP background variant generation.</li>
+<li><code>scripts/generate-*.mjs</code>: other asset generation scripts.</li>
+</ul>
+<h2 id="ignoredlocal-areas">Ignored/Local Areas</h2>
+<ul>
+<li><code>node_modules/</code>: installed dependencies.</li>
+<li><code>.next/</code>: generated Next build/dev output.</li>
+<li><code>.vercel/</code>: Vercel local metadata.</li>
+<li><code>.worktrees/</code>: local implementation worktrees.</li>
+<li><code>.superpowers/</code>: local superpowers state.</li>
+<li><code>test-results/</code>: Playwright and visual QA artifacts.</li>
+<li><code>References/</code>: private local reference materials, ignored by git.</li>
+<li><code>.env.local</code>: local secrets/config, ignored by git and not read in this pass.</li>
+</ul>
+<h2 id="needs-verification">Needs Verification</h2>
+<ul>
+<li>Deprecated <code>/api/ai-card-drafts/[id]/regenerate-image</code> route and AI media columns.</li>
+<li><code>src/seed/fairplay-source-cards.ts</code> naming and content provenance before expanding templates.</li>
+<li>Shared signup throttling for multi-instance deployments; the in-process limiter is intentionally bounded but not cross-instance.</li>
+<li>Local ignored <code>.DS_Store</code> files and <code>tsconfig.tsbuildinfo</code> cleanup.</li>
+</ul>
+<h2 id="board-lane-compatibility-note">Board Lane Compatibility Note</h2>
+<ul>
+<li><code>ResponsibilityBoardLane</code> values are persisted API/database keys. Keep <code>cards_of_concern</code>, <code>player_1</code>, <code>player_2</code>, and <code>kid_split</code> stable unless a later PR performs an explicit compatibility migration.</li>
+<li>User-facing labels, help text, and lane conversion helpers live in <code>src/components/cards/card-state.ts</code>.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

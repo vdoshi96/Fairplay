@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/context/SOURCES.md">
+  <meta name="fairplay-document-source-sha256" content="79ff78eb7e0e3740fe6245ac1cf5d515119f85a6421b837160e97bc0eec6b523">
+  <title>docs/context/SOURCES.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="SOURCES.md"><code>docs/context/SOURCES.md</code></a></p>
+    <article>
+<h1 id="fairplay-sources">Fairplay Sources</h1>
+<p>Last updated: 2026-05-07</p>
+<h2 id="source-policy">Source Policy</h2>
+<ul>
+<li><code>References/</code> contains private local materials and is ignored by git.</li>
+<li>This indexing pass did not open or inspect files under <code>References/</code>.</li>
+<li>Future work should use cleared/paraphrased repo docs unless the user explicitly approves a specific source review.</li>
+<li>Do not copy book text, workbook labels, card/deck wording, public app UI, proprietary taxonomies, source visuals, or private exports into production code, tests, fixtures, screenshots, docs, or prompts.</li>
+</ul>
+<h2 id="repo-sources-consulted-in-this-pass">Repo Sources Consulted In This Pass</h2>
+<ul>
+<li><code>README.md</code>: setup, environment, commands, deployment, and reference-material policy.</li>
+<li><code>package.json</code>: scripts, dependencies, and Node engine.</li>
+<li><code>.gitignore</code>: confirms ignored env files, local worktrees, generated output, test artifacts, <code>.DS_Store</code>, and <code>References/</code>.</li>
+<li><code>docs/product/v1-scope.md</code>: product intent, route scope, stack direction, non-goals, and success criteria.</li>
+<li><code>docs/product/data-model.md</code>: conceptual data model and platform-neutral contract direction.</li>
+<li><code>docs/product/user-flows.md</code>: primary household, auth, onboarding, load map, responsibility, check-in, and settings flows.</li>
+<li><code>docs/product/ip-safety-review.md</code>: IP, privacy, and relationship-safety constraints.</li>
+<li><code>docs/product/visual-system.md</code>: visual tokens, character rules, motion guidance, and asset guardrails.</li>
+<li><code>docs/deployment/local-development.md</code>: local database, Prisma, and verification workflow.</li>
+<li><code>docs/deployment/release-checklist.md</code>: historical release blocker and verification evidence.</li>
+<li><code>docs/helper-system/README.md</code>: Little Alex architecture and verification surface.</li>
+<li><code>docs/agents/manifest.md</code>: task history and agent operating rules.</li>
+<li>Latest 2026-05-07 task handoffs and QA notes under <code>docs/agents/tasks/</code>.</li>
+<li><code>prisma/schema.prisma</code> and migrations list.</li>
+<li><code>src/app</code>, <code>src/components</code>, <code>src/contracts</code>, <code>src/domain</code>, <code>src/server</code>, <code>src/seed</code>, and <code>e2e</code> file inventories.</li>
+</ul>
+<h2 id="externalprivate-sources-already-reflected-in-repo-docs">External/Private Sources Already Reflected In Repo Docs</h2>
+<ul>
+<li>Paraphrased research reports exist in <code>docs/research/</code>.</li>
+<li>Extensive agent task notes under <code>docs/agents/tasks/</code> reference private sources and prior research only at a paraphrased/process level.</li>
+<li>Treat those repo docs as provenance, not permission to copy from the original private materials.</li>
+</ul>
+<h2 id="needs-verification">Needs Verification</h2>
+<ul>
+<li>Whether any remaining <code>source*</code> field names, <code>fairplay-source-cards</code>, or card-library wording should be renamed to reduce confusion with private-source policy.</li>
+<li>Whether deprecated AI media fields and endpoints are still needed for migration/backward compatibility.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

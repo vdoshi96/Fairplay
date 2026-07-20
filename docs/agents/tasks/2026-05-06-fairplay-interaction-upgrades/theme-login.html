@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/theme-login.md">
+  <meta name="fairplay-document-source-sha256" content="f014fe6be870763a3a853028bb4f5fce17d1a5e46983f07ed7ecd4c0156fc56b">
+  <title>docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/theme-login.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="theme-login.md"><code>docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/theme-login.md</code></a></p>
+    <article>
+<h1 id="themelogin-workstream">Theme/Login Workstream</h1>
+<h2 id="responsibilities">Responsibilities</h2>
+<ul>
+<li>Branch/worktree: <code>codex/fairplay-theme-login</code> in <code>/Users/vishal/Developer/Fairplay/.worktrees/fairplay-theme-login</code>.</li>
+<li>Own Task 1 from <code>docs/superpowers/plans/2026-05-06-fairplay-interaction-upgrades.md</code>.</li>
+<li>Add System / Light / Dark appearance mode with system default, local persistence, and root theme attributes.</li>
+<li>Add Settings appearance controls using existing UI style.</li>
+<li>Add dark CSS tokens without broad rewrites to other workstream-owned surfaces.</li>
+<li>Add regression coverage for Enter-submit from logged-out username and password fields.</li>
+<li>Avoid document-level login key handlers.</li>
+</ul>
+<h2 id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li>Added <code>src/components/theme/theme-provider.tsx</code> and <code>src/components/theme/theme-constants.ts</code>.</li>
+<li>Theme mode uses localStorage key <code>fairplay:theme-mode</code>.</li>
+<li>Root attributes:<ul>
+<li><code>data-theme=&quot;light&quot; | &quot;dark&quot;</code></li>
+<li><code>data-theme-mode=&quot;system&quot; | &quot;light&quot; | &quot;dark&quot;</code></li>
+</ul>
+</li>
+<li>System mode follows <code>window.matchMedia(&quot;(prefers-color-scheme: dark)&quot;)</code> and updates on media query changes.</li>
+<li><code>src/app/layout.tsx</code> now runs an inline no-flash script before the app tree and wraps the app in <code>ThemeProvider</code>.</li>
+<li><code>src/app/globals.css</code> now includes <code>html[data-theme=&quot;dark&quot;]</code> tokens and color-scheme support.</li>
+<li>Review fix: added <code>--fp-primary</code>, <code>--fp-primary-hover</code>, <code>--fp-primary-disabled</code>, and <code>--fp-on-primary</code> so filled primary controls are high-contrast in both light and dark themes.</li>
+<li>Review fix: primary Button, SegmentedControl selected state, login/create-household submits, Settings persona dialog primary action, AppShell active nav items, and the remaining direct ink-filled primary controls now use <code>bg-fp-primary text-fp-on-primary</code>.</li>
+<li>Review fix: <code>ThemeProvider</code> now starts React state from the server-safe <code>system</code> / <code>light</code> fallback and reconciles stored/system preferences after mount, preserving the inline pre-paint root <code>data-theme</code> script.</li>
+<li>Settings includes an Appearance section backed by the existing <code>SegmentedControl</code>.</li>
+<li>Login Enter handling is input-scoped only. It calls <code>event.currentTarget.form?.requestSubmit()</code> and does not add any document-level handler.</li>
+<li>Added Playwright coverage for Enter in both login fields, in addition to component coverage.</li>
+</ul>
+<h2 id="subagent-review-notes">Subagent / Review Notes</h2>
+<ul>
+<li>Subagent tooling was unavailable in this session. <code>tool_search</code> for subagent/review tooling exposed unrelated app tools only, and no callable Task/subagent tool was present.</li>
+<li>Fallback performed:<ul>
+<li>Full diff review.</li>
+<li><code>git diff --check</code>.</li>
+<li>Search for document/window login key handlers.</li>
+<li>Spec checklist against Task 1 acceptance criteria.</li>
+</ul>
+</li>
+<li>Review search result for key handlers:</li>
+</ul>
+<pre tabindex="0"><code class="language-text">$ rg -n &quot;document\\.addEventListener\\([^)]+key|window\\.addEventListener\\([^)]+key|addEventListener\\([^)]+keydown|onkeydown|onkeyup|onkeypress&quot; src e2e
+src/components/guide/guided-tour.tsx:48:    document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+</code></pre>
+<p>This existing listener belongs to the guided tour escape/keyboard handling, not login.</p>
+<h2 id="blockers-risks">Blockers / Risks</h2>
+<ul>
+<li>Active blockers: none.</li>
+<li>Playwright emits existing environment warnings about <code>FORCE_COLOR</code> and multiple lockfiles/worktree root inference. Tests still pass.</li>
+<li>Dark tokens are app-wide, but some older feature surfaces still contain hard-coded <code>bg-white</code> utilities. This branch fixed reviewed primary contrast blockers and normalized the Settings surface/root tokens; broader dark visual polish should stay scoped to follow-up visual QA or relevant workstreams.</li>
+</ul>
+<h2 id="achievements">Achievements</h2>
+<ul>
+<li>Confirmed TDD red for login Enter regression and missing theme provider/control behavior.</li>
+<li>Implemented persisted System / Light / Dark theme selection.</li>
+<li>Added no-flash root theme initialization.</li>
+<li>Added dark theme CSS tokens.</li>
+<li>Added Settings appearance controls with current resolved system state copy.</li>
+<li>Added component and Playwright regressions for Enter-submit from logged-out username/password fields.</li>
+<li>Fixed review blockers for dark-mode primary control contrast and hydration-safe theme provider initialization.</li>
+<li>Added component regressions asserting primary/on-primary token usage and server-safe initial theme context snapshots.</li>
+<li>Ran focused tests, lint, typecheck, full Vitest, and auth onboarding Playwright smoke successfully.</li>
+</ul>
+<h2 id="qa-command-outputs">QA Command Outputs</h2>
+<h3 id="tdd-red">TDD Red</h3>
+<pre tabindex="0"><code class="language-text">$ npm test -- src/components/auth/auth-forms.test.tsx src/components/settings/settings-panel.test.tsx src/components/theme/theme-provider.test.tsx
+&gt; fairplay@0.1.0 test
+&gt; vitest src/components/auth/auth-forms.test.tsx src/components/settings/settings-panel.test.tsx src/components/theme/theme-provider.test.tsx
+
+RUN  v3.2.4 /Users/vishal/Developer/Fairplay/.worktrees/fairplay-theme-login
+
+src/components/auth/auth-forms.test.tsx (8 tests | 2 failed)
+  auth forms &gt; submits login when Enter is pressed in a logged-out username field
+    expected &quot;spy&quot; to be called 1 times, but got 0 times
+  auth forms &gt; submits login when Enter is pressed in a logged-out password field
+    expected &quot;spy&quot; to be called 1 times, but got 0 times
+
+FAIL  src/components/settings/settings-panel.test.tsx
+Error: Failed to resolve import &quot;@/components/theme/theme-provider&quot; from &quot;src/components/settings/settings-panel.test.tsx&quot;. Does the file exist?
+
+FAIL  src/components/theme/theme-provider.test.tsx
+Error: Failed to resolve import &quot;./theme-provider&quot; from &quot;src/components/theme/theme-provider.test.tsx&quot;. Does the file exist?
+
+Test Files  3 failed (3)
+Tests  2 failed | 6 passed (8)
+</code></pre>
+<h3 id="focused-green">Focused Green</h3>
+<pre tabindex="0"><code class="language-text">$ npm test -- src/components/auth/auth-forms.test.tsx src/components/settings/settings-panel.test.tsx src/components/theme/theme-provider.test.tsx src/components/app-shell/app-shell.test.tsx
+&gt; fairplay@0.1.0 test
+&gt; vitest src/components/auth/auth-forms.test.tsx src/components/settings/settings-panel.test.tsx src/components/theme/theme-provider.test.tsx src/components/app-shell/app-shell.test.tsx
+
+RUN  v3.2.4 /Users/vishal/Developer/Fairplay/.worktrees/fairplay-theme-login
+
+✓ src/components/theme/theme-provider.test.tsx (5 tests) 100ms
+✓ src/components/auth/auth-forms.test.tsx (9 tests) 201ms
+✓ src/components/app-shell/app-shell.test.tsx (6 tests) 400ms
+✓ src/components/settings/settings-panel.test.tsx (11 tests) 461ms
+
+Test Files  4 passed (4)
+Tests  31 passed (31)
+Start at  09:35:37
+Duration  1.44s (transform 307ms, setup 188ms, collect 892ms, tests 1.16s, environment 1.12s, prepare 244ms)
+</code></pre>
+<h3 id="lint">Lint</h3>
+<pre tabindex="0"><code class="language-text">$ npm run lint
+&gt; fairplay@0.1.0 lint
+&gt; eslint .
+</code></pre>
+<h3 id="typecheck">Typecheck</h3>
+<pre tabindex="0"><code class="language-text">$ npm run typecheck
+&gt; fairplay@0.1.0 typecheck
+&gt; tsc --noEmit
+</code></pre>
+<h3 id="full-vitest">Full Vitest</h3>
+<pre tabindex="0"><code class="language-text">$ npm test
+&gt; fairplay@0.1.0 test
+&gt; vitest
+
+RUN  v3.2.4 /Users/vishal/Developer/Fairplay/.worktrees/fairplay-theme-login
+
+Test Files  89 passed (89)
+Tests  435 passed (435)
+Duration  17.32s
+</code></pre>
+<h3 id="playwright-auth-smoke">Playwright Auth Smoke</h3>
+<pre tabindex="0"><code class="language-text">$ npm run test:e2e -- auth-onboarding.spec.ts
+&gt; fairplay@0.1.0 test:e2e
+&gt; playwright test auth-onboarding.spec.ts
+
+[WebServer] Warning: Next.js inferred your workspace root, but it may not be correct.
+[WebServer] We detected multiple lockfiles and selected the directory of /Users/vishal/Developer/Fairplay/package-lock.json as the root directory.
+[WebServer] Detected additional lockfiles:
+[WebServer]   * /Users/vishal/Developer/Fairplay/.worktrees/fairplay-theme-login/package-lock.json
+
+Running 6 tests using 5 workers
+
+✓ auth and onboarding &gt; Enter in the login username field submits like the button
+✓ auth and onboarding &gt; Enter in the login password field submits like the button
+✓ auth and onboarding &gt; cleared cookie redirects app home to login
+✓ auth and onboarding &gt; logout -&gt; login -&gt; choose persona -&gt; home
+✓ auth and onboarding &gt; keyboard smoke through login and persona screens
+✓ auth and onboarding &gt; create household -&gt; choose persona -&gt; onboarding -&gt; home
+
+6 passed (23.4s)
+</code></pre>
+<h3 id="whitespace-check">Whitespace Check</h3>
+<pre tabindex="0"><code class="language-text">$ git diff --check
+</code></pre>
+    </article>
+  </main>
+</body>
+</html>

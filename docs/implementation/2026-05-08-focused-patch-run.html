@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-08-focused-patch-run.md">
+  <meta name="fairplay-document-source-sha256" content="03de54911fbfcece8037db7992b3e338c599a4da77afeace3105b1d8925bde40">
+  <title>docs/implementation/2026-05-08-focused-patch-run.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-08-focused-patch-run.md"><code>docs/implementation/2026-05-08-focused-patch-run.md</code></a></p>
+    <article>
+<h1 id="focused-patch-run-distribute-more-menu-little-alex">Focused Patch Run: Distribute, More Menu, Little Alex</h1>
+<p>Last updated: 2026-05-08</p>
+<h2 id="pr-order">PR Order</h2>
+<ol>
+<li>PR #42, <code>codex/focused-distribute-availability</code>.</li>
+<li>PR #44, <code>codex/focused-more-menu</code>.</li>
+<li>PR #43, <code>codex/focused-little-alex-drag</code>.</li>
+</ol>
+<p>The fixes were kept separate because they touch independent surfaces: card distribution state, app-shell navigation, and Little Alex interaction handling.</p>
+<h2 id="files-changed">Files Changed</h2>
+<ul>
+<li><code>src/components/cards/card-workspace.tsx</code></li>
+<li><code>src/components/cards/card-workspace.test.tsx</code></li>
+<li><code>src/app/globals.css</code></li>
+<li><code>src/components/app-shell/app-shell.tsx</code></li>
+<li><code>src/components/app-shell/app-shell.test.tsx</code></li>
+<li><code>src/components/little-alex/little-alex-physics.tsx</code></li>
+<li><code>src/components/little-alex/little-alex-physics.test.tsx</code></li>
+<li><code>docs/helper-system/README.md</code></li>
+<li><code>docs/implementation/2026-05-08-focused-patch-run.md</code></li>
+<li><code>docs/context/STATUS.md</code></li>
+<li><code>docs/context/LOG.md</code></li>
+<li><code>docs/product/card-first-mobile-redesign.md</code></li>
+</ul>
+<h2 id="root-causes">Root Causes</h2>
+<h3 id="distribute-availability">Distribute Availability</h3>
+<p><code>CardWorkspace</code> optimistically removed the active card from local <code>removedIds</code> before the server action finished. With a one-card visible deck or a slow move, the UI could show the completed empty state while the move was still pending. The remaining-card flow already relied on the same unassigned lane filter, so the patch keeps the active card visible until placement resolves and preserves the existing advance-to-next-card behavior after success.</p>
+<h3 id="more-menu">More Menu</h3>
+<p>The mobile overflow used a bottom-nav <code>details</code> panel with hidden link geometry and clipped placement. A stale global rule for <code>.fp-overflow-menu:not([open])</code> still hid the new controlled menu in real browsers, and the first dismiss-layer pass closed on <code>pointerdown</code>, allowing the following click to land on the page underneath. Chromium also constrained fixed descendants inside the bottom nav because of <code>backdrop-blur</code>, so the dismiss layer only covered the nav instead of the viewport.</p>
+<h3 id="little-alex-drag">Little Alex Drag</h3>
+<p>Little Alex began touch drags immediately on touch start, and the grab target behaved like a drag-only touch surface. That made normal scroll gestures over the hit area able to activate the mascot. The patch adds a pending touch-grab state with press-and-hold and movement thresholds, cancels scroll-like vertical movement, keeps <code>touch-action: pan-y</code>, and preserves immediate mouse/pen pointer dragging with pointer capture.</p>
+<h2 id="fix-approach">Fix Approach</h2>
+<ul>
+<li>Distribute: move local card removal, selection clearing, and last-action messaging until after <code>onDistribute</code> resolves.</li>
+<li>More menu: replace the <code>details</code> menu with explicit open state, <code>aria-expanded</code>, conditional menu rendering, fixed mobile positioning, visible Check-in/Settings links, and a transparent dismiss target that absorbs pointerdown and closes on its own click. The stale <code>[open]</code> CSS rule was removed, and bottom-nav blur was removed so fixed menu/dismiss elements are viewport-relative in Chromium.</li>
+<li>Little Alex: add pending touch state, pointer capture helper, drag/scroll intent detection, pending cleanup on release/cancel/unmount, and documentation for the final interaction behavior.</li>
+</ul>
+<h2 id="manual-qa-steps">Manual QA Steps</h2>
+<p>Distribute flow:</p>
+<ol>
+<li>Start with multiple unassigned cards available.</li>
+<li>Assign one card to Alex.</li>
+<li>Confirm the next undistributed cards remain available.</li>
+<li>Assign cards to Max, Saved for Later, and Not Applicable.</li>
+<li>Confirm the empty state appears only after all cards are in final buckets.</li>
+</ol>
+<p>Navigation:</p>
+<ol>
+<li>Open the app at mobile width.</li>
+<li>Tap More in the bottom nav.</li>
+<li>Confirm Check-in and Settings are visible menu links.</li>
+<li>Confirm each route opens correctly.</li>
+<li>Reopen More and tap outside the menu; confirm it closes without navigation.</li>
+</ol>
+<p>Little Alex:</p>
+<ol>
+<li>Scroll normally near Little Alex and confirm he does not activate from the scroll gesture.</li>
+<li>Press and hold Little Alex, then drag; confirm the grab is reliable.</li>
+<li>Drag with mouse/trackpad and confirm immediate pointer dragging still works.</li>
+<li>Confirm fling, chat bubble, ragdoll recovery, idle standing/walking, reset, and reduced-motion behavior still work.</li>
+</ol>
+<h2 id="rendered-qa-performed">Rendered QA Performed</h2>
+<p>Using the local dev server and Playwright browser automation, a fresh household was created with four unassigned QA cards. The rendered flow confirmed:</p>
+<ul>
+<li>After assigning one card to Alex, three cards remained available and the empty state stayed hidden.</li>
+<li>The Alex card appeared in Your Cards.</li>
+<li>The remaining cards were assigned to Max, Saved for Later, and Not Applicable.</li>
+<li>The Distribute empty state appeared only after all four cards reached final buckets.</li>
+<li>Board buckets contained the expected card titles in Alex, Max, Saved for Later, and Not Applicable.</li>
+<li>At 390px mobile width, More opened visibly and exposed Check-in and Settings.</li>
+<li>Tapping outside More closed it without navigating.</li>
+<li>Check-in and Settings routes opened from the More menu.</li>
+<li>At desktop width, the More navigation also exposed Check-in and Settings.</li>
+<li>Little Alex ignored a scroll-like touch near the grab target, then entered dragging after a deliberate press-hold, showed the existing bubble on release, and settled back to the normal state.</li>
+</ul>
+<h2 id="automated-verification">Automated Verification</h2>
+<ul>
+<li>Baseline on <code>main</code> before patching: <code>npm test -- --run</code> passed with 89 files and 517 tests.</li>
+<li>PR #42:<ul>
+<li><code>npm test -- src/components/cards/card-workspace.test.tsx src/components/cards/card-state.test.ts src/server/responsibilities/card-distribution.test.ts --run</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+</ul>
+</li>
+<li>PR #44:<ul>
+<li><code>npm test -- src/components/app-shell/app-shell.test.tsx --run</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+</ul>
+</li>
+<li>PR #43:<ul>
+<li><code>npm test -- src/components/little-alex/little-alex-physics.test.tsx --run</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+</ul>
+</li>
+</ul>
+<p>Final integrated verification:</p>
+<ul>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm test -- --run</code> passed with 89 files and 520 tests.</li>
+<li><code>npm run build</code></li>
+<li><code>DATABASE_URL=postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public SESSION_SECRET=fairplay-e2e-secret npm run test:e2e</code> passed with 27 Playwright tests.</li>
+</ul>
+<h2 id="known-limitations">Known Limitations</h2>
+<ul>
+<li>A mostly vertical Little Alex touch drag requires the short hold first, because immediate vertical movement is treated as scroll intent.</li>
+<li>The Distribute patch intentionally does not introduce a new card-state field; it continues to use the accepted lane-to-bucket adapter.</li>
+<li>The mobile bottom nav no longer uses <code>backdrop-blur</code>; Chromium treated it as a containing block for fixed menu children, which prevented the dismiss layer from covering the viewport.</li>
+<li>Browser/device QA should still include real iOS Safari before release because Add to Home Screen and touch gesture arbitration can differ from desktop automation.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/integrated-qwen-art.md">
+  <meta name="fairplay-document-source-sha256" content="9770e9967615aa356d8d3ce3ad79a6476478c223fd97b11791649ef86469ba2c">
+  <title>docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/integrated-qwen-art.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="integrated-qwen-art.md"><code>docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/integrated-qwen-art.md</code></a></p>
+    <article>
+<h1 id="integrated-qwen-art">Integrated Qwen Art</h1>
+<h2 id="responsibilities">Responsibilities</h2>
+<ul>
+<li>Own branch <code>codex/fairplay-integrated-qwen-art</code> in worktree <code>/Users/vishal/Developer/Fairplay/.worktrees/fairplay-integrated-qwen-art</code>.</li>
+<li>Update Qwen/OpenAI image prompt wording toward textless, Duolingo-style integrated app illustrations.</li>
+<li>Increase Qwen image generation request size to the repo-documented 5:7 value.</li>
+<li>Make AI draft review and accepted generated responsibility detail art larger and more naturally integrated.</li>
+<li>Expose and use <code>sourceCoverAssetPath</code> so accepted AI-generated covers persist into responsibility detail.</li>
+<li>Preserve seeded source-card cover behavior.</li>
+</ul>
+<h2 id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li>TDD was followed. The first focused run failed on prompt wording, Qwen request size, missing <code>sourceCoverAssetPath</code> contract/repository/detail mapping, and missing generated-art panel treatments.</li>
+<li>Shared image prompt wording now asks for a textless app illustration with a large central silhouette, generous whitespace, app-native colors, blended composition, no fake card frame, and no readable words.</li>
+<li>Qwen image generation now sends <code>1460*2044</code>, matching the documented 5:7 Qwen size from <code>docs/assets/visible-asset-generation.md</code>.</li>
+<li><code>ResponsibilityDetailSchema</code> now exposes nullable <code>sourceCoverAssetPath</code>, and the responsibility repository maps it from Prisma.</li>
+<li>Responsibility detail mapping moved into <code>src/app/app/responsibilities/[id]/detail-card.ts</code> so the Next <code>page.tsx</code> keeps conventional exports.</li>
+<li>Accepted generated covers use <code>sourceCoverAssetPath</code> before title-matched source-card cover fallback. Seeded title-matched cards still use <code>/assets/fairplay/cards/...</code>.</li>
+<li><code>AiCardReviewPanel</code> now uses a larger generated-art panel with desktop <code>minmax(320px,42vw)</code> art column and object-cover art.</li>
+<li><code>CardDetailSheet</code> distinguishes generated cover art from seeded source covers. Generated art gets the larger integrated treatment; source covers keep object-contain card-cover behavior.</li>
+<li>Review fix: generated-art detail treatment now requires the accepted AI cover API path shape, so <code>/assets/fairplay/cards/...</code> persisted in <code>sourceCoverAssetPath</code> keeps the legacy source-card <code>object-contain</code> treatment.</li>
+<li>Review fix: <code>ResponsibilityDetailSchema</code> now exposes nullable persisted source fields (<code>sourceDefinition</code>, <code>sourceConception</code>, <code>sourcePlanning</code>, <code>sourceExecution</code>, <code>sourceMinimumStandard</code>), and repository/detail mapping uses those fields for accepted AI responsibilities before title-matched source-card text.</li>
+<li>Review fix: Qwen downloaded cover bytes now must match the declared raster MIME type, and PNG output must have detectable 5:7 dimensions before being returned.</li>
+<li>Review fix: source cover path contract coverage now rejects suffixed <code>/assets/fairplay/cards/...</code> and <code>/api/ai-card-drafts/.../cover</code> paths.</li>
+</ul>
+<h2 id="subagent-review-fallback">Subagent / Review Fallback</h2>
+<ul>
+<li>A subagent/tool search for <code>subagent code reviewer task delegate agent review QA</code> exposed GitHub/Figma/Canva tools but no Task/subagent runner.</li>
+<li>Because subagent tools were unavailable in this context, I performed the focused review/QA pass manually against the diff and Task 2 checklist.</li>
+</ul>
+<h2 id="blockers-and-risks">Blockers And Risks</h2>
+<ul>
+<li>No active blockers.</li>
+<li>Playwright generated-art smoke was not added because the deterministic contract/component coverage exercises the generated-art UI without introducing auth fixture churn. Full app-level visual coverage can be added after the interaction branches merge.</li>
+<li>Live Qwen/OpenAI generation was not run; provider calls remain mocked by unit tests, consistent with the shared blocker that local provider credentials may be unavailable.</li>
+</ul>
+<h2 id="achievements">Achievements</h2>
+<ul>
+<li>Prompt tests protect against returning to title-bearing card-cover language.</li>
+<li>Qwen provider tests protect the <code>1460*2044</code> request size.</li>
+<li>Repository acceptance tests now prove accepted draft cover paths are returned on the created responsibility detail.</li>
+<li>Repository acceptance tests now prove accepted AI drafts titled like source cards return generated source fields on the created responsibility detail.</li>
+<li>Detail mapping tests prove generated <code>sourceCoverAssetPath</code> wins before source-card title matching, generated source fields win for AI title collisions, and source-card cover fallback still works.</li>
+<li>Component tests prove generated art uses larger object-cover panels in draft review and responsibility detail, while asset-backed <code>sourceCoverAssetPath</code> keeps legacy source-card rendering.</li>
+<li>Qwen tests now use minimal PNG fixtures and prove non-5:7, dimension-undetectable, and MIME/byte-mismatched PNG downloads fail closed.</li>
+</ul>
+<h2 id="qa-command-outputs">QA Command Outputs</h2>
+<h3 id="tdd-red">TDD Red</h3>
+<pre tabindex="0"><code class="language-text">$ npm test -- src/server/ai/qwen-card-generator.test.ts src/server/ai/openai-card-generator.test.ts src/contracts/responsibilities.test.ts src/server/repositories/ai-card-drafts.test.ts &#39;src/app/app/responsibilities/[id]/page.test.tsx&#39; src/components/library/ai-task-manager.test.tsx src/components/cards/card-detail-sheet.test.tsx
+
+Test Files  7 failed (7)
+Tests  11 failed | 47 passed (58)
+Failures included:
+- ResponsibilityDetailSchema rejected unrecognized key sourceCoverAssetPath.
+- OpenAI/Qwen prompt assertions still saw card-cover/title wording.
+- Qwen request size still sent 500*700.
+- detailCardFor was not exposed for detail mapping tests.
+- generated-cover-art-panel and ai-draft-review-art-panel were missing.
+</code></pre>
+<h3 id="review-tdd-red">Review TDD Red</h3>
+<pre tabindex="0"><code class="language-text">$ npm test -- src/server/ai/qwen-card-generator.test.ts src/server/ai/openai-card-generator.test.ts src/contracts/responsibilities.test.ts src/server/repositories/ai-card-drafts.test.ts &#39;src/app/app/responsibilities/[id]/detail-card.test.ts&#39; src/components/library/ai-task-manager.test.tsx src/components/cards/card-detail-sheet.test.tsx
+
+Test Files  5 failed | 2 passed (7)
+Tests  7 failed | 58 passed (65)
+Failures included:
+- Asset-backed sourceCoverAssetPath rendered with generated-cover-art-panel/object-cover.
+- ResponsibilityDetailSchema rejected sourceDefinition/sourceConception/sourcePlanning/sourceExecution/sourceMinimumStandard.
+- Accepted AI card titled Auto still mapped seeded source-card definition and CPE fields.
+- Qwen accepted non-5:7, dimension-undetectable, and MIME/byte-mismatched PNG downloads.
+- AI draft acceptance returned sourceCoverAssetPath but not generated source fields on the created responsibility.
+</code></pre>
+<h3 id="focused-green">Focused Green</h3>
+<pre tabindex="0"><code class="language-text">$ npm test -- src/server/ai/qwen-card-generator.test.ts src/server/ai/openai-card-generator.test.ts src/contracts/responsibilities.test.ts src/server/repositories/ai-card-drafts.test.ts &#39;src/app/app/responsibilities/[id]/detail-card.test.ts&#39; src/components/library/ai-task-manager.test.tsx src/components/cards/card-detail-sheet.test.tsx
+
+&gt; fairplay@0.1.0 test
+&gt; vitest src/server/ai/qwen-card-generator.test.ts src/server/ai/openai-card-generator.test.ts src/contracts/responsibilities.test.ts src/server/repositories/ai-card-drafts.test.ts src/app/app/responsibilities/[id]/detail-card.test.ts src/components/library/ai-task-manager.test.tsx src/components/cards/card-detail-sheet.test.tsx
+
+ RUN  v3.2.4 /Users/vishal/Developer/Fairplay/.worktrees/fairplay-integrated-qwen-art
+
+ ✓ src/app/app/responsibilities/[id]/detail-card.test.ts (3 tests) 3ms
+ ✓ src/contracts/responsibilities.test.ts (10 tests) 15ms
+ ✓ src/server/ai/qwen-card-generator.test.ts (19 tests) 18ms
+ ✓ src/server/ai/openai-card-generator.test.ts (9 tests) 16ms
+ ✓ src/components/cards/card-detail-sheet.test.tsx (3 tests) 231ms
+ ✓ src/server/repositories/ai-card-drafts.test.ts (13 tests) 666ms
+ ✓ src/components/library/ai-task-manager.test.tsx (8 tests) 1005ms
+   ✓ AiTaskManager &gt; fetches review detail, saves edits, and regenerates the image  354ms
+
+ Test Files  7 passed (7)
+      Tests  65 passed (65)
+   Start at  09:43:32
+   Duration  2.32s (transform 736ms, setup 565ms, collect 1.85s, tests 1.96s, environment 2.93s, prepare 727ms)
+</code></pre>
+<h3 id="lint">Lint</h3>
+<pre tabindex="0"><code class="language-text">$ npm run lint
+
+&gt; fairplay@0.1.0 lint
+&gt; eslint .
+
+Exit code: 0
+</code></pre>
+<h3 id="typecheck">Typecheck</h3>
+<pre tabindex="0"><code class="language-text">$ npm run typecheck
+
+&gt; fairplay@0.1.0 typecheck
+&gt; tsc --noEmit
+
+Exit code: 0
+</code></pre>
+<h3 id="diff-check">Diff Check</h3>
+<pre tabindex="0"><code class="language-text">$ git diff --check
+
+Exit code: 0
+</code></pre>
+    </article>
+  </main>
+</body>
+</html>

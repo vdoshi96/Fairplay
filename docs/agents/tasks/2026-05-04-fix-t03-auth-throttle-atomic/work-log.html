@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-fix-t03-auth-throttle-atomic/work-log.md">
+  <meta name="fairplay-document-source-sha256" content="956e211e91ed064342492f5729ca350171141a8357f14a89c980321f42284d55">
+  <title>docs/agents/tasks/2026-05-04-fix-t03-auth-throttle-atomic/work-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="work-log.md"><code>docs/agents/tasks/2026-05-04-fix-t03-auth-throttle-atomic/work-log.md</code></a></p>
+    <article>
+<h1 id="work-log">Work Log</h1>
+<h2 id="2026-05-04">2026-05-04</h2>
+<ul>
+<li>Started from <code>codex/v1-app</code> in <code>/Users/vishal/Developer/Fairplay/.worktrees/v1-app</code>.</li>
+<li>Confirmed initial <code>git status --short --branch</code> was clean on <code>codex/v1-app...origin/codex/v1-app</code>.</li>
+<li>Read the T03 code-quality handoff and confirmed the finding: <code>recordFailedLoginAttempt</code> reads the throttle row, computes the next count in app code, and writes a literal value.</li>
+<li>Inspected the auth throttle repository and repository integration test harness.</li>
+<li>Added repository integration coverage for sequential failed attempts reaching the configured threshold.</li>
+<li>Added repository integration coverage for concurrent failed attempts proving the stored count reaches all attempted writes.</li>
+<li>Replaced the read-then-literal-write flow with an interactive transaction that uses Prisma atomic <code>increment</code> in the upsert update branch.</li>
+<li>Derived <code>throttledUntil</code> from the persisted <code>failedAttemptCount</code> returned by the atomic upsert.</li>
+<li>Kept the existing auth throttle repository API shape unchanged.</li>
+<li>Did not touch auth logic, UI files, Prisma schema, or migrations.</li>
+<li>Verified <code>npm run lint</code>, <code>npm run typecheck</code>, <code>npm run build</code>, and <code>git diff --check</code> pass.</li>
+<li>Confirmed <code>npm test -- --run src/server/repositories</code> is still DB-limited because Prisma cannot reach Postgres at <code>localhost:5432</code>.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

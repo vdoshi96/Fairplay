@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-ai-card-generation-recovery/debugging-log.md">
+  <meta name="fairplay-document-source-sha256" content="f74705b3f1ac61688aa4ab26a20fae19018151960a099f2628f8f1db71735c10">
+  <title>docs/agents/tasks/2026-05-07-ai-card-generation-recovery/debugging-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="debugging-log.md"><code>docs/agents/tasks/2026-05-07-ai-card-generation-recovery/debugging-log.md</code></a></p>
+    <article>
+<h1 id="ai-card-generation-recovery-debugging-log">AI Card Generation Recovery Debugging Log</h1>
+<p>Date: 2026-05-07</p>
+<h2 id="user-visible-failure">User-Visible Failure</h2>
+<p>The AI-created card tracker could show a draft with both <code>Canceled</code> and <code>Failed</code> states. The detail panel preserved <code>Error details</code> with &quot;AI card draft generation failed.&quot; and offered no effective remove/retry path. The screenshot case used a text prompt:</p>
+<pre tabindex="0"><code class="language-text">i want to create a task for taking the recycling out
+</code></pre>
+<h2 id="reproduction">Reproduction</h2>
+<ol>
+<li>Open <code>/app/library</code> with a selected persona.</li>
+<li>Create a text AI card draft that fails generation.</li>
+<li>Use the old failed-draft cancel path.</li>
+<li>Observe that the persisted draft becomes <code>status: &quot;canceled&quot;</code> while keeping <code>generationStage: &quot;failed&quot;</code> and <code>failureMessage</code>.</li>
+<li>Reopen or refresh the Library.</li>
+<li>The draft remains visible as canceled/failed and cannot be retried or removed.</li>
+</ol>
+<h2 id="root-causes">Root Causes</h2>
+<h3 id="1-cancel-was-used-as-cleanup">1. Cancel Was Used As Cleanup</h3>
+<p>The UI exposed <code>Cancel</code> for failed drafts. Persisted cancel changed the draft to a terminal <code>canceled</code> state but did not remove or archive it. Canceled failed drafts were still returned by <code>listAiCardDrafts</code>, and the tracker had no action for terminal cleanup.</p>
+<h3 id="2-no-persisted-discard-contract">2. No Persisted Discard Contract</h3>
+<p>There was no repository, service, or route method to remove failed/canceled AI card drafts. The only true client-side removal was for local optimistic drafts before the server request resolved.</p>
+<h3 id="3-retry-could-loop-back-to-failed">3. Retry Could Loop Back To Failed</h3>
+<p>If a failed draft already contained complete generated text fields, <code>retry</code> tried to call <code>saveGeneration</code> again before marking the draft ready. The repository permits generation saves only while a draft is <code>processing</code>, so the service converted that path back into <code>GENERATION_FAILED</code>.</p>
+<h3 id="4-retry-ui-waited-on-refresh">4. Retry UI Waited On Refresh</h3>
+<p>The client previously fired retry and then relied on <code>router.refresh()</code>. If the refresh lagged, the failed detail panel could stay visible even though the retry response contained the ready draft.</p>
+<h2 id="fix-summary">Fix Summary</h2>
+<ul>
+<li>Failed drafts now show <code>Retry</code> and <code>Remove</code>, not <code>Cancel</code>.</li>
+<li>Canceled drafts now show <code>Remove</code>.</li>
+<li>A new <code>DELETE /api/ai-card-drafts/:id</code> route calls <code>aiCardDraftService.discard</code>.</li>
+<li><code>discard</code> only allows failed or canceled drafts owned by the current household/persona.</li>
+<li>The repository deletes only matching failed/canceled rows and rejects ready, processing, or accepted deletion.</li>
+<li>Retry marks failed drafts with existing generated fields ready without re-saving generated content.</li>
+<li>Retry responses reconcile local tracker state immediately, so the detail panel updates to editable ready content without waiting for route refresh.</li>
+<li>Local-only failed drafts can be hidden without a server call.</li>
+</ul>
+<h2 id="non-goals">Non-Goals</h2>
+<ul>
+<li>This fix does not reintroduce image generation, audio capture, ASR, OCR, cover-byte requirements, or regenerate-image.</li>
+<li>This fix does not change accepted draft retention.</li>
+<li>This fix does not perform live Qwen/OpenAI provider validation.</li>
+</ul>
+<h2 id="temporary-state-cleanup">Temporary State Cleanup</h2>
+<ul>
+<li>Visual QA seeded a temporary household/session and two AI drafts in the local database.</li>
+<li>Both seeded failed/canceled drafts were removed through the UI flow during QA.</li>
+<li>The seeded household <code>807b1dd3-9c41-4470-bbbc-09d49ab7cf3d</code> was deleted after the final QA pass to avoid leaving local test data behind.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

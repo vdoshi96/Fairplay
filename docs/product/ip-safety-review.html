@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/product/ip-safety-review.md">
+  <meta name="fairplay-document-source-sha256" content="1ae935e5f448ee0af39d0c8309c05714e0f4d4ede5bad66cbca9630eef303db8">
+  <title>docs/product/ip-safety-review.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="ip-safety-review.md"><code>docs/product/ip-safety-review.md</code></a></p>
+    <article>
+<h1 id="ip-privacy-and-relationship-safety-review">IP, Privacy, and Relationship-Safety Review</h1>
+<h2 id="current-position">Current Position</h2>
+<p>Private reference materials exist locally in <code>References/</code> and are excluded from git. Product planning may use only the prior paraphrased research artifacts in <code>docs/agents/tasks/</code> unless a specific spot-check is approved and logged.</p>
+<p>This document is an internal product-risk guide, not a legal opinion. Future agents must treat it as a blocking checklist before design or implementation work that touches user-facing content, data, privacy, or relationship-support flows.</p>
+<h2 id="product-scope-boundary">Product Scope Boundary</h2>
+<p>Fairplay is a household organization and relationship-support app. It helps a household clarify responsibilities, ownership, hidden coordination work, review timing, and practical follow-through.</p>
+<p>Fairplay is not:</p>
+<ul>
+<li>Therapy, counseling, diagnosis, crisis support, or mental-health treatment.</li>
+<li>Legal, medical, financial, or abuse-intervention advice.</li>
+<li>A scoring system for proving that one partner is wrong or deficient.</li>
+<li>An official or affiliated implementation of any book, workbook, course, public app, card deck, or proprietary method referenced during research.</li>
+</ul>
+<h2 id="ip-constraints">IP Constraints</h2>
+<h3 id="allowed">Allowed</h3>
+<ul>
+<li>Broad ideas that are not source-specific: making invisible household work visible, separating ownership from helping, recurring check-ins, handoff context, household standards in users&#39; own words, private drafts, aggregate load summaries, and opt-in review.</li>
+<li>Original product models that transform the research into generic household entities such as households, members/personas, responsibilities, assignments, concerns, check-ins, decisions, and history events.</li>
+<li>Original UI language, original category names, original prompts, original examples, and user-authored household records.</li>
+<li>A small amount of invented demo data after review, as long as it does not mirror source card names, source category distribution, source examples, or a source-like catalog.</li>
+</ul>
+<h3 id="blocked-without-explicit-legalip-review">Blocked Without Explicit Legal/IP Review</h3>
+<ul>
+<li>Book prose, chapter structure, source examples, assessment text, scripts, exercises, quizzes, prompts, glossary wording, or distinctive terminology.</li>
+<li>Better Share public app UI labels, navigation, tab names, board buckets, assessment wording, paywall framing, or visible copy.</li>
+<li>Trello card names, list names, label names, card descriptions, repeated description-section wording, PNG/card assets, or board appearance.</li>
+<li>Workbook headings, dropdown labels, formulas as user-facing scoring, matrix wording, category names, responsibility rows, or household-standard text.</li>
+<li>PDF card text, printable-card layout, card dimensions, typography, visual density, iconography, colors, or deck/print-sheet metaphor.</li>
+<li>A full starter library that substantially resembles a 100/101-item deck, workbook, or board, even if individual titles are rewritten.</li>
+<li>Any feature that recreates a source framework by renaming parts while preserving the distinctive sequence, taxonomy, prompt structure, or assessment pattern.</li>
+</ul>
+<h3 id="preferred-v1-approach">Preferred V1 Approach</h3>
+<ul>
+<li>Start with user-authored responsibilities and a few reviewed invented examples rather than a full starter template library.</li>
+<li>If templates are needed, make them fewer, broader, independently named, and reviewed against all prior research artifacts before they enter specs, code, tests, fixtures, seed data, or screenshots.</li>
+<li>Use neutral product vocabulary for categories and statuses. Avoid branded or source-adjacent labels in user-facing surfaces.</li>
+<li>Avoid a literal deck, card-game, printable-card, or source-board interaction model. Compact responsibility objects are acceptable when visually original.</li>
+</ul>
+<h2 id="privacy-constraints">Privacy Constraints</h2>
+<h3 id="household-login-model">Household Login Model</h3>
+<p>V1 may use simple household authentication:</p>
+<ul>
+<li>One household username.</li>
+<li>One household password.</li>
+<li>Two household personas selected after login.</li>
+<li>No email address, email delivery, magic link, or external identity provider required for v1.</li>
+</ul>
+<p>This model is intentionally low-friction, but it is not strong per-person identity. Product copy and permissions must not imply that one persona&#39;s records are secret from someone who knows the shared household password.</p>
+<h3 id="password-and-session-requirements">Password and Session Requirements</h3>
+<p>Implementation must meet these minimum requirements:</p>
+<ul>
+<li>Store passwords only as slow password hashes using Argon2id, bcrypt, or scrypt with current production parameters.</li>
+<li>Never log, store, expose, seed, or test with real household passwords in plaintext.</li>
+<li>Use server-managed sessions with opaque session identifiers or signed/encrypted session references.</li>
+<li>Send session cookies as <code>HttpOnly</code>, <code>Secure</code>, and <code>SameSite=Lax</code>.</li>
+<li>Provide logout that invalidates the active session.</li>
+<li>Use idle and absolute session expiration; exact durations should be chosen during implementation and documented.</li>
+<li>Add basic rate limiting or lockout protection for repeated failed login attempts before public launch.</li>
+</ul>
+<h3 id="client-storage-requirements">Client Storage Requirements</h3>
+<ul>
+<li>Do not store household data, private drafts, sensitive notes, concern details, or session secrets in <code>localStorage</code>.</li>
+<li>Avoid long-lived <code>sessionStorage</code> for sensitive records. Use it only for non-sensitive UI state when needed.</li>
+<li>If drafts need persistence, store them server-side with explicit visibility and ownership metadata, or keep them transient until the user saves.</li>
+<li>Treat browser autofill, shared devices, screenshots, and back-button history as real privacy risks in design.</li>
+</ul>
+<h3 id="vercel-compatible-persistence">Vercel-Compatible Persistence</h3>
+<ul>
+<li>Store household records in a managed database suitable for Vercel deployments.</li>
+<li>Keep session state server-side or in signed/encrypted cookies that do not expose sensitive contents.</li>
+<li>Model visibility on sensitive records explicitly: private draft, shared household record, partner-visible item, and bring-to-check-in item.</li>
+<li>Keep audit/history useful for trust without turning it into a blame ledger.</li>
+</ul>
+<h2 id="relationship-safety-constraints">Relationship-Safety Constraints</h2>
+<h3 id="non-clinical-boundary">Non-Clinical Boundary</h3>
+<ul>
+<li>Do not diagnose users, partners, attachment styles, abuse, mental-health conditions, or relationship health.</li>
+<li>Do not provide therapeutic protocols, clinical treatment plans, or crisis counseling.</li>
+<li>Use practical household language: clarify, pause, revisit, adjust, ask for support, define the next step.</li>
+<li>Include appropriate non-clinical disclaimers in onboarding/help surfaces before public launch.</li>
+</ul>
+<h3 id="unsafe-relationship-boundary">Unsafe Relationship Boundary</h3>
+<p>The app must not encourage confrontation when a user may be in an unsafe, coercive, violent, surveilled, or retaliatory relationship.</p>
+<p>Future safety copy should support patterns such as:</p>
+<ul>
+<li>A clear statement that the app is for relatively safe household planning conversations.</li>
+<li>A reminder not to use shared notes or invites if doing so could put the user at risk.</li>
+<li>A fast way to leave sensitive screens.</li>
+<li>Conservative notification behavior for partner-visible changes.</li>
+<li>Guidance to seek trusted local or professional support when safety is a concern, without pretending the app can assess danger.</li>
+</ul>
+<h3 id="non-punitive-interaction-rules">Non-Punitive Interaction Rules</h3>
+<ul>
+<li>Do not generate a &quot;bad partner&quot; score, morality grade, blame ledger, or shareable proof of failure.</li>
+<li>Do not rank partners as winners/losers or diagnose intent from task patterns.</li>
+<li>Present differences as areas to clarify, rebalance, pause, or revisit.</li>
+<li>Summaries should focus on responsibilities, capacity, blockers, agreements, and next review dates.</li>
+<li>Concern boards must avoid loaded labels that imply defect, laziness, neglect, or bad faith.</li>
+</ul>
+<h2 id="product-and-ux-guardrails">Product and UX Guardrails</h2>
+<ul>
+<li>Use calm wording and restrained visual emphasis for imbalance, urgency, and concern states.</li>
+<li>Keep private drafts visually distinct from shared records at all times.</li>
+<li>Require confirmation before publishing a private note to a partner-visible or shared household space.</li>
+<li>Let users save, edit, archive, pause, and mark responsibilities not relevant without framing scope reduction as failure.</li>
+<li>Make check-ins short, opt-in, and skippable. Users should be able to pause a tense topic and keep private notes private.</li>
+<li>Include appreciation or acknowledgement affordances only if written originally and kept non-performative.</li>
+<li>Avoid pushy partner-invite flows. Invites should frame participation as optional shared planning, not accusation.</li>
+<li>Future versions must define export, deletion, household exit, access revocation, and retention before storing real user data at scale.</li>
+</ul>
+<h2 id="review-readiness-criteria">Review Readiness Criteria</h2>
+<p>Before implementation, a design/product agent must be able to answer yes to all of these:</p>
+<ul>
+<li>Does the feature avoid source text, source taxonomy, source UI copy, source assessment wording, source exercises, source scripts, and source visual design?</li>
+<li>Does the feature use original names, prompts, examples, data, and visual treatments?</li>
+<li>Does any starter content have a recorded IP review decision?</li>
+<li>Are private, shared, partner-visible, and check-in-only states explicit wherever sensitive notes can exist?</li>
+<li>Does the authentication/session plan document password hashing, cookie settings, expiration, logout, and failed-login protection?</li>
+<li>Does the flow avoid partner scoring, blame labels, diagnosis, therapy advice, and unsafe-confrontation prompts?</li>
+<li>Does the UI provide a way to pause, defer, archive, or keep a note private?</li>
+<li>Is the feature&#39;s audit/history useful for clarity without becoming a grievance archive?</li>
+</ul>
+<h2 id="future-process">Future Process</h2>
+<p>Before implementation uses any reference-derived idea, document:</p>
+<ul>
+<li>Source artifact consulted.</li>
+<li>Proposed product use.</li>
+<li>Whether the output is broad idea, transformed model, original copy, starter content, visual design, or assessment/prompt wording.</li>
+<li>IP risk level.</li>
+<li>Privacy/safety risk level.</li>
+<li>Approval decision and reviewer.</li>
+</ul>
+<p>If the proposed work includes user-facing copy, templates, categories, prompts, assessment questions, seed/demo data, visual card treatment, partner invites, concern boards, check-ins, metrics, export, deletion, or auth/session behavior, update this review or create a linked review note before writing production code.</p>
+    </article>
+  </main>
+</body>
+</html>

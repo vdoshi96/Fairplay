@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-gap-review/gaps.md">
+  <meta name="fairplay-document-source-sha256" content="a123e44b4e0063eb6ff51b66e50b8270e2e12cf4b3e2d13dbacd0b66bbf989fd">
+  <title>docs/agents/tasks/2026-05-04-gap-review/gaps.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="gaps.md"><code>docs/agents/tasks/2026-05-04-gap-review/gaps.md</code></a></p>
+    <article>
+<h1 id="gaps">Gaps</h1>
+<h2 id="blockers">Blockers</h2>
+<p>No blockers were found for implementation decomposition.</p>
+<p>The following items should stop public production launch, but they do not need to stop local implementation planning:</p>
+<ul>
+<li>Final legal/IP review is still required before shipping any starter template library, assessment, copied-adjacent prompt set, card-like visual treatment, or source-inspired educational flow.</li>
+<li>Final safety-reviewed onboarding/help copy is still required before public launch.</li>
+<li>Export, deletion, household exit, access revocation, and retention policies remain out of v1 scope and must be defined before storing real user data at scale.</li>
+</ul>
+<h2 id="implementation-decisions">Implementation Decisions</h2>
+<ul>
+<li>Onboarding route is referenced in user flows but not listed in v1 routes. Default: add <code>/app/onboarding</code> as a skippable post-persona screen that can route to blank responsibility creation, a tiny demo example, or the load map.</li>
+<li>Persona display preferences are mentioned while prior architecture keeps fixed Alex/Max personas. Default: keep fixed <code>alex</code> and <code>max</code> keys and default display names for v1; allow only active persona switching and non-sensitive avatar/display presentation unless custom names are explicitly added to the implementation plan.</li>
+<li>Private draft semantics need precision. Default: persist private radar drafts server-side with <code>createdByPersonaId</code> and <code>visibility=private</code>; filter them by selected persona in the UI/API, but state in product copy that shared credentials are not per-person secrecy.</li>
+<li>Responsibility visibility is broader than the core v1 flows require. Default: responsibilities are <code>shared_household</code> by default; reserve private visibility for radar drafts unless the implementation plan explicitly adds private responsibility drafts.</li>
+<li><code>shared_household</code>, <code>partner_visible</code>, and <code>check_in_only</code> need behavior definitions. Default: use <code>shared_household</code> for normal records, <code>check_in_only</code> for agenda-only visibility, and reserve <code>partner_visible</code> for future notification/attention flows unless needed by a v1 screen.</li>
+<li>Auth parameters are open. Default: Argon2id with memory cost 64 MiB, time cost 3, parallelism 1, 16-byte or larger salt, 32-byte hash, and a versioned <code>hashParamsVersion</code>.</li>
+<li>Session expiration is open. Default: server-managed opaque sessions with a 7-day idle timeout, 30-day absolute timeout, rotation on persona selection and login, and logout revocation.</li>
+<li>Failed-login protection is open. Default: throttle by normalized username and IP, allow 5 failed attempts per 15 minutes before a short cooldown, and keep messages generic.</li>
+<li>Vercel Postgres provider is open. Default: choose a Vercel Marketplace Postgres-compatible provider during environment setup, document <code>DATABASE_URL</code>, and keep Prisma provider <code>postgresql</code>.</li>
+<li>Demo seed review is not recorded as a separate approval. Default: implementation may use only the tiny examples already listed in the product docs, and should run a quick IP/safety review before placing them in code, tests, fixtures, screenshots, or seed scripts.</li>
+<li>PWA scope is light. Default: implement responsive mobile-first UI, app metadata, manifest, icons, and safe installability; defer offline caching/service worker for sensitive household data.</li>
+<li>Check-in history retention is not fully specified. Default: retain factual decisions/events for v1, hide grievance-like timelines from primary UI, and avoid permanent deletion controls until the post-v1 data-control review.</li>
+</ul>
+<h2 id="nice-to-have-future">Nice-To-Have / Future</h2>
+<ul>
+<li>Individual accounts, email login, social auth, magic links, and partner invites.</li>
+<li>Custom persona names or additional household members beyond Alex and Max.</li>
+<li>Full export, deletion, household separation, access revocation, and retention management.</li>
+<li>A broader starter responsibility library, if separately IP-reviewed.</li>
+<li>Push notifications or partner-visible notification behavior.</li>
+<li>Offline-first PWA behavior.</li>
+<li>Paid features, billing, marketplace, public sharing, and community features.</li>
+<li>Native iOS app implementation.</li>
+</ul>
+<h2 id="contradictions-checked">Contradictions Checked</h2>
+<ul>
+<li>Earlier research proposed a separate <code>shared</code> responsibility status; current product docs resolve sharing as assignment roles. No action needed.</li>
+<li>Earlier research raised child-specific load and broader households; current v1 is two personas with original area tags that can represent care work generically. No action needed for v1.</li>
+<li>Earlier research raised partner comparison risks; current product docs consistently require aggregate, non-punitive load signals. No action needed.</li>
+<li>Product docs reference private drafts and also warn that shared credentials are not secret. This is not a blocker, but implementation and copy must preserve that distinction.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

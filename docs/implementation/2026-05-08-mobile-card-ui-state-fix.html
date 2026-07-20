@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-08-mobile-card-ui-state-fix.md">
+  <meta name="fairplay-document-source-sha256" content="4d10c8d862796bb5fb4081c588b787f499faa8c3ccb75b3aa75e7b84ab3b40c3">
+  <title>docs/implementation/2026-05-08-mobile-card-ui-state-fix.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-08-mobile-card-ui-state-fix.md"><code>docs/implementation/2026-05-08-mobile-card-ui-state-fix.md</code></a></p>
+    <article>
+<h1 id="mobile-card-ui-and-state-fix-pass">Mobile Card UI And State Fix Pass</h1>
+<p>Last updated: 2026-05-08</p>
+<h2 id="what-was-broken">What Was Broken</h2>
+<ul>
+<li>Your Cards worked like a narrow card file, but it did not give mobile users a clear way to browse, search, filter, or visually recognize assigned cards.</li>
+<li>Distribute visually emphasized only the current top card, which made the available deck look like a single-card queue even when multiple cards were waiting.</li>
+<li>Your Cards, Board, and Distribute did not consistently show the same Library cover art, so the app felt closer to a task list than a real card deck.</li>
+<li>The persistent welcome banner and Settings welcome replay control consumed product space after the app already had a direct card-first flow.</li>
+<li>The mobile Library overflow action was in the top app header instead of the reachable bottom action area.</li>
+<li>Little Alex relied on pointer handling that could fail on mobile touch browsers.</li>
+<li>The app shell could become wider than the viewport on narrow screens, causing page-level horizontal scrolling.</li>
+</ul>
+<h2 id="branch-and-pr-order">Branch And PR Order</h2>
+<ol>
+<li>PR #38, <code>codex/card-state-distribution</code>: exposed card artwork in responsibility summaries and added distribution state tests.</li>
+<li>PR #39, <code>codex/mobile-shell-touch</code>: fixed mobile shell overflow placement, removed the welcome banner surface, and added Little Alex touch fallback handling.</li>
+<li>PR #40, <code>codex/card-workspace-mobile-ui</code>: redesigned Distribute, Your Cards, and Board around Library card images.</li>
+</ol>
+<p>These PRs were merged in dependency order so UI work could rely on the shared <code>sourceCoverAssetPath</code> field and shell overflow fixes.</p>
+<h2 id="files-and-components-changed">Files And Components Changed</h2>
+<ul>
+<li><code>src/contracts/responsibilities.ts</code>: responsibility summaries now include optional <code>sourceCoverAssetPath</code>.</li>
+<li><code>src/server/repositories/responsibilities.ts</code>: maps source template cover assets into responsibility summaries.</li>
+<li><code>src/server/responsibilities/card-distribution.test.ts</code>: covers assignment/lane movement for Alex and save-for-later flows.</li>
+<li><code>src/app/app/layout.tsx</code>: no longer mounts the persistent welcome banner on protected app pages.</li>
+<li><code>src/components/app-shell/app-shell.tsx</code>: moves mobile overflow to the bottom navigation and constrains the app shell to viewport width.</li>
+<li><code>src/components/app-shell/page-shell.tsx</code>: clips page-level horizontal overflow.</li>
+<li><code>src/components/little-alex/little-alex-physics.tsx</code>: adds touch event fallback dragging while preserving mouse/pointer dragging.</li>
+<li><code>src/components/settings/settings-panel.tsx</code> and <code>src/components/guide/guide-content.ts</code>: remove the welcome replay path from current Settings and guide practice copy.</li>
+<li><code>src/components/cards/card-workspace.tsx</code>: makes Distribute, Your Cards, and Board image-first while continuing to use the existing card state helpers.</li>
+<li><code>src/app/globals.css</code> and <code>src/components/app-shell/app-shell.tsx</code>: explicitly hide closed overflow panels so hidden mobile menu links cannot reserve geometry or collide with Little Alex visual QA.</li>
+<li><code>e2e/corrective-responsive-visual.spec.ts</code>: adds a 320px narrow-mobile viewport to the responsive app-page smoke.</li>
+<li>Tests were updated across the matching component, contract, service, repository, and Playwright guide specs.</li>
+</ul>
+<h2 id="card-state-flow">Card State Flow</h2>
+<p>Library source templates own the reusable card cover assets. When a source template becomes a household responsibility, repository summaries now carry the source cover path through <code>sourceCoverAssetPath</code>.</p>
+<p>The three card tabs use the same source of truth:</p>
+<ul>
+<li><code>/app/distribute</code>, <code>/app/your-cards</code>, and <code>/app/board</code> all load <code>responsibilityService.listOverview(session)</code>.</li>
+<li><code>CardWorkspace</code> receives those responsibility summaries and renders the selected view.</li>
+<li>Distribute uses <code>getDistributableCards()</code> from <code>src/components/cards/card-state.ts</code>, which maps stable persisted lanes to product buckets and filters unassigned cards.</li>
+<li>Distribution server actions call <code>distributeResponsibilityCard()</code>, update board lane plus assignments, then revalidate Distribute, Your Cards, and Board.</li>
+<li>Your Cards uses <code>getCardsForPersona()</code> against the refreshed responsibility list, so a card assigned to Alex or Max appears in that persona&#39;s gallery.</li>
+<li>Board uses <code>groupCardsByBucket()</code> against the same refreshed list, so every bucket reflects the same persisted movement.</li>
+</ul>
+<p>No duplicate placeholder card system was added. Missing cover art falls back to a simple accessible cover block, but real Library cover images are used whenever <code>sourceCoverAssetPath</code> is present.</p>
+<h2 id="mobile-layout-decisions">Mobile Layout Decisions</h2>
+<ul>
+<li>Distribute now keeps the swipe card large, adds a visible available-card list, and auto-advances after the current card is distributed.</li>
+<li>Your Cards is now a searchable, cadence-filterable gallery with image-first cards.</li>
+<li>Board no longer depends on page-level horizontal lane scrolling; buckets are stacked/collapsible sections on mobile and grid into columns on larger screens.</li>
+<li>The mobile overflow menu lives in the bottom navigation as the fifth action, keeping Card Library reachable by thumb.</li>
+<li>The shell and page wrappers use max-width and overflow clipping so any remaining horizontal scrolling is scoped to intentional inner controls.</li>
+<li>Little Alex supports explicit touch start/move/end handling for mobile browsers and keeps desktop mouse behavior intact.</li>
+</ul>
+<h2 id="known-tradeoffs-and-follow-ups">Known Tradeoffs And Follow-Ups</h2>
+<ul>
+<li>The retired welcome component and replay API remain in the codebase for compatibility/history, but they are no longer mounted in the protected app shell or exposed from Settings.</li>
+<li>Board sections default open. A later pass could remember collapsed bucket preferences if users want denser board scanning.</li>
+<li>The legacy <code>src/components/responsibilities/</code> Load Map compatibility surface still has its old lane scroller, but <code>/app/load-map</code> redirects to the new Board.</li>
+<li>iOS Add to Home Screen behavior remains a real-device release check.</li>
+<li>Fallback card covers show neutral &quot;Card cover&quot; text while preserving <code>Title cover</code> as the accessible image label. Real Library cover art still renders whenever a source cover path exists.</li>
+</ul>
+<h2 id="qa-performed">QA Performed</h2>
+<ul>
+<li>PR #38: focused responsibility/contract/repository tests, full Vitest, typecheck, and lint.</li>
+<li>PR #39: focused app shell, guide, Settings, Little Alex, and distribution tests; full Vitest before merge; typecheck and lint.</li>
+<li>PR #40: focused card-workspace/distribution/shell/Little Alex tests, full Vitest, typecheck, and lint.</li>
+<li>Final integrated checks:<ul>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm test -- --run</code> passed with 89 files and 517 tests.</li>
+<li><code>npm run build</code></li>
+<li><code>env &#39;DATABASE_URL=postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; SESSION_SECRET=fairplay-e2e-secret npm run test:e2e</code> passed with 27 Playwright tests.</li>
+</ul>
+</li>
+<li>Mobile/responsive QA covered 320px narrow mobile, 390px mobile, 768px small tablet, 1024px short desktop, 1280px desktop, and 1366px laptop widths through <code>e2e/corrective-responsive-visual.spec.ts</code>.</li>
+<li>E2E caught and this pass fixed:<ul>
+<li>Closed mobile overflow panels exposing measurable hidden link rectangles that overlapped Little Alex QA checks.</li>
+<li>Fallback cover title text duplicating compact Board card titles.</li>
+</ul>
+</li>
+</ul>
+<p>The responsive e2e smoke verifies Distribute, Your Cards, Board, Ask Greg, Check-ins, Settings, and Theory across mobile/desktop widths with no document-level horizontal overflow. Little Alex e2e covers dragging/flinging, mobile landscape containment, bottom-nav tap safety, reduced motion, and sprite presentations.</p>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-08-app-ux-polish-pr-plan.md">
+  <meta name="fairplay-document-source-sha256" content="fbb3889c647c40dd934086887eec78f8e30b4ffe56774f98fd258c7f511fd5ff">
+  <title>docs/superpowers/plans/2026-05-08-app-ux-polish-pr-plan.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-08-app-ux-polish-pr-plan.md"><code>docs/superpowers/plans/2026-05-08-app-ux-polish-pr-plan.md</code></a></p>
+    <article>
+<h1 id="app-ux-polish-implementation-plan">App UX Polish Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Reduce copy overload, strengthen generated backgrounds, simplify page workflows, and merge focused UX fixes through ordered PRs.</p>
+<p><strong>Architecture:</strong> Keep existing Next.js App Router, Tailwind tokens, server services, and 8px radius conventions. Make foundational visual/copy changes first, then branch page-specific work from the latest merged <code>main</code> to minimize conflicts.</p>
+<p><strong>Tech Stack:</strong> Next.js App Router, React, TypeScript, Tailwind CSS, Vitest, Playwright, Prisma.</p>
+<hr>
+<h2 id="branch-order">Branch Order</h2>
+<ol>
+<li><code>codex/ux-foundation-background-copy</code><ul>
+<li>Global background visibility and surface contrast.</li>
+<li>Shorter Home and Settings copy.</li>
+<li>Shared docs for this UX pass.</li>
+</ul>
+</li>
+<li><code>codex/load-map-dashboard-polish</code><ul>
+<li>Redesigned Load Map dashboard/filter area.</li>
+<li>Preserve lane board behavior and drag/drop surface.</li>
+</ul>
+</li>
+<li><code>codex/library-card-workflow-polish</code><ul>
+<li>Library card wrapping/overflow QA.</li>
+<li>Compact card-detail move control.</li>
+<li>Clearer Library dummy workflow field labels.</li>
+</ul>
+</li>
+<li><code>codex/check-ins-lightweight-records</code><ul>
+<li>Check-ins reduced to scheduling, confirming completion, and optional minutes/notes.</li>
+<li>Remove agenda/decision workflow from the visible UI.</li>
+</ul>
+</li>
+<li><code>codex/crash-course-concept-polish</code><ul>
+<li>Rewrite Crash Course lessons around source-safe concepts.</li>
+<li>Keep app-use recommendations only in the final learning path.</li>
+<li>Final docs, responsive QA, PR merge confirmation.</li>
+</ul>
+</li>
+</ol>
+<h2 id="shared-constraints">Shared Constraints</h2>
+<ul>
+<li>Do not open or summarize private files under <code>References/</code>.</li>
+<li>Use existing generated background assets; do not regenerate unless a later explicit source review approves it.</li>
+<li>Keep copy practical, non-clinical, non-blaming, and source-safe.</li>
+<li>Do not rename persisted board lane enum keys.</li>
+<li>Keep page surfaces mobile-first, readable, and operationally dense.</li>
+</ul>
+<h2 id="tasks">Tasks</h2>
+<h3 id="task-1-foundation">Task 1: Foundation</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/app-shell/page-shell.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/globals.css</code></p>
+</li>
+<li><p>Modify: <code>src/app/app/home/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/settings/settings-panel.tsx</code></p>
+</li>
+<li><p>Modify tests for the same surfaces.</p>
+</li>
+<li><p>Create/update UX notes under <code>docs/implementation/</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests for stronger background classes and shorter Home/Settings copy.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement shared generated-background opacity/wash improvements.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Shorten Home and Settings copy without changing workflow links.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused Vitest for app shell and settings.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run lint/typecheck for touched files or full repo if practical.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Commit, push, open PR, merge, pull <code>main</code>.</p>
+</li>
+</ul>
+<h3 id="task-2-load-map">Task 2: Load Map</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-load-map.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-load-map.test.tsx</code></p>
+</li>
+<li><p>Update docs.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests for simplified dashboard labels and polished filter layout.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Redesign the top dashboard and filter section.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Preserve board lanes, drag/drop, scroll controls, and move menu behavior.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused Load Map unit tests and e2e lane-board smoke if practical.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Commit, push, open PR, merge, pull <code>main</code>.</p>
+</li>
+</ul>
+<h3 id="task-3-library-and-card-practice">Task 3: Library And Card Practice</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/library/card-library.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/ai-task-manager.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/cards/card-detail-sheet.tsx</code></p>
+</li>
+<li><p>Modify matching tests.</p>
+</li>
+<li><p>Update docs.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests for compact move dropdown, wrapping/truncation classes, and clearer draft field help.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Replace card-detail move tiles with a compact select/action control.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Tighten Library page and dummy workflow copy.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add overflow-resistant card classes on desktop and mobile.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused Library/card tests.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Commit, push, open PR, merge, pull <code>main</code>.</p>
+</li>
+</ul>
+<h3 id="task-4-check-ins">Task 4: Check-Ins</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/check-ins/check-in-flow.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/server/check-ins/service.ts</code></p>
+</li>
+<li><p>Modify: <code>src/app/api/check-ins/route.ts</code></p>
+</li>
+<li><p>Modify matching tests.</p>
+</li>
+<li><p>Update docs.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests for schedule-only creation, confirmation, and notes/minutes update.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Support <code>scheduledFor</code> in the create route/service while preserving existing route safety.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Replace agenda/decision UI with schedule, confirm, and notes controls.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Keep old APIs unless removal is proven safe; hide unrelated concepts from UI.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused Check-ins tests and targeted e2e flow if practical.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Commit, push, open PR, merge, pull <code>main</code>.</p>
+</li>
+</ul>
+<h3 id="task-5-crash-course-and-final-qa">Task 5: Crash Course And Final QA</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/crash-course/crash-course-content.ts</code></p>
+</li>
+<li><p>Modify: <code>src/components/crash-course/crash-course-flow.tsx</code></p>
+</li>
+<li><p>Modify matching tests.</p>
+</li>
+<li><p>Update <code>docs/context/STATUS.md</code>, <code>docs/context/LOG.md</code>, and implementation notes.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Use cleared repo research docs, not private <code>References/</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests for concise concept-first lessons and final-only app learning path.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Rewrite lessons to reduce filler and app instructions.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Integrate the title/header into the course layout without a floating tile feel.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused crash-course tests, full lint/typecheck/test/build, and responsive browser QA.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Commit, push, open PR, merge, pull <code>main</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Confirm local <code>main</code> and <code>origin/main</code> point to the same final commit.</p>
+</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

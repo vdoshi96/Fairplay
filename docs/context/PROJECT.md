@@ -1,6 +1,6 @@
 # Fairplay Project Context
 
-Last updated: 2026-05-08
+Last updated: 2026-07-20
 
 ## Product Intent
 
@@ -22,9 +22,9 @@ The current v1 product centers on a two-person household using shared credential
 
 ## Current Stack
 
-- App framework: Next.js App Router 15.3.1 with React 19.1.0 and TypeScript 5.8.
-- Styling: Tailwind CSS 3.4 with Fairplay CSS variables in `src/app/globals.css`.
-- Persistence: Prisma 6.7 with Postgres-compatible database.
+- App framework: Next.js App Router 15.5.15 with React 19.2.5 and TypeScript 5.9.3, as resolved in the lockfile.
+- Styling: Tailwind CSS 3.4.19 with Fairplay CSS variables in `src/app/globals.css`.
+- Persistence: Prisma 6.19.3 with Postgres-compatible database.
 - Auth/session: server-managed sessions, opaque cookies, Argon2id password hashing, and auth throttling.
 - Tests: Vitest with jsdom and React Testing Library; Playwright e2e builds the app and runs against a local `next start` server.
 - AI generation: Qwen primary provider for AI card text/cover generation, optional OpenAI fallback gated by env.
@@ -40,7 +40,8 @@ The current v1 product centers on a two-person household using shared credential
 - `prisma/` owns the schema, migrations, and seed entrypoint.
 - `e2e/` owns Playwright flows and visual QA.
 - `public/assets/fairplay/` owns generated UI backgrounds, card assets, and Little Alex sprites.
-- `docs/` contains product docs, implementation logs, agent task logs, generated memory, and wiki notes.
+- `docs/` contains canonical Markdown product docs, implementation logs, agent task logs, generated memory, and wiki notes, each paired with a deterministic same-directory HTML counterpart.
+- `scripts/docs-html.mjs` owns bulk HTML regeneration and exact content-parity checking for tracked or new non-ignored prose documentation.
 
 ## Safety And IP Constraints
 

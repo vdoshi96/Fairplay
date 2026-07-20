@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-corrective-pass-integration/qa-plan.md">
+  <meta name="fairplay-document-source-sha256" content="16e0bc5f186f8570a3cc90b146a7ffe1d01b6b4d48105c7b2867474a0b1ff9dd">
+  <title>docs/agents/tasks/2026-05-07-corrective-pass-integration/qa-plan.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="qa-plan.md"><code>docs/agents/tasks/2026-05-07-corrective-pass-integration/qa-plan.md</code></a></p>
+    <article>
+<h1 id="corrective-pass-qa-plan">Corrective Pass QA Plan</h1>
+<h2 id="automated-commands">Automated Commands</h2>
+<p>Run after all workstreams merge:</p>
+<ul>
+<li><code>npm test -- --run</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run build</code></li>
+<li><code>npm run test:e2e</code></li>
+<li><code>git diff --check</code></li>
+</ul>
+<p>Run focused tests before full sweep:</p>
+<ul>
+<li>App shell/page shell/background tests.</li>
+<li>Little Alex physics bounds tests.</li>
+<li>Load Map dashboard tests.</li>
+<li>Library AI task manager, AI draft contracts, API route, repository, and service tests.</li>
+<li>Crash Course content/layout tests.</li>
+<li>Seed/source-card display label tests.</li>
+</ul>
+<h2 id="final-results">Final Results</h2>
+<p>Latest integration verification:</p>
+<ul>
+<li><code>npm test -- --run</code>: passed, 96 files and 528 tests.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm run prisma:validate</code>: passed.</li>
+<li><code>npm run build</code>: passed after a clean <code>.next</code> rebuild.</li>
+<li><code>npm run test:e2e</code>: passed, 27 Playwright tests.</li>
+<li><code>rg -n &quot;Player 1|Player 2|player 1|player 2&quot; src prisma e2e</code>: only negative assertions in tests remain.</li>
+<li>Image/audio-generation removal audit across active Library generation UI/contracts/service/API files: no active <code>coverUrl</code>, image prompt, audio source, transcribing, or regenerate-image UI hooks remain.</li>
+</ul>
+<p>An earlier attempt to run build and Playwright concurrently produced transient <code>.next</code> chunk/page-not-found errors. The final build and browser suites were rerun sequentially and passed.
+After final review, the responsive visual suite now also simulates a nonzero safe area, verifies Little Alex against the shell paint bounds, checks overlap with navigation and interactive controls, and validates that page background assets load and paint pixels.</p>
+<h2 id="responsive-visual-matrix">Responsive Visual Matrix</h2>
+<p>Check Home, Load Map, Library, Radar, Check-ins, Settings, and Crash Course at:</p>
+<ul>
+<li>Mobile narrow: <code>390x844</code></li>
+<li>Short mobile/small browser: <code>390x640</code></li>
+<li>Tablet/small desktop: <code>768x900</code></li>
+<li>Normal desktop: <code>1280x900</code></li>
+<li>Short desktop: <code>1280x720</code></li>
+<li>Wide desktop: <code>1440x900</code></li>
+</ul>
+<h2 id="visual-assertions">Visual Assertions</h2>
+<ul>
+<li>No horizontal scrolling unless the Load Map board intentionally scrolls inside its own lane rail.</li>
+<li>No clipped cards, diagnostics, filter labels, or controls.</li>
+<li>Backgrounds are visible at page level and do not reduce text contrast.</li>
+<li>Bottom nav does not cover controls or Little Alex.</li>
+<li>Little Alex remains fully visible and outside the desktop sidebar.</li>
+<li>Learner buttons appear in a consistent action area and remain reachable.</li>
+<li>Crash Course image and text remain visually paired on short and tall viewports.</li>
+<li>Check-ins empty agenda modal appears when preview returns no items.</li>
+<li>Radar and Check-ins do not feel like isolated cards on blank beige space.</li>
+<li>Library generation prompt accepts another request immediately after submit.</li>
+<li>Failed Library generation requests do not block later requests.</li>
+</ul>
+<h2 id="screenshot-artifacts-reviewed">Screenshot Artifacts Reviewed</h2>
+<p>Generated responsive screenshots are in <code>test-results/corrective-responsive-visual/</code>.</p>
+<p>Representative files reviewed during final QA:</p>
+<ul>
+<li><code>mobile-home.png</code>: page-level background is visible, redundant top-row learner shortcut is absent, feature cards remain reachable, and Little Alex stays within the viewport.</li>
+<li><code>mobile-load-map.png</code>: dashboard cards and grouped filters wrap vertically without horizontal overflow; Little Alex is visible above the bottom nav.</li>
+<li><code>desktop-load-map.png</code>: compact dashboard, filters, practice board, and background treatment fit in the desktop shell without clipped diagnostics.</li>
+<li><code>mobile-crash-course.png</code>: story art and lesson card remain visually paired; bottom nav does not cover the lesson content.</li>
+<li><code>desktop-crash-course.png</code>: story image and text card remain connected in one reading surface; final nav controls are visible.</li>
+<li><code>mobile-library.png</code>: Library request-card flow is reachable on a narrow viewport and no full-screen trap blocks navigation.</li>
+</ul>
+<h2 id="manual-flow-checks">Manual Flow Checks</h2>
+<ul>
+<li>Home: Crash Course and Card Library actions remain; redundant top-row learner shortcut is gone; Learn feature section is still useful.</li>
+<li>Load Map: filters are grouped and usable, diagnostics wrap, Alex/Max naming is preserved, dummy workflow still completes.</li>
+<li>Library: submit multiple text prompts; review completed result; retry failed result; cancel request; track/put in play where available.</li>
+<li>Radar: type into fields, choose checkboxes/options, create dummy workflow, clean up dummy artifacts.</li>
+<li>Check-ins: preview empty agenda, start dummy workflow, record/defer/complete, clean up dummy state.</li>
+<li>Crash Course: read conceptual sequence, final learning path is the only app-feature path section.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

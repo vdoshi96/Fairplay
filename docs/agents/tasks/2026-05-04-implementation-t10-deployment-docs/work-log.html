@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-implementation-t10-deployment-docs/work-log.md">
+  <meta name="fairplay-document-source-sha256" content="cf8447da3285ffdc0d0be2290a22a363d18a7d625fb2c800a8058543646c70c7">
+  <title>docs/agents/tasks/2026-05-04-implementation-t10-deployment-docs/work-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="work-log.md"><code>docs/agents/tasks/2026-05-04-implementation-t10-deployment-docs/work-log.md</code></a></p>
+    <article>
+<h1 id="work-log">Work Log</h1>
+<h2 id="2026-05-04">2026-05-04</h2>
+<ul>
+<li>Confirmed worktree <code>/Users/vishal/Developer/Fairplay/.worktrees/v1-app</code> on branch <code>codex/v1-app</code>.</li>
+<li>Confirmed initial <code>git status --short</code> was clean.</li>
+<li>Read T10 from <code>docs/superpowers/plans/2026-05-04-fairplay-v1-implementation.md</code>.</li>
+<li>Read <code>README.md</code>, <code>.env.example</code>, package scripts, <code>prisma/schema.prisma</code>, migration list, <code>compose.yaml</code>, and <code>docs/product/ip-safety-review.md</code>.</li>
+<li>Confirmed <code>vercel.json</code> is absent and not needed because default Vercel Next.js behavior is sufficient.</li>
+<li>Updated <code>.env.example</code> to placeholder-only values.</li>
+<li>Reworked <code>README.md</code> with install, local development, verification, Prisma, Playwright, session/cookie, Vercel, and readiness checklist sections.</li>
+<li>Added <code>docs/deployment/local-development.md</code>.</li>
+<li>Added <code>docs/deployment/vercel.md</code>.</li>
+<li>Added this T10 task artifact set and updated agent tracking docs.</li>
+</ul>
+<h2 id="verification">Verification</h2>
+<ul>
+<li><code>git status --short</code> before edits was clean.</li>
+<li><code>git status --short</code> before commit showed only owned T10 files.</li>
+<li><code>npm run lint</code> passed.</li>
+<li><code>npm run typecheck</code> passed.</li>
+<li><code>npm test -- --run</code> failed because <code>src/server/repositories/persistence.integration.test.ts</code> could not reach Postgres at <code>localhost:5432</code>.</li>
+<li><code>docker info --format &#39;{{.ServerVersion}}&#39;</code> failed with <code>zsh:1: command not found: docker</code>, confirming Docker is unavailable in this workspace.</li>
+<li><code>npm test -- --run --exclude src/server/repositories/persistence.integration.test.ts</code> passed: 52 files, 199 tests.</li>
+<li><code>npm run test:e2e</code> passed: 10 Playwright tests, with existing <code>NO_COLOR</code>/<code>FORCE_COLOR</code> warnings.</li>
+<li><code>npm run build</code> passed with the existing non-blocking Next.js Edge Runtime/static-generation warning.</li>
+<li><code>npm run prisma:validate</code> passed.</li>
+<li>Secret/source-reference scan over changed docs found no local Docker password, managed DB URL, API key, or private key material; expected policy mentions of <code>References/</code> remain.</li>
+<li><code>git diff --check</code> passed.</li>
+<li>Committed as <code>docs: add deployment and Vercel readiness notes</code> and pushed <code>codex/v1-app</code>.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t08-spec-rereview/handoff.md">
+  <meta name="fairplay-document-source-sha256" content="a63311183b43785a7b63c54f6c8aa53715ae503d0ed6c6824324ded03da8f933">
+  <title>docs/agents/tasks/2026-05-04-review-t08-spec-rereview/handoff.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="handoff.md"><code>docs/agents/tasks/2026-05-04-review-t08-spec-rereview/handoff.md</code></a></p>
+    <article>
+<h1 id="handoff">Handoff</h1>
+<h2 id="status">Status</h2>
+<p><code>CHANGES_REQUESTED</code></p>
+<h2 id="findings">Findings</h2>
+<ol>
+<li><code>[P1] Agenda cap can still exceed five through public APIs.</code><ul>
+<li>Files: <code>src/app/api/check-ins/route.ts</code>, <code>src/app/api/check-ins/preview/route.ts</code>, <code>src/server/check-ins/agenda.ts</code>.</li>
+<li>The T08 checklist requires agenda suggestions to be capped at 5. Both create and preview route schemas allow <code>maxItems</code> up to 8, and <code>buildSuggestedAgenda</code> slices to the caller-supplied value. Since the service can load 5 radar items and 5 responsibilities, a client can create or preview 6 to 8 agenda items. The default UI sends 5, but the public route/service behavior still violates the max-5 requirement.</li>
+</ul>
+</li>
+</ol>
+<h2 id="prior-findings-re-review">Prior Findings Re-Review</h2>
+<ul>
+<li>Preview no longer creates or resumes active check-ins: resolved. <code>checkInService.preview</code> builds suggestions without <code>getActiveCheckIn</code> or <code>createCheckIn</code>, and <code>/api/check-ins/preview</code> is covered.</li>
+<li>Removed suggestions are respected when starting: resolved for new starts. <code>NewCheckInLauncher</code> derives <code>radarItemIds</code> and <code>responsibilityIds</code> from the current preview list, and component coverage verifies removed suggestions are omitted.</li>
+<li>Item updates are scoped by check-in id, item id, and household: resolved. The service loads the household check-in, verifies the item is nested in that active check-in, and persistence updates by <code>id</code> plus <code>checkInId</code>; service coverage rejects a mismatched item id before mutation.</li>
+<li>Structured responsibility owner/review-date decisions: resolved. The UI exposes owner and review-date controls for responsibility owner/role decisions and sends a real <code>responsibilityEffect</code>; service coverage confirms responsibility decisions route through <code>applyResponsibilityDecision</code>.</li>
+</ul>
+<h2 id="required-fix">Required Fix</h2>
+<p>Owner: T08 guided check-in implementation/fix worker.</p>
+<ul>
+<li>Clamp or reject <code>maxItems</code> above 5 consistently for preview and create.</li>
+<li>Add regression coverage proving <code>maxItems: 8</code> cannot produce more than 5 agenda items through the service and route layer.</li>
+</ul>
+<h2 id="verification">Verification</h2>
+<ul>
+<li><code>git status --short</code>: passed with no output before review artifact edits.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm test -- --run src/server/check-ins src/components/check-ins src/app/api/check-ins</code>: passed, 8 files and 24 tests.</li>
+<li><code>npm run test:e2e -- --grep &quot;check-in&quot;</code>: passed, 2 Chromium tests; route-mocked.</li>
+<li><code>npm run build</code>: passed, with the existing Edge Runtime/static-generation warning.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

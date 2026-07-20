@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-04-task-04-premium-ui-foundation.md">
+  <meta name="fairplay-document-source-sha256" content="569253355aed0b3408a878de04126a4d9122b8c9cedf8e970f94a97142763655">
+  <title>docs/implementation/2026-05-04-task-04-premium-ui-foundation.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-04-task-04-premium-ui-foundation.md"><code>docs/implementation/2026-05-04-task-04-premium-ui-foundation.md</code></a></p>
+    <article>
+<h1 id="task-4-premium-ui-foundation-and-app-chrome">Task 4: Premium UI Foundation and App Chrome</h1>
+<h2 id="expectations">Expectations</h2>
+<ul>
+<li>Add failing tests first for shared UI primitives and app-shell route chrome.</li>
+<li>Create Button, Chip, IconButton, SegmentedControl, Sheet, and Surface primitives.</li>
+<li>Add balanced global design tokens and reduced-motion handling.</li>
+<li>Redesign the app shell with premium route chrome, active route state, Library and Crash course entries, lucide icons, desktop navigation, and a mobile tab bar.</li>
+<li>Stay inside Worker 2 ownership and avoid package files.</li>
+</ul>
+<h2 id="outputs">Outputs</h2>
+<ul>
+<li>Changed <code>src/app/globals.css</code> with premium tokens, color aliases, shadows, surfaces, and global reduced-motion safeguards.</li>
+<li>Created <code>src/components/ui/button.tsx</code>, <code>src/components/ui/chip.tsx</code>, <code>src/components/ui/icon-button.tsx</code>, <code>src/components/ui/segmented-control.tsx</code>, <code>src/components/ui/sheet.tsx</code>, <code>src/components/ui/surface.tsx</code>, and <code>src/components/ui/ui-primitives.test.tsx</code>.</li>
+<li>Updated <code>src/components/app-shell/app-shell.tsx</code> with route-aware desktop sidebar and mobile bottom navigation using <code>lucide-react</code>.</li>
+<li>Updated <code>src/components/app-shell/app-shell.test.tsx</code> for active route chrome, Library, and Crash course.</li>
+<li>Tests run:<ul>
+<li><code>npm test -- src/components/ui/ui-primitives.test.tsx</code> RED: failed on missing primitive imports.</li>
+<li><code>npm test -- src/components/app-shell/app-shell.test.tsx</code> RED: failed on missing Library route.</li>
+<li><code>npm test -- src/components/app-shell/app-shell.test.tsx src/components/ui/ui-primitives.test.tsx</code> GREEN: 8 tests passed.</li>
+<li><code>npm run typecheck</code> GREEN.</li>
+</ul>
+</li>
+</ul>
+<h2 id="challenges">Challenges</h2>
+<ul>
+<li>The first primitive RED check exposed that <code>@testing-library/user-event</code> was not available in this worktree at that moment, so the test uses <code>fireEvent</code> and avoids package changes. The controller later noted the helper was added on the shared branch.</li>
+<li>JSDOM sees both desktop and mobile chrome at once, so existing shell assertions now use <code>getAllByRole</code> where responsive duplicate links are expected.</li>
+<li>Other workers have unrelated uncommitted changes in data/seed/assets files; they were left untouched.</li>
+</ul>
+<h2 id="next-handoff">Next Handoff</h2>
+<ul>
+<li>Task 5 can rely on the new UI primitives and shell entries for <code>/app/library</code> and <code>/app/crash-course</code>.</li>
+<li>Library and crash-course routes still need their owned page/component implementations from later workers.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

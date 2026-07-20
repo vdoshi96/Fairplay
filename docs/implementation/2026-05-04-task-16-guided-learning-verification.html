@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-04-task-16-guided-learning-verification.md">
+  <meta name="fairplay-document-source-sha256" content="afda92a413325be38c8f1241f381a2a41bf70c855b5d38eaf2e807e9c9405774">
+  <title>docs/implementation/2026-05-04-task-16-guided-learning-verification.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-04-task-16-guided-learning-verification.md"><code>docs/implementation/2026-05-04-task-16-guided-learning-verification.md</code></a></p>
+    <article>
+<h1 id="task-16-guided-learning-integration-verification">Task 16: Guided Learning Integration Verification</h1>
+<h2 id="expectations">Expectations</h2>
+<ul>
+<li>Verify the combined guide foundation, learning hub, feature tours, crash-course scenes, login splash, and persistent welcome behavior after all worker slices landed.</li>
+<li>Add browser coverage for the practical guided-learning flow.</li>
+<li>Keep local verification evidence clear enough for review before PR and merge.</li>
+</ul>
+<h2 id="outputs">Outputs</h2>
+<ul>
+<li>Added <code>e2e/guided-learning.spec.ts</code>, a real-app Playwright flow that creates a household, selects a persona, verifies persistent welcome behavior, opens the Library guide from the Home learning hub, confirms backdrop locking and Skip/Back/Next controls, verifies manual guide launch, dismisses the welcome persistently, and checks crash-course character scenes.</li>
+<li>Extended <code>e2e/auth-onboarding.spec.ts</code> to verify the animated login splash on login and redirect flows.</li>
+<li>Added a regression test for concurrent onboarding preference initialization.</li>
+<li>Hardened <code>getOnboardingPreferences</code> so simultaneous first reads return the existing row when Prisma reports the persona preference unique constraint.</li>
+</ul>
+<h2 id="verification">Verification</h2>
+<ul>
+<li><code>npm run lint</code> passed.</li>
+<li><code>npm run typecheck</code> passed.</li>
+<li><code>DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npx vitest run</code> passed with 72 files and 273 tests.</li>
+<li><code>DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npm run build</code> passed.</li>
+<li><code>DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npm run test:e2e</code> passed with 11 Playwright tests.</li>
+</ul>
+<h2 id="challenges">Challenges</h2>
+<ul>
+<li>The first real guided-learning browser run exposed a race in preference initialization. The root cause was two requests initializing the same persona preferences at the same time; the repository now treats the unique conflict as a signal to return the row created by the competing request.</li>
+<li>Next.js Dev Tools exposes a button whose accessible name contains <code>Next</code>, so the Playwright guide navigation uses dialog-scoped locators for <code>Next</code>, <code>Back</code>, and <code>Skip</code>.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

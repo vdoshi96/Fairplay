@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t03-spec-rereview/task.md">
+  <meta name="fairplay-document-source-sha256" content="e31c83114eedef2d5672141098ecd87befa2bd8efb4988910aa2cad64345903a">
+  <title>docs/agents/tasks/2026-05-04-review-t03-spec-rereview/task.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="task.md"><code>docs/agents/tasks/2026-05-04-review-t03-spec-rereview/task.md</code></a></p>
+    <article>
+<h1 id="task-t03-spec-compliance-re-review">Task: T03 Spec Compliance Re-Review</h1>
+<h2 id="assignment">Assignment</h2>
+<p>Re-review T03 after fix commit <code>f6f358bf2a7d2f703d3773d31f996f406a544452</code>.</p>
+<h2 id="scope">Scope</h2>
+<ul>
+<li>Original T03 implementation commit: <code>5d20d6d9b34022eb7da4da02bee5013394105d18</code></li>
+<li>T03 fix commit: <code>f6f358bf2a7d2f703d3773d31f996f406a544452</code></li>
+<li>Prior findings: <code>docs/agents/tasks/2026-05-04-review-t03-spec/handoff.md</code></li>
+</ul>
+<h2 id="required-checks">Required Checks</h2>
+<ul>
+<li>Confirm committed initial migration exists and corresponds to the schema enough for deployment.</li>
+<li>Confirm <code>ResponsibilityTemplate.id</code> is a UUID string/default and seed uses a separate stable slug/key.</li>
+<li>Confirm repository exported methods are scoped by <code>householdId</code> and, where privacy/ownership requires it, selected persona; cross-household related ids are validated before writes.</li>
+<li>Confirm private radar draft queries isolate selected persona.</li>
+<li>Re-check original T03 requirements: PostgreSQL provider, all v1 entities, unique <code>usernameNormalized</code>, one Alex/Max per household, password/session hash-only fields, radar visibility/state, assignment history, aggregate <code>LoadSnapshot</code> without score fields, <code>.env</code> placeholders, scripts, and approved seed only.</li>
+</ul>
+<h2 id="result">Result</h2>
+<p>APPROVED_WITH_NOTES.</p>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Fairplay Skill Notes
 
-Last updated: 2026-05-07
+Last updated: 2026-07-20
 
 ## Skills Used For This Pass
 
@@ -41,3 +41,11 @@ Last updated: 2026-05-07
 3. Add source/provenance notes to `docs/context/SOURCES.md`.
 4. Add a chronological note to `docs/context/LOG.md`.
 5. Refresh `docs/wiki/index.md`, `docs/wiki/architecture.md`, or `docs/wiki/file-map.md` when the system map changes.
+
+### Documentation Maintenance
+
+1. Treat tracked Markdown and supported prose documentation as canonical; edit the source form only.
+2. Run `npm run docs:html` after any documentation addition, edit, rename, or removal.
+3. Run `npm run docs:html:check` to prove every source has an exact deterministic HTML counterpart and no managed orphan remains.
+4. Keep private `References/` and ignored root `.superpowers/` out of discovery; tracked `docs/superpowers/` is intentional project history and remains in scope.
+5. Let the generator own counterpart HTML. Never hand-edit a generated page.

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t02-code-quality-rereview/work-log.md">
+  <meta name="fairplay-document-source-sha256" content="2a48c6cb4d652b39e1a245cb7c0211e5933cc97742f609956ee143ebc752233e">
+  <title>docs/agents/tasks/2026-05-04-review-t02-code-quality-rereview/work-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="work-log.md"><code>docs/agents/tasks/2026-05-04-review-t02-code-quality-rereview/work-log.md</code></a></p>
+    <article>
+<h1 id="work-log">Work Log</h1>
+<h2 id="2026-05-04">2026-05-04</h2>
+<ul>
+<li>Loaded reviewer and verification instructions and confirmed the target worktree <code>/Users/vishal/Developer/Fairplay/.worktrees/v1-app</code>.</li>
+<li>Ran <code>git status --short</code>.<ul>
+<li>Output: clean worktree before review artifact edits.</li>
+</ul>
+</li>
+<li>Read the prior code quality handoff at <code>docs/agents/tasks/2026-05-04-review-t02-code-quality/handoff.md</code>.<ul>
+<li>Prior blockers: unsafe username contract boundary and private responsibility create visibility.</li>
+<li>Prior note: Vitest did not yet configure the <code>@/*</code> alias.</li>
+</ul>
+</li>
+<li>Confirmed review target HEAD with <code>git log --oneline --decorate --max-count=12</code>.<ul>
+<li>Output: <code>a6ec1a3</code> on <code>codex/v1-app</code> and <code>origin/codex/v1-app</code>.</li>
+</ul>
+</li>
+<li>Inspected the fix diff from <code>c08d6da..a6ec1a3</code>.<ul>
+<li>Output: auth/domain username schemas and tests changed, responsibility create schemas/tests changed, <code>vitest.config.ts</code> added alias, and fix-agent docs were added.</li>
+</ul>
+</li>
+<li>Inspected username implementation:<ul>
+<li><code>src/domain/ids.ts</code> normalizes by trimming, lowercasing, and collapsing spaces, underscores, and hyphens to single hyphens.</li>
+<li><code>HouseholdUsernameSchema</code> transforms first, then requires length 3-40 and slug-safe <code>^[a-z0-9]+(?:-[a-z0-9]+)*$</code>.</li>
+<li><code>src/contracts/auth.ts</code> uses <code>HouseholdUsernameSchema</code> for create-household and login requests.</li>
+</ul>
+</li>
+<li>Inspected username tests:<ul>
+<li>Repeated separators: <code>&quot;MAPLE---HOUSE&quot;</code>, <code>&quot;Maple - House&quot;</code>, mixed tabs/newlines, and <code>&quot;Maple___House&quot;</code>.</li>
+<li>Valid mixed case/space/underscore: <code>&quot; Maple House_2026 &quot;</code> and <code>&quot;MAPLE___HOUSE&quot;</code>.</li>
+<li>Spaces-only, punctuation-only, too short, disallowed <code>@</code>, disallowed <code>/</code>, and overlength values are rejected.</li>
+<li>Auth request contracts reject unsafe usernames for both create and login.</li>
+</ul>
+</li>
+<li>Inspected responsibility visibility implementation:<ul>
+<li><code>ResponsibilityCreateVisibilitySchema</code> allows only <code>shared_household</code>, <code>partner_visible</code>, and <code>check_in_only</code>, defaulting to <code>shared_household</code>.</li>
+<li><code>ResponsibilityCreateSchema</code> extends editable fields with the create-only visibility schema.</li>
+<li><code>ResponsibilityUpdateSchema</code> still omits direct visibility changes.</li>
+</ul>
+</li>
+<li>Inspected responsibility tests:<ul>
+<li>Omitted create visibility defaults to <code>shared_household</code>.</li>
+<li>Create with <code>visibility: &quot;private&quot;</code> is rejected.</li>
+<li>Previous private-to-visible responsibility mutation confirmation tests still exist.</li>
+</ul>
+</li>
+<li>Inspected Vitest alias config:<ul>
+<li><code>vitest.config.ts</code> maps <code>@</code> to <code>./src</code> through Vite resolve alias.</li>
+<li>Ran a Vite config resolution check showing <code>@</code> resolves to <code>/Users/vishal/Developer/Fairplay/.worktrees/v1-app/src</code>.</li>
+</ul>
+</li>
+<li>Re-checked broader code-quality constraints:<ul>
+<li>Search found no React, Next, DOM, browser storage, or navigator dependencies in <code>src/domain</code>, <code>src/contracts</code>, or <code>src/seed</code>.</li>
+<li>Load signals remain aggregate-only and test-covered against score/rank/diagnostic terminology.</li>
+<li>Demo seed content remains tiny, versioned, and marked <code>approved_original</code>.</li>
+<li>Safety copy remains short, neutral, and explicit about non-clinical/legal/medical/financial boundaries.</li>
+</ul>
+</li>
+<li>Ran <code>npm run lint</code>.<ul>
+<li>Output: passed.</li>
+</ul>
+</li>
+<li>Ran <code>npm run typecheck</code>.<ul>
+<li>Output: passed.</li>
+</ul>
+</li>
+<li>Ran <code>npm test -- --run src/domain src/contracts src/seed</code>.<ul>
+<li>Output: passed, 9 test files and 24 tests.</li>
+</ul>
+</li>
+<li>Ran <code>npm run build</code>.<ul>
+<li>Output: passed. Next repeated the known warning that using edge runtime on a page disables static generation for that page.</li>
+</ul>
+</li>
+</ul>
+<h2 id="review-result">Review Result</h2>
+<p>APPROVED. The prior code quality blockers are fixed and no new blocking findings were found in the re-review scope.</p>
+    </article>
+  </main>
+</body>
+</html>

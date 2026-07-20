@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-06-fairplay-interaction-upgrades.md">
+  <meta name="fairplay-document-source-sha256" content="6a1dde0b0a0d1369924c02fdf4e4fd224cf85a017f597c13c7c8e6e7f7876618">
+  <title>docs/superpowers/plans/2026-05-06-fairplay-interaction-upgrades.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-06-fairplay-interaction-upgrades.md"><code>docs/superpowers/plans/2026-05-06-fairplay-interaction-upgrades.md</code></a></p>
+    <article>
+<h1 id="fairplay-interaction-upgrades-implementation-plan">Fairplay Interaction Upgrades Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Build the approved interaction upgrades across isolated branches and merge them back to <code>main</code> with full QA.</p>
+<p><strong>Architecture:</strong> Each workstream owns one branch and one worktree. Shared contracts are documented here; implementation branches must not edit another branch&#39;s owned files except when resolving merge integration. Main receives branches in the order listed below.</p>
+<p><strong>Tech Stack:</strong> Next.js App Router, React 19, Tailwind CSS variables, Vitest, Testing Library, Playwright, and Matter.js for the Little Alex physics simulation.</p>
+<hr>
+<h2 id="branches-and-ownership">Branches And Ownership</h2>
+<ul>
+<li><code>codex/fairplay-theme-login</code>: theme provider, Settings appearance control, login Enter regression tests.</li>
+<li><code>codex/fairplay-integrated-qwen-art</code>: image prompts, AI draft review layout, accepted responsibility generated art plumbing.</li>
+<li><code>codex/fairplay-learn-by-doing-guides</code>: guide model, practice harnesses, dummy workflows, guide content, guide tests.</li>
+<li><code>codex/fairplay-little-alex-physics</code>: Matter.js dependency, global physics component, app shell insertion, tests.</li>
+</ul>
+<h2 id="task-1-theme-and-login">Task 1: Theme And Login</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/app/layout.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/globals.css</code></p>
+</li>
+<li><p>Modify: <code>src/components/settings/settings-panel.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/settings/settings-panel.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/auth/auth-forms.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>e2e/auth-onboarding.spec.ts</code></p>
+</li>
+<li><p>Create: <code>src/components/theme/theme-provider.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/theme/theme-provider.test.tsx</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests for Enter-submit login and Settings appearance controls.</p>
+</li>
+</ul>
+<pre tabindex="0"><code class="language-tsx">it(&quot;submits login when Enter is pressed in a logged-out password field&quot;, async () =&gt; {
+  const onAuthenticated = vi.fn();
+  vi.stubGlobal(&quot;fetch&quot;, vi.fn(async () =&gt; Response.json({ requiresPersonaSelection: true })));
+  render(&lt;LoginForm onAuthenticated={onAuthenticated} /&gt;);
+
+  fireEvent.change(screen.getByLabelText(&quot;Household username&quot;), {
+    target: { value: &quot;river-home&quot; }
+  });
+  fireEvent.change(screen.getByLabelText(&quot;Household password&quot;), {
+    target: { value: &quot;correct horse battery staple&quot; }
+  });
+  fireEvent.keyDown(screen.getByLabelText(&quot;Household password&quot;), {
+    key: &quot;Enter&quot;,
+    code: &quot;Enter&quot;
+  });
+
+  await waitFor(() =&gt; expect(onAuthenticated).toHaveBeenCalledTimes(1));
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run <code>npm test -- src/components/auth/auth-forms.test.tsx src/components/settings/settings-panel.test.tsx src/components/theme/theme-provider.test.tsx</code> and verify the new tests fail for missing theme controls/provider behavior.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Implement <code>ThemeProvider</code> with <code>localStorage</code> key <code>fairplay:theme-mode</code>, root <code>data-theme</code> values <code>light</code> and <code>dark</code>, and root <code>data-theme-mode</code> values <code>system</code>, <code>light</code>, and <code>dark</code>.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Add dark CSS variables in <code>src/app/globals.css</code> under <code>html[data-theme=&quot;dark&quot;]</code>.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Add an Appearance section to Settings using <code>SegmentedControl&lt;&quot;system&quot; | &quot;light&quot; | &quot;dark&quot;&gt;</code>.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Add a small no-flash initialization script or provider initialization in <code>src/app/layout.tsx</code>.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused tests until green.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run <code>npm run lint</code>, <code>npm run typecheck</code>, and <code>npm test -- src/components/auth/auth-forms.test.tsx src/components/settings/settings-panel.test.tsx src/components/theme/theme-provider.test.tsx</code>.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Record results in <code>docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/theme-login.md</code>.</li>
+</ul>
+<h2 id="task-2-integrated-qwen-art">Task 2: Integrated Qwen Art</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/server/ai/card-generation-shared.ts</code></p>
+</li>
+<li><p>Modify: <code>src/server/ai/qwen-card-generator.ts</code></p>
+</li>
+<li><p>Modify: <code>src/server/ai/qwen-card-generator.test.ts</code></p>
+</li>
+<li><p>Modify: <code>src/server/ai/openai-card-generator.test.ts</code></p>
+</li>
+<li><p>Modify: <code>src/contracts/responsibilities.ts</code></p>
+</li>
+<li><p>Modify: <code>src/contracts/responsibilities.test.ts</code></p>
+</li>
+<li><p>Modify: <code>src/server/repositories/responsibilities.ts</code></p>
+</li>
+<li><p>Modify: <code>src/server/repositories/ai-card-drafts.test.ts</code></p>
+</li>
+<li><p>Modify: <code>src/app/app/responsibilities/[id]/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/ai-task-manager.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/ai-task-manager.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/cards/card-detail-sheet.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/cards/card-detail-sheet.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>e2e/guided-learning.spec.ts</code> or create <code>e2e/generated-art.spec.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing prompt tests proving <code>buildImagePrompt()</code> contains <code>textless app illustration</code>, <code>large central silhouette</code>, and does not contain <code>Title:</code> or <code>title text near the top</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing responsibility detail tests proving <code>sourceCoverAssetPath</code> is exposed and used before source-card title matching for accepted AI responsibilities.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing component tests proving AI review uses a large art panel class/test id and CardDetailSheet renders generated cover art larger than legacy source covers.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused tests and verify failures are from missing implementation.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Update image prompt wording to integrated textless app illustration, raise Qwen image size to <code>1460*2044</code>, and preserve 5:7 validation.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add <code>sourceCoverAssetPath</code> to <code>ResponsibilityDetailSchema</code>, repository mapping, and detail page <code>detailCardFor()</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Rework <code>AiCardReviewPanel</code> layout to use a larger blended art region: desktop grid near <code>minmax(320px,42vw)</code> for art and content beside it; mobile art first with enough height.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Rework <code>CardDetailSheet</code> to use a larger generated-art treatment for <code>sourceCoverAssetPath</code> while preserving source-card cover compatibility.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused tests, lint, typecheck, and any generated-art Playwright smoke.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Record results in <code>docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/integrated-qwen-art.md</code>.</p>
+</li>
+</ul>
+<h2 id="task-3-learn-by-doing-guides">Task 3: Learn-By-Doing Guides</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/guide/guide-content.ts</code></p>
+</li>
+<li><p>Modify: <code>src/components/guide/guided-tour.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/guide/guided-tour.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-load-map.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-load-map.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/ai-task-manager.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/ai-task-manager.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/radar/radar-board.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/radar/radar-board.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/check-ins/check-in-flow.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/check-ins/check-in-flow.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/settings/settings-panel.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/settings/settings-panel.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>e2e/guided-learning.spec.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests that required practice steps cannot advance until the actual page-level dummy workflow dispatches completion.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Extend guide practice events to support multi-step practice state where one guide step can require several completion markers.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement Load Map dummy practice for moving and trimming/removing a dummy card in local state.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement Library dummy practice for opening capture, filling text, reviewing a dummy draft, editing fields, and completing dummy put-in-play.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement Radar dummy practice for create, visibility choice, defer/schedule, resolve, and dismiss/delete local practice items.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement Check-ins dummy practice for agenda preview, assignment/decision, deferral, and completion summary.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement Settings dummy practice for theme mode change, welcome replay status, persona confirmation open, and learning hub location.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Keep <code>Skip</code> and Escape exit behavior.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused tests after each page harness, then run <code>npm test -- src/components/guide src/components/responsibilities/responsibility-load-map.test.tsx src/components/library/ai-task-manager.test.tsx src/components/radar/radar-board.test.tsx src/components/check-ins/check-in-flow.test.tsx src/components/settings/settings-panel.test.tsx</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run <code>npm run test:e2e -- guided-learning.spec.ts</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Record results in <code>docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/learn-by-doing-guides.md</code>.</p>
+</li>
+</ul>
+<h2 id="task-4-physics-little-alex-horne">Task 4: Physics Little Alex Horne</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>package.json</code></p>
+</li>
+<li><p>Modify: <code>package-lock.json</code></p>
+</li>
+<li><p>Modify: <code>src/components/app-shell/app-shell.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/app-shell/app-shell.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/globals.css</code></p>
+</li>
+<li><p>Create: <code>src/components/little-alex/little-alex-physics.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/little-alex/little-alex-physics.test.tsx</code></p>
+</li>
+<li><p>Create: <code>e2e/little-alex-physics.spec.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add <code>matter-js</code> and its type package if needed.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests that <code>AppShell</code> renders Little Alex on standard and immersive routes.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing reduced-motion tests proving continuous physics does not start when <code>prefers-reduced-motion: reduce</code> matches.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement a Matter.js scene with a torso, head, arms, legs, constraints, viewport walls, drag/flick pointer control, and resize-boundary updates.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Render the physics canvas or DOM overlay fixed outside <code>&lt;main&gt;</code> with <code>pointer-events: none</code> on the shell and <code>pointer-events: auto</code> only on the grab target.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add Playwright smoke coverage for drag/fling and viewport containment.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused tests, lint, typecheck, and <code>npm run test:e2e -- little-alex-physics.spec.ts</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Record results in <code>docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/little-alex-physics.md</code>.</p>
+</li>
+</ul>
+<h2 id="merge-and-final-qa">Merge And Final QA</h2>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Merge <code>codex/fairplay-theme-login</code> into <code>main</code>, then run focused auth/settings/theme tests.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Merge <code>codex/fairplay-integrated-qwen-art</code> into <code>main</code>, then run focused AI/art/responsibility tests.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Merge <code>codex/fairplay-learn-by-doing-guides</code> into <code>main</code>, then run guide and page-practice tests.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Merge <code>codex/fairplay-little-alex-physics</code> into <code>main</code>, then run app shell and physics tests.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run final full QA from <code>main</code>:</li>
+</ul>
+<pre tabindex="0"><code class="language-bash">npm run lint
+npm run typecheck
+npm test
+npm run test:e2e
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Record final merge QA in <code>docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/final-qa.md</code>.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

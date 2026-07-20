@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-fix-t04-auth-hardening/handoff.md">
+  <meta name="fairplay-document-source-sha256" content="93cff2f0565b6d8e197c6bf58a061b5c48c7b8fa21a8574c469a877182115d2c">
+  <title>docs/agents/tasks/2026-05-04-fix-t04-auth-hardening/handoff.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="handoff.md"><code>docs/agents/tasks/2026-05-04-fix-t04-auth-hardening/handoff.md</code></a></p>
+    <article>
+<h1 id="handoff">Handoff</h1>
+<h2 id="status">Status</h2>
+<p>DONE</p>
+<h2 id="summary">Summary</h2>
+<p>Focused T04 auth hardening fixes completed for the code-quality review findings.</p>
+<h2 id="changes">Changes</h2>
+<ul>
+<li>Added a maintained dummy Argon2id hash matching current password metadata and used it for missing household/credential login attempts.</li>
+<li>Updated login to always run one password verification before returning the generic invalid-credentials response, except for throttle short-circuiting.</li>
+<li>Updated <code>verifyPassword</code> to return <code>false</code> for malformed, corrupt, or unsupported stored hashes.</li>
+<li>Updated <code>setSessionCookie</code> to use the computed <code>maxAge</code> directly, set <code>0</code> for immediate/past expirations, and throw on invalid expiration inputs.</li>
+<li>Added focused tests for absent usernames, malformed stored hashes, and future/immediate/past/invalid cookie expirations.</li>
+</ul>
+<h2 id="verification">Verification</h2>
+<ul>
+<li><code>git status --short</code> before changes: clean.</li>
+<li>Red focused run: <code>npm test -- --run src/server/auth src/app/api/auth/login</code> failed with the expected 6 regressions.</li>
+<li>Green focused run: <code>npm test -- --run src/server/auth src/app/api/auth/login</code> passed with 6 files and 18 tests.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm test -- --run src/server/auth src/app/api/auth src/app/api/personas</code>: passed with 9 files and 22 tests.</li>
+<li><code>npm test -- --run src/middleware.test.ts</code>: passed with 1 file and 3 tests.</li>
+<li><code>npm run build</code>: passed; Next.js emitted the existing edge-runtime static-generation warning.</li>
+<li><code>git diff --check</code>: passed.</li>
+<li><code>git status --short</code> before commit: focused auth hardening code/tests and task documentation changes only.</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Generic login errors are preserved.</li>
+<li>Secure cookie flags remain unchanged.</li>
+<li>No sensitive password, hash, or token values are added to responses.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

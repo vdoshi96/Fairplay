@@ -1,0 +1,2247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-04-fairplay-personal-use-redesign-implementation.md">
+  <meta name="fairplay-document-source-sha256" content="9764f224ab9e3c5c45334e66708d1338aa7ebc8d9420b8ad0a39846b20b9f84b">
+  <title>docs/superpowers/plans/2026-05-04-fairplay-personal-use-redesign-implementation.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-04-fairplay-personal-use-redesign-implementation.md"><code>docs/superpowers/plans/2026-05-04-fairplay-personal-use-redesign-implementation.md</code></a></p>
+    <article>
+<h1 id="fairplay-personal-use-redesign-implementation-plan">Fairplay Personal-Use Redesign Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Turn the current Fairplay MVP into a polished private Fair Play companion with a full source card library, Trello-style board movement, persistent welcome, and a restartable crash course grounded in the EPUB research reports.</p>
+<p><strong>Architecture:</strong> Add source-card templates and board placement to the existing Prisma-backed responsibility model, then layer a premium board-centered UI on top of explicit API contracts. The first implementation branch should land data contracts, schema, and a usable board/card surface before subsequent branches deepen crash-course polish, radar/check-in alignment, and end-to-end verification.</p>
+<p><strong>Tech Stack:</strong> Next.js 15 App Router, React 19, TypeScript, Prisma 6, PostgreSQL, Zod, Vitest, Testing Library, Tailwind CSS, <code>@dnd-kit</code> for drag/drop, <code>lucide-react</code> for icons.</p>
+<hr>
+<h2 id="build-decisions">Build Decisions</h2>
+<ul>
+<li>Source-derived card content is allowed in this private repository and private deployment.</li>
+<li>The full 100-card source seed should be committed as TypeScript data in <code>src/seed/fairplay-source-cards.ts</code> on the implementation branch.</li>
+<li>All source card covers must be downloaded into <code>public/assets/fairplay/cards/</code> and committed to GitHub. The app must reference local paths such as <code>/assets/fairplay/cards/auto.png</code>; it must not hotlink Trello attachment URLs at runtime.</li>
+<li>Persona display names remain household-configurable. Board lanes use Trello lane names, with <code>player_1</code> mapped to the first persona key and <code>player_2</code> mapped to the second persona key.</li>
+<li><code>kid_split</code> is a lane in the first release. Structured child/context split ownership can be added after drag/drop and detail sheets are stable.</li>
+<li><code>cards_of_concern</code> remains a board lane and can create Radar items; it is not merged into Radar.</li>
+</ul>
+<h2 id="required-worker-documentation">Required Worker Documentation</h2>
+<p>Every subagent that changes or reviews code must write a Markdown handoff under <code>docs/implementation/</code>.</p>
+<p>Use this exact file pattern:</p>
+<pre tabindex="0"><code class="language-text">docs/implementation/2026-05-04-task-&lt;number&gt;-&lt;slug&gt;.md
+</code></pre>
+<p>Use this exact report structure:</p>
+<pre tabindex="0"><code class="language-markdown"># Task &lt;number&gt;: &lt;Title&gt;
+
+## Expectations
+
+- &lt;What the worker was asked to build or verify.&gt;
+
+## Outputs
+
+- &lt;Files changed.&gt;
+- &lt;Tests run and their results.&gt;
+- &lt;Commits created, if any.&gt;
+
+## Challenges
+
+- &lt;Blockers, tradeoffs, unresolved risks, or &quot;None&quot;.&gt;
+
+## Next Handoff
+
+- &lt;What the next worker should know.&gt;
+</code></pre>
+<p>Workers must update their report before returning <code>DONE</code>, <code>DONE_WITH_CONCERNS</code>, or <code>BLOCKED</code>.</p>
+<h2 id="file-structure">File Structure</h2>
+<h3 id="data-domain-contracts">Data, Domain, Contracts</h3>
+<ul>
+<li>Modify <code>prisma/schema.prisma</code><ul>
+<li>Add <code>ResponsibilityBoardLane</code>.</li>
+<li>Expand <code>ResponsibilityTemplate</code> with source card fields.</li>
+<li>Add placement fields to <code>Responsibility</code>.</li>
+<li>Add persona-scoped onboarding preferences.</li>
+<li>Keep <code>ResponsibilityEvent</code> for lane/owner movement events.</li>
+</ul>
+</li>
+<li>Create <code>prisma/migrations/20260504190000_personal_use_redesign/migration.sql</code><ul>
+<li>SQL migration matching the schema changes.</li>
+</ul>
+</li>
+<li>Modify <code>src/domain/enums.ts</code><ul>
+<li>Add board lane constants and Zod schema.</li>
+</ul>
+</li>
+<li>Modify <code>src/domain/enums.test.ts</code><ul>
+<li>Assert board lane values and validation.</li>
+</ul>
+</li>
+<li>Create <code>src/contracts/card-templates.ts</code><ul>
+<li>Template summary/detail/import contracts.</li>
+</ul>
+</li>
+<li>Create <code>src/contracts/card-templates.test.ts</code><ul>
+<li>Contract tests for CPE fields, labels, local cover asset path, and lane.</li>
+</ul>
+</li>
+<li>Modify <code>src/contracts/responsibilities.ts</code><ul>
+<li>Add lane and sort order to summary/detail.</li>
+<li>Add board placement mutation schema.</li>
+<li>Add from-template mutation schema.</li>
+</ul>
+</li>
+<li>Modify <code>src/contracts/responsibilities.test.ts</code><ul>
+<li>Validate placement and from-template payloads.</li>
+</ul>
+</li>
+<li>Create <code>src/contracts/preferences.ts</code><ul>
+<li>Persona onboarding/welcome preference contracts.</li>
+</ul>
+</li>
+<li>Create <code>src/contracts/preferences.test.ts</code><ul>
+<li>Preference mutation tests.</li>
+</ul>
+</li>
+<li>Create <code>src/seed/fairplay-source-cards.ts</code><ul>
+<li>Full private source-card seed from Trello/workbook.</li>
+</ul>
+</li>
+<li>Create <code>src/seed/fairplay-source-cards.test.ts</code><ul>
+<li>Assert 100 unique source cards, required CPE fields, lane defaults, label mapping, and local cover assets.</li>
+</ul>
+</li>
+<li>Create files under <code>public/assets/fairplay/cards/</code><ul>
+<li>One downloaded PNG cover per source card, using the source template slug as the filename.</li>
+</ul>
+</li>
+<li>Modify <code>prisma/seed.ts</code><ul>
+<li>Seed the full source card library.</li>
+</ul>
+</li>
+</ul>
+<h3 id="server-repositories-routes">Server, Repositories, Routes</h3>
+<ul>
+<li>Create <code>src/server/repositories/card-templates.ts</code><ul>
+<li>List/search/get source templates and instantiate household responsibilities.</li>
+</ul>
+</li>
+<li>Create <code>src/server/repositories/card-templates.test.ts</code><ul>
+<li>Repository tests for source card listing and from-template instantiation.</li>
+</ul>
+</li>
+<li>Modify <code>src/server/repositories/responsibilities.ts</code><ul>
+<li>Include board lane/sort/source template fields.</li>
+<li>Add <code>updateResponsibilityBoardPlacement</code>.</li>
+</ul>
+</li>
+<li>Modify <code>src/server/repositories/persistence.integration.test.ts</code><ul>
+<li>Assert migrated fields persist.</li>
+</ul>
+</li>
+<li>Create <code>src/server/repositories/preferences.ts</code><ul>
+<li>Get/update persona onboarding preferences.</li>
+</ul>
+</li>
+<li>Create <code>src/server/repositories/preferences.test.ts</code><ul>
+<li>Server-side persistence tests.</li>
+</ul>
+</li>
+<li>Create <code>src/app/api/card-templates/route.ts</code><ul>
+<li><code>GET /api/card-templates</code>.</li>
+</ul>
+</li>
+<li>Create <code>src/app/api/card-templates/route.test.ts</code><ul>
+<li>Route tests for search/filter output.</li>
+</ul>
+</li>
+<li>Create <code>src/app/api/responsibilities/from-template/route.ts</code><ul>
+<li><code>POST /api/responsibilities/from-template</code>.</li>
+</ul>
+</li>
+<li>Create <code>src/app/api/responsibilities/from-template/route.test.ts</code><ul>
+<li>Route tests for household scoping.</li>
+</ul>
+</li>
+<li>Create <code>src/app/api/responsibilities/[id]/board-placement/route.ts</code><ul>
+<li><code>PATCH /api/responsibilities/[id]/board-placement</code>.</li>
+</ul>
+</li>
+<li>Create <code>src/app/api/responsibilities/[id]/board-placement/route.test.ts</code><ul>
+<li>Route tests for lane movement, sort order, and event creation.</li>
+</ul>
+</li>
+<li>Create <code>src/app/api/preferences/onboarding/route.ts</code><ul>
+<li><code>GET/PATCH /api/preferences/onboarding</code>.</li>
+</ul>
+</li>
+<li>Create <code>src/app/api/preferences/onboarding/route.test.ts</code><ul>
+<li>Route tests for crash-course and welcome persistence.</li>
+</ul>
+</li>
+<li>Create <code>src/app/api/preferences/welcome/replay/route.ts</code><ul>
+<li><code>POST /api/preferences/welcome/replay</code>.</li>
+</ul>
+</li>
+<li>Create <code>src/app/api/preferences/welcome/replay/route.test.ts</code><ul>
+<li>Route test for resetting welcome dismissal.</li>
+</ul>
+</li>
+</ul>
+<h3 id="ui-and-app-experience">UI and App Experience</h3>
+<ul>
+<li>Modify <code>package.json</code> and lockfile<ul>
+<li>Add <code>@dnd-kit/core</code>, <code>@dnd-kit/sortable</code>, <code>@dnd-kit/utilities</code>, and <code>lucide-react</code>.</li>
+</ul>
+</li>
+<li>Modify <code>src/app/globals.css</code><ul>
+<li>Add premium tokens, lane colors, card surfaces, reduced-motion handling.</li>
+</ul>
+</li>
+<li>Create <code>src/components/ui/button.tsx</code></li>
+<li>Create <code>src/components/ui/chip.tsx</code></li>
+<li>Create <code>src/components/ui/sheet.tsx</code></li>
+<li>Create <code>src/components/ui/segmented-control.tsx</code></li>
+<li>Create <code>src/components/ui/surface.tsx</code></li>
+<li>Create <code>src/components/ui/icon-button.tsx</code></li>
+<li>Create <code>src/components/ui/ui-primitives.test.tsx</code><ul>
+<li>Test keyboard labels, disabled states, and overflow-safe classes.</li>
+</ul>
+</li>
+<li>Modify <code>src/components/app-shell/app-shell.tsx</code><ul>
+<li>Premium route chrome, sidebar/tab bar, Settings/crash-course entry.</li>
+</ul>
+</li>
+<li>Modify <code>src/components/app-shell/app-shell.test.tsx</code><ul>
+<li>Route active state and crash-course action.</li>
+</ul>
+</li>
+<li>Create <code>src/components/welcome/persistent-welcome.tsx</code><ul>
+<li>Server-backed welcome splash.</li>
+</ul>
+</li>
+<li>Create <code>src/components/welcome/persistent-welcome.test.tsx</code><ul>
+<li>Persists until close and can replay.</li>
+</ul>
+</li>
+<li>Create <code>src/components/crash-course/crash-course-content.ts</code><ul>
+<li>Ten-lesson curriculum from the two book reports.</li>
+</ul>
+</li>
+<li>Create <code>src/components/crash-course/crash-course-flow.tsx</code><ul>
+<li>Skippable, restartable, progress-aware guided course.</li>
+</ul>
+</li>
+<li>Create <code>src/components/crash-course/crash-course-flow.test.tsx</code><ul>
+<li>Lesson navigation, skip, restart, and interactive standards prompt.</li>
+</ul>
+</li>
+<li>Create <code>src/app/app/crash-course/page.tsx</code><ul>
+<li>Crash-course route.</li>
+</ul>
+</li>
+<li>Modify <code>src/components/settings/settings-panel.tsx</code><ul>
+<li>Add <code>Restart crash course</code> and <code>Show welcome again</code>.</li>
+</ul>
+</li>
+<li>Modify <code>src/components/settings/settings-panel.test.tsx</code><ul>
+<li>Settings replay tests.</li>
+</ul>
+</li>
+<li>Create <code>src/components/library/card-library.tsx</code><ul>
+<li>Search/filter/browse source templates.</li>
+</ul>
+</li>
+<li>Create <code>src/components/library/card-library.test.tsx</code><ul>
+<li>Search, label filter, and from-template action tests.</li>
+</ul>
+</li>
+<li>Create <code>src/app/app/library/page.tsx</code><ul>
+<li>Library route.</li>
+</ul>
+</li>
+<li>Create <code>src/components/cards/card-detail-sheet.tsx</code><ul>
+<li>Rich card face/detail sheet with CPE, standards, lane, owner, radar actions.</li>
+</ul>
+</li>
+<li>Create <code>src/components/cards/card-detail-sheet.test.tsx</code><ul>
+<li>CPE tabs/sections and action tests.</li>
+</ul>
+</li>
+<li>Modify <code>src/app/app/responsibilities/[id]/page.tsx</code><ul>
+<li>Use the card detail sheet/page.</li>
+</ul>
+</li>
+<li>Modify <code>src/components/responsibilities/responsibility-load-map.tsx</code><ul>
+<li>Replace plain list with Trello-style board using drag/drop and keyboard movement.</li>
+</ul>
+</li>
+<li>Modify <code>src/components/responsibilities/responsibility-load-map.test.tsx</code><ul>
+<li>Movement fallback, lane counts, filters, keyboard move tests.</li>
+</ul>
+</li>
+<li>Modify <code>src/app/app/load-map/page.tsx</code><ul>
+<li>Feed board lane data and source-card context.</li>
+</ul>
+</li>
+<li>Modify <code>src/app/app/home/page.tsx</code><ul>
+<li>Command-center overview and progress summary.</li>
+</ul>
+</li>
+<li>Modify <code>src/components/radar/radar-board.tsx</code><ul>
+<li>Visual and conceptual alignment with concern lane.</li>
+</ul>
+</li>
+<li>Modify <code>src/components/check-ins/check-in-flow.tsx</code><ul>
+<li>Visual and conceptual alignment with handoffs and re-deals.</li>
+</ul>
+</li>
+</ul>
+<h2 id="task-0-branch-dependencies-and-work-journal">Task 0: Branch, Dependencies, and Work Journal</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>docs/implementation/2026-05-04-controller-build-log.md</code></p>
+</li>
+<li><p>Modify: <code>package.json</code></p>
+</li>
+<li><p>Modify: <code>package-lock.json</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Create implementation branch from the approved spec branch</strong></p>
+</li>
+</ul>
+<p>Run from app worktree:</p>
+<pre tabindex="0"><code class="language-bash">cd /Users/vishal/Developer/Fairplay/.worktrees/v1-app
+git switch -c codex/personal-use-redesign codex/research-and-spec
+</code></pre>
+<p>Expected: branch <code>codex/personal-use-redesign</code> checked out and app files present.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Write controller build log</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-controller-build-log.md</code>:</p>
+<pre tabindex="0"><code class="language-markdown"># Controller Build Log: Personal-Use Redesign
+
+## Expectations
+
+- Build from the approved personal-use redesign spec.
+- Keep implementation documentation reviewable.
+- Dispatch workers with disjoint file ownership where practical.
+- Preserve user changes and avoid destructive git operations.
+
+## Outputs
+
+- Implementation plan: `docs/superpowers/plans/2026-05-04-fairplay-personal-use-redesign-implementation.md`.
+- Implementation branch: `codex/personal-use-redesign`.
+
+## Challenges
+
+- The full 100-card data import is content-heavy and should be isolated from UI work.
+- Schema changes are a dependency for board placement, preferences, and source-card APIs.
+
+## Next Handoff
+
+- Start with source template contracts/schema and UI primitives in parallel only when file ownership is disjoint.
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Install UI dependencies</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities lucide-react
+</code></pre>
+<p>Expected: dependencies added to <code>package.json</code> and <code>package-lock.json</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Verify dependency install</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm run typecheck
+</code></pre>
+<p>Expected: PASS with no TypeScript errors.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Commit setup</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git add package.json package-lock.json docs/implementation/2026-05-04-controller-build-log.md
+git commit -m &quot;chore: start personal-use redesign branch&quot;
+</code></pre>
+<p>Expected: one setup commit on <code>codex/personal-use-redesign</code>.</p>
+<h2 id="task-1-source-card-template-contracts-and-seed">Task 1: Source Card Template Contracts and Seed</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/domain/enums.ts</code></p>
+</li>
+<li><p>Modify: <code>src/domain/enums.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/contracts/card-templates.ts</code></p>
+</li>
+<li><p>Create: <code>src/contracts/card-templates.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/seed/fairplay-source-cards.ts</code></p>
+</li>
+<li><p>Create: <code>src/seed/fairplay-source-cards.test.ts</code></p>
+</li>
+<li><p>Modify: <code>prisma/seed.ts</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-01-source-card-templates.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing enum test</strong></p>
+</li>
+</ul>
+<p>Add to <code>src/domain/enums.test.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import { describe, expect, it } from &quot;vitest&quot;;
+
+import {
+  ResponsibilityBoardLaneSchema,
+  RESPONSIBILITY_BOARD_LANES
+} from &quot;./enums&quot;;
+
+describe(&quot;ResponsibilityBoardLaneSchema&quot;, () =&gt; {
+  it(&quot;matches the Trello board lane order&quot;, () =&gt; {
+    expect(RESPONSIBILITY_BOARD_LANES).toEqual([
+      &quot;cards_of_concern&quot;,
+      &quot;player_1&quot;,
+      &quot;player_2&quot;,
+      &quot;kid_split&quot;,
+      &quot;not_in_play&quot;,
+      &quot;trimmed&quot;
+    ]);
+    expect(ResponsibilityBoardLaneSchema.parse(&quot;not_in_play&quot;)).toBe(&quot;not_in_play&quot;);
+    expect(() =&gt; ResponsibilityBoardLaneSchema.parse(&quot;backlog&quot;)).toThrow();
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run enum test and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/domain/enums.test.ts
+</code></pre>
+<p>Expected: FAIL because <code>ResponsibilityBoardLaneSchema</code> and <code>RESPONSIBILITY_BOARD_LANES</code> are not exported yet.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Implement board lane enum constants</strong></li>
+</ul>
+<p>Add to <code>src/domain/enums.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">export const RESPONSIBILITY_BOARD_LANES = [
+  &quot;cards_of_concern&quot;,
+  &quot;player_1&quot;,
+  &quot;player_2&quot;,
+  &quot;kid_split&quot;,
+  &quot;not_in_play&quot;,
+  &quot;trimmed&quot;
+] as const;
+
+export const ResponsibilityBoardLaneSchema = z.enum(RESPONSIBILITY_BOARD_LANES);
+export type ResponsibilityBoardLane = z.infer&lt;typeof ResponsibilityBoardLaneSchema&gt;;
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Verify enum test passes</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/domain/enums.test.ts
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Write failing card-template contract tests</strong></li>
+</ul>
+<p>Create <code>src/contracts/card-templates.test.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import { describe, expect, it } from &quot;vitest&quot;;
+
+import {
+  CardTemplateDetailSchema,
+  CardTemplateLabelSchema,
+  CardTemplateSummarySchema
+} from &quot;./card-templates&quot;;
+
+describe(&quot;CardTemplate contracts&quot;, () =&gt; {
+  it(&quot;accepts source card detail with CPE and cover metadata&quot;, () =&gt; {
+    const detail = CardTemplateDetailSchema.parse({
+      id: &quot;tpl_auto&quot;,
+      sourceCardId: &quot;trello_auto&quot;,
+      slug: &quot;auto&quot;,
+      title: &quot;Auto&quot;,
+      labels: [&quot;Out&quot;, &quot;Daily Grind&quot;],
+      summary: &quot;Vehicle responsibility summary.&quot;,
+      definition: &quot;Keep vehicle needs visible and handled.&quot;,
+      conception: &quot;Notice repairs, documents, fuel, and timing.&quot;,
+      planning: &quot;Schedule service, gather records, and arrange transport.&quot;,
+      execution: &quot;Complete service, registration, refuel, and follow-through.&quot;,
+      minimumStandard: &quot;The vehicle is available, legal, and safe enough for planned use.&quot;,
+      coverAssetPath: &quot;/assets/fairplay/cards/auto.png&quot;,
+      defaultLane: &quot;not_in_play&quot;,
+      defaultCadence: &quot;as_needed&quot;,
+      hiddenEffortKeys: [&quot;noticing&quot;, &quot;planning&quot;, &quot;doing&quot;, &quot;follow_through&quot;],
+      sourceVersion: &quot;trello-fairplay-copy-2026-05-04&quot;,
+      importedAt: &quot;2026-05-04T00:00:00.000Z&quot;
+    });
+
+    expect(detail.defaultLane).toBe(&quot;not_in_play&quot;);
+    expect(detail.conception).toContain(&quot;Notice&quot;);
+  });
+
+  it(&quot;rejects unknown labels and incomplete summaries&quot;, () =&gt; {
+    expect(() =&gt; CardTemplateLabelSchema.parse(&quot;Kitchen&quot;)).toThrow();
+    expect(() =&gt;
+      CardTemplateSummarySchema.parse({
+        id: &quot;tpl_auto&quot;,
+        slug: &quot;auto&quot;,
+        title: &quot;Auto&quot;,
+        labels: [&quot;Out&quot;],
+        summary: &quot;Vehicle responsibility summary.&quot;,
+        defaultLane: &quot;not_in_play&quot;
+      })
+    ).toThrow();
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Run contract test and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/contracts/card-templates.test.ts
+</code></pre>
+<p>Expected: FAIL because <code>src/contracts/card-templates.ts</code> does not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Implement card-template contracts</strong></li>
+</ul>
+<p>Create <code>src/contracts/card-templates.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import { z } from &quot;zod&quot;;
+
+import {
+  CadenceSchema,
+  HiddenEffortKeySchema,
+  ResponsibilityBoardLaneSchema
+} from &quot;../domain/enums&quot;;
+import { IsoDateTimeSchema } from &quot;../domain/time&quot;;
+
+export const CARD_TEMPLATE_LABELS = [
+  &quot;Daily Grind&quot;,
+  &quot;Caregiving&quot;,
+  &quot;Out&quot;,
+  &quot;Home&quot;,
+  &quot;Magic&quot;,
+  &quot;Wild&quot;,
+  &quot;Happiness Trio&quot;,
+  &quot;Kids&quot;,
+  &quot;Kid Split&quot;
+] as const;
+
+export const CardTemplateLabelSchema = z.enum(CARD_TEMPLATE_LABELS);
+
+export const CardTemplateSummarySchema = z
+  .object({
+    id: z.string().trim().min(1),
+    slug: z.string().trim().min(1).max(120),
+    title: z.string().trim().min(1).max(140),
+    labels: z.array(CardTemplateLabelSchema),
+    summary: z.string().trim().min(1).max(700),
+    coverAssetPath: z
+      .string()
+      .regex(/^\/assets\/fairplay\/cards\/[a-z0-9-]+\.png$/)
+      .nullable()
+      .optional(),
+    defaultLane: ResponsibilityBoardLaneSchema
+  })
+  .strict();
+
+export const CardTemplateDetailSchema = CardTemplateSummarySchema.extend({
+  sourceCardId: z.string().trim().min(1),
+  definition: z.string().trim().min(1).max(3000),
+  conception: z.string().trim().min(1).max(3000),
+  planning: z.string().trim().min(1).max(3000),
+  execution: z.string().trim().min(1).max(3000),
+  minimumStandard: z.string().trim().min(1).max(3000),
+  defaultCadence: CadenceSchema,
+  hiddenEffortKeys: z.array(HiddenEffortKeySchema),
+  sourceVersion: z.string().trim().min(1).max(120),
+  importedAt: IsoDateTimeSchema
+}).strict();
+
+export const CardTemplateSearchParamsSchema = z
+  .object({
+    q: z.string().trim().max(120).optional(),
+    labels: z.array(CardTemplateLabelSchema).optional(),
+    lane: ResponsibilityBoardLaneSchema.optional()
+  })
+  .strict();
+
+export type CardTemplateLabel = z.infer&lt;typeof CardTemplateLabelSchema&gt;;
+export type CardTemplateSummary = z.infer&lt;typeof CardTemplateSummarySchema&gt;;
+export type CardTemplateDetail = z.infer&lt;typeof CardTemplateDetailSchema&gt;;
+export type CardTemplateSearchParams = z.infer&lt;typeof CardTemplateSearchParamsSchema&gt;;
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 8: Verify contract tests pass</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/contracts/card-templates.test.ts src/domain/enums.test.ts
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 9: Write failing seed tests</strong></li>
+</ul>
+<p>Create <code>src/seed/fairplay-source-cards.test.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import { existsSync } from &quot;node:fs&quot;;
+import { join } from &quot;node:path&quot;;
+
+import { describe, expect, it } from &quot;vitest&quot;;
+
+import { CardTemplateDetailSchema } from &quot;../contracts/card-templates&quot;;
+import { FAIRPLAY_SOURCE_CARDS, FAIRPLAY_SOURCE_VERSION } from &quot;./fairplay-source-cards&quot;;
+
+describe(&quot;FAIRPLAY_SOURCE_CARDS&quot;, () =&gt; {
+  it(&quot;contains the full personal-use deck with unique slugs&quot;, () =&gt; {
+    expect(FAIRPLAY_SOURCE_VERSION).toBe(&quot;trello-fairplay-copy-2026-05-04&quot;);
+    expect(FAIRPLAY_SOURCE_CARDS).toHaveLength(100);
+
+    const slugs = new Set(FAIRPLAY_SOURCE_CARDS.map((card) =&gt; card.slug));
+    const sourceIds = new Set(FAIRPLAY_SOURCE_CARDS.map((card) =&gt; card.sourceCardId));
+
+    expect(slugs.size).toBe(100);
+    expect(sourceIds.size).toBe(100);
+  });
+
+  it(&quot;has CPE, standard, labels, a default Not in Play lane, and local cover asset for every card&quot;, () =&gt; {
+    for (const card of FAIRPLAY_SOURCE_CARDS) {
+      const parsed = CardTemplateDetailSchema.parse(card);
+
+      expect(parsed.defaultLane).toBe(&quot;not_in_play&quot;);
+      expect(parsed.definition.length).toBeGreaterThan(10);
+      expect(parsed.conception.length).toBeGreaterThan(10);
+      expect(parsed.planning.length).toBeGreaterThan(10);
+      expect(parsed.execution.length).toBeGreaterThan(10);
+      expect(parsed.minimumStandard.length).toBeGreaterThan(10);
+      expect(parsed.labels.length).toBeGreaterThan(0);
+      expect(parsed.coverAssetPath).toBe(`/assets/fairplay/cards/${parsed.slug}.png`);
+      expect(existsSync(join(process.cwd(), &quot;public&quot;, parsed.coverAssetPath))).toBe(true);
+    }
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 10: Run seed test and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/seed/fairplay-source-cards.test.ts
+</code></pre>
+<p>Expected: FAIL because <code>src/seed/fairplay-source-cards.ts</code> does not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 11: Implement full source card seed</strong></li>
+</ul>
+<p>Create <code>src/seed/fairplay-source-cards.ts</code> with this export shape and 100 real cards from Trello board <code>69f82d290f1cabd66e0fad29</code>, list <code>69f82d290f1cabd66e0fad23</code>:</p>
+<pre tabindex="0"><code class="language-ts">import type { CardTemplateDetail } from &quot;../contracts/card-templates&quot;;
+
+export const FAIRPLAY_SOURCE_VERSION = &quot;trello-fairplay-copy-2026-05-04&quot;;
+export const FAIRPLAY_SOURCE_IMPORTED_AT = &quot;2026-05-04T00:00:00.000Z&quot;;
+
+export const FAIRPLAY_SOURCE_CARDS = [] satisfies CardTemplateDetail[];
+</code></pre>
+<p>Populate the array with the complete 100-card data before running the seed tests. Preserve original title casing from Trello. Use the Trello labels exactly from the board labels. Set every <code>defaultLane</code> to <code>not_in_play</code>. Use <code>as_needed</code> cadence unless the card label/content clearly indicates <code>daily</code>, <code>weekly</code>, <code>monthly</code>, <code>seasonal</code>, <code>event_based</code>, or <code>one_time</code>. Download each card PNG cover from its Trello attachment into <code>public/assets/fairplay/cards/&lt;slug&gt;.png</code>, commit those image files, and set <code>coverAssetPath</code> to <code>/assets/fairplay/cards/&lt;slug&gt;.png</code>. Keep any remote attachment URL out of runtime contracts and UI props.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 12: Verify seed tests pass</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/seed/fairplay-source-cards.test.ts
+</code></pre>
+<p>Expected: PASS with 100 cards.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 13: Update Prisma seed to use full source library</strong></li>
+</ul>
+<p>Modify <code>prisma/seed.ts</code> so it imports <code>FAIRPLAY_SOURCE_CARDS</code> and upserts every card into <code>responsibilityTemplate</code>. The loop should write CPE/source fields added in Task 2 once the schema is available. Until Task 2 lands, keep the import ready and write existing compatible fields only:</p>
+<pre tabindex="0"><code class="language-ts">const seedModulePath = &quot;../src/seed/fairplay-source-cards.ts&quot;;
+const { FAIRPLAY_SOURCE_CARDS } = await import(seedModulePath);
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 14: Write worker report</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-01-source-card-templates.md</code> with Expectations, Outputs, Challenges, and Next Handoff.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 15: Commit Task 1</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git add src/domain/enums.ts src/domain/enums.test.ts src/contracts/card-templates.ts src/contracts/card-templates.test.ts src/seed/fairplay-source-cards.ts src/seed/fairplay-source-cards.test.ts prisma/seed.ts docs/implementation/2026-05-04-task-01-source-card-templates.md
+git commit -m &quot;feat: add source card template contracts&quot;
+</code></pre>
+<p>Expected: one commit with passing targeted tests.</p>
+<h2 id="task-2-board-schema-preferences-and-placement-contracts">Task 2: Board Schema, Preferences, and Placement Contracts</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>prisma/schema.prisma</code></p>
+</li>
+<li><p>Create: <code>prisma/migrations/20260504190000_personal_use_redesign/migration.sql</code></p>
+</li>
+<li><p>Modify: <code>src/contracts/responsibilities.ts</code></p>
+</li>
+<li><p>Modify: <code>src/contracts/responsibilities.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/contracts/preferences.ts</code></p>
+</li>
+<li><p>Create: <code>src/contracts/preferences.test.ts</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-02-board-schema-preferences.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing responsibility placement contract test</strong></p>
+</li>
+</ul>
+<p>Add to <code>src/contracts/responsibilities.test.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import { describe, expect, it } from &quot;vitest&quot;;
+
+import {
+  ResponsibilityBoardPlacementMutationSchema,
+  ResponsibilityFromTemplateMutationSchema,
+  ResponsibilitySummarySchema
+} from &quot;./responsibilities&quot;;
+
+describe(&quot;Responsibility board contracts&quot;, () =&gt; {
+  it(&quot;validates board placement mutations&quot;, () =&gt; {
+    expect(
+      ResponsibilityBoardPlacementMutationSchema.parse({
+        responsibilityId: &quot;resp_123&quot;,
+        toLane: &quot;player_1&quot;,
+        sortOrder: 4,
+        actorPersonaId: &quot;persona_123&quot;
+      })
+    ).toMatchObject({
+      toLane: &quot;player_1&quot;,
+      sortOrder: 4
+    });
+
+    expect(() =&gt;
+      ResponsibilityBoardPlacementMutationSchema.parse({
+        responsibilityId: &quot;resp_123&quot;,
+        toLane: &quot;parking_lot&quot;,
+        sortOrder: -1
+      })
+    ).toThrow();
+  });
+
+  it(&quot;exposes lane and sort order on summaries&quot;, () =&gt; {
+    const summary = ResponsibilitySummarySchema.parse({
+      id: &quot;resp_123&quot;,
+      title: &quot;Auto&quot;,
+      areaKeys: [&quot;Out&quot;],
+      hiddenEffortKeys: [&quot;planning&quot;],
+      cadence: &quot;as_needed&quot;,
+      relevantDays: [],
+      status: &quot;unassigned&quot;,
+      visibility: &quot;shared_household&quot;,
+      boardLane: &quot;not_in_play&quot;,
+      boardSortOrder: 12,
+      linkedRadarItems: [],
+      currentAssignments: [],
+      nextReviewAt: null
+    });
+
+    expect(summary.boardLane).toBe(&quot;not_in_play&quot;);
+  });
+
+  it(&quot;validates from-template creation&quot;, () =&gt; {
+    expect(
+      ResponsibilityFromTemplateMutationSchema.parse({
+        templateId: &quot;tpl_auto&quot;,
+        actorPersonaId: &quot;persona_123&quot;,
+        lane: &quot;cards_of_concern&quot;
+      })
+    ).toMatchObject({ lane: &quot;cards_of_concern&quot; });
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run responsibility contract test and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/contracts/responsibilities.test.ts
+</code></pre>
+<p>Expected: FAIL because new schemas and fields do not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Implement placement contracts</strong></li>
+</ul>
+<p>Modify <code>src/contracts/responsibilities.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import { ResponsibilityBoardLaneSchema } from &quot;../domain/enums&quot;;
+import { PersonaIdSchema, ResponsibilityIdSchema } from &quot;../domain/ids&quot;;
+
+export const ResponsibilityBoardPlacementMutationSchema = z
+  .object({
+    responsibilityId: ResponsibilityIdSchema,
+    toLane: ResponsibilityBoardLaneSchema,
+    sortOrder: z.number().int().nonnegative(),
+    actorPersonaId: PersonaIdSchema.optional(),
+    note: z.string().trim().max(1000).optional()
+  })
+  .strict();
+
+export const ResponsibilityFromTemplateMutationSchema = z
+  .object({
+    templateId: z.string().trim().min(1),
+    actorPersonaId: PersonaIdSchema,
+    lane: ResponsibilityBoardLaneSchema.default(&quot;cards_of_concern&quot;),
+    titleOverride: z.string().trim().min(1).max(140).optional()
+  })
+  .strict();
+</code></pre>
+<p>Extend <code>ResponsibilitySummarySchema</code> with:</p>
+<pre tabindex="0"><code class="language-ts">boardLane: ResponsibilityBoardLaneSchema,
+boardSortOrder: z.number().int().nonnegative()
+</code></pre>
+<p>Export the inferred types.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Write failing preferences contract tests</strong></li>
+</ul>
+<p>Create <code>src/contracts/preferences.test.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import { describe, expect, it } from &quot;vitest&quot;;
+
+import {
+  OnboardingPreferencesMutationSchema,
+  OnboardingPreferencesSchema
+} from &quot;./preferences&quot;;
+
+describe(&quot;onboarding preferences contracts&quot;, () =&gt; {
+  it(&quot;persists crash course and welcome state by persona&quot;, () =&gt; {
+    const preferences = OnboardingPreferencesSchema.parse({
+      personaId: &quot;persona_123&quot;,
+      welcomeDismissedAt: null,
+      crashCourseSkippedAt: null,
+      crashCourseCompletedAt: null,
+      crashCourseCurrentStep: 3,
+      crashCourseReplayRequestedAt: &quot;2026-05-04T12:00:00.000Z&quot;,
+      updatedAt: &quot;2026-05-04T12:00:00.000Z&quot;
+    });
+
+    expect(preferences.crashCourseCurrentStep).toBe(3);
+  });
+
+  it(&quot;validates preference updates&quot;, () =&gt; {
+    expect(
+      OnboardingPreferencesMutationSchema.parse({
+        welcomeDismissedAt: &quot;2026-05-04T12:00:00.000Z&quot;,
+        crashCourseCurrentStep: 1
+      })
+    ).toMatchObject({ crashCourseCurrentStep: 1 });
+
+    expect(() =&gt;
+      OnboardingPreferencesMutationSchema.parse({
+        crashCourseCurrentStep: -1
+      })
+    ).toThrow();
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Run preferences contract test and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/contracts/preferences.test.ts
+</code></pre>
+<p>Expected: FAIL because <code>src/contracts/preferences.ts</code> does not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Implement preference contracts</strong></li>
+</ul>
+<p>Create <code>src/contracts/preferences.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import { z } from &quot;zod&quot;;
+
+import { PersonaIdSchema } from &quot;../domain/ids&quot;;
+import { IsoDateTimeSchema, NullableIsoDateTimeSchema } from &quot;../domain/time&quot;;
+
+export const OnboardingPreferencesSchema = z
+  .object({
+    personaId: PersonaIdSchema,
+    welcomeDismissedAt: NullableIsoDateTimeSchema,
+    crashCourseSkippedAt: NullableIsoDateTimeSchema,
+    crashCourseCompletedAt: NullableIsoDateTimeSchema,
+    crashCourseCurrentStep: z.number().int().min(0).max(20),
+    crashCourseReplayRequestedAt: NullableIsoDateTimeSchema,
+    updatedAt: IsoDateTimeSchema
+  })
+  .strict();
+
+export const OnboardingPreferencesMutationSchema = z
+  .object({
+    welcomeDismissedAt: NullableIsoDateTimeSchema.optional(),
+    crashCourseSkippedAt: NullableIsoDateTimeSchema.optional(),
+    crashCourseCompletedAt: NullableIsoDateTimeSchema.optional(),
+    crashCourseCurrentStep: z.number().int().min(0).max(20).optional(),
+    crashCourseReplayRequestedAt: NullableIsoDateTimeSchema.optional()
+  })
+  .strict();
+
+export type OnboardingPreferences = z.infer&lt;typeof OnboardingPreferencesSchema&gt;;
+export type OnboardingPreferencesMutation = z.infer&lt;
+  typeof OnboardingPreferencesMutationSchema
+&gt;;
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Update Prisma schema</strong></li>
+</ul>
+<p>Modify <code>prisma/schema.prisma</code>:</p>
+<pre tabindex="0"><code class="language-prisma">enum ResponsibilityBoardLane {
+  cards_of_concern
+  player_1
+  player_2
+  kid_split
+  not_in_play
+  trimmed
+}
+
+model Persona {
+  onboardingPreferences PersonaOnboardingPreferences?
+}
+
+model PersonaOnboardingPreferences {
+  id                            String    @id @default(uuid())
+  personaId                     String    @unique
+  welcomeDismissedAt            DateTime?
+  crashCourseSkippedAt          DateTime?
+  crashCourseCompletedAt        DateTime?
+  crashCourseCurrentStep        Int       @default(0)
+  crashCourseReplayRequestedAt  DateTime?
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+  persona                       Persona   @relation(fields: [personaId], references: [id], onDelete: Cascade)
+}
+</code></pre>
+<p>Add to <code>ResponsibilityTemplate</code>:</p>
+<pre tabindex="0"><code class="language-prisma">sourceCardId       String? @unique
+definition         String?
+conception         String?
+planning           String?
+execution          String?
+minimumStandard    String?
+coverAssetPath     String?
+defaultLane        ResponsibilityBoardLane @default(not_in_play)
+sourceVersion      String?
+importedAt         DateTime?
+</code></pre>
+<p>Add to <code>Responsibility</code>:</p>
+<pre tabindex="0"><code class="language-prisma">boardLane       ResponsibilityBoardLane @default(cards_of_concern)
+boardSortOrder  Int                     @default(0)
+sourceDefinition       String?
+sourceConception       String?
+sourcePlanning         String?
+sourceExecution        String?
+sourceMinimumStandard  String?
+sourceCoverAssetPath   String?
+</code></pre>
+<p>Add indexes:</p>
+<pre tabindex="0"><code class="language-prisma">@@index([householdId, boardLane, boardSortOrder])
+@@index([templateId])
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 8: Create SQL migration</strong></li>
+</ul>
+<p>Create <code>prisma/migrations/20260504190000_personal_use_redesign/migration.sql</code>:</p>
+<pre tabindex="0"><code class="language-sql">CREATE TYPE &quot;ResponsibilityBoardLane&quot; AS ENUM (
+  &#39;cards_of_concern&#39;,
+  &#39;player_1&#39;,
+  &#39;player_2&#39;,
+  &#39;kid_split&#39;,
+  &#39;not_in_play&#39;,
+  &#39;trimmed&#39;
+);
+
+ALTER TABLE &quot;ResponsibilityTemplate&quot;
+  ADD COLUMN &quot;sourceCardId&quot; TEXT,
+  ADD COLUMN &quot;definition&quot; TEXT,
+  ADD COLUMN &quot;conception&quot; TEXT,
+  ADD COLUMN &quot;planning&quot; TEXT,
+  ADD COLUMN &quot;execution&quot; TEXT,
+  ADD COLUMN &quot;minimumStandard&quot; TEXT,
+  ADD COLUMN &quot;coverAssetPath&quot; TEXT,
+  ADD COLUMN &quot;defaultLane&quot; &quot;ResponsibilityBoardLane&quot; NOT NULL DEFAULT &#39;not_in_play&#39;,
+  ADD COLUMN &quot;sourceVersion&quot; TEXT,
+  ADD COLUMN &quot;importedAt&quot; TIMESTAMP(3);
+
+CREATE UNIQUE INDEX &quot;ResponsibilityTemplate_sourceCardId_key&quot;
+  ON &quot;ResponsibilityTemplate&quot;(&quot;sourceCardId&quot;);
+
+ALTER TABLE &quot;Responsibility&quot;
+  ADD COLUMN &quot;boardLane&quot; &quot;ResponsibilityBoardLane&quot; NOT NULL DEFAULT &#39;cards_of_concern&#39;,
+  ADD COLUMN &quot;boardSortOrder&quot; INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN &quot;sourceDefinition&quot; TEXT,
+  ADD COLUMN &quot;sourceConception&quot; TEXT,
+  ADD COLUMN &quot;sourcePlanning&quot; TEXT,
+  ADD COLUMN &quot;sourceExecution&quot; TEXT,
+  ADD COLUMN &quot;sourceMinimumStandard&quot; TEXT,
+  ADD COLUMN &quot;sourceCoverAssetPath&quot; TEXT;
+
+CREATE INDEX &quot;Responsibility_householdId_boardLane_boardSortOrder_idx&quot;
+  ON &quot;Responsibility&quot;(&quot;householdId&quot;, &quot;boardLane&quot;, &quot;boardSortOrder&quot;);
+CREATE INDEX &quot;Responsibility_templateId_idx&quot;
+  ON &quot;Responsibility&quot;(&quot;templateId&quot;);
+
+CREATE TABLE &quot;PersonaOnboardingPreferences&quot; (
+  &quot;id&quot; TEXT NOT NULL,
+  &quot;personaId&quot; TEXT NOT NULL,
+  &quot;welcomeDismissedAt&quot; TIMESTAMP(3),
+  &quot;crashCourseSkippedAt&quot; TIMESTAMP(3),
+  &quot;crashCourseCompletedAt&quot; TIMESTAMP(3),
+  &quot;crashCourseCurrentStep&quot; INTEGER NOT NULL DEFAULT 0,
+  &quot;crashCourseReplayRequestedAt&quot; TIMESTAMP(3),
+  &quot;createdAt&quot; TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  &quot;updatedAt&quot; TIMESTAMP(3) NOT NULL,
+  CONSTRAINT &quot;PersonaOnboardingPreferences_pkey&quot; PRIMARY KEY (&quot;id&quot;)
+);
+
+CREATE UNIQUE INDEX &quot;PersonaOnboardingPreferences_personaId_key&quot;
+  ON &quot;PersonaOnboardingPreferences&quot;(&quot;personaId&quot;);
+
+ALTER TABLE &quot;PersonaOnboardingPreferences&quot;
+  ADD CONSTRAINT &quot;PersonaOnboardingPreferences_personaId_fkey&quot;
+  FOREIGN KEY (&quot;personaId&quot;) REFERENCES &quot;Persona&quot;(&quot;id&quot;)
+  ON DELETE CASCADE ON UPDATE CASCADE;
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 9: Validate Prisma schema</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm run prisma:validate
+npm run prisma:generate
+</code></pre>
+<p>Expected: both PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 10: Verify contracts pass</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/contracts/responsibilities.test.ts src/contracts/preferences.test.ts
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 11: Write worker report</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-02-board-schema-preferences.md</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 12: Commit Task 2</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git add prisma/schema.prisma prisma/migrations/20260504190000_personal_use_redesign/migration.sql src/contracts/responsibilities.ts src/contracts/responsibilities.test.ts src/contracts/preferences.ts src/contracts/preferences.test.ts docs/implementation/2026-05-04-task-02-board-schema-preferences.md
+git commit -m &quot;feat: add board placement and onboarding schema&quot;
+</code></pre>
+<p>Expected: one commit with Prisma validation and targeted tests passing.</p>
+<h2 id="task-3-template-placement-and-preference-apis">Task 3: Template, Placement, and Preference APIs</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/server/repositories/card-templates.ts</code></p>
+</li>
+<li><p>Create: <code>src/server/repositories/card-templates.test.ts</code></p>
+</li>
+<li><p>Modify: <code>src/server/repositories/responsibilities.ts</code></p>
+</li>
+<li><p>Modify: <code>src/server/repositories/persistence.integration.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/server/repositories/preferences.ts</code></p>
+</li>
+<li><p>Create: <code>src/server/repositories/preferences.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/card-templates/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/card-templates/route.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/responsibilities/from-template/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/responsibilities/from-template/route.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/responsibilities/[id]/board-placement/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/responsibilities/[id]/board-placement/route.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/preferences/onboarding/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/preferences/onboarding/route.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/preferences/welcome/replay/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/preferences/welcome/replay/route.test.ts</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-03-template-placement-preference-apis.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing repository test for template listing</strong></p>
+</li>
+</ul>
+<p>Create <code>src/server/repositories/card-templates.test.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import { describe, expect, it } from &quot;vitest&quot;;
+
+import { listCardTemplates } from &quot;./card-templates&quot;;
+
+describe(&quot;card template repository&quot;, () =&gt; {
+  it(&quot;returns source templates sorted by title and filtered by label&quot;, async () =&gt; {
+    const templates = await listCardTemplates({ labels: [&quot;Daily Grind&quot;] });
+
+    expect(templates.length).toBeGreaterThan(0);
+    expect(templates.every((template) =&gt; template.labels.includes(&quot;Daily Grind&quot;))).toBe(true);
+    expect([...templates].sort((a, b) =&gt; a.title.localeCompare(b.title))).toEqual(templates);
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run repository test and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/server/repositories/card-templates.test.ts
+</code></pre>
+<p>Expected: FAIL because <code>listCardTemplates</code> does not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Implement template repository</strong></li>
+</ul>
+<p>Create <code>src/server/repositories/card-templates.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import type { Prisma } from &quot;@prisma/client&quot;;
+
+import type {
+  CardTemplateDetail,
+  CardTemplateSearchParams,
+  CardTemplateSummary
+} from &quot;../../contracts/card-templates&quot;;
+import { prisma } from &quot;../db/prisma&quot;;
+
+const templateSelect = {
+  id: true,
+  sourceCardId: true,
+  slug: true,
+  title: true,
+  summary: true,
+  areaKeys: true,
+  defaultCadence: true,
+  hiddenEffortKeys: true,
+  definition: true,
+  conception: true,
+  planning: true,
+  execution: true,
+  minimumStandard: true,
+  coverAssetPath: true,
+  defaultLane: true,
+  contentVersion: true,
+  sourceVersion: true,
+  importedAt: true
+} satisfies Prisma.ResponsibilityTemplateSelect;
+
+function labelsFromAreaKeys(areaKeys: string[]) {
+  return areaKeys;
+}
+
+function toSummary(template: Prisma.ResponsibilityTemplateGetPayload&lt;{ select: typeof templateSelect }&gt;): CardTemplateSummary {
+  return {
+    id: template.id,
+    slug: template.slug,
+    title: template.title,
+    labels: labelsFromAreaKeys(template.areaKeys),
+    summary: template.summary,
+    coverAssetPath: template.coverAssetPath,
+    defaultLane: template.defaultLane
+  };
+}
+
+function toDetail(template: Prisma.ResponsibilityTemplateGetPayload&lt;{ select: typeof templateSelect }&gt;): CardTemplateDetail {
+  return {
+    ...toSummary(template),
+    sourceCardId: template.sourceCardId ?? template.id,
+    definition: template.definition ?? template.summary,
+    conception: template.conception ?? &quot;Notice what this responsibility requires before the execution step.&quot;,
+    planning: template.planning ?? &quot;Plan timing, access, dependencies, and communication before execution.&quot;,
+    execution: template.execution ?? &quot;Complete the visible work and follow through until the outcome is handled.&quot;,
+    minimumStandard: template.minimumStandard ?? &quot;Agree on a household-specific minimum standard before judging follow-through.&quot;,
+    defaultCadence: template.defaultCadence,
+    hiddenEffortKeys: template.hiddenEffortKeys,
+    sourceVersion: template.sourceVersion ?? template.contentVersion,
+    importedAt: (template.importedAt ?? new Date(0)).toISOString()
+  };
+}
+
+export async function listCardTemplates(
+  params: CardTemplateSearchParams = {}
+): Promise&lt;CardTemplateSummary[]&gt; {
+  const templates = await prisma.responsibilityTemplate.findMany({
+    where: {
+      title: params.q
+        ? {
+            contains: params.q,
+            mode: &quot;insensitive&quot;
+          }
+        : undefined,
+      areaKeys: params.labels?.length
+        ? {
+            hasSome: params.labels
+          }
+        : undefined,
+      defaultLane: params.lane
+    },
+    orderBy: {
+      title: &quot;asc&quot;
+    },
+    select: templateSelect
+  });
+
+  return templates.map(toSummary);
+}
+
+export async function getCardTemplate(id: string): Promise&lt;CardTemplateDetail | null&gt; {
+  const template = await prisma.responsibilityTemplate.findUnique({
+    where: {
+      id
+    },
+    select: templateSelect
+  });
+
+  return template ? toDetail(template) : null;
+}
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Implement placement repository after failing test</strong></li>
+</ul>
+<p>Add a failing test to <code>src/server/repositories/persistence.integration.test.ts</code> that creates a responsibility, moves it to <code>player_1</code>, and expects one <code>ResponsibilityEvent</code> with <code>eventType: &quot;board_lane_changed&quot;</code>. Then implement <code>updateResponsibilityBoardPlacement</code> in <code>src/server/repositories/responsibilities.ts</code>.</p>
+<p>Use this implementation shape:</p>
+<pre tabindex="0"><code class="language-ts">export async function updateResponsibilityBoardPlacement(input: {
+  householdId: HouseholdId;
+  responsibilityId: ResponsibilityId;
+  toLane: ResponsibilityBoardLane;
+  sortOrder: number;
+  actorPersonaId?: PersonaId;
+  note?: string;
+}): Promise&lt;ResponsibilityDetail&gt; {
+  const responsibility = await prisma.$transaction(async (tx) =&gt; {
+    const existing = await tx.responsibility.findFirst({
+      where: { id: input.responsibilityId, householdId: input.householdId },
+      select: { id: true, boardLane: true, boardSortOrder: true }
+    });
+
+    if (!existing) {
+      throw new RepositoryError(&quot;NOT_FOUND&quot;, &quot;Responsibility not found for household.&quot;);
+    }
+
+    await tx.responsibilityEvent.create({
+      data: {
+        householdId: input.householdId,
+        responsibilityId: input.responsibilityId,
+        actorPersonaId: input.actorPersonaId ?? null,
+        eventType: &quot;board_lane_changed&quot;,
+        payload: {
+          fromLane: existing.boardLane,
+          toLane: input.toLane,
+          fromSortOrder: existing.boardSortOrder,
+          toSortOrder: input.sortOrder,
+          note: input.note ?? null
+        },
+        occurredAt: new Date()
+      }
+    });
+
+    return tx.responsibility.update({
+      where: { id: input.responsibilityId },
+      data: { boardLane: input.toLane, boardSortOrder: input.sortOrder },
+      include: responsibilityInclude
+    });
+  });
+
+  return toResponsibilityDetail(responsibility as ResponsibilityWithRelations);
+}
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Implement preference repository after failing test</strong></li>
+</ul>
+<p>Create <code>src/server/repositories/preferences.test.ts</code> first, asserting defaults are created for a persona and replay clears <code>welcomeDismissedAt</code>. Then create <code>src/server/repositories/preferences.ts</code> with:</p>
+<pre tabindex="0"><code class="language-ts">export async function getOnboardingPreferences(personaId: PersonaId): Promise&lt;OnboardingPreferences&gt; {
+  const preferences = await prisma.personaOnboardingPreferences.upsert({
+    where: { personaId },
+    update: {},
+    create: { personaId }
+  });
+
+  return toOnboardingPreferences(preferences);
+}
+
+export async function updateOnboardingPreferences(
+  personaId: PersonaId,
+  input: OnboardingPreferencesMutation
+): Promise&lt;OnboardingPreferences&gt; {
+  const preferences = await prisma.personaOnboardingPreferences.upsert({
+    where: { personaId },
+    update: {
+      welcomeDismissedAt: input.welcomeDismissedAt === undefined ? undefined : isoOrNull(input.welcomeDismissedAt),
+      crashCourseSkippedAt: input.crashCourseSkippedAt === undefined ? undefined : isoOrNull(input.crashCourseSkippedAt),
+      crashCourseCompletedAt: input.crashCourseCompletedAt === undefined ? undefined : isoOrNull(input.crashCourseCompletedAt),
+      crashCourseCurrentStep: input.crashCourseCurrentStep,
+      crashCourseReplayRequestedAt:
+        input.crashCourseReplayRequestedAt === undefined ? undefined : isoOrNull(input.crashCourseReplayRequestedAt)
+    },
+    create: {
+      personaId,
+      welcomeDismissedAt: isoOrNull(input.welcomeDismissedAt),
+      crashCourseSkippedAt: isoOrNull(input.crashCourseSkippedAt),
+      crashCourseCompletedAt: isoOrNull(input.crashCourseCompletedAt),
+      crashCourseCurrentStep: input.crashCourseCurrentStep ?? 0,
+      crashCourseReplayRequestedAt: isoOrNull(input.crashCourseReplayRequestedAt)
+    }
+  });
+
+  return toOnboardingPreferences(preferences);
+}
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Add API routes with route tests</strong></li>
+</ul>
+<p>For each route, write a failing route test before implementation:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/app/api/card-templates/route.test.ts
+npm test -- src/app/api/responsibilities/from-template/route.test.ts
+npm test -- src/app/api/responsibilities/[id]/board-placement/route.test.ts
+npm test -- src/app/api/preferences/onboarding/route.test.ts
+npm test -- src/app/api/preferences/welcome/replay/route.test.ts
+</code></pre>
+<p>Each route should:</p>
+<ul>
+<li><p>Read current household/persona session with existing <code>getCurrentSession</code>.</p>
+</li>
+<li><p>Parse request bodies with the new Zod contracts.</p>
+</li>
+<li><p>Return <code>401</code> without session, <code>400</code> for invalid payload, and scoped data for valid requests.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Verify API tests pass</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/server/repositories/card-templates.test.ts src/server/repositories/preferences.test.ts src/server/repositories/persistence.integration.test.ts src/app/api/card-templates/route.test.ts src/app/api/responsibilities/from-template/route.test.ts src/app/api/responsibilities/[id]/board-placement/route.test.ts src/app/api/preferences/onboarding/route.test.ts src/app/api/preferences/welcome/replay/route.test.ts
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 8: Write worker report</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-03-template-placement-preference-apis.md</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 9: Commit Task 3</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git add src/server/repositories/card-templates.ts src/server/repositories/card-templates.test.ts src/server/repositories/responsibilities.ts src/server/repositories/persistence.integration.test.ts src/server/repositories/preferences.ts src/server/repositories/preferences.test.ts src/app/api/card-templates src/app/api/responsibilities/from-template src/app/api/responsibilities/[id]/board-placement src/app/api/preferences docs/implementation/2026-05-04-task-03-template-placement-preference-apis.md
+git commit -m &quot;feat: add template and board placement APIs&quot;
+</code></pre>
+<p>Expected: one commit with targeted server and route tests passing.</p>
+<h2 id="task-4-premium-ui-foundation-and-app-chrome">Task 4: Premium UI Foundation and App Chrome</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/app/globals.css</code></p>
+</li>
+<li><p>Create: <code>src/components/ui/button.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/ui/chip.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/ui/icon-button.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/ui/segmented-control.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/ui/sheet.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/ui/surface.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/ui/ui-primitives.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/app-shell/app-shell.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/app-shell/app-shell.test.tsx</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-04-premium-ui-foundation.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing UI primitive tests</strong></p>
+</li>
+</ul>
+<p>Create <code>src/components/ui/ui-primitives.test.tsx</code>:</p>
+<pre tabindex="0"><code class="language-tsx">import { render, screen } from &quot;@testing-library/react&quot;;
+import userEvent from &quot;@testing-library/user-event&quot;;
+import { describe, expect, it, vi } from &quot;vitest&quot;;
+
+import { Button } from &quot;./button&quot;;
+import { Chip } from &quot;./chip&quot;;
+import { IconButton } from &quot;./icon-button&quot;;
+import { SegmentedControl } from &quot;./segmented-control&quot;;
+
+describe(&quot;UI primitives&quot;, () =&gt; {
+  it(&quot;renders accessible icon buttons&quot;, async () =&gt; {
+    const onClick = vi.fn();
+    render(&lt;IconButton aria-label=&quot;Restart crash course&quot; icon={&lt;span aria-hidden&gt;R&lt;/span&gt;} onClick={onClick} /&gt;);
+
+    await userEvent.click(screen.getByRole(&quot;button&quot;, { name: &quot;Restart crash course&quot; }));
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it(&quot;keeps chips compact and label-aware&quot;, () =&gt; {
+    render(&lt;Chip tone=&quot;caregiving&quot;&gt;Caregiving&lt;/Chip&gt;);
+
+    expect(screen.getByText(&quot;Caregiving&quot;)).toHaveClass(&quot;max-w-full&quot;);
+  });
+
+  it(&quot;supports segmented keyboard-sized choices&quot;, async () =&gt; {
+    const onChange = vi.fn();
+    render(
+      &lt;SegmentedControl
+        ariaLabel=&quot;Board view&quot;
+        value=&quot;board&quot;
+        options={[
+          { value: &quot;board&quot;, label: &quot;Board&quot; },
+          { value: &quot;list&quot;, label: &quot;List&quot; }
+        ]}
+        onChange={onChange}
+      /&gt;
+    );
+
+    await userEvent.click(screen.getByRole(&quot;button&quot;, { name: &quot;List&quot; }));
+
+    expect(onChange).toHaveBeenCalledWith(&quot;list&quot;);
+  });
+
+  it(&quot;renders button variants without layout-only text wrappers&quot;, () =&gt; {
+    render(&lt;Button variant=&quot;primary&quot;&gt;Open library&lt;/Button&gt;);
+
+    expect(screen.getByRole(&quot;button&quot;, { name: &quot;Open library&quot; })).toHaveClass(&quot;rounded&quot;);
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run primitive tests and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/ui/ui-primitives.test.tsx
+</code></pre>
+<p>Expected: FAIL because components do not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Implement UI primitives</strong></li>
+</ul>
+<p>Create simple typed components that preserve native button semantics. Use CSS classes from <code>globals.css</code> and keep class merging local with arrays:</p>
+<pre tabindex="0"><code class="language-tsx">type ButtonProps = React.ButtonHTMLAttributes&lt;HTMLButtonElement&gt; &amp; {
+  variant?: &quot;primary&quot; | &quot;secondary&quot; | &quot;ghost&quot;;
+};
+
+export function Button({ className, variant = &quot;secondary&quot;, ...props }: ButtonProps) {
+  return (
+    &lt;button
+      {...props}
+      className={[
+        &quot;inline-flex min-h-10 items-center justify-center gap-2 rounded px-4 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2&quot;,
+        variant === &quot;primary&quot; ? &quot;bg-[var(--fp-ink)] text-white hover:bg-[var(--fp-ink-soft)]&quot; : &quot;&quot;,
+        variant === &quot;secondary&quot; ? &quot;border border-[var(--fp-line)] bg-[var(--fp-surface)] text-[var(--fp-ink)] hover:bg-[var(--fp-surface-strong)]&quot; : &quot;&quot;,
+        variant === &quot;ghost&quot; ? &quot;text-[var(--fp-ink)] hover:bg-[var(--fp-surface-strong)]&quot; : &quot;&quot;,
+        className
+      ]
+        .filter(Boolean)
+        .join(&quot; &quot;)}
+    /&gt;
+  );
+}
+</code></pre>
+<p>Use <code>Chip</code>, <code>IconButton</code>, <code>SegmentedControl</code>, <code>Sheet</code>, and <code>Surface</code> with the same small, typed pattern.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Add visual tokens</strong></li>
+</ul>
+<p>Modify <code>src/app/globals.css</code>:</p>
+<pre tabindex="0"><code class="language-css">:root {
+  --fp-bg: #f7f3ec;
+  --fp-ink: #202124;
+  --fp-ink-soft: #3b3d42;
+  --fp-muted: #6a6761;
+  --fp-line: rgba(32, 33, 36, 0.14);
+  --fp-surface: rgba(255, 255, 255, 0.78);
+  --fp-surface-strong: rgba(255, 255, 255, 0.96);
+  --fp-home: #47746c;
+  --fp-out: #506fa8;
+  --fp-caregiving: #a45b63;
+  --fp-magic: #8c6ab4;
+  --fp-wild: #4f7f47;
+  --fp-daily: #9b6d35;
+  --fp-happiness: #c26f59;
+  --fp-kids: #4d8195;
+  --fp-kid-split: #806a55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Verify primitive tests pass</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/ui/ui-primitives.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Write failing app-shell tests</strong></li>
+</ul>
+<p>Modify <code>src/components/app-shell/app-shell.test.tsx</code> to assert:</p>
+<pre tabindex="0"><code class="language-tsx">expect(screen.getByRole(&quot;navigation&quot;, { name: &quot;Primary&quot; })).toBeInTheDocument();
+expect(screen.getByRole(&quot;link&quot;, { name: /Library/i })).toHaveAttribute(&quot;href&quot;, &quot;/app/library&quot;);
+expect(screen.getByRole(&quot;link&quot;, { name: /Crash course/i })).toHaveAttribute(&quot;href&quot;, &quot;/app/crash-course&quot;);
+expect(screen.getByRole(&quot;link&quot;, { name: /Load map/i })).toHaveAttribute(&quot;aria-current&quot;, &quot;page&quot;);
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Run app-shell test and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/app-shell/app-shell.test.tsx
+</code></pre>
+<p>Expected: FAIL because navigation has no library/crash-course entries or premium active-state semantics.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 8: Implement app shell chrome</strong></li>
+</ul>
+<p>Modify <code>src/components/app-shell/app-shell.tsx</code>:</p>
+<ul>
+<li><p>Use <code>lucide-react</code> icons for Home, LayoutDashboard, Library, Radar, CalendarCheck, Settings, Sparkles.</p>
+</li>
+<li><p>Add <code>/app/library</code> and <code>/app/crash-course</code> nav entries.</p>
+</li>
+<li><p>Use <code>aria-current=&quot;page&quot;</code> for active route.</p>
+</li>
+<li><p>Add desktop sidebar and mobile bottom tab bar.</p>
+</li>
+<li><p>Preserve existing session/persona display and logout behavior.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 9: Verify app shell tests pass</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/app-shell/app-shell.test.tsx src/components/ui/ui-primitives.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 10: Write worker report</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-04-premium-ui-foundation.md</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 11: Commit Task 4</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git add src/app/globals.css src/components/ui src/components/app-shell/app-shell.tsx src/components/app-shell/app-shell.test.tsx docs/implementation/2026-05-04-task-04-premium-ui-foundation.md package.json package-lock.json
+git commit -m &quot;feat: add premium app chrome&quot;
+</code></pre>
+<p>Expected: one commit with targeted UI tests passing.</p>
+<h2 id="task-5-card-library-and-rich-detail">Task 5: Card Library and Rich Detail</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/components/library/card-library.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/library/card-library.test.tsx</code></p>
+</li>
+<li><p>Create: <code>src/app/app/library/page.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/cards/card-detail-sheet.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/cards/card-detail-sheet.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/app/responsibilities/[id]/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-editor.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-editor.test.tsx</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-05-card-library-detail.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing library test</strong></p>
+</li>
+</ul>
+<p>Create <code>src/components/library/card-library.test.tsx</code>:</p>
+<pre tabindex="0"><code class="language-tsx">import { render, screen } from &quot;@testing-library/react&quot;;
+import userEvent from &quot;@testing-library/user-event&quot;;
+import { describe, expect, it, vi } from &quot;vitest&quot;;
+
+import { CardLibrary } from &quot;./card-library&quot;;
+
+const templates = [
+  {
+    id: &quot;tpl_auto&quot;,
+    slug: &quot;auto&quot;,
+    title: &quot;Auto&quot;,
+    labels: [&quot;Out&quot;, &quot;Daily Grind&quot;],
+    summary: &quot;Vehicle responsibility summary.&quot;,
+    coverAssetPath: &quot;/assets/fairplay/cards/auto.png&quot;,
+    defaultLane: &quot;not_in_play&quot;
+  },
+  {
+    id: &quot;tpl_homework&quot;,
+    slug: &quot;homework&quot;,
+    title: &quot;Homework&quot;,
+    labels: [&quot;Kids&quot;, &quot;Home&quot;],
+    summary: &quot;School follow-through.&quot;,
+    coverAssetPath: null,
+    defaultLane: &quot;not_in_play&quot;
+  }
+] as const;
+
+describe(&quot;CardLibrary&quot;, () =&gt; {
+  it(&quot;filters source cards and starts a household card from a template&quot;, async () =&gt; {
+    const onCreateFromTemplate = vi.fn();
+    render(&lt;CardLibrary templates={templates} onCreateFromTemplate={onCreateFromTemplate} /&gt;);
+
+    await userEvent.type(screen.getByRole(&quot;searchbox&quot;, { name: /search cards/i }), &quot;auto&quot;);
+
+    expect(screen.getByText(&quot;Auto&quot;)).toBeInTheDocument();
+    expect(screen.queryByText(&quot;Homework&quot;)).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole(&quot;button&quot;, { name: /put Auto in play/i }));
+
+    expect(onCreateFromTemplate).toHaveBeenCalledWith(&quot;tpl_auto&quot;);
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run library test and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/library/card-library.test.tsx
+</code></pre>
+<p>Expected: FAIL because component does not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Implement card library</strong></li>
+</ul>
+<p>Create <code>src/components/library/card-library.tsx</code>:</p>
+<ul>
+<li><p>Accept <code>templates: CardTemplateSummary[]</code>.</p>
+</li>
+<li><p>Render a searchbox.</p>
+</li>
+<li><p>Render label chips.</p>
+</li>
+<li><p>Render cover image when available with fixed aspect ratio.</p>
+</li>
+<li><p>Render <code>Put in play</code> action that calls <code>onCreateFromTemplate(template.id)</code>.</p>
+</li>
+<li><p>Keep card dimensions stable with CSS classes.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Verify library test passes</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/library/card-library.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Write failing detail sheet test</strong></li>
+</ul>
+<p>Create <code>src/components/cards/card-detail-sheet.test.tsx</code>:</p>
+<pre tabindex="0"><code class="language-tsx">import { render, screen } from &quot;@testing-library/react&quot;;
+import userEvent from &quot;@testing-library/user-event&quot;;
+import { describe, expect, it, vi } from &quot;vitest&quot;;
+
+import { CardDetailSheet } from &quot;./card-detail-sheet&quot;;
+
+const card = {
+  id: &quot;resp_123&quot;,
+  title: &quot;Auto&quot;,
+  labels: [&quot;Out&quot;, &quot;Daily Grind&quot;],
+  boardLane: &quot;cards_of_concern&quot;,
+  ownerLabel: &quot;Cards of Concern&quot;,
+  definition: &quot;Keep vehicle needs visible and handled.&quot;,
+  conception: &quot;Notice repairs and timing.&quot;,
+  planning: &quot;Schedule service and arrange transport.&quot;,
+  execution: &quot;Complete service and follow-through.&quot;,
+  minimumStandard: &quot;Vehicle is safe, legal, and available.&quot;,
+  householdStandard: null,
+  notes: null,
+  coverAssetPath: &quot;/assets/fairplay/cards/auto.png&quot;
+};
+
+describe(&quot;CardDetailSheet&quot;, () =&gt; {
+  it(&quot;shows CPE sections and action hooks&quot;, async () =&gt; {
+    const onMove = vi.fn();
+    const onFlagForRadar = vi.fn();
+    render(&lt;CardDetailSheet card={card} onMove={onMove} onFlagForRadar={onFlagForRadar} /&gt;);
+
+    expect(screen.getByRole(&quot;heading&quot;, { name: &quot;Auto&quot; })).toBeInTheDocument();
+    expect(screen.getByText(&quot;Notice repairs and timing.&quot;)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole(&quot;button&quot;, { name: /move to Player 1/i }));
+    await userEvent.click(screen.getByRole(&quot;button&quot;, { name: /flag for radar/i }));
+
+    expect(onMove).toHaveBeenCalledWith(&quot;player_1&quot;);
+    expect(onFlagForRadar).toHaveBeenCalledTimes(1);
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Run detail test and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/cards/card-detail-sheet.test.tsx
+</code></pre>
+<p>Expected: FAIL because component does not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Implement detail sheet</strong></li>
+</ul>
+<p>Create <code>src/components/cards/card-detail-sheet.tsx</code> with:</p>
+<ul>
+<li><p>Cover/face area.</p>
+</li>
+<li><p>Title, label chips, current lane.</p>
+</li>
+<li><p>CPE sections.</p>
+</li>
+<li><p>Minimum standard and household standard area.</p>
+</li>
+<li><p>Move actions for all lanes.</p>
+</li>
+<li><p>Radar action.</p>
+</li>
+<li><p>Stable mobile bottom action bar.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 8: Add library page</strong></p>
+</li>
+</ul>
+<p>Create <code>src/app/app/library/page.tsx</code> as a server component that fetches <code>/api/card-templates</code> through repository/server helper or direct repository import, then renders a client wrapper for <code>CardLibrary</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 9: Verify targeted tests pass</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/library/card-library.test.tsx src/components/cards/card-detail-sheet.test.tsx src/components/responsibilities/responsibility-editor.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 10: Write worker report</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-05-card-library-detail.md</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 11: Commit Task 5</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git add src/components/library src/app/app/library src/components/cards src/app/app/responsibilities/[id]/page.tsx src/components/responsibilities/responsibility-editor.tsx src/components/responsibilities/responsibility-editor.test.tsx docs/implementation/2026-05-04-task-05-card-library-detail.md
+git commit -m &quot;feat: add card library and rich detail&quot;
+</code></pre>
+<p>Expected: one commit with targeted UI tests passing.</p>
+<h2 id="task-6-trello-style-load-board">Task 6: Trello-Style Load Board</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-load-map.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-load-map.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/app/load-map/page.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/responsibilities/board-lanes.ts</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-06-trello-style-load-board.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing board tests</strong></p>
+</li>
+</ul>
+<p>Add tests to <code>src/components/responsibilities/responsibility-load-map.test.tsx</code>:</p>
+<pre tabindex="0"><code class="language-tsx">it(&quot;renders Trello board lanes with counts and explanations&quot;, () =&gt; {
+  render(&lt;ResponsibilityLoadMap responsibilities={responsibilities} /&gt;);
+
+  expect(screen.getByRole(&quot;heading&quot;, { name: /Not in Play/i })).toBeInTheDocument();
+  expect(screen.getByRole(&quot;heading&quot;, { name: /Cards of Concern/i })).toBeInTheDocument();
+  expect(screen.getByText(/reserve cards/i)).toBeInTheDocument();
+});
+
+it(&quot;moves a card through the keyboard action menu&quot;, async () =&gt; {
+  const onMove = vi.fn();
+  render(&lt;ResponsibilityLoadMap responsibilities={responsibilities} onMove={onMove} /&gt;);
+
+  await userEvent.click(screen.getByRole(&quot;button&quot;, { name: /Move Auto/i }));
+  await userEvent.click(screen.getByRole(&quot;menuitem&quot;, { name: /Player 1/i }));
+
+  expect(onMove).toHaveBeenCalledWith({
+    responsibilityId: &quot;resp_auto&quot;,
+    toLane: &quot;player_1&quot;
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run board tests and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/responsibilities/responsibility-load-map.test.tsx
+</code></pre>
+<p>Expected: FAIL because lanes/actions do not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Define lane metadata</strong></li>
+</ul>
+<p>Create <code>src/components/responsibilities/board-lanes.ts</code>:</p>
+<pre tabindex="0"><code class="language-ts">import type { ResponsibilityBoardLane } from &quot;../../domain/enums&quot;;
+
+export const BOARD_LANES: readonly {
+  key: ResponsibilityBoardLane;
+  label: string;
+  shortHelp: string;
+  tone: string;
+}[] = [
+  {
+    key: &quot;cards_of_concern&quot;,
+    label: &quot;Cards of Concern&quot;,
+    shortHelp: &quot;Needs discussion, standards, support, or review.&quot;,
+    tone: &quot;concern&quot;
+  },
+  {
+    key: &quot;player_1&quot;,
+    label: &quot;Player 1&quot;,
+    shortHelp: &quot;Owned by the first household persona.&quot;,
+    tone: &quot;playerOne&quot;
+  },
+  {
+    key: &quot;player_2&quot;,
+    label: &quot;Player 2&quot;,
+    shortHelp: &quot;Owned by the second household persona.&quot;,
+    tone: &quot;playerTwo&quot;
+  },
+  {
+    key: &quot;kid_split&quot;,
+    label: &quot;Kid Split&quot;,
+    shortHelp: &quot;Split by child, context, season, or sub-responsibility.&quot;,
+    tone: &quot;kidSplit&quot;
+  },
+  {
+    key: &quot;not_in_play&quot;,
+    label: &quot;Not in Play&quot;,
+    shortHelp: &quot;Reserve cards that are not active yet.&quot;,
+    tone: &quot;reserve&quot;
+  },
+  {
+    key: &quot;trimmed&quot;,
+    label: &quot;Trimmed&quot;,
+    shortHelp: &quot;Paused, dropped, or irrelevant for this household.&quot;,
+    tone: &quot;trimmed&quot;
+  }
+];
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Implement board rendering and keyboard fallback</strong></li>
+</ul>
+<p>Modify <code>ResponsibilityLoadMap</code>:</p>
+<ul>
+<li><p>Group cards by <code>boardLane</code>.</p>
+</li>
+<li><p>Render horizontal scroll lanes.</p>
+</li>
+<li><p>Use stable lane width and card dimensions.</p>
+</li>
+<li><p>Add card action menu for movement.</p>
+</li>
+<li><p>Call <code>onMove({ responsibilityId, toLane })</code>.</p>
+</li>
+<li><p>Preserve existing summary metrics where useful.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Add drag/drop</strong></p>
+</li>
+</ul>
+<p>Use <code>@dnd-kit/core</code> and <code>@dnd-kit/sortable</code>:</p>
+<ul>
+<li><p><code>DndContext</code> around lanes.</p>
+</li>
+<li><p><code>SortableContext</code> per lane.</p>
+</li>
+<li><p><code>onDragEnd</code> calls <code>onMove</code> with destination lane and computed <code>sortOrder</code>.</p>
+</li>
+<li><p>Apply lift transform and destination highlight.</p>
+</li>
+<li><p>Respect reduced-motion CSS.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Wire route to placement API</strong></p>
+</li>
+</ul>
+<p>Modify <code>src/app/app/load-map/page.tsx</code>:</p>
+<ul>
+<li><p>Fetch responsibilities including <code>boardLane</code> and <code>boardSortOrder</code>.</p>
+</li>
+<li><p>Pass a client action that calls <code>PATCH /api/responsibilities/[id]/board-placement</code>.</p>
+</li>
+<li><p>Refresh route data after move.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Verify board tests pass</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/responsibilities/responsibility-load-map.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 8: Write worker report</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-06-trello-style-load-board.md</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 9: Commit Task 6</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git add src/components/responsibilities/responsibility-load-map.tsx src/components/responsibilities/responsibility-load-map.test.tsx src/components/responsibilities/board-lanes.ts src/app/app/load-map/page.tsx docs/implementation/2026-05-04-task-06-trello-style-load-board.md
+git commit -m &quot;feat: add Trello-style load board&quot;
+</code></pre>
+<p>Expected: one commit with board tests passing.</p>
+<h2 id="task-7-persistent-welcome-and-crash-course">Task 7: Persistent Welcome and Crash Course</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/components/crash-course/crash-course-content.ts</code></p>
+</li>
+<li><p>Create: <code>src/components/crash-course/crash-course-flow.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/crash-course/crash-course-flow.test.tsx</code></p>
+</li>
+<li><p>Create: <code>src/app/app/crash-course/page.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/welcome/persistent-welcome.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/welcome/persistent-welcome.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/app/layout.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/settings/settings-panel.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/settings/settings-panel.test.tsx</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-07-welcome-crash-course.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing crash-course content test</strong></p>
+</li>
+</ul>
+<p>Create <code>src/components/crash-course/crash-course-flow.test.tsx</code>:</p>
+<pre tabindex="0"><code class="language-tsx">import { render, screen } from &quot;@testing-library/react&quot;;
+import userEvent from &quot;@testing-library/user-event&quot;;
+import { describe, expect, it, vi } from &quot;vitest&quot;;
+
+import { CRASH_COURSE_LESSONS } from &quot;./crash-course-content&quot;;
+import { CrashCourseFlow } from &quot;./crash-course-flow&quot;;
+
+describe(&quot;CrashCourseFlow&quot;, () =&gt; {
+  it(&quot;contains the ten approved course lessons&quot;, () =&gt; {
+    expect(CRASH_COURSE_LESSONS.map((lesson) =&gt; lesson.title)).toEqual([
+      &quot;Why this is not a chore app&quot;,
+      &quot;Owner vs. helper&quot;,
+      &quot;CPE: Conception, Planning, Execution&quot;,
+      &quot;Minimum standards and done well enough&quot;,
+      &quot;The board lanes&quot;,
+      &quot;Build your active deck&quot;,
+      &quot;Handoffs and re-deals&quot;,
+      &quot;Radar and check-ins&quot;,
+      &quot;Fair is dynamic&quot;,
+      &quot;Repair and resistance&quot;
+    ]);
+  });
+
+  it(&quot;skips, advances, and records progress&quot;, async () =&gt; {
+    const onProgress = vi.fn();
+    const onSkip = vi.fn();
+    render(&lt;CrashCourseFlow currentStep={0} onProgress={onProgress} onSkip={onSkip} /&gt;);
+
+    await userEvent.click(screen.getByRole(&quot;button&quot;, { name: /next/i }));
+    await userEvent.click(screen.getByRole(&quot;button&quot;, { name: /skip crash course/i }));
+
+    expect(onProgress).toHaveBeenCalledWith(1);
+    expect(onSkip).toHaveBeenCalledTimes(1);
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run crash-course test and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/crash-course/crash-course-flow.test.tsx
+</code></pre>
+<p>Expected: FAIL because crash-course files do not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Implement crash-course content</strong></li>
+</ul>
+<p>Create <code>src/components/crash-course/crash-course-content.ts</code> with ten lessons. Each lesson should include:</p>
+<pre tabindex="0"><code class="language-ts">export type CrashCourseLesson = {
+  id: string;
+  title: string;
+  concept: string;
+  action: string;
+  exampleCardTitle?: string;
+};
+</code></pre>
+<p>Use concepts from <code>docs/research/fair-play-book-report.md</code> and <code>docs/research/a-better-share-book-report.md</code> without copying long source passages.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Implement crash-course flow</strong></li>
+</ul>
+<p>Create <code>src/components/crash-course/crash-course-flow.tsx</code>:</p>
+<ul>
+<li><p>Render current lesson.</p>
+</li>
+<li><p>Provide Previous, Next, Skip, and Finish buttons.</p>
+</li>
+<li><p>Include one interactive minimum-standard text area in lesson 4.</p>
+</li>
+<li><p>Call <code>onProgress(step)</code>, <code>onSkip()</code>, and <code>onComplete()</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Write failing welcome test</strong></p>
+</li>
+</ul>
+<p>Create <code>src/components/welcome/persistent-welcome.test.tsx</code>:</p>
+<pre tabindex="0"><code class="language-tsx">import { render, screen } from &quot;@testing-library/react&quot;;
+import userEvent from &quot;@testing-library/user-event&quot;;
+import { describe, expect, it, vi } from &quot;vitest&quot;;
+
+import { PersistentWelcome } from &quot;./persistent-welcome&quot;;
+
+describe(&quot;PersistentWelcome&quot;, () =&gt; {
+  it(&quot;stays visible until the user closes it&quot;, async () =&gt; {
+    const onDismiss = vi.fn();
+    const { rerender } = render(&lt;PersistentWelcome dismissed={false} onDismiss={onDismiss} /&gt;);
+
+    expect(screen.getByRole(&quot;dialog&quot;, { name: /welcome to fairplay/i })).toBeInTheDocument();
+
+    rerender(&lt;PersistentWelcome dismissed={false} onDismiss={onDismiss} /&gt;);
+    expect(screen.getByRole(&quot;dialog&quot;, { name: /welcome to fairplay/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole(&quot;button&quot;, { name: /close welcome/i }));
+
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Implement persistent welcome</strong></li>
+</ul>
+<p>Create <code>src/components/welcome/persistent-welcome.tsx</code>:</p>
+<ul>
+<li><p>Non-blocking dialog/banner shown when <code>dismissed</code> is false.</p>
+</li>
+<li><p>Close icon button is the only dismissal path.</p>
+</li>
+<li><p>Buttons link to <code>/app/crash-course</code>, <code>/app/library</code>, and <code>/app/load-map</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Wire welcome into protected layout</strong></p>
+</li>
+</ul>
+<p>Modify <code>src/app/app/layout.tsx</code>:</p>
+<ul>
+<li><p>Load current session/persona.</p>
+</li>
+<li><p>Fetch onboarding preferences.</p>
+</li>
+<li><p>Render <code>PersistentWelcome</code> on every protected route while <code>welcomeDismissedAt</code> is null.</p>
+</li>
+<li><p>Closing calls <code>PATCH /api/preferences/onboarding</code> with <code>welcomeDismissedAt</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 8: Add settings replay</strong></p>
+</li>
+</ul>
+<p>Modify <code>src/components/settings/settings-panel.tsx</code> and test:</p>
+<ul>
+<li><p>Add <code>Restart crash course</code> action.</p>
+</li>
+<li><p>Add <code>Show welcome again</code> action.</p>
+</li>
+<li><p>Wire to <code>PATCH /api/preferences/onboarding</code> and <code>POST /api/preferences/welcome/replay</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 9: Verify targeted tests pass</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/crash-course/crash-course-flow.test.tsx src/components/welcome/persistent-welcome.test.tsx src/components/settings/settings-panel.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 10: Write worker report</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-07-welcome-crash-course.md</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 11: Commit Task 7</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git add src/components/crash-course src/app/app/crash-course src/components/welcome src/app/app/layout.tsx src/components/settings/settings-panel.tsx src/components/settings/settings-panel.test.tsx docs/implementation/2026-05-04-task-07-welcome-crash-course.md
+git commit -m &quot;feat: add persistent welcome and crash course&quot;
+</code></pre>
+<p>Expected: one commit with targeted onboarding tests passing.</p>
+<h2 id="task-8-home-radar-check-in-polish">Task 8: Home, Radar, Check-In Polish</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/app/app/home/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/radar/radar-board.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/radar/radar-board.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/check-ins/check-in-flow.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/check-ins/check-in-flow.test.tsx</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-08-home-radar-checkin-polish.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing radar/check-in alignment tests</strong></p>
+</li>
+</ul>
+<p>Update <code>src/components/radar/radar-board.test.tsx</code> to assert concern-lane language:</p>
+<pre tabindex="0"><code class="language-tsx">expect(screen.getByText(/Cards of Concern/i)).toBeInTheDocument();
+expect(screen.getByRole(&quot;button&quot;, { name: /send to check-in/i })).toBeInTheDocument();
+</code></pre>
+<p>Update <code>src/components/check-ins/check-in-flow.test.tsx</code> to assert handoff/re-deal language:</p>
+<pre tabindex="0"><code class="language-tsx">expect(screen.getByText(/handoff/i)).toBeInTheDocument();
+expect(screen.getByText(/review date/i)).toBeInTheDocument();
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run tests and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/radar/radar-board.test.tsx src/components/check-ins/check-in-flow.test.tsx
+</code></pre>
+<p>Expected: FAIL because current copy/controls do not expose the new concept model.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Implement home command center</strong></li>
+</ul>
+<p>Modify <code>src/app/app/home/page.tsx</code>:</p>
+<ul>
+<li><p>Show deck progress: active, not in play, concern, trimmed.</p>
+</li>
+<li><p>Show owner counts without scorekeeping language.</p>
+</li>
+<li><p>Show open radar and next check-in.</p>
+</li>
+<li><p>Add quick links to crash course, library, and load map.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Polish radar and check-ins</strong></p>
+</li>
+</ul>
+<p>Modify <code>src/components/radar/radar-board.tsx</code> and <code>src/components/check-ins/check-in-flow.tsx</code>:</p>
+<ul>
+<li><p>Use new UI primitives.</p>
+</li>
+<li><p>Align headings and actions with Cards of Concern, standards, handoffs, review dates, and re-deals.</p>
+</li>
+<li><p>Keep existing service/API behavior.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Verify targeted tests pass</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- src/components/radar/radar-board.test.tsx src/components/check-ins/check-in-flow.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Write worker report</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-08-home-radar-checkin-polish.md</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Commit Task 8</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git add src/app/app/home/page.tsx src/components/radar/radar-board.tsx src/components/radar/radar-board.test.tsx src/components/check-ins/check-in-flow.tsx src/components/check-ins/check-in-flow.test.tsx docs/implementation/2026-05-04-task-08-home-radar-checkin-polish.md
+git commit -m &quot;feat: polish home radar and check-ins&quot;
+</code></pre>
+<p>Expected: one commit with targeted tests passing.</p>
+<h2 id="task-9-full-verification-pr-and-ordered-merge-discipline">Task 9: Full Verification, PR, and Ordered Merge Discipline</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-09-verification-pr-merge.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Run static verification</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm run lint
+npm run typecheck
+npm test
+npm run build
+</code></pre>
+<p>Expected: all PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run database verification</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm run db:up
+npm run db:wait
+npm run prisma:validate
+npm run prisma:generate
+npm run prisma:seed
+</code></pre>
+<p>Expected: database starts, Prisma validates/generates, seed writes 100 source templates.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Run browser verification</strong></li>
+</ul>
+<p>Start the dev server:</p>
+<pre tabindex="0"><code class="language-bash">npm run dev
+</code></pre>
+<p>Verify in browser:</p>
+<ul>
+<li><p><code>/app/home</code> loads command center.</p>
+</li>
+<li><p><code>/app/library</code> shows source card library.</p>
+</li>
+<li><p><code>/app/load-map</code> shows the Trello-style lanes.</p>
+</li>
+<li><p>Welcome persists across route navigation until close.</p>
+</li>
+<li><p>Crash course can be skipped and restarted from Settings.</p>
+</li>
+<li><p>A card can be moved from <code>Not in Play</code> to <code>Cards of Concern</code> and then to <code>Player 1</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Write verification report</strong></p>
+</li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-09-verification-pr-merge.md</code>:</p>
+<pre tabindex="0"><code class="language-markdown"># Task 9: Verification, PR, and Merge
+
+## Expectations
+
+- Verify the personal-use redesign branch end to end.
+- Push the implementation branch.
+- Open a PR.
+- Merge only after checks pass and dependency order is satisfied.
+
+## Outputs
+
+- Static verification results.
+- Database verification results.
+- Browser verification notes.
+- PR URL.
+- Merge/sync status.
+
+## Challenges
+
+- &lt;Record any failures and fixes, or &quot;None&quot;.&gt;
+
+## Next Handoff
+
+- After final merge, update local main and confirm local main equals origin/main.
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Commit verification docs</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git add docs/implementation/2026-05-04-task-09-verification-pr-merge.md
+git commit -m &quot;docs: add redesign verification report&quot;
+</code></pre>
+<p>Expected: final documentation commit.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Push branch and open PR</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git push -u origin codex/personal-use-redesign
+gh pr create --title &quot;Personal-use Fairplay redesign foundation&quot; --body-file docs/implementation/2026-05-04-task-09-verification-pr-merge.md
+</code></pre>
+<p>Expected: GitHub PR URL returned.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Merge and sync only when checks pass</strong></li>
+</ul>
+<p>Run after checks pass:</p>
+<pre tabindex="0"><code class="language-bash">gh pr merge --squash --delete-branch
+git switch main
+git pull --ff-only origin main
+git rev-parse main
+git rev-parse origin/main
+</code></pre>
+<p>Expected: the final two SHAs are identical.</p>
+<h2 id="self-review-checklist">Self-Review Checklist</h2>
+<ul>
+<li>Spec coverage:<ul>
+<li>Full source card library: Task 1.</li>
+<li>Board lane/sort/event model: Tasks 2 and 3.</li>
+<li>Premium app chrome and visual system: Task 4.</li>
+<li>Library and rich card detail: Task 5.</li>
+<li>Trello-style drag/drop board: Task 6.</li>
+<li>Persistent welcome and crash course: Task 7.</li>
+<li>Radar/check-in polish: Task 8.</li>
+<li>GitHub PR, merge, local/GitHub main sync: Task 9.</li>
+</ul>
+</li>
+<li>Placeholder scan:<ul>
+<li>No unassigned implementation placeholders remain. The source-card seed step intentionally requires live Trello/workbook data because the worker must transcribe the complete private source dataset.</li>
+</ul>
+</li>
+<li>Type consistency:<ul>
+<li><code>ResponsibilityBoardLane</code> values match the spec enum and Trello list structure.</li>
+<li><code>CardTemplateDetail</code> CPE fields match Prisma template fields.</li>
+<li>Preference names match API route and Prisma model names.</li>
+</ul>
+</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

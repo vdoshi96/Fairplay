@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-08-library-card-practice-polish.md">
+  <meta name="fairplay-document-source-sha256" content="cc0b298bc7692d8a48854fe6610c41250926530e23cf66c3e35b850ad9da0352">
+  <title>docs/implementation/2026-05-08-library-card-practice-polish.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-08-library-card-practice-polish.md"><code>docs/implementation/2026-05-08-library-card-practice-polish.md</code></a></p>
+    <article>
+<h1 id="library-and-card-practice-polish">Library And Card Practice Polish</h1>
+<p>Date: 2026-05-08
+Branch: <code>codex/library-card-practice-polish</code></p>
+<h2 id="what-changed">What Changed</h2>
+<ul>
+<li>Increased Library shelf background visibility and reused the shared page wash.</li>
+<li>Shortened Library labels, count text, Greg button copy, and source-card action text.</li>
+<li>Added stronger card containment for long titles and summaries using fixed rows, clamps, and anywhere wrapping.</li>
+<li>Replaced the card detail sheet&#39;s six move buttons with one destination select and a single <code>Move</code> action.</li>
+<li>Reworked the Library practice workflow around plain field names:<ul>
+<li><code>Practice card request</code>: what the card should cover.</li>
+<li><code>Title</code>: the card name.</li>
+<li><code>Summary</code>: what done should mean.</li>
+<li><code>Purpose</code>, <code>Notice</code>, <code>Plan</code>, <code>Do</code>, <code>Minimum</code>: concise draft preview sections.</li>
+</ul>
+</li>
+<li>Renamed AI draft review fields from implementation terms to user terms:<ul>
+<li><code>Area tags</code> instead of area keys.</li>
+<li><code>Work type tags</code> instead of hidden effort keys.</li>
+<li><code>Rhythm</code> instead of cadence.</li>
+</ul>
+</li>
+</ul>
+<h2 id="why">Why</h2>
+<p>The Library page was doing too much visually and textually. This pass keeps the same capabilities while making cards easier to scan, move actions easier to use, and practice copy easier for first-time users to understand.</p>
+<h2 id="design-decisions">Design Decisions</h2>
+<ul>
+<li>Source-card buttons keep specific accessible names such as <code>Put Auto in play</code>, but visible button text is shortened to <code>Put in play</code>.</li>
+<li>The card detail move action remains explicit: users choose a destination and then confirm with <code>Move</code>.</li>
+<li>Practice language no longer leads with &quot;dummy&quot;; it explains that the workflow is temporary and does not create real household cards.</li>
+<li>Comma-separated internal fields remain compatible with the existing API payload, but the UI no longer exposes implementation wording.</li>
+</ul>
+<h2 id="qa">QA</h2>
+<ul>
+<li><code>npm test -- src/components/library/card-library.test.tsx src/components/cards/card-detail-sheet.test.tsx src/components/library/ai-task-manager.test.tsx src/components/guide/guide-content.test.ts --run</code></li>
+</ul>
+<h2 id="remaining-risks">Remaining Risks</h2>
+<ul>
+<li>Full browser responsive QA is deferred to the final responsive pass after Check-ins and Crash Course changes land.</li>
+<li>Very large label sets may eventually need a compact label menu, but the current fixed label vocabulary still wraps cleanly.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

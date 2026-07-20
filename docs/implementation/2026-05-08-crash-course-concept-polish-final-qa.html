@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-08-crash-course-concept-polish-final-qa.md">
+  <meta name="fairplay-document-source-sha256" content="6db45f5914caafe05c9b8751ef509c8ee44873fec2ea3324a7ca002fcd4b936f">
+  <title>docs/implementation/2026-05-08-crash-course-concept-polish-final-qa.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-08-crash-course-concept-polish-final-qa.md"><code>docs/implementation/2026-05-08-crash-course-concept-polish-final-qa.md</code></a></p>
+    <article>
+<h1 id="crash-course-concept-polish-and-final-qa">Crash Course Concept Polish And Final QA</h1>
+<p>Date: 2026-05-08
+Branch: <code>codex/crash-course-concepts-final-qa</code></p>
+<h2 id="what-changed">What Changed</h2>
+<ul>
+<li>Rewrote the 14-frame Crash Course into shorter concept-first lessons.</li>
+<li>Kept app navigation out of the book-concept frames; the Library, Load Map, and Check-ins recommendations now appear only in the final learning path.</li>
+<li>Replaced the floating course-title treatment with an integrated page header and a stronger shared background wash.</li>
+<li>Reworked lesson text into compact <code>Idea</code> and <code>Try</code> panels for faster scanning.</li>
+<li>Shortened the completion splash and updated the final Check-ins recommendation to match the lightweight scheduling/record flow.</li>
+<li>Renamed the Library page header from <code>Source deck</code> to <code>Library</code> during final copy QA.</li>
+<li>Updated visual QA specs to match the merged Home, Library, Load Map, Check-ins, Settings, and Crash Course headings.</li>
+</ul>
+<h2 id="why">Why</h2>
+<p>The Crash Course was visually disconnected from the rest of the app and mixed conceptual learning with app instructions too often. This pass keeps the generated story assets, but makes the course read like a concise primer first and a workflow recommendation second.</p>
+<h2 id="design-decisions">Design Decisions</h2>
+<ul>
+<li>Used cleared paraphrased research docs under <code>docs/research/</code>; no private <code>References/</code> files were opened.</li>
+<li>Preserved all 14 generated storyboard scenes so existing visual assets remain useful.</li>
+<li>Kept source-specific terminology limited and source-safe; user-facing copy avoids exact branded ritual names and long book-report phrasing.</li>
+<li>Kept the safety note brief and non-prescriptive: unsafe or coercive topics should not be handled by a household workflow as the fix.</li>
+<li>Left the final recommended path intentionally short: choose one card, assign/review it, then schedule and record a check-in.</li>
+</ul>
+<h2 id="qa">QA</h2>
+<ul>
+<li><code>npm test -- src/components/crash-course/crash-course-flow.test.tsx src/components/crash-course/crash-course-page-client.test.tsx --run</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm test -- --run</code></li>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run build</code></li>
+<li><code>npx playwright test e2e/corrective-responsive-visual.spec.ts --project=chromium</code></li>
+<li><code>npx playwright test e2e/dark-mode-visual.spec.ts e2e/guided-learning.spec.ts --project=chromium</code></li>
+<li><code>npx playwright test e2e/guided-learning.spec.ts --project=chromium</code></li>
+</ul>
+<p>Results:</p>
+<ul>
+<li>Focused Crash Course tests: 2 files, 12 tests passed.</li>
+<li>Full Vitest: 86 files, 498 tests passed.</li>
+<li>Responsive visual QA: 2 Playwright tests passed after increasing the Crash Course desktop right reserve so Little Alex no longer overlaps lesson tabs.</li>
+<li>Dark-mode visual QA: passed after updating the stale Load Map assertion to the current <code>Owners</code> signal.</li>
+<li>Guided learning QA: passed after updating stale Library practice expectations to the current practice workflow labels.</li>
+</ul>
+<h2 id="remaining-risks">Remaining Risks</h2>
+<ul>
+<li>Final PR merge verification is still pending.</li>
+<li>Crash Course images were preserved rather than regenerated; future asset work should only use approved source-safe prompts and generated art.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

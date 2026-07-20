@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-05-visual-polish-learning-implementation.md">
+  <meta name="fairplay-document-source-sha256" content="c53abe49c7a1e60bd65ed715a241c05902188d69c965f31c7bfab8112415afad">
+  <title>docs/superpowers/plans/2026-05-05-visual-polish-learning-implementation.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-05-visual-polish-learning-implementation.md"><code>docs/superpowers/plans/2026-05-05-visual-polish-learning-implementation.md</code></a></p>
+    <article>
+<h1 id="visual-polish-learning-implementation-plan">Visual Polish Learning Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Polish the learning visuals by removing <code>App Guide 101</code>, making crash-course art immersive, replacing the thin login illustration with a richer scene, and varying helper characters across guide entry points.</p>
+<p><strong>Architecture:</strong> Keep visuals local and code-owned using React, SVG, and Tailwind. Split by component ownership so subagents can work in parallel without touching the same files. The controller integrates tests, browser checks, PR, and merge.</p>
+<p><strong>Tech Stack:</strong> Next.js App Router, React, TypeScript, Tailwind CSS, Vitest/Testing Library, Playwright.</p>
+<hr>
+<h2 id="file-ownership-map">File Ownership Map</h2>
+<ul>
+<li>Crash course immersive stage:<ul>
+<li>Modify <code>src/components/crash-course/crash-course-flow.tsx</code></li>
+<li>Modify <code>src/components/crash-course/crash-course-flow.test.tsx</code></li>
+<li>Modify <code>src/components/crash-course/crash-course-scene.tsx</code></li>
+<li>Modify <code>src/components/crash-course/crash-course-scene.test.tsx</code></li>
+<li>Create <code>docs/implementation/2026-05-05-task-21-crash-course-immersive.md</code></li>
+</ul>
+</li>
+<li>Login splash upgrade:<ul>
+<li>Modify <code>src/components/auth/login-splash-illustration.tsx</code></li>
+<li>Modify <code>src/components/auth/login-splash-illustration.test.tsx</code></li>
+<li>Modify <code>src/components/auth/auth-forms.test.tsx</code></li>
+<li>Modify <code>src/app/globals.css</code></li>
+<li>Create <code>docs/implementation/2026-05-05-task-22-login-splash-polish.md</code></li>
+</ul>
+</li>
+<li>Learning copy and guide helper variation:<ul>
+<li>Modify <code>src/app/app/home/page.tsx</code></li>
+<li>Modify <code>src/components/welcome/persistent-welcome.tsx</code></li>
+<li>Modify <code>src/components/welcome/persistent-welcome.test.tsx</code></li>
+<li>Modify <code>src/components/settings/settings-panel.tsx</code></li>
+<li>Modify <code>src/components/settings/settings-panel.test.tsx</code></li>
+<li>Modify <code>src/components/app-shell/app-shell.test.tsx</code></li>
+<li>Modify <code>src/components/guide/feature-guide-launcher.tsx</code></li>
+<li>Modify <code>src/components/guide/feature-guide-launcher.test.tsx</code></li>
+<li>Create <code>src/components/guide/feature-guide-helper.tsx</code></li>
+<li>Create <code>src/components/guide/feature-guide-helper.test.tsx</code></li>
+<li>Modify <code>e2e/guided-learning.spec.ts</code></li>
+<li>Create <code>docs/implementation/2026-05-05-task-23-learning-copy-guide-helpers.md</code></li>
+</ul>
+</li>
+<li>Controller verification:<ul>
+<li>Create <code>docs/implementation/2026-05-05-task-24-visual-polish-verification.md</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="task-21-crash-course-immersive-stage">Task 21: Crash Course Immersive Stage</h2>
+<p><strong>Files:</strong> crash-course flow, scene, tests, report.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests asserting the crash course renders an immersive stage, the scene has a large background role image, and the owner/helper scene includes distinct large characters/props.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run <code>npx vitest run src/components/crash-course/crash-course-scene.test.tsx src/components/crash-course/crash-course-flow.test.tsx</code> and verify the tests fail for missing immersive classes/scene details.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Update <code>CrashCourseFlow</code> so the course is a full-viewport lesson stage with the scene behind the text panel.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Replace repeated mini scene artwork in <code>CrashCourseScene</code> with lesson-specific compositions and larger character groups.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run the focused crash-course tests and lint for owned files.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Write <code>docs/implementation/2026-05-05-task-21-crash-course-immersive.md</code>.</li>
+</ul>
+<h2 id="task-22-login-splash-polish">Task 22: Login Splash Polish</h2>
+<p><strong>Files:</strong> login splash, auth tests, global motion CSS, report.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests asserting the login scene includes a richer garden/home background, large character group, floating cards, and existing accessible image label.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run <code>npx vitest run src/components/auth/login-splash-illustration.test.tsx src/components/auth/auth-forms.test.tsx</code> and verify the tests fail for missing richer scene elements.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Rebuild <code>LoginSplashIllustration</code> as a denser illustrated scene with large characters, garden path, house, sky/nature layers, and floating cards.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Add only minimal CSS keyframes needed for subtle local motion and reduced-motion coverage.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run the focused auth tests and lint for owned files.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Write <code>docs/implementation/2026-05-05-task-22-login-splash-polish.md</code>.</li>
+</ul>
+<h2 id="task-23-learning-copy-and-guide-helper-variation">Task 23: Learning Copy and Guide Helper Variation</h2>
+<p><strong>Files:</strong> Home, welcome, settings, guide launcher/helper, tests, e2e, report.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing tests asserting <code>App Guide 101</code> is absent, Home uses <code>Learn a feature</code>, welcome links to <code>Learn a feature</code>, settings uses plain replay language, and guide helpers vary by feature.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused tests:<ul>
+<li><code>npx vitest run src/components/app-shell/app-shell.test.tsx src/components/welcome/persistent-welcome.test.tsx src/components/settings/settings-panel.test.tsx src/components/guide/feature-guide-launcher.test.tsx</code></li>
+<li>Expected failure before implementation.</li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Create <code>FeatureGuideHelper</code> that renders feature-specific helper scenelets for load map, library, radar, check-ins, and settings.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Use <code>FeatureGuideHelper</code> in the launcher and Home feature cards instead of the same helper mascot.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Rename Home section/link IDs from <code>app-guide-101</code> to <code>learn-a-feature</code>.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Remove <code>Open App Guide 101</code> copy from welcome, settings, and e2e.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused tests and lint for owned files.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Write <code>docs/implementation/2026-05-05-task-23-learning-copy-guide-helpers.md</code>.</li>
+</ul>
+<h2 id="task-24-controller-integration-and-pr">Task 24: Controller Integration and PR</h2>
+<p><strong>Files:</strong> verification report only unless tests reveal an integration issue.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Review each worker diff for spec compliance and code quality.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Commit each task slice separately.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run:<ul>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npx vitest run</code></li>
+<li><code>DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npm run build</code></li>
+<li><code>DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npm run test:e2e</code></li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Write <code>docs/implementation/2026-05-05-task-24-visual-polish-verification.md</code>.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Push, open PR, wait for Vercel, merge, and align local <code>main</code> with GitHub <code>main</code>.</li>
+</ul>
+<h2 id="self-review">Self-Review</h2>
+<ul>
+<li>Spec coverage: all user requests map to tasks 21-24.</li>
+<li>Placeholder scan: no <code>TBD</code> or unspecified implementation-only tasks remain.</li>
+<li>Type consistency: guide IDs stay <code>loadMap</code>, <code>library</code>, <code>radar</code>, <code>checkIns</code>, <code>settings</code>; the public guide query API does not change.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

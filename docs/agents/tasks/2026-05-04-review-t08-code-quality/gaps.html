@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t08-code-quality/gaps.md">
+  <meta name="fairplay-document-source-sha256" content="6e4408da60135947d2a893560d621e3e86195beb0fae3efdbd9527b9f9ff4bfa">
+  <title>docs/agents/tasks/2026-05-04-review-t08-code-quality/gaps.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="gaps.md"><code>docs/agents/tasks/2026-05-04-review-t08-code-quality/gaps.md</code></a></p>
+    <article>
+<h1 id="gaps">Gaps</h1>
+<h2 id="findings">Findings</h2>
+<h3 id="p1-decision-side-effects-can-target-unrelated-responsibilities-and-are-not-tied-to-the-check-in-item">P1: Decision side effects can target unrelated responsibilities and are not tied to the check-in item</h3>
+<p><code>src/server/check-ins/service.ts:385</code> validates that the <code>itemId</code> exists in the check-in, but <code>src/server/check-ins/service.ts:405</code> applies <code>input.responsibilityId</code> and <code>input.responsibilityEffect</code> without proving that the responsibility is the item&#39;s responsibility or a related responsibility from the item&#39;s radar topic. A client can post a decision for one agenda item while mutating any other household responsibility id that downstream responsibility services accept. This violates the &quot;related responsibility&quot; boundary and makes summaries and responsibility history diverge from what was actually discussed.</p>
+<p>Required fix: validate the decision&#39;s responsibility id against the current item relationship before creating the decision or applying effects. Reject mismatched responsibility ids, and add service/API tests for radar item linked responsibility, responsibility agenda item, custom item without responsibility, and mismatched household-local responsibility id.</p>
+<h3 id="p1-recording-a-decision-is-not-transactionally-safe-and-can-leave-orphan-or-misleading-check-in-state">P1: Recording a decision is not transactionally safe and can leave orphan or misleading check-in state</h3>
+<p><code>src/server/check-ins/service.ts:390</code> creates the decision, <code>src/server/check-ins/service.ts:398</code> marks the item discussed, then <code>src/server/check-ins/service.ts:405</code> and <code>src/server/check-ins/service.ts:413</code> apply responsibility/radar side effects in later awaits. If the item update or either side effect fails, the check-in can retain a decision that appears in completion summaries while the item or related domain object did not reach the matching state. The service also does not reject completed check-ins or already-discussed items before creating another decision.</p>
+<p>Required fix: make decision creation plus item state/decision linkage atomic, validate active check-in and item state before mutation, prevent or make idempotent duplicate decisions for a single item, and define how side-effect failures are handled without producing a persisted summary that claims more than was applied. Add tests that force each failure point.</p>
+<h3 id="p2-active-check-in-mutations-fail-silently-in-the-ui-and-can-be-submitted-repeatedly">P2: Active check-in mutations fail silently in the UI and can be submitted repeatedly</h3>
+<p><code>src/components/check-ins/check-in-flow.tsx:86</code>, <code>src/components/check-ins/check-in-flow.tsx:114</code>, and <code>src/components/check-ins/check-in-flow.tsx:171</code> await mutations without catch blocks, visible error state, focus movement, or pending-state disabled controls. Failed skip/defer/decision/complete requests leave keyboard and screen-reader users without an announced error, and rapid repeated clicks can submit duplicate decisions or completion requests.</p>
+<p>Required fix: add per-action pending/error handling with <code>role=&quot;alert&quot;</code> or equivalent announced errors, focus restoration/movement to the error or failed control, disabled pending controls, and tests proving user input is preserved on failed decision save.</p>
+<h2 id="test-coverage-gaps">Test Coverage Gaps</h2>
+<ul>
+<li>No test covers mismatched <code>responsibilityId</code> versus the current agenda item.</li>
+<li>No test covers partial failure between decision create, item discussed update, responsibility effect, and radar effect.</li>
+<li>No test covers decision attempts on completed check-ins or already-discussed items.</li>
+<li>No production e2e covers the real check-in component/API flow; the current check-in e2e is intentionally route-mocked.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

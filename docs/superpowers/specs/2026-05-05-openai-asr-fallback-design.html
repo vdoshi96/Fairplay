@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/specs/2026-05-05-openai-asr-fallback-design.md">
+  <meta name="fairplay-document-source-sha256" content="d350840a7b02b82fa783a733c7a9915955c7eaf8adda8af3b5ed7109764bb7ac">
+  <title>docs/superpowers/specs/2026-05-05-openai-asr-fallback-design.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-05-openai-asr-fallback-design.md"><code>docs/superpowers/specs/2026-05-05-openai-asr-fallback-design.md</code></a></p>
+    <article>
+<h1 id="openai-asr-fallback-design">OpenAI ASR Fallback Design</h1>
+<h2 id="summary">Summary</h2>
+<p>AI Task Manager keeps Qwen ASR as the primary transcription provider. When Qwen ASR fails and <code>AI_PROVIDER_FALLBACK_ENABLED=true</code>, the server retries transcription with OpenAI before continuing the existing task-to-card generation pipeline.</p>
+<h2 id="goals">Goals</h2>
+<ul>
+<li>Preserve Qwen-first audio transcription for normal voice capture.</li>
+<li>Fall back to OpenAI speech-to-text only after Qwen ASR throws or returns unusable text.</li>
+<li>Use separate ASR fallback configuration: <code>OPENAI_ASR_MODEL</code> and <code>OPENAI_ASR_API_KEY</code>.</li>
+<li>Keep text and image fallback behavior unchanged.</li>
+<li>Preserve current draft tracker stages: audio drafts still show <code>transcribing</code>, then <code>structuring</code>, then image stages.</li>
+<li>Keep raw audio retention/deletion unchanged.</li>
+<li>Send short user-provided context text as an OpenAI transcription prompt when present.</li>
+</ul>
+<h2 id="non-goals">Non-Goals</h2>
+<ul>
+<li>No diarization.</li>
+<li>No audio translation endpoint.</li>
+<li>No client-side provider selection.</li>
+<li>No OpenAI ASR call when Qwen ASR succeeds.</li>
+<li>No durable storage of OpenAI provider responses beyond the saved transcript.</li>
+</ul>
+<h2 id="environment">Environment</h2>
+<p>Required when fallback is enabled:</p>
+<ul>
+<li><code>AI_PROVIDER_FALLBACK_ENABLED=true</code></li>
+<li><code>OPENAI_BASE_URL=https://api.openai.com/v1</code></li>
+<li><code>OPENAI_ASR_MODEL=gpt-4o-mini-transcribe</code></li>
+<li><code>OPENAI_ASR_API_KEY</code></li>
+<li><code>OPENAI_TEXT_MODEL</code></li>
+<li><code>OPENAI_TEXT_API_KEY</code></li>
+<li><code>OPENAI_IMAGE_MODEL</code></li>
+<li><code>OPENAI_IMAGE_API_KEY</code></li>
+</ul>
+<p>The ASR key may be the same physical OpenAI key as the text key, but the app reads it separately so usage and rotation can be split.</p>
+<h2 id="provider-flow">Provider Flow</h2>
+<ol>
+<li>The AI draft service calls the provider-neutral <code>transcribeAudio</code>.</li>
+<li>The neutral generator calls Qwen ASR first.</li>
+<li>If Qwen succeeds with non-empty text, return the Qwen transcript.</li>
+<li>If Qwen fails, resolve OpenAI fallback config.</li>
+<li>If fallback is disabled, rethrow the Qwen error and fail the draft through the existing service path.</li>
+<li>If fallback is enabled, call <code>POST /audio/transcriptions</code> with multipart form data:<ul>
+<li><code>file</code>: the recorded audio bytes.</li>
+<li><code>model</code>: <code>OPENAI_ASR_MODEL</code>.</li>
+<li><code>response_format</code>: <code>json</code>.</li>
+<li><code>prompt</code>: short household task context when provided.</li>
+</ul>
+</li>
+<li>Require a non-empty <code>text</code> field in the OpenAI response.</li>
+<li>Continue with the existing structuring and image generation flow using the returned transcript.</li>
+</ol>
+<h2 id="failure-semantics">Failure Semantics</h2>
+<ul>
+<li>Qwen ASR success: no OpenAI ASR call.</li>
+<li>Qwen ASR failure plus fallback disabled: original Qwen error fails the draft.</li>
+<li>Qwen ASR failure plus missing ASR fallback config: OpenAI config error fails the draft, making deployment issues visible.</li>
+<li>Qwen ASR failure plus OpenAI ASR failure: OpenAI error fails the draft.</li>
+<li>Later structuring or image failures continue to use the already-merged fallback behavior.</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<ul>
+<li>Config tests require ASR vars when fallback is enabled.</li>
+<li>OpenAI ASR client tests verify multipart request shape, model, prompt, auth key, and transcript parsing.</li>
+<li>Provider-neutral wrapper tests prove Qwen-first behavior, OpenAI ASR fallback on Qwen failure, and disabled fallback rethrow.</li>
+<li>Existing AI draft service audio tests continue to pass through dependency injection.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

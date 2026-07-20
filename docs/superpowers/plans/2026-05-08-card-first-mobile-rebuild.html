@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-08-card-first-mobile-rebuild.md">
+  <meta name="fairplay-document-source-sha256" content="6a84faa6f40a9fa07a56b5b58cf915bd3086507b74f9aa7e5847bf52723ceb24">
+  <title>docs/superpowers/plans/2026-05-08-card-first-mobile-rebuild.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-08-card-first-mobile-rebuild.md"><code>docs/superpowers/plans/2026-05-08-card-first-mobile-rebuild.md</code></a></p>
+    <article>
+<h1 id="card-first-mobile-rebuild-implementation-plan">Card-First Mobile Rebuild Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Rebuild Fairplay as a mobile-first responsibility-card app centered on swipe distribution, card ownership, a bucketed board, and Ask Greg.</p>
+<p><strong>Architecture:</strong> Keep the Next.js App Router, Prisma schema, and existing API/repository boundaries. Add a card-state adapter over stable persisted lane keys, then replace visible IA and routes with card-first pages. Keep legacy routes as redirects where that preserves compatibility.</p>
+<p><strong>Tech Stack:</strong> Next.js App Router 15, React 19, TypeScript, Tailwind CSS, Prisma/Postgres, Vitest/RTL, Playwright.</p>
+<hr>
+<h2 data-source-heading-level="3" id="task-1-card-state-adapter">Task 1: Card State Adapter</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/components/cards/card-state.ts</code></p>
+</li>
+<li><p>Test: <code>src/components/cards/card-state.test.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add a failing test that <code>cards_of_concern</code> maps to <code>unassigned</code>, <code>player_1</code> maps to <code>alex</code>, <code>player_2</code> maps to <code>max</code>, <code>not_in_play</code> maps to <code>savedForLater</code>, and <code>trimmed</code> maps to <code>notApplicable</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add a failing test that the deck only contains <code>unassigned</code> cards.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement the adapter with stable product labels, actions, and lane mapping.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run <code>npm test -- src/components/cards/card-state.test.ts --run</code>.</p>
+</li>
+</ul>
+<h2 data-source-heading-level="3" id="task-2-card-workspace-ui">Task 2: Card Workspace UI</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/components/cards/card-workspace.tsx</code></p>
+</li>
+<li><p>Test: <code>src/components/cards/card-workspace.test.tsx</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add failing tests for the Distribute empty state, fallback buttons, arrow-key distribution, Your Cards filtering, and Board bucket headings.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement a focused mobile-first client component with <code>view=&quot;distribute&quot; | &quot;yourCards&quot; | &quot;board&quot;</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add pointer gesture handling with axis thresholding and reduced-motion-safe transitions.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run <code>npm test -- src/components/cards/card-workspace.test.tsx --run</code>.</p>
+</li>
+</ul>
+<h2 data-source-heading-level="3" id="task-3-app-routes-and-actions">Task 3: App Routes And Actions</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/server/responsibilities/card-distribution.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/app/your-cards/page.tsx</code></p>
+</li>
+<li><p>Create: <code>src/app/app/distribute/page.tsx</code></p>
+</li>
+<li><p>Create: <code>src/app/app/board/page.tsx</code></p>
+</li>
+<li><p>Create: <code>src/app/app/ask-greg/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/app/home/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/app/load-map/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/auth/login-page-client.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/auth/choose-persona-client.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/onboarding/onboarding-page-client.tsx</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Route root, login next, choose-persona fallback, and onboarding skip to <code>/app/distribute</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Replace Home and Load Map pages with redirects.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Load responsibility overview on each card route.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add server action wrappers that distribute cards, revalidate card routes, and preserve stable lane keys.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run targeted route/component tests.</p>
+</li>
+</ul>
+<h2 data-source-heading-level="3" id="task-4-app-shell-navigation">Task 4: App Shell Navigation</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/app-shell/app-shell.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/app-shell/page-shell.tsx</code></p>
+</li>
+<li><p>Test: <code>src/components/app-shell/app-shell.test.tsx</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Replace six primary nav items with Your Cards, Distribute, Board, and Ask Greg.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Move Check in, Theory, Settings, and Card Library behind a safe overflow menu.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Remove homepage background routing.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Keep mobile bottom tabs safe-area-aware and desktop shell compact.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run <code>npm test -- src/components/app-shell/app-shell.test.tsx --run</code>.</p>
+</li>
+</ul>
+<h2 data-source-heading-level="3" id="task-5-pwa-and-mobile-polish">Task 5: PWA And Mobile Polish</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/app/layout.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/manifest.ts</code></p>
+</li>
+<li><p>Modify: <code>src/app/icon.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/apple-icon.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/globals.css</code></p>
+</li>
+<li><p>Add if needed: <code>public/sw.js</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add <code>viewport-fit=cover</code> through Next viewport metadata.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Update manifest <code>start_url</code>, icon purposes, and mobile theme colors.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Ensure safe-area CSS variables drive bottom nav and content padding.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Keep service worker minimal and avoid caching household data.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Verify no horizontal overflow at phone widths.</p>
+</li>
+</ul>
+<h2 data-source-heading-level="3" id="task-6-documentation-and-qa">Task 6: Documentation And QA</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>docs/context/STATUS.md</code></p>
+</li>
+<li><p>Modify: <code>docs/context/PROJECT.md</code></p>
+</li>
+<li><p>Modify: <code>docs/context/DECISIONS.md</code></p>
+</li>
+<li><p>Modify: <code>docs/wiki/index.md</code></p>
+</li>
+<li><p>Modify: <code>docs/wiki/architecture.md</code></p>
+</li>
+<li><p>Modify: <code>docs/wiki/file-map.md</code></p>
+</li>
+<li><p>Modify: <code>e2e/corrective-responsive-visual.spec.ts</code></p>
+</li>
+<li><p>Modify: <code>e2e/dark-mode-visual.spec.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Update durable memory to describe card-first IA.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Refresh responsive smoke pages and headings.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run <code>npm run lint</code>, <code>npm run typecheck</code>, <code>npm test -- --run</code>, <code>npm run prisma:validate</code>, <code>npm run build</code>, and targeted Playwright mobile checks.</p>
+</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

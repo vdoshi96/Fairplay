@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t10-code-quality/work-log.md">
+  <meta name="fairplay-document-source-sha256" content="04477ff66eb78872301cdbb0e7d29ca434636ac8467f70e8d77f24e17420c414">
+  <title>docs/agents/tasks/2026-05-04-review-t10-code-quality/work-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="work-log.md"><code>docs/agents/tasks/2026-05-04-review-t10-code-quality/work-log.md</code></a></p>
+    <article>
+<h1 id="work-log">Work Log</h1>
+<h2 id="2026-05-04">2026-05-04</h2>
+<ul>
+<li>Confirmed <code>git status --short</code> was clean before review work.</li>
+<li>Inspected T10 commit <code>8bb54ebcee197deca585c67862b56973f4277f54</code>, changed file list, and the current branch context.</li>
+<li>Reviewed <code>README.md</code>, <code>.env.example</code>, <code>docs/deployment/local-development.md</code>, and <code>docs/deployment/vercel.md</code> with line numbers.</li>
+<li>Compared all documented <code>npm run ...</code> commands in README and deployment docs against <code>package.json</code> scripts.</li>
+<li>Checked documented external commands: <code>npm install</code>, <code>npm test -- --run</code>, <code>cp .env.example .env.local</code>, <code>npx prisma migrate deploy</code>, <code>vercel env pull</code>, <code>vercel deploy</code>, and <code>vercel deploy --prod</code>.</li>
+<li>Cross-checked Vercel default Next.js build behavior against official Vercel documentation.</li>
+<li>Ran required verification commands:<ul>
+<li><code>git status --short</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run build</code></li>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run test:e2e</code></li>
+<li><code>npm test -- --run</code></li>
+<li><code>git diff --check</code></li>
+<li>command/script consistency check</li>
+<li>secret scan over <code>README.md</code>, <code>.env.example</code>, and <code>docs/deployment</code></li>
+</ul>
+</li>
+<li>Ran <code>docker info --format &#39;{{.ServerVersion}}&#39;</code> to confirm the expected Docker/Postgres limitation context.</li>
+<li>Created this review artifact directory and updated the agent manifest/controller log.</li>
+</ul>
+<h2 id="verification-results">Verification Results</h2>
+<ul>
+<li><code>git status --short</code>: clean before review artifacts.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm run build</code>: passed; reproduced existing Next.js warning: <code>Using edge runtime on a page currently disables static generation for that page</code>.</li>
+<li><code>npm run prisma:validate</code>: passed; Prisma schema valid.</li>
+<li><code>npm run test:e2e</code>: passed, 10/10 Playwright tests, with existing <code>NO_COLOR</code>/<code>FORCE_COLOR</code> warnings.</li>
+<li><code>npm test -- --run</code>: failed as expected due unavailable local Postgres. Exact core error repeated across <code>src/server/repositories/persistence.integration.test.ts</code>: <code>Can&#39;t reach database server at localhost:5432</code>. Summary: 1 failed file / 52 passed files, 13 failed tests / 199 passed tests.</li>
+<li><code>git diff --check</code>: passed.</li>
+<li><code>docker info --format &#39;{{.ServerVersion}}&#39;</code>: failed with <code>zsh:1: command not found: docker</code>.</li>
+<li>Command/script consistency: documented npm scripts were <code>build</code>, <code>db:down</code>, <code>db:up</code>, <code>db:wait</code>, <code>dev</code>, <code>lint</code>, <code>prisma:generate</code>, <code>prisma:migrate</code>, <code>prisma:seed</code>, <code>prisma:validate</code>, <code>test:e2e</code>, and <code>typecheck</code>; missing scripts: none.</li>
+<li>Secret scan: matched only placeholders and safety prose, including <code>postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public</code> and <code>SESSION_SECRET=&quot;replace-with-at-least-32-random-bytes&quot;</code>; no real secret material found.</li>
+</ul>
+<h2 id="files-reviewed">Files Reviewed</h2>
+<ul>
+<li><code>README.md</code></li>
+<li><code>.env.example</code></li>
+<li><code>docs/deployment/local-development.md</code></li>
+<li><code>docs/deployment/vercel.md</code></li>
+<li><code>package.json</code></li>
+<li><code>docs/agents/tasks/2026-05-04-implementation-t10-deployment-docs/*</code></li>
+</ul>
+<h2 id="sources">Sources</h2>
+<ul>
+<li>Official Vercel build settings documentation: <a href="https://vercel.com/docs/deployments/configure-a-build">https://vercel.com/docs/deployments/configure-a-build</a></li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

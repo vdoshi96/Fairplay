@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-corrective-pass-integration/final-implementation-report.md">
+  <meta name="fairplay-document-source-sha256" content="1551e083e4d4bbd832c83d782975c5afde87860fd7e77b9ee3bee456db1ad0be">
+  <title>docs/agents/tasks/2026-05-07-corrective-pass-integration/final-implementation-report.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="final-implementation-report.md"><code>docs/agents/tasks/2026-05-07-corrective-pass-integration/final-implementation-report.md</code></a></p>
+    <article>
+<h1 id="final-implementation-report">Final Implementation Report</h1>
+<h2 id="summary">Summary</h2>
+<p>This corrective pass moved the prior UI fixes from page-local patches into shared layout behavior. The integration branch merged four isolated workstreams:</p>
+<ul>
+<li><code>codex/layout-background-corrective</code></li>
+<li><code>codex/load-map-dashboard-corrective</code></li>
+<li><code>codex/crash-content-labels-corrective</code></li>
+<li><code>codex/text-only-card-generation</code></li>
+</ul>
+<p>The final integration branch is <code>codex/fairplay-corrective-pass-integration</code>.</p>
+<h2 id="what-changed">What Changed</h2>
+<h3 id="shared-responsive-layout-and-backgrounds">Shared Responsive Layout And Backgrounds</h3>
+<ul>
+<li>Added reusable page-level background treatment through the protected app shell and page shell.</li>
+<li>Expanded backgrounds to the full app viewport while keeping content constrained and readable.</li>
+<li>Removed the redundant homepage top-row <code>Learn a feature</code> shortcut.</li>
+<li>Standardized feature-guide button placement in page header/action areas.</li>
+<li>Reworked Little Alex safe-area anchoring so the character starts from viewport/navigation-aware bounds instead of fixed coordinates.</li>
+<li>Added a mobile/tablet PageShell right-side reserve so Little Alex has a consistent visual lane instead of floating over controls.</li>
+<li>Added browser-level responsive QA across Home, Load Map, Library, Radar, Check-ins, Settings, and Crash Course.</li>
+</ul>
+<h3 id="load-map-dashboard">Load Map Dashboard</h3>
+<ul>
+<li>Redesigned Load Map as a compact dashboard with diagnostic tiles, grouped filters, and a visible practice board.</li>
+<li>Reorganized owner/status/cadence/area/radar/search controls into compact groups.</li>
+<li>Replaced remaining user-facing <code>Player 1</code> / <code>Player 2</code> labels with <code>Alex</code> / <code>Max</code> while preserving internal ids.</li>
+<li>Prevented clipped diagnostic labels such as <code>Hidden effort mix</code>.</li>
+<li>Preserved learner/demo affordances while reducing unnecessary scroll pressure.</li>
+</ul>
+<h3 id="crash-course">Crash Course</h3>
+<ul>
+<li>Rewrote the course as a five-lesson conceptual primer sourced from the book reports and reference notes.</li>
+<li>Centered the content on hidden load, ownership, standards of care, handoffs, and repair.</li>
+<li>Kept the app-feature learning path as the final section only.</li>
+<li>Repaired the story-image/text-card relationship so the image and lesson content stay visually connected on mobile and desktop.</li>
+</ul>
+<h3 id="library-text-only-card-generation">Library Text-Only Card Generation</h3>
+<ul>
+<li>Removed image-based card generation from the active product flow.</li>
+<li>Removed audio/image source assumptions from the card-generation contract and UI.</li>
+<li>Prompt submission now immediately clears the prompt bar so users can submit another request.</li>
+<li>Each generation request has independent state and a compact request card.</li>
+<li>Request details show original prompt, status, generated result, error details, retry, and cancel actions where applicable.</li>
+<li>Failed requests no longer block later requests.</li>
+<li>Deprecated regenerate-image behavior now returns an unavailable response instead of being part of the main flow.</li>
+</ul>
+<h2 id="root-cause-of-previous-failure">Root Cause Of Previous Failure</h2>
+<p>The previous attempt improved individual surfaces but left the underlying layout model fragmented. Backgrounds were attached to cards instead of the page, learner buttons and Little Alex used page-specific positioning, and Load Map retained a vertical filter stack that could not adapt to smaller viewports. Library card generation also still treated text completion and image generation as one product result, so an image dependency could make the whole feature appear broken.</p>
+<p>The corrective pass addressed those causes directly:</p>
+<ul>
+<li>Route-level layout framing instead of isolated page decoration.</li>
+<li>Shared safe-area behavior for navigation and Little Alex.</li>
+<li>Dashboard-first Load Map structure instead of a long stacked control column.</li>
+<li>Text-only, independent Library generation requests instead of one image-dependent draft pipeline.</li>
+</ul>
+<h2 id="documentation-produced">Documentation Produced</h2>
+<ul>
+<li><code>root-cause-and-strategy.md</code>: corrective root causes, branch strategy, rollback notes.</li>
+<li><code>work-log.md</code>: branch/worktree orchestration and integration steps.</li>
+<li><code>qa-plan.md</code>: automated and visual QA matrix.</li>
+<li><code>qa-results.md</code>: final command results and screenshot findings.</li>
+<li>Workstream reports under:<ul>
+<li><code>docs/agents/tasks/2026-05-07-layout-background-corrective/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-load-map-dashboard-corrective/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-crash-content-labels-corrective/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-text-only-card-generation/</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="verification">Verification</h2>
+<p>Final integration verification:</p>
+<ul>
+<li><code>npm test -- --run</code>: passed, 96 files and 528 tests.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm run prisma:validate</code>: passed.</li>
+<li><code>npm run build</code>: passed.</li>
+<li><code>npm run test:e2e</code>: passed, 27 Playwright tests.</li>
+</ul>
+<p>Source audits:</p>
+<ul>
+<li>User-facing <code>Player 1</code> / <code>Player 2</code>: only negative assertions in tests remain.</li>
+<li>Active Library card-generation image/audio hooks: no active image/audio generation terms remain in the current UI/contracts/service/create route.</li>
+</ul>
+<h2 id="screenshot-findings">Screenshot Findings</h2>
+<p>The final Playwright suite generated screenshots in <code>test-results/corrective-responsive-visual/</code>.</p>
+<p>Reviewed highlights:</p>
+<ul>
+<li><code>mobile-home.png</code>: background visible, duplicate learner shortcut removed, feature cards reachable.</li>
+<li><code>mobile-load-map.png</code>: grouped filters and dashboard tiles wrap without horizontal overflow.</li>
+<li><code>desktop-load-map.png</code>: dashboard, filters, practice board, and Little Alex fit the desktop shell.</li>
+<li><code>mobile-crash-course.png</code>: lesson card stays close to story imagery and remains readable above bottom navigation.</li>
+<li><code>desktop-crash-course.png</code>: story art and lesson content read as one connected section.</li>
+<li><code>mobile-library.png</code>: Library remains navigable and generation requests do not create a trapped flow.</li>
+</ul>
+<p>Final review follow-up:</p>
+<ul>
+<li>Little Alex physics now reads the computed <code>.fp-little-alex-shell</code> bottom inset so CSS safe-area changes affect the play area.</li>
+<li>The corrective responsive spec now checks shell paint bounds, interactive-control overlap, navigation overlap, and real background image loading.</li>
+<li>The PageShell viewport-height floor uses valid Tailwind arbitrary <code>calc()</code> syntax and is now asserted in browser QA.</li>
+</ul>
+<h2 id="rollback-instructions">Rollback Instructions</h2>
+<p>Before merge to <code>main</code>, revert the corresponding merge commit on the integration branch if a workstream must be backed out:</p>
+<ul>
+<li>Layout/backgrounds: revert <code>Merge layout background corrective branch</code>.</li>
+<li>Load Map: revert <code>Merge load map dashboard corrective branch</code>.</li>
+<li>Crash/content labels: revert <code>Merge crash content labels corrective branch</code>.</li>
+<li>Text-only generation: revert <code>Merge text-only card generation branch</code>.</li>
+</ul>
+<p>After merge to <code>main</code>, create normal revert commits against the final PR merge commit or the specific workstream merge commit if history is preserved.</p>
+<h2 id="remaining-technical-debt">Remaining Technical Debt</h2>
+<ul>
+<li>Generation requests are independent but not yet backed by a durable background queue.</li>
+<li>Legacy media fields/routes remain for compatibility, even though the active generation flow is text-only.</li>
+<li><code>Track for later</code> is clearly unavailable rather than fully implemented.</li>
+<li>Live external AI-provider behavior still depends on deployed environment configuration and should be smoke-tested in staging after merge.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

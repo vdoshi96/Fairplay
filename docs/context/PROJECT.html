@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/context/PROJECT.md">
+  <meta name="fairplay-document-source-sha256" content="b6910326c3ddbaad4943985faf7e2dbb151ea753be788eed5f4f7228a2a9652a">
+  <title>docs/context/PROJECT.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="PROJECT.md"><code>docs/context/PROJECT.md</code></a></p>
+    <article>
+<h1 id="fairplay-project-context">Fairplay Project Context</h1>
+<p>Last updated: 2026-07-20</p>
+<h2 id="product-intent">Product Intent</h2>
+<p>Fairplay is a mobile-first, card-centered household responsibility planning app. It helps a household make shared work visible, distribute responsibility cards between Alex and Max, save or remove cards that do not fit, and keep lightweight check-in records.</p>
+<p>The current v1 product centers on a two-person household using shared credentials and default personas Alex and Max. It is household organization and practical relationship support, not therapy, crisis support, legal advice, medical advice, financial advice, diagnosis, or a partner-scoring system.</p>
+<h2 id="confirmed-user-workflows">Confirmed User Workflows</h2>
+<ul>
+<li>Create a household with one household username and password.</li>
+<li>Log in with shared credentials, then choose Alex or Max for the session.</li>
+<li>Use Theory, onboarding, and Crash Course learning surfaces; the old feature-guide practice workflow is retired from v1.</li>
+<li>Land on Deal after login/persona selection and assign cards with swipes, arrow keys, or large fallback buttons.</li>
+<li>Use Your Deck as the primary assigned-card home with searchable, filterable, image-first assigned cards.</li>
+<li>Use Board to review dealt/categorized card buckets: Alex, Max, Saved for Later, and Not Applicable.</li>
+<li>Browse the Card Library and create AI-assisted responsibility card drafts through Ask Greg.</li>
+<li>Schedule check-ins, confirm they happened, and add optional minutes/notes.</li>
+<li>Manage settings, theme preference, crash-course replay, persona preferences, and Little Alex preferences.</li>
+</ul>
+<h2 id="current-stack">Current Stack</h2>
+<ul>
+<li>App framework: Next.js App Router 15.5.15 with React 19.2.5 and TypeScript 5.9.3, as resolved in the lockfile.</li>
+<li>Styling: Tailwind CSS 3.4.19 with Fairplay CSS variables in <code>src/app/globals.css</code>.</li>
+<li>Persistence: Prisma 6.19.3 with Postgres-compatible database.</li>
+<li>Auth/session: server-managed sessions, opaque cookies, Argon2id password hashing, and auth throttling.</li>
+<li>Tests: Vitest with jsdom and React Testing Library; Playwright e2e builds the app and runs against a local <code>next start</code> server.</li>
+<li>AI generation: Qwen primary provider for AI card text/cover generation, optional OpenAI fallback gated by env.</li>
+<li>Deployment target: Vercel-compatible Next.js app with managed Postgres.</li>
+</ul>
+<h2 id="current-architecture-shape">Current Architecture Shape</h2>
+<ul>
+<li><code>src/app/</code> owns App Router pages, layouts, route handlers, PWA metadata, and global CSS.</li>
+<li><code>src/components/</code> owns client/server UI components by feature area.</li>
+<li><code>src/contracts/</code> owns Zod schemas and platform-neutral JSON contracts.</li>
+<li><code>src/domain/</code> owns ids, enums, load-signal math, time, and visibility helpers.</li>
+<li><code>src/server/</code> owns services, repositories, auth utilities, AI providers, and Prisma access.</li>
+<li><code>prisma/</code> owns the schema, migrations, and seed entrypoint.</li>
+<li><code>e2e/</code> owns Playwright flows and visual QA.</li>
+<li><code>public/assets/fairplay/</code> owns generated UI backgrounds, card assets, and Little Alex sprites.</li>
+<li><code>docs/</code> contains canonical Markdown product docs, implementation logs, agent task logs, generated memory, and wiki notes, each paired with a deterministic same-directory HTML counterpart.</li>
+<li><code>scripts/docs-html.mjs</code> owns bulk HTML regeneration and exact content-parity checking for tracked or new non-ignored prose documentation.</li>
+</ul>
+<h2 id="safety-and-ip-constraints">Safety And IP Constraints</h2>
+<ul>
+<li>Private local reference material in <code>References/</code> is excluded from git and was not inspected during this indexing pass.</li>
+<li>Use only paraphrased, cleared project docs unless the user explicitly authorizes source-specific review.</li>
+<li>Do not copy source text, proprietary taxonomies, source-like deck/workbook structures, public app UI, or distinctive reference visuals.</li>
+<li>Keep private/shared/partner-visible/check-in-only states explicit anywhere sensitive notes can exist.</li>
+<li>Browser storage is prohibited for household data, private drafts, sensitive notes, concern details, session secrets, API keys, credentials, plaintext passwords, or other private records.</li>
+<li>Theme-only <code>localStorage</code> is allowed for non-sensitive device UI preference. Treat any other <code>localStorage</code>, <code>sessionStorage</code>, or <code>indexedDB</code> use as security/privacy-sensitive until reviewed.</li>
+</ul>
+<h2 id="non-goals">Non-Goals</h2>
+<ul>
+<li>No therapy, diagnosis, crisis support, partner scoring, blame ledgers, moral grades, or winner/loser framing.</li>
+<li>No email auth, social auth, magic links, billing, subscriptions, public sharing, exports, deletion workflows, household exit, or revocation in current v1.</li>
+<li>No copied assessment, copied source flow, private reference ingestion, or source-like expansion beyond existing approved seed/template material.</li>
+<li>No active Radar product area, API, model, or generated asset set after the 2026-05-07 cleanup pass.</li>
+<li>No broad file reorganization until the repo has a verified map and cleanup plan.</li>
+</ul>
+<h2 id="open-questions">Open Questions</h2>
+<ul>
+<li>Whether deprecated AI media routes and fields should remain for backward compatibility.</li>
+<li>Whether production DB migration/deploy verification differs from the local Postgres verification already completed after the Radar removal migration.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

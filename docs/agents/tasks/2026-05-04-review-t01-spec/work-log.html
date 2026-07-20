@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t01-spec/work-log.md">
+  <meta name="fairplay-document-source-sha256" content="f8019a9f7711c537484250c666e2c8aa322b899e0c07e51fda91132ac5e0ad5e">
+  <title>docs/agents/tasks/2026-05-04-review-t01-spec/work-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="work-log.md"><code>docs/agents/tasks/2026-05-04-review-t01-spec/work-log.md</code></a></p>
+    <article>
+<h1 id="work-log">Work Log</h1>
+<h2 id="2026-05-04">2026-05-04</h2>
+<ul>
+<li>Read the T01 plan section and product constraints covering scaffold, PWA, IP safety, privacy, relationship safety, v1 scope, user flows, data model, and design spec.</li>
+<li>Ran <code>git status --short</code>.<ul>
+<li>Output: clean worktree before review artifact edits.</li>
+</ul>
+</li>
+<li>Ran <code>git diff --name-only 151b815..33862e8</code>.<ul>
+<li>Output: T01 touched scaffold/config files, root app files, PWA icon/manifest files, e2e smoke test, <code>.env.example</code>, and T01 agent artifacts.</li>
+</ul>
+</li>
+<li>Ran <code>git diff --stat 151b815..33862e8</code>.<ul>
+<li>Output: 25 files changed, 10417 insertions.</li>
+</ul>
+</li>
+<li>Inspected diffs for <code>package.json</code>, <code>.env.example</code>, Next config, TypeScript config, ESLint config, Tailwind config, Vitest config, Playwright config, root app files, manifest/icon routes, and e2e test.</li>
+<li>Ran source/config safety grep for service workers, browser storage, scoring, clinical claims, source references, deck/card/source-like terms, and private-reference indicators.<ul>
+<li>Output: only source/config match was root copy saying &quot;without scores or blame&quot;, which is a compliant non-punitive boundary.</li>
+</ul>
+</li>
+<li>Checked out-of-scope production paths.<ul>
+<li>Output: no files under <code>src/domain</code>, <code>src/contracts</code>, <code>src/server</code>, <code>prisma</code>, feature routes, components, README, deployment, database, or API route paths were changed in the T01 range.</li>
+</ul>
+</li>
+<li>Ran <code>git diff --check 151b815..33862e8</code>.<ul>
+<li>Output: passed with no whitespace errors.</li>
+</ul>
+</li>
+<li>Ran <code>npm run lint</code>.<ul>
+<li>Output: passed.</li>
+</ul>
+</li>
+<li>Ran <code>npm run typecheck</code>.<ul>
+<li>Output: passed.</li>
+</ul>
+</li>
+<li>Ran <code>npm test -- --run</code>.<ul>
+<li>Output: passed with no test files found, as configured by <code>passWithNoTests</code>.</li>
+</ul>
+</li>
+<li>Ran <code>npm run test:e2e</code>.<ul>
+<li>Output: passed, 1 Chromium smoke test.</li>
+</ul>
+</li>
+<li>Ran <code>npm run build</code>.<ul>
+<li>First attempt was run concurrently with e2e and failed while both processes touched <code>.next</code>; reran build by itself.</li>
+<li>Output on standalone rerun: passed.</li>
+</ul>
+</li>
+</ul>
+<h2 id="review-result">Review Result</h2>
+<p>No blocking spec compliance findings found for T01.</p>
+    </article>
+  </main>
+</body>
+</html>

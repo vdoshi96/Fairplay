@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/manifest.md">
+  <meta name="fairplay-document-source-sha256" content="38c28ba247c03cb28c4971f1b757d74e01ab02fa133eda9342dcfc2d38c11bbc">
+  <title>docs/agents/manifest.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="manifest.md"><code>docs/agents/manifest.md</code></a></p>
+    <article>
+<h1 id="agents-manifest">Agents Manifest</h1>
+<p>This manifest tracks agent work for the Fairplay repository.</p>
+<h2 id="active-tasks">Active Tasks</h2>
+<div class="table-scroll" role="region" aria-label="Documentation table" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Date</th>
+<th scope="col">Task</th>
+<th scope="col">Owner</th>
+<th scope="col">Status</th>
+<th scope="col">Path</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-05-07</td>
+<td>Product surface cleanup: AI discard, Radar retirement, crash-course restart</td>
+<td>Codex orchestration agent</td>
+<td>Completed locally; QA passed</td>
+<td><code>docs/agents/tasks/2026-05-07-product-surface-cleanup/</code></td>
+</tr>
+<tr>
+<td>2026-05-07</td>
+<td>AI card image generation restoration</td>
+<td>Codex orchestration agent</td>
+<td>Completed locally; final git workflow pending</td>
+<td><code>docs/agents/tasks/2026-05-07-ai-card-image-generation/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Workspace/repo setup</td>
+<td>Codex setup agent</td>
+<td>Completed locally; push pending</td>
+<td><code>docs/agents/tasks/2026-05-04-workspace-repo-setup/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Fair Play EPUB research</td>
+<td>Codex research agent</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-fair-play-epub-research/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Better Share and idea research</td>
+<td>Codex research agent</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-better-share-idea-research/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Trello data model research</td>
+<td>Codex Trello/data-model research agent</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-trello-data-model-research/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Spreadsheet and PDF reference research</td>
+<td>Codex spreadsheet/PDF research agent</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-spreadsheet-pdf-research/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>IP, privacy, and relationship-safety review</td>
+<td>Codex IP/privacy/safety agent</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-ip-privacy-safety-review/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Fairplay v1 product architecture</td>
+<td>Codex product architecture agent</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-product-architecture/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Fairplay v1 gap review</td>
+<td>Codex gap reviewer agent</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-gap-review/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Fairplay v1 task assignment</td>
+<td>Codex task assignment agent</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-task-assignment/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Fairplay visual and asset direction</td>
+<td>Codex visual/asset agent</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-visual-asset-direction/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T01 app scaffold, dependencies, config, and PWA baseline</td>
+<td>Codex implementation worker T01</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-implementation-t01-scaffold/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T01 spec compliance review</td>
+<td>Codex spec compliance reviewer</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t01-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T01 code quality review</td>
+<td>Codex code quality reviewer</td>
+<td>Completed</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t01-code-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T02 shared domain contracts and reviewed seed content</td>
+<td>Codex implementation worker T02</td>
+<td>Completed locally; review pending</td>
+<td><code>docs/agents/tasks/2026-05-04-implementation-t02-domain-contracts/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T02 spec compliance review</td>
+<td>Codex spec compliance reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t02-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T02 responsibility visibility confirmation fix</td>
+<td>Codex focused T02 fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t02-responsibility-visibility/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T02 spec compliance re-review</td>
+<td>Codex spec compliance re-reviewer</td>
+<td>Approved</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t02-spec-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T02 code quality review</td>
+<td>Codex code quality reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t02-code-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T02 contract quality fix</td>
+<td>Codex focused T02 quality-fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t02-contract-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T02 code quality re-review</td>
+<td>Codex code quality re-reviewer</td>
+<td>Approved</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t02-code-quality-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T03 Prisma/Postgres persistence layer</td>
+<td>Codex implementation worker T03</td>
+<td>Done with concerns; Docker unavailable for DB verification</td>
+<td><code>docs/agents/tasks/2026-05-04-implementation-t03-persistence/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T03 spec compliance review</td>
+<td>Codex spec compliance reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t03-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T03 persistence scope and migration fix</td>
+<td>Codex focused T03 persistence fix worker</td>
+<td>Done with concerns; DB unavailable for integration verification</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t03-persistence-scope/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T03 spec compliance re-review</td>
+<td>Codex spec compliance re-reviewer</td>
+<td>Approved with notes; DB unavailable for integration verification</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t03-spec-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T03 code quality review</td>
+<td>Codex code quality reviewer</td>
+<td>Changes requested; DB unavailable for integration verification</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t03-code-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T03 auth throttle atomic fix</td>
+<td>Codex focused T03 auth-throttle fix worker</td>
+<td>Completed with concerns; DB unavailable for integration verification</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t03-auth-throttle-atomic/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T03 code quality re-review</td>
+<td>Codex code quality re-reviewer</td>
+<td>Approved with notes; DB unavailable for integration verification</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t03-code-quality-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T04 auth/session/persona APIs</td>
+<td>Codex implementation worker T04</td>
+<td>Completed and pushed; spec review changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-implementation-t04-auth-apis/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T04 spec compliance review</td>
+<td>Codex spec compliance reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t04-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T04 session idle refresh fix</td>
+<td>Codex focused T04 fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t04-session-idle-refresh/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T04 spec compliance re-review</td>
+<td>Codex spec compliance re-reviewer</td>
+<td>Approved</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t04-spec-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T04 code quality review</td>
+<td>Codex code quality reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t04-code-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T04 auth hardening fix</td>
+<td>Codex focused T04 auth hardening fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t04-auth-hardening/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T04 code quality re-review</td>
+<td>Codex code quality re-reviewer</td>
+<td>Approved</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t04-code-quality-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T05 auth, onboarding, and app shell UI</td>
+<td>Codex implementation worker T05</td>
+<td>Done with concerns; DB-backed e2e mocked</td>
+<td><code>docs/agents/tasks/2026-05-04-implementation-t05-auth-onboarding-ui/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T05 spec compliance review</td>
+<td>Codex spec compliance reviewer</td>
+<td>Approved with notes</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t05-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T05 code quality review</td>
+<td>Codex code quality reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t05-code-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T05 accessible settings and protected UI test fix</td>
+<td>Codex focused T05 frontend quality fix worker</td>
+<td>Completed; DB-backed verification not claimed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t05-accessible-settings-and-tests/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T05 code quality re-review</td>
+<td>Codex code quality re-reviewer</td>
+<td>Approved</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t05-code-quality-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T06 load overview, responsibility assignment UI, and API mutations</td>
+<td>Codex implementation worker T06</td>
+<td>Completed locally; push pending</td>
+<td><code>docs/agents/tasks/2026-05-04-implementation-t06-responsibilities/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T06 spec compliance review</td>
+<td>Codex spec compliance reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t06-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T06 editor and load-map spec fix</td>
+<td>Codex focused T06 spec-fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t06-editor-loadmap-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T06 spec compliance re-review</td>
+<td>Codex spec compliance re-reviewer</td>
+<td>Approved with notes</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t06-spec-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T06 code quality review</td>
+<td>Codex code quality reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t06-code-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T06 transition, radar privacy, and coverage fix</td>
+<td>Codex focused T06 code-quality fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t06-transition-privacy-coverage/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T06 code quality re-review</td>
+<td>Codex code quality re-reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t06-code-quality-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T06 load snapshot auth-required fix</td>
+<td>Codex focused T06 load-snapshot fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t06-load-snapshot-auth-required/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T06 final code quality re-review</td>
+<td>Codex final code quality re-reviewer</td>
+<td>Approved with notes</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t06-code-quality-final/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T07 radar concern board UI and API mutations</td>
+<td>Codex implementation worker T07</td>
+<td>Completed locally; push pending</td>
+<td><code>docs/agents/tasks/2026-05-04-implementation-t07-radar/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T07 spec compliance review</td>
+<td>Codex spec compliance reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t07-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T07 radar timing persistence and board refresh fix</td>
+<td>Codex focused T07 spec-fix worker</td>
+<td>Done with concerns; DB-backed repository verification unavailable</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t07-radar-timing-refresh/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T07 spec compliance re-review</td>
+<td>Codex spec compliance re-reviewer</td>
+<td>Approved with notes; DB-backed repository verification unavailable</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t07-spec-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T07 code quality review</td>
+<td>Codex code quality reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t07-code-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T07 radar transition, modal, and mutation error fix</td>
+<td>Codex focused T07 code-quality fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t07-transition-modal-errors/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T07 code quality re-review</td>
+<td>Codex code quality re-reviewer</td>
+<td>Approved</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t07-code-quality-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 guided check-ins, decisions, and persisted summaries</td>
+<td>Codex implementation worker T08</td>
+<td>Completed locally; push pending</td>
+<td><code>docs/agents/tasks/2026-05-04-implementation-t08-check-ins/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 spec compliance review</td>
+<td>Codex spec compliance reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t08-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 scope, preview, and structured decision fix</td>
+<td>Codex focused T08 spec-fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t08-scope-preview-decisions/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 spec compliance re-review</td>
+<td>Codex spec compliance re-reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t08-spec-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 agenda cap fix</td>
+<td>Codex focused T08 agenda-cap fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t08-agenda-cap/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 final spec compliance review</td>
+<td>Codex final spec compliance reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t08-spec-final/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 direct service agenda cap fix</td>
+<td>Codex focused T08 direct-service agenda cap fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t08-direct-agenda-cap/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 final agenda cap spec review</td>
+<td>Codex final-final spec compliance reviewer</td>
+<td>Approved</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t08-spec-cap-final/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 code quality review</td>
+<td>Codex code quality reviewer</td>
+<td>Changes requested</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t08-code-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 decision integrity and UI error fix</td>
+<td>Codex focused T08 code-quality fix worker</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-fix-t08-decision-integrity-ui-errors/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T08 code quality re-review</td>
+<td>Codex code quality re-reviewer</td>
+<td>Approved with notes</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t08-code-quality-rereview/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T09 visual assets and motion integration</td>
+<td>Codex implementation worker T09</td>
+<td>Completed and pushed</td>
+<td><code>docs/agents/tasks/2026-05-04-implementation-t09-visuals-motion/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T09 spec compliance review</td>
+<td>Codex spec compliance reviewer</td>
+<td>Approved with notes</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t09-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T09 code quality review</td>
+<td>Codex code quality reviewer</td>
+<td>Approved with notes</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t09-code-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T10 README deployment instructions and Vercel readiness</td>
+<td>Codex implementation worker T10</td>
+<td>Done with concerns; Docker unavailable for DB-backed verification</td>
+<td><code>docs/agents/tasks/2026-05-04-implementation-t10-deployment-docs/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T10 spec compliance review</td>
+<td>Codex spec compliance reviewer</td>
+<td>Approved with notes; DB-backed verification unavailable</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t10-spec/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T10 code quality review</td>
+<td>Codex code quality reviewer</td>
+<td>Approved with notes; DB-backed verification unavailable</td>
+<td><code>docs/agents/tasks/2026-05-04-review-t10-code-quality/</code></td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>T11 final verification and release-candidate checklist</td>
+<td>Codex final verification agent</td>
+<td>Approved with blockers; DB-backed verification unavailable</td>
+<td><code>docs/agents/tasks/2026-05-04-final-verification/</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="rules">Rules</h2>
+<ul>
+<li>Every agent task must create <code>task.md</code>, <code>work-log.md</code>, <code>learned.md</code>, <code>gaps.md</code>, and <code>handoff.md</code> in its task directory.</li>
+<li>Agents must preserve others&#39; work and use non-destructive git commands.</li>
+<li>Private reference materials in <code>References/</code> are not committed unless explicitly cleared and already intentionally tracked.</li>
+<li>Research agents must keep private-reference output paraphrased and avoid copying source text, card descriptions, exercises, or assets into repo docs.</li>
+<li>Implementation agents must read <code>docs/product/ip-safety-review.md</code> before writing user-facing copy, seed data, templates, prompts, auth/session logic, or shared relationship-support flows.</li>
+<li>Visual implementation agents must read <code>docs/product/visual-system.md</code> and the latest visual-agent handoff before adding assets, motion, or character art.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

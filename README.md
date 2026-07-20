@@ -76,6 +76,8 @@ npm run typecheck
 npm test -- --run
 npm run test:e2e
 npm run build
+npm run docs:html
+npm run docs:html:check
 npm run prisma:validate
 npm run prisma:generate
 npm run prisma:migrate
@@ -85,6 +87,12 @@ npm run prisma:seed
 Prisma migrations live in `prisma/migrations/`. Use `npm run prisma:migrate` for local development migrations. Use `npx prisma migrate deploy` against the selected managed database before production release.
 
 Playwright tests run with `npm run test:e2e`. Some protected-route e2e flows are route-mocked in this workspace because Docker/Postgres is unavailable here; DB-backed repository and e2e tests must run in a Postgres-capable environment before production readiness.
+
+## Documentation HTML Parity
+
+Tracked project Markdown and other supported prose-documentation files are canonical. After adding or editing documentation, run `npm run docs:html` to deterministically regenerate the accessible same-directory `.html` counterpart for every source. Run `npm run docs:html:check` to verify completeness and exact generated-content parity; `npm run lint` and `npm test` run this check automatically through their lifecycle hooks.
+
+The generator discovers only tracked or new non-ignored files through Git, refuses source/target collisions and hand-authored target overwrites, rewrites links between local documentation counterparts, escapes raw HTML and active URL schemes, and embeds the canonical source path and normalized SHA-256 in each generated page. LF normalization and `.gitattributes` keep output stable across platforms. It explicitly excludes private `References/`, ignored root `.superpowers/`, dependencies, builds, caches, and QA output. Tracked `docs/superpowers/` remains project-owned documentation and is included.
 
 ## Sessions And Cookies
 

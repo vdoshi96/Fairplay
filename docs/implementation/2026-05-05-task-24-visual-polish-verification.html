@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-05-task-24-visual-polish-verification.md">
+  <meta name="fairplay-document-source-sha256" content="b8eb0d8bb5154b3d4f9321d233a04694b0233a2e04a3293084e08fa099634c75">
+  <title>docs/implementation/2026-05-05-task-24-visual-polish-verification.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-05-task-24-visual-polish-verification.md"><code>docs/implementation/2026-05-05-task-24-visual-polish-verification.md</code></a></p>
+    <article>
+<h1 id="task-24-controller-integration-and-verification">Task 24: Controller Integration and Verification</h1>
+<h2 id="expectations">Expectations</h2>
+<ul>
+<li>Review and integrate the three subagent-owned polish slices.</li>
+<li>Keep every worker report in <code>docs/implementation</code> for later review.</li>
+<li>Verify the combined app through lint, typecheck, unit/integration tests, production build, and Playwright.</li>
+<li>Prepare the branch for GitHub PR and merge once checks are clean.</li>
+</ul>
+<h2 id="outputs">Outputs</h2>
+<ul>
+<li>Reviewed and committed Task 21, Task 22, and Task 23 outputs on <code>codex/visual-polish-learning</code>.</li>
+<li>Added an immersive app-shell layout mode for <code>/app/crash-course</code> during controller review so the crash-course art owns the full app canvas.</li>
+<li>Removed the old crash-course route header and changed saved-progress messages into floating overlays above the immersive stage.</li>
+<li>Preserved the subagent documentation files:<ul>
+<li><code>docs/implementation/2026-05-05-task-21-crash-course-immersive.md</code></li>
+<li><code>docs/implementation/2026-05-05-task-22-login-splash-polish.md</code></li>
+<li><code>docs/implementation/2026-05-05-task-23-learning-copy-guide-helpers.md</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="verification">Verification</h2>
+<ul>
+<li>Focused crash-course/shell check: <code>npx vitest run src/components/crash-course/crash-course-scene.test.tsx src/components/crash-course/crash-course-flow.test.tsx src/components/app-shell/app-shell.test.tsx</code><ul>
+<li>Passed: 3 files, 23 tests.</li>
+</ul>
+</li>
+<li>Focused route-shell lint: <code>npx eslint src/app/app/crash-course/page.tsx src/components/app-shell/app-shell.tsx src/components/app-shell/app-shell.test.tsx src/components/crash-course/crash-course-flow.tsx src/components/crash-course/crash-course-flow.test.tsx src/components/crash-course/crash-course-scene.tsx src/components/crash-course/crash-course-scene.test.tsx</code><ul>
+<li>Passed with no output.</li>
+</ul>
+</li>
+<li>Full lint: <code>npm run lint</code><ul>
+<li>Passed with no output.</li>
+</ul>
+</li>
+<li>Full typecheck: <code>npm run typecheck</code><ul>
+<li>Passed after fixing a single crash-course <code>Card</code> coordinate type mismatch.</li>
+</ul>
+</li>
+<li>Full Vitest: <code>DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npx vitest run</code><ul>
+<li>Passed: 73 files, 288 tests.</li>
+</ul>
+</li>
+<li>Production build: <code>DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npm run build</code><ul>
+<li>Passed; Prisma generated successfully and Next.js compiled the production app.</li>
+</ul>
+</li>
+<li>Playwright: <code>DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npm run test:e2e</code><ul>
+<li>Passed: 11 tests.</li>
+</ul>
+</li>
+</ul>
+<h2 id="challenges">Challenges</h2>
+<ul>
+<li>Worker A intentionally stayed inside its owned crash-course component files, so the controller added the app-shell/page wrapper polish needed for a true full-canvas route.</li>
+<li>Typecheck found one string coordinate passed to a numeric helper prop. The issue was isolated to a single call and amended into the crash-course commit before full verification.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

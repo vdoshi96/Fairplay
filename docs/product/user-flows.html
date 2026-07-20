@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/product/user-flows.md">
+  <meta name="fairplay-document-source-sha256" content="ed2f795c24c98aab833376b343b996289a874408e843720bd16995e8efb7b971">
+  <title>docs/product/user-flows.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="user-flows.md"><code>docs/product/user-flows.md</code></a></p>
+    <article>
+<h1 id="user-flows">User Flows</h1>
+<h2 id="principles">Principles</h2>
+<ul>
+<li>Mobile-first: every flow must work comfortably on a phone.</li>
+<li>Shared credentials: Alex and Max can both log in with the same household username/password.</li>
+<li>Persona-aware sessions: after login, the selected persona is attached to the session until changed or logged out.</li>
+<li>Visibility must be explicit: private draft, shared household, partner-visible, and check-in-only states are never implied.</li>
+<li>Relationship-support copy must stay practical and non-clinical.</li>
+</ul>
+<h2 id="create-household">Create Household</h2>
+<ol>
+<li>User opens Fairplay and chooses create household.</li>
+<li>User enters household name, household username, and household password.</li>
+<li>Server validates username availability and password requirements.</li>
+<li>Server stores only a slow password hash and creates the household with default personas Alex and Max.</li>
+<li>User sees a short non-clinical product boundary: Fairplay helps organize household responsibilities and check-ins; it is not therapy, crisis support, or a tool for unsafe confrontation.</li>
+<li>User chooses Alex or Max for the current session.</li>
+<li>App routes to onboarding.</li>
+</ol>
+<p>Error states:</p>
+<ul>
+<li>Username unavailable.</li>
+<li>Password too weak.</li>
+<li>Network/server error with no password echoed back.</li>
+<li>Session created but persona not selected, which routes back to persona selection.</li>
+</ul>
+<h2 id="login-and-persona-selection">Login and Persona Selection</h2>
+<ol>
+<li>User enters household username and password.</li>
+<li>Server verifies the password hash and creates a server-managed session.</li>
+<li>User chooses Alex or Max.</li>
+<li>Session stores household id and selected persona id.</li>
+<li>App routes to home.</li>
+</ol>
+<p>Session behavior:</p>
+<ul>
+<li>Logout invalidates the active session.</li>
+<li>Expired sessions return to login.</li>
+<li>Sessions use secure cookies and must not store household data or secrets in browser storage.</li>
+<li>A user may switch persona only through an explicit persona switch action, with visible confirmation of the active persona.</li>
+</ul>
+<h2 id="onboarding-and-education">Onboarding and Education</h2>
+<ol>
+<li>User sees a short setup path: map a few responsibilities, assign owners, plan check-ins, and schedule a check-in.</li>
+<li>User can start from a blank responsibility, a tiny demo example, or a guided first responsibility.</li>
+<li>Education uses original wording and explains concepts such as ownership, hidden coordination, good-enough expectations, review dates, and private vs shared visibility.</li>
+<li>User can skip education and return later.</li>
+</ol>
+<p>Safety behavior:</p>
+<ul>
+<li>The app reminds users not to use shared notes or check-ins if doing so could create risk.</li>
+<li>Tense topics can be saved privately, paused, or left out of check-in notes.</li>
+</ul>
+<h2 id="load-map-and-responsibility-overview">Load Map and Responsibility Overview</h2>
+<ol>
+<li>User opens the load map.</li>
+<li>App displays responsibilities grouped by current state or filtered by owner, cadence, tag, review date, or hidden effort.</li>
+<li>Each responsibility summary shows title, owner state, cadence, review timing, status, and visibility-sensitive indicators.</li>
+<li>User can add, edit, pause, archive, or mark not relevant.</li>
+<li>Aggregate load signals show patterns such as owner distribution, due reviews, open concerns, high-frequency items, and paused/not-relevant counts without partner scores.</li>
+</ol>
+<h2 id="responsibility-creation-and-assignment">Responsibility Creation and Assignment</h2>
+<ol>
+<li>User creates a responsibility with an original title and optional notes.</li>
+<li>User sets area tags, cadence, relevant days if needed, hidden effort dimensions, current status, and review date.</li>
+<li>User defines the household&#39;s own &quot;done well enough&quot; expectation.</li>
+<li>User assigns Alex, Max, shared ownership, helper/backup support, or leaves it unassigned.</li>
+<li>If owner or support roles change, app prompts for handoff context and a revisit date.</li>
+<li>App records a responsibility event and returns to the load map.</li>
+</ol>
+<p>States:</p>
+<ul>
+<li>Unassigned: visible as needing a decision.</li>
+<li>Active: one accountable owner or a shared owner arrangement.</li>
+<li>Needs review: flagged for clarification without forcing reassignment.</li>
+<li>Paused: intentionally not active for now.</li>
+<li>Not relevant: out of household scope.</li>
+<li>Archived: retained for history but hidden from daily views.</li>
+</ul>
+<h2 id="check-in-record">Check-In Record</h2>
+<ol>
+<li>User schedules a check-in date and time.</li>
+<li>After the meeting, the user confirms it happened.</li>
+<li>User may add or update optional minutes/notes.</li>
+</ol>
+<p>Check-in history:</p>
+<ul>
+<li>Notes are factual and short.</li>
+<li>History supports continuity, not a grievance archive.</li>
+<li>The flow is a reminder and record, not a guided conversation script.</li>
+</ul>
+<h2 id="settings-and-data-controls">Settings and Data Controls</h2>
+<ol>
+<li>User can edit household display name and persona display preferences.</li>
+<li>User can log out.</li>
+<li>Future controls for export, deletion, household exit, and access revocation are acknowledged as post-v1 requirements before broader launch.</li>
+</ol>
+    </article>
+  </main>
+</body>
+</html>

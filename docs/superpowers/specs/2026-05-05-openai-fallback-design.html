@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/specs/2026-05-05-openai-fallback-design.md">
+  <meta name="fairplay-document-source-sha256" content="1e106313921a7faf5223ee039d7e666b87e942da4b28677c728054e504ea7104">
+  <title>docs/superpowers/specs/2026-05-05-openai-fallback-design.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-05-openai-fallback-design.md"><code>docs/superpowers/specs/2026-05-05-openai-fallback-design.md</code></a></p>
+    <article>
+<h1 id="openai-fallback-design">OpenAI Fallback Design</h1>
+<h2 id="summary">Summary</h2>
+<p>AI Task Manager keeps Qwen as the primary provider for audio transcription, card structuring, and card-front generation. When the primary provider fails and <code>AI_PROVIDER_FALLBACK_ENABLED=true</code>, the server retries the failed step with OpenAI using separate ASR, text, and image credentials configured in Vercel.</p>
+<h2 id="goals">Goals</h2>
+<ul>
+<li>Preserve the existing Qwen-first behavior for normal generation.</li>
+<li>Fall back to OpenAI for task-to-card structuring when Qwen returns an error, empty content, invalid JSON, or invalid structured fields.</li>
+<li>Fall back to OpenAI for card-front image generation when Qwen image creation or image download validation fails.</li>
+<li>Fall back to OpenAI for audio transcription when Qwen ASR fails.</li>
+<li>Use <code>OPENAI_ASR_MODEL</code> for transcription fallback, <code>OPENAI_TEXT_MODEL</code> for text fallback, and <code>OPENAI_IMAGE_MODEL</code> for image fallback.</li>
+<li>Keep fallback selection server-only and never expose provider keys to client components.</li>
+<li>Preserve current draft tracker behavior: users still see failed states if both primary and fallback providers fail.</li>
+</ul>
+<h2 id="non-goals">Non-Goals</h2>
+<ul>
+<li>No UI controls for choosing a provider.</li>
+<li>No provider-specific generated card fields in the client contract.</li>
+<li>No automatic fallback when Qwen succeeds.</li>
+<li>No durable storage of external provider URLs.</li>
+</ul>
+<h2 id="environment">Environment</h2>
+<p>Required when fallback is enabled:</p>
+<ul>
+<li><code>AI_PROVIDER_FALLBACK_ENABLED=true</code></li>
+<li><code>OPENAI_BASE_URL=https://api.openai.com/v1</code></li>
+<li><code>OPENAI_ASR_MODEL=gpt-4o-mini-transcribe</code></li>
+<li><code>OPENAI_ASR_API_KEY</code></li>
+<li><code>OPENAI_TEXT_MODEL=gpt-5-nano</code></li>
+<li><code>OPENAI_TEXT_API_KEY</code></li>
+<li><code>OPENAI_IMAGE_MODEL=gpt-image-1-mini</code></li>
+<li><code>OPENAI_IMAGE_API_KEY</code></li>
+</ul>
+<p>Optional:</p>
+<ul>
+<li><code>OPENAI_API_KEY</code> may be used later if the app wants one shared OpenAI key, but this implementation uses the explicit text and image keys.</li>
+<li><code>OPENAI_ORG_ID</code> and <code>OPENAI_PROJECT_ID</code> are not required for the current API calls.</li>
+</ul>
+<h2 id="provider-flow">Provider Flow</h2>
+<h3 id="audio-transcription">Audio Transcription</h3>
+<ol>
+<li>AI draft service calls a provider-neutral transcription function.</li>
+<li>The neutral generator calls Qwen ASR first.</li>
+<li>If Qwen succeeds, return the Qwen transcript.</li>
+<li>If Qwen fails, resolve OpenAI fallback config.</li>
+<li>If fallback is disabled, rethrow the Qwen error.</li>
+<li>If fallback is enabled, call OpenAI Audio Transcriptions with multipart form data and require non-empty returned text.</li>
+</ol>
+<h3 id="card-structuring">Card Structuring</h3>
+<ol>
+<li>AI draft service calls a provider-neutral card generator.</li>
+<li>The neutral generator calls Qwen card structuring first.</li>
+<li>If Qwen succeeds, return the Qwen card.</li>
+<li>If Qwen fails, resolve OpenAI fallback config.</li>
+<li>If fallback is disabled, rethrow the Qwen error.</li>
+<li>If fallback is enabled, call OpenAI Responses API with strict JSON schema output.</li>
+<li>Parse and validate the returned JSON with the same card schema before saving it.</li>
+</ol>
+<h3 id="image-generation">Image Generation</h3>
+<ol>
+<li>AI draft service calls the same provider-neutral generator for image creation.</li>
+<li>The neutral generator calls Qwen image generation first.</li>
+<li>If Qwen succeeds, persist the Qwen image bytes.</li>
+<li>If Qwen fails, resolve OpenAI fallback config.</li>
+<li>If fallback is disabled, rethrow the Qwen error.</li>
+<li>If fallback is enabled, call OpenAI image generation.</li>
+<li>Prefer base64 image output from GPT image models; support URL output defensively.</li>
+<li>Validate output MIME and size before saving cover bytes.</li>
+</ol>
+<h2 id="audio-behavior">Audio Behavior</h2>
+<p>Audio capture still sends recorded audio to the server. Qwen ASR remains the primary transcription path. If Qwen ASR fails and fallback is enabled, OpenAI ASR retries with the same recorded bytes and optional context prompt. Raw audio retention and deletion rules do not change.</p>
+<h2 id="failure-semantics">Failure Semantics</h2>
+<ul>
+<li>Primary success: no fallback call.</li>
+<li>Primary failure plus fallback disabled: original primary error fails the draft.</li>
+<li>Primary failure plus fallback config missing: fallback config error fails the draft so misconfiguration is visible.</li>
+<li>Primary failure plus fallback failure: fallback error fails the draft.</li>
+<li>ASR failure: OpenAI retries only when fallback is enabled; if both providers fail, the draft fails through the existing service path.</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<ul>
+<li>Config tests for disabled fallback, enabled fallback, and missing required values.</li>
+<li>OpenAI ASR client tests for multipart transcription request shape and transcript validation.</li>
+<li>OpenAI text client tests for Responses API payload, structured JSON parsing, and validation.</li>
+<li>OpenAI image client tests for GPT image base64 output and safe bytes.</li>
+<li>Provider-neutral wrapper tests proving Qwen-first behavior, fallback-on-failure behavior, and disabled fallback behavior across ASR, text, and image steps.</li>
+<li>Existing AI draft service tests continue to pass through dependency injection.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

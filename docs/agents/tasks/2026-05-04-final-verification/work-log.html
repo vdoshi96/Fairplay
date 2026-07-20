@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-final-verification/work-log.md">
+  <meta name="fairplay-document-source-sha256" content="242c254c329df7cee9fae4f0c5ea6f6dcacf1cc25dbe6a463a83a8f4a7182413">
+  <title>docs/agents/tasks/2026-05-04-final-verification/work-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="work-log.md"><code>docs/agents/tasks/2026-05-04-final-verification/work-log.md</code></a></p>
+    <article>
+<h1 id="work-log">Work Log</h1>
+<h2 id="2026-05-04">2026-05-04</h2>
+<ul>
+<li>Confirmed branch <code>codex/v1-app</code>.</li>
+<li>Confirmed initial <code>git status --short --branch</code> showed <code>## codex/v1-app...origin/codex/v1-app</code> with no file changes.</li>
+<li>Ran static verification:<ul>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm run prisma:validate</code>: passed.</li>
+</ul>
+</li>
+<li>Ran source scans:<ul>
+<li>Required restricted-term scan found expected matches in tests, safety copy, product docs, and prior agent artifacts. No production app blocker was identified.</li>
+<li>Browser storage scan found no <code>localStorage</code>, <code>sessionStorage</code>, <code>indexedDB</code>, or <code>document.cookie</code> use in <code>src/</code>.</li>
+</ul>
+</li>
+<li>Attempted DB setup:<ul>
+<li><code>npm run db:up</code>: failed because <code>docker</code> is not installed.</li>
+<li><code>npm run db:wait</code>: failed after timeout because Postgres was unreachable at <code>localhost:5432</code>.</li>
+<li>Did not run <code>npm run prisma:migrate -- --name verify</code> or <code>npm run prisma:seed</code> because the prerequisite DB was unavailable.</li>
+</ul>
+</li>
+<li>Ran test verification:<ul>
+<li><code>npm test -- --run</code>: failed only in <code>src/server/repositories/persistence.integration.test.ts</code> because Postgres was unreachable.</li>
+<li><code>npm test -- --run --exclude src/server/repositories/persistence.integration.test.ts</code>: passed, 52 files and 199 tests.</li>
+<li><code>npm run test:e2e</code>: first concurrent attempt failed while <code>next build</code> was also running and <code>.next</code> was contended; reran alone from a clean generated <code>.next</code> state and passed, 10 tests.</li>
+</ul>
+</li>
+<li>Ran build verification:<ul>
+<li>First concurrent <code>npm run build</code> attempt failed while Playwright&#39;s <code>next dev</code> was also running.</li>
+<li>Reran <code>rm -rf .next &amp;&amp; npm run build</code> alone; passed with the existing Edge Runtime/static-generation warning.</li>
+</ul>
+</li>
+<li>Ran local browser verification:<ul>
+<li>Started <code>npm run dev -- --port 3102</code>.</li>
+<li>In-app browser backend was unavailable (<code>No Codex IAB backends were discovered</code>), so used local Playwright.</li>
+<li>Checked <code>/login</code> at <code>390x844</code> and <code>1440x1000</code>; heading, username field, password field, and submit button were visible; <code>/app/home</code> redirected to <code>/login</code>; <code>localStorage</code> and <code>sessionStorage</code> were empty; cookies were empty; no console errors were captured.</li>
+<li>Stopped dev server and confirmed no listener remained on port <code>3102</code>.</li>
+</ul>
+</li>
+<li>Reviewed security/privacy basics in source and tests:<ul>
+<li>Password hashing uses Argon2id metadata and tests assert password hash is not plaintext.</li>
+<li>Session raw tokens are generated with random bytes and persisted only as HMAC token hashes.</li>
+<li>Session cookies are centralized with <code>httpOnly</code>, production-only <code>secure</code>, <code>sameSite: &quot;lax&quot;</code>, root path, and bounded max age.</li>
+<li>API route tests assert create/login responses avoid password/hash leakage and generic auth errors.</li>
+<li>Cross-household API/service tests exist for persona selection and check-ins; repository-level cross-household tests exist but are DB-blocked in this workspace.</li>
+<li>Private draft publishing confirmation is covered by contract/domain/API tests.</li>
+<li>Check-in skip/defer and neutral summary coverage exists in service/component/e2e tests.</li>
+</ul>
+</li>
+<li>Created required docs-only artifacts and release checklist.</li>
+</ul>
+<h2 id="command-results">Command Results</h2>
+<div class="table-scroll" role="region" aria-label="Documentation table" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Command</th>
+<th scope="col">Result</th>
+<th scope="col">Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>git status --short --branch</code></td>
+<td>Pass</td>
+<td>Clean branch state: <code>## codex/v1-app...origin/codex/v1-app</code>.</td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td>Pass</td>
+<td>Exit 0.</td>
+</tr>
+<tr>
+<td><code>npm run typecheck</code></td>
+<td>Pass</td>
+<td>Exit 0.</td>
+</tr>
+<tr>
+<td><code>npm run prisma:validate</code></td>
+<td>Pass</td>
+<td>Prisma schema valid.</td>
+</tr>
+<tr>
+<td><code>npm run db:up</code></td>
+<td>Fail</td>
+<td><code>sh: docker: command not found</code>.</td>
+</tr>
+<tr>
+<td><code>npm run db:wait</code></td>
+<td>Fail</td>
+<td>Timed out; cannot reach database server at <code>localhost:5432</code>.</td>
+</tr>
+<tr>
+<td><code>npm run prisma:migrate -- --name verify</code></td>
+<td>Not run</td>
+<td>Blocked because DB setup/wait failed.</td>
+</tr>
+<tr>
+<td><code>npm run prisma:seed</code></td>
+<td>Not run</td>
+<td>Blocked because DB setup/wait failed.</td>
+</tr>
+<tr>
+<td><code>npm test -- --run</code></td>
+<td>Fail</td>
+<td>13 DB integration tests failed in <code>src/server/repositories/persistence.integration.test.ts</code> due unreachable Postgres. Other 199 tests passed.</td>
+</tr>
+<tr>
+<td><code>npm test -- --run --exclude src/server/repositories/persistence.integration.test.ts</code></td>
+<td>Pass</td>
+<td>52 files, 199 tests.</td>
+</tr>
+<tr>
+<td><code>npm run test:e2e</code></td>
+<td>Pass on rerun</td>
+<td>10 Playwright tests passed when run alone from clean <code>.next</code>; first concurrent attempt failed due generated-build contention.</td>
+</tr>
+<tr>
+<td><code>rm -rf .next &amp;&amp; npm run build</code></td>
+<td>Pass</td>
+<td>Production build succeeded; existing Edge Runtime/static-generation warning remained.</td>
+</tr>
+<tr>
+<td>Local browser Playwright verification</td>
+<td>Pass with limitation</td>
+<td>Mobile and desktop signed-out checks passed; no live persisted auth because DB unavailable.</td>
+</tr>
+<tr>
+<td><code>rg -n &quot;localStorage|sessionStorage|indexedDB|document\\.cookie&quot; src</code></td>
+<td>Pass</td>
+<td>No matches.</td>
+</tr>
+<tr>
+<td>Restricted-term scan</td>
+<td>Pass with expected matches</td>
+<td>Matches were in tests, safety/disclaimer copy, product docs, and agent artifacts.</td>
+</tr>
+</tbody></table></div>
+<h2 id="exact-blocker-output">Exact Blocker Output</h2>
+<p><code>npm run db:up</code></p>
+<pre tabindex="0"><code class="language-text">&gt; fairplay@0.1.0 db:up
+&gt; docker compose up -d postgres
+
+sh: docker: command not found
+</code></pre>
+<p><code>npm run db:wait</code></p>
+<pre tabindex="0"><code class="language-text">&gt; fairplay@0.1.0 db:wait
+&gt; DATABASE_URL=${DATABASE_URL:-postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public} node scripts/db/wait-for-db.mjs
+
+Timed out waiting for the database.
+PrismaClientInitializationError:
+Invalid `prisma.$queryRaw()` invocation:
+
+Can&#39;t reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+</code></pre>
+<p><code>npm test -- --run</code></p>
+<pre tabindex="0"><code class="language-text">Test Files  1 failed | 52 passed (53)
+Tests  13 failed | 199 passed (212)
+
+All 13 failed tests were in src/server/repositories/persistence.integration.test.ts and reported:
+Can&#39;t reach database server at `localhost:5432`
+</code></pre>
+    </article>
+  </main>
+</body>
+</html>

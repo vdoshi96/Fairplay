@@ -1,15 +1,17 @@
 # Fairplay File Map
 
-Last updated: 2026-07-16
+Last updated: 2026-07-20
 
 This is a practical index, not a reorganization plan.
 
 ## Root
 
 - `README.md`: install, env, commands, sessions, Vercel, readiness checklist, reference policy.
+- `README.html`: deterministic accessible counterpart generated from `README.md`.
 - `package.json`: npm scripts and dependencies.
 - `package-lock.json`: npm lockfile.
 - `.env.example`: placeholder env values for DB, sessions, Qwen, and optional OpenAI fallback.
+- `.gitattributes`: enforces LF for canonical prose sources, generated HTML, and documentation tooling so parity is stable across platforms.
 - `.gitignore`: ignores env files, builds, coverage, Playwright output, `.worktrees/`, `.superpowers/`, `.DS_Store`, and `References/`.
 - `compose.yaml`: local Postgres service.
 - `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, `tailwind.config.ts`, `postcss.config.mjs`, `vitest.config.ts`, `playwright.config.ts`: framework, lint, styling, test, and e2e config.
@@ -87,6 +89,7 @@ This is a practical index, not a reorganization plan.
 
 ## Docs
 
+- Every project-owned Markdown source in the areas below has a generated same-directory `.html` counterpart with the same basename. Markdown remains canonical.
 - `docs/context/`: durable memory created by this pass.
 - `docs/wiki/`: compiled project wiki created by this pass.
 - `docs/product/`: product scope, data model, flows, IP/privacy/safety review, visual system.
@@ -94,8 +97,8 @@ This is a practical index, not a reorganization plan.
 - `docs/helper-system/`: Little Alex architecture, assets, QA, and handoff.
 - `docs/implementation/`: implementation notes and task logs.
 - `docs/research/`: paraphrased research reports.
-- `docs/superpowers/`: specs, plans, and outcomes.
-- `docs/agents/`: large historical agent task registry and work logs.
+- `docs/superpowers/`: project-owned specs, plans, and outcomes; distinct from ignored root `.superpowers/`.
+- `docs/agents/`: large intentional historical agent task registry and work logs.
 
 ## Assets And Scripts
 
@@ -103,6 +106,8 @@ This is a practical index, not a reorganization plan.
 - `public/assets/fairplay/generated-ui/`: generated backgrounds, crash-course art, historical feature-guide art, and illustrations. Retired Radar generated entries/assets have been removed.
 - `public/assets/fairplay/little-alex-sprites/`: Little Alex generated sprites and manifests.
 - `scripts/db/wait-for-db.mjs`: local DB wait helper.
+- `scripts/docs-html.mjs`: canonical deterministic bulk HTML generator and exact completeness/content-parity checker for project documentation.
+- `scripts/docs-html.node-tests.mjs`: focused renderer, discovery-boundary, link, accessibility, determinism, and collision tests.
 - `scripts/generate-responsive-image-variants.mjs`: deterministic AVIF/WebP background variant generation.
 - `scripts/generate-*.mjs`: other asset generation scripts.
 

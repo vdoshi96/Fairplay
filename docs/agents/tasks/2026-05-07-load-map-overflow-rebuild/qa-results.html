@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-load-map-overflow-rebuild/qa-results.md">
+  <meta name="fairplay-document-source-sha256" content="10cd02642e681501e73c1a1423e8562f56ed2afa74fc1bc12bb7d3c2945a239b">
+  <title>docs/agents/tasks/2026-05-07-load-map-overflow-rebuild/qa-results.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="qa-results.md"><code>docs/agents/tasks/2026-05-07-load-map-overflow-rebuild/qa-results.md</code></a></p>
+    <article>
+<h1 id="qa-results">QA Results</h1>
+<h2 id="automated-results">Automated Results</h2>
+<ul>
+<li><code>npm test -- src/components/responsibilities/responsibility-load-map.test.tsx --run</code>: passed, 12 tests.</li>
+<li><code>npm test -- src/components/app-shell/app-shell.test.tsx --run</code>: passed, 8 tests.</li>
+<li><code>npm run test:e2e -- corrective-responsive-visual.spec.ts --grep &quot;populated Load Map&quot;</code>: passed, 1 Playwright test.</li>
+<li><code>npm run test:e2e -- corrective-responsive-visual.spec.ts</code>: passed, 2 Playwright tests.</li>
+<li><code>npm test -- --run</code>: passed, 96 files and 528 tests.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run build</code>: passed.</li>
+<li>Follow-up verification after laptop-width tuning:<ul>
+<li><code>npm test -- src/components/responsibilities/responsibility-load-map.test.tsx --run</code>: passed, 12 tests.</li>
+<li><code>npm run test:e2e -- corrective-responsive-visual.spec.ts --grep &quot;populated Load Map&quot;</code>: passed, 1 Playwright test.</li>
+<li><code>npm run test:e2e -- corrective-responsive-visual.spec.ts</code>: passed, 2 Playwright tests.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm run lint</code>: passed.</li>
+</ul>
+</li>
+<li>Follow-up live debug after laptop report:<ul>
+<li>Confirmed local branch and pushed branch head were on <code>c0f178887f28cb9c0b10074d300e2197aafbb12b</code>.</li>
+<li>Confirmed no server was listening on <code>localhost:3000</code> when the stale screenshot was reported.</li>
+<li>Restarted <code>npm run dev</code> on <code>localhost:3000</code>, reloaded the in-app browser, and confirmed the live DOM contained <code>Lane board</code>, <code>Responsibility lanes</code>, and both lane scroll buttons.</li>
+<li>Ran a desktop Playwright probe at <code>1024x640</code>, <code>1366x768</code>, and <code>2048x1280</code>; all returned document horizontal overflow <code>0</code>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="browser-validation">Browser Validation</h2>
+<ul>
+<li>Browser plugin path was attempted first per frontend testing guidance.</li>
+<li>Browser DOM validation opened <code>http://localhost:3000/app/load-map</code>, created a household, chose Alex, created a responsibility, loaded the populated Load Map, confirmed the page identity, confirmed meaningful content, confirmed scroll controls existed, clicked both lane scroll buttons, and found no Browser console errors or warnings.</li>
+<li>Browser screenshot capture timed out through CDP, so Playwright screenshots were used for visual evidence.</li>
+<li>Follow-up in-app Browser validation reloaded the user&#39;s open <code>http://localhost:3000/app/load-map</code> tab after the dev server was restarted and confirmed the stale UI was no longer present in the DOM.</li>
+</ul>
+<h2 id="visual-evidence">Visual Evidence</h2>
+<p>Playwright wrote responsive screenshots under <code>test-results/corrective-responsive-visual/</code>.</p>
+<p>High-signal Load Map files:</p>
+<ul>
+<li><code>mobile-load-map.png</code></li>
+<li><code>small-tablet-load-map.png</code></li>
+<li><code>desktop-load-map.png</code></li>
+<li><code>laptop-load-map.png</code></li>
+<li><code>short-desktop-load-map.png</code></li>
+<li><code>populated-mobile-load-map-initial.png</code></li>
+<li><code>populated-small-tablet-load-map-initial.png</code></li>
+<li><code>populated-desktop-load-map-initial.png</code></li>
+<li><code>populated-laptop-load-map-initial.png</code></li>
+<li><code>populated-short-desktop-load-map-initial.png</code></li>
+<li><code>populated-mobile-load-map-board-scrolled.png</code></li>
+<li><code>populated-small-tablet-load-map-board-scrolled.png</code></li>
+<li><code>populated-desktop-load-map-board-scrolled.png</code></li>
+<li><code>populated-laptop-load-map-board-scrolled.png</code></li>
+<li><code>populated-short-desktop-load-map-board-scrolled.png</code></li>
+</ul>
+<h2 id="qa-findings">QA Findings</h2>
+<ul>
+<li>Empty Load Map remains responsive across mobile, small tablet, desktop, laptop, and short desktop.</li>
+<li>Populated Load Map has no document-level horizontal overflow across the same viewport matrix.</li>
+<li>Populated Load Map initially shows <code>Cards of Concern</code> fully inside the lane board before any horizontal scroll.</li>
+<li>Common laptop widths show three complete starting lanes before the remaining lanes continue in the scroll rail.</li>
+<li>Populated lane rail has <code>scrollWidth &gt; clientWidth</code>, so the board owns the horizontal overflow.</li>
+<li>Scroll buttons change <code>scrollLeft</code>.</li>
+<li>The <code>Trimmed</code> lane can be revealed inside the lane rail.</li>
+<li>Filters remain usable and wrap within the dashboard.</li>
+<li>Little Alex remains visible in the full corrective responsive visual matrix.</li>
+</ul>
+<h2 id="blockers">Blockers</h2>
+<ul>
+<li>No unresolved implementation blockers.</li>
+<li>In-app Browser screenshot capture timed out, but Browser DOM/interactions and Playwright screenshots covered the rendered behavior.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

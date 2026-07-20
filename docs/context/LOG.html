@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/context/LOG.md">
+  <meta name="fairplay-document-source-sha256" content="2f0e4c32482b8b257d13b062e786678c22815141324669806611d0ecd48b3374">
+  <title>docs/context/LOG.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="LOG.md"><code>docs/context/LOG.md</code></a></p>
+    <article>
+<h1 id="fairplay-context-log">Fairplay Context Log</h1>
+<h2 id="2026-07-20---global-html-documentation-parity">2026-07-20 - Global HTML Documentation Parity</h2>
+<p>Task: implement the global HTML Documentation Parity Rule retroactively for every tracked project-owned prose-documentation artifact, while preserving historical records and excluding private or ignored material.</p>
+<p>Outcome:</p>
+<ul>
+<li>Inventoried 612 canonical Markdown sources with no other tracked prose formats, extensionless candidates, occupied targets, or case-folded collisions.</li>
+<li>Preserved all 501 intentional <code>docs/agents/</code> historical sources unchanged and included tracked project-owned <code>docs/superpowers/</code>.</li>
+<li>Added one Git-scoped deterministic bulk generator that creates accessible same-directory HTML, rewrites links between local documentation counterparts, adds stable heading anchors and source SHA-256 metadata, refuses unmanaged overwrites, and safely removes only marker-owned orphan counterparts.</li>
+<li>Added exact completeness/content-parity checking and ten focused generator tests; <code>npm run lint</code> and <code>npm test</code> enforce parity through lifecycle hooks.</li>
+<li>Corrected verified stale dependency versions and tracked source/test/asset counts in current authoritative context documentation.</li>
+<li>Recorded the pre-existing high-severity production audit finding against locked Next.js 15.5.15; remediation requires a separate patch upgrade and app regression pass.</li>
+<li>Kept private <code>References/</code>, ignored root <code>.superpowers/</code>, dependencies, builds, caches, and QA output outside discovery and generation.</li>
+</ul>
+<p>Files changed: documentation generator/tests, package scripts and lockfile, current README/context/wiki sources, and 612 generated HTML counterparts. Historical source logs were not rewritten.</p>
+<p>Verification:</p>
+<ul>
+<li><code>npm run docs:html</code>: 612 counterparts generated deterministically.</li>
+<li><code>npm run docs:html:check</code>: 612/612 passed.</li>
+<li><code>npm run docs:html:test</code>: 10/10 passed.</li>
+<li>Independent JSDOM/SHA-256 audit: 0 failures across 612 pages.</li>
+<li>Full generated-page Axe audit in headless Chromium: 0 violations across 612 pages.</li>
+<li><code>npm run lint</code>: passed, including the parity precheck.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm test -- --run --maxWorkers=4</code>: 110 files / 679 tests passed.</li>
+<li><code>npm run build</code>: passed with 38 pages and middleware.</li>
+<li><code>git diff --check</code>: passed.</li>
+</ul>
+<p>Next handoff: keep prose sources canonical, run <code>npm run docs:html</code> with every documentation change, and do not hand-edit generated counterparts. Separately upgrade Next.js to at least 15.5.18 and rerun application regression coverage for the recorded production audit finding.</p>
+<h2 id="2026-07-16---security-reliability-and-final-improvement-program-qa">2026-07-16 - Security, Reliability, And Final Improvement Program QA</h2>
+<p>Task: complete milestone 5 and final QA for the Fairplay Improvement Program without API keys, live provider calls, or private reference material.</p>
+<p>Outcome:</p>
+<ul>
+<li>Added nonce-based CSP and centralized browser response protections, exact same-origin enforcement for cookie-authenticated mutations, and fail-closed malformed-cookie handling.</li>
+<li>Added an 8 KiB household-creation body limit and bounded privacy-hashed client/process attempt limits before Argon2 and database work; quota gates commit atomically so rejected clients cannot drain unrelated capacity.</li>
+<li>Kept production cookies secure by default while allowing an explicit HTTP-loopback-only Playwright production-server opt-in.</li>
+<li>Added Chromium, desktop WebKit, iPhone WebKit, and touch Chromium projects plus full WCAG A/AA Axe reports.</li>
+<li>Made the cross-browser scenario perform a real Deal assignment, Board persistence check, and Check-in schedule, and verified the response CSP nonce matches the rendered theme bootstrap nonce.</li>
+<li>Corrected the transient Deal movement overlay contrast exposed by the iPhone WebKit scan.</li>
+<li>Retained only the latest completed visual/motion/device evidence under ignored <code>test-results/</code>.</li>
+</ul>
+<p>Files changed: <code>src/middleware.ts</code>, <code>src/lib/http-security.ts</code>, root layout/theme bootstrap, auth cookie and household-creation guards, Playwright configuration/helpers/specs, Deal movement presentation, package dependencies, and current context/wiki/implementation docs.</p>
+<p>Verification:</p>
+<ul>
+<li>Prisma ready/validate/generate/migrate: passed and already synchronized.</li>
+<li>ESLint and TypeScript: passed.</li>
+<li>Vitest: 110 files / 679 tests passed, including DB integration.</li>
+<li>Production build: passed with 38 pages and middleware.</li>
+<li>Playwright: 35/35 passed across four projects.</li>
+<li>Real Chromium Little Alex drag/fling recording: passed; retained VP8 WebM is 800x450 and 2.52 seconds.</li>
+<li>Connected iPhone 15 Pro Max: unavailable. iOS 26.5 iPhone 17 simulator fallback successfully installed Fairplay from Safari and launched it standalone without browser chrome.</li>
+</ul>
+<p>Next handoff: merge the security/reliability PR, synchronize local <code>main</code>, prune completed branches/worktrees, and use a physical iPhone for an optional final device repeat when it becomes available.</p>
+<h2 id="2026-07-16---performance-bundle-and-asset-efficiency">2026-07-16 - Performance, Bundle, And Asset Efficiency</h2>
+<p>Requested by the user as milestone 4 of the Fairplay Improvement Program: reduce repeated server/client work, split large modules, optimize artwork, and defer Little Alex physics without changing product behavior.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Added an additive household catalog-version marker and current-assignment-only overview query while retaining full responsibility details/history.</li>
+<li>Memoized session resolution per React server request and limited conditional <code>lastSeenAt</code> writes to one per five minutes.</li>
+<li>Split Board, Deal, and Your Deck into route-specific client entries with shared card presentation and pure transition helpers.</li>
+<li>Deferred Matter.js until a desktop fine-pointer media query matches and paused physics outside active movement or while hidden.</li>
+<li>Generated 36 local AVIF/WebP background variants, restored local card-cover optimization, and migrated every active generated page background to the responsive layer.</li>
+<li>Split global CSS into ordered theme, shell/background, motion, Little Alex, and reduced-motion concerns.</li>
+<li>Added a mobile production-network gate for responsive art, optimized covers, bounded Available Cards DOM, and absence of Matter.js requests.</li>
+<li>Updated current context/wiki/implementation documentation. No API keys, live AI calls, or private reference material were used.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>npm run db:wait</code></li>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run prisma:generate</code></li>
+<li><code>npm run prisma:migrate -- --skip-seed</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm test -- --run --maxWorkers=4</code> (106 files / 637 tests)</li>
+<li><code>npm run build</code></li>
+<li><code>npx playwright test --project=chromium --workers=1</code> (31 tests)</li>
+</ul>
+<h2 id="2026-05-10---security-scan-hardening-pass">2026-05-10 - Security Scan Hardening Pass</h2>
+<p>Requested by the user: run the Codex Security scan on the codebase and make necessary changes without breaking app functionality. CodeRabbit was initially requested, but the user later asked to ignore the CodeRabbit part.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Ran a bounded repository-wide high-impact security pass over auth/session, middleware, tenant scoping, AI provider boundaries, browser storage, unsafe rendering, raw query/process/file sinks, and dependency advisories.</li>
+<li>Wrote scan artifacts under <code>/tmp/codex-security-scans/Fairplay/7f3ae25b147d_20260510T135638Z/</code>.</li>
+<li>Removed middleware&#39;s host-derived self-fetch to <code>/api/auth/me</code> so raw cookies are no longer forwarded to a URL built from inbound request metadata; authoritative session/persona enforcement remains in the protected app layout.</li>
+<li>Added middleware regression coverage asserting signed-in app requests continue without calling <code>fetch</code>.</li>
+<li>Forced <code>postcss@8.5.14</code> via package pin and npm override so the nested vulnerable PostCSS copy under Next is removed and <code>npm audit</code> is clean.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>npm test -- src/middleware.test.ts --run</code></li>
+<li><code>npm audit --json</code></li>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm test -- --run</code></li>
+<li><code>npm run build</code></li>
+</ul>
+<h2 id="2026-05-10---little-alex-hair-layer-physics-sync">2026-05-10 - Little Alex Hair Layer Physics Sync</h2>
+<p>Requested by the user after visual review: regenerated Little Alex hair assets stayed pinned near the bottom-right screen area, and custom hair color appeared during ragdoll but reverted to default hair when Little Alex settled.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Added the full-body hair sprite layer to the same imperative Matter.js DOM sync path as the full-body character sprite.</li>
+<li>Synced full-body hair layer opacity through settled, flinging, and recovering visual states.</li>
+<li>Added focused regression coverage that drags Little Alex in physics mode and requires the full-body hair layer transform and opacity to match the body sprite.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>npm test -- src/components/little-alex/little-alex-physics.test.tsx --run</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+<li><code>git diff --check</code></li>
+</ul>
+<h2 id="2026-05-09---little-alex-default-help-phrase">2026-05-09 - Little Alex Default Help Phrase</h2>
+<p>Requested by the user: change the default Little Alex chat bubble text to &quot;Help!&quot; and keep local and GitHub on the same commit.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Updated the Little Alex contract default and component fallback chat phrase to <code>Help!</code>.</li>
+<li>Updated the Prisma schema default and added a migration that also moves existing rows still using the old default phrase to <code>Help!</code>.</li>
+<li>Updated focused contract, repository, API, Settings, component, and Playwright expectations for the new default phrase.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>Red test confirmed the old contract default failed against the new <code>Help!</code> expectation.</li>
+<li><code>npm test -- --run src/contracts/preferences.test.ts src/server/repositories/preferences.test.ts src/app/api/preferences/little-alex/route.test.ts src/components/settings/settings-panel.test.tsx src/components/little-alex/little-alex-physics.test.tsx</code></li>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run prisma:migrate -- --skip-seed</code></li>
+<li><code>git diff --check</code></li>
+</ul>
+<h2 id="2026-05-08---little-alex-hair-recolor-correction">2026-05-08 - Little Alex Hair Recolor Correction</h2>
+<p>Requested by the user after visual review: the Little Alex hair color setting must actually recolor the sprite hair, not add a colored blob over the head.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Replaced the CSS hair-overlay DOM/CSS with generated transparent PNG hair layers aligned to the full-body and ragdoll head sprites.</li>
+<li>Added deterministic hair-layer asset generation for all Little Alex gender presentations and configured hair colors.</li>
+<li>Added regression coverage that requires the sprite-derived hair assets and asserts the old overlay nodes are gone.</li>
+<li>Rechecked generated full/head composites for neutral, masculine, and feminine Little Alex variants.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm test -- --run src/components/little-alex/little-alex-physics.test.tsx src/server/ai/little-alex-sprite-assets.test.ts</code></li>
+<li><code>npm test -- --run</code></li>
+<li><code>npm run build</code></li>
+<li><code>npm run test:e2e</code> (28 Playwright tests)</li>
+<li>Rendered Playwright spot check saved Auburn hair and confirmed <code>little-alex-full-hair-sprite</code> used <code>/assets/fairplay/little-alex-sprites/neutral-auburn-full-hair.png</code> with zero old hair-overlay nodes.</li>
+</ul>
+<h2 id="2026-05-08---desktop-layout-and-learn-cleanup">2026-05-08 - Desktop Layout And Learn Cleanup</h2>
+<p>Requested by the user: polish Ask Greg and Board desktop responsive layouts, add short subtitles for Your Deck and Board, and remove the old &quot;Learn this feature&quot; dummy onboarding workflow without disturbing mobile layouts.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Rebuilt Ask Greg as one cohesive desktop panel with a larger Greg asset, tighter copy/action/draft spacing, and mobile-safe packing.</li>
+<li>Reworked Board so Alex and Max are the primary lanes, while Save for Later and Not Applicable are secondary and responsive.</li>
+<li>Restyled Board cards to match the quality of Your Deck cards more closely.</li>
+<li>Added concise subtitles to Your Deck and Board.</li>
+<li>Removed active feature-guide launcher/tour/practice components, dummy Library/Settings workflows, guide markers, and the onboarding-preview AI route.</li>
+<li>Removed obsolete feature-guide entries from the generated UI asset registry.</li>
+<li>Removed unused Load Map component/lane metadata files while preserving <code>/app/load-map</code> as a Board redirect.</li>
+<li>Fixed Little Alex stacking above page content so the desktop helper remains draggable in reduced-motion mode.</li>
+<li>Added implementation notes in <code>docs/implementation/2026-05-08-desktop-layout-learn-cleanup.md</code>.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>git diff --check</code></li>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm test -- --run</code> (84 files, 493 tests)</li>
+<li><code>npm run build</code></li>
+<li><code>npx playwright test e2e/little-alex-physics.spec.ts --project=chromium --grep &quot;uses a static draggable-safe mode with reduced motion&quot;</code></li>
+<li><code>npm run test:e2e</code> (28 Playwright tests)</li>
+<li>Rendered Playwright QA at 1440px, 1024px, 390px, and 320px widths for Ask Greg/Board plus retired guide checks for Library/Settings.</li>
+</ul>
+<h2 id="2026-05-08---mobile-ux-card-workflow-fix">2026-05-08 - Mobile UX Card Workflow Fix</h2>
+<p>Requested by the user: stop forcing Little Alex on mobile, fix Ask Greg mobile width/readability, move Deal gesture instructions, add Deal Undo, make mobile card gestures safer, make Fogging Estandards editable and persistent, and prevent clipped card detail text.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Made Little Alex render only on desktop pointer layouts and added a compact Settings mobile note explaining desktop availability.</li>
+<li>Reworked Deal touch intent so page scrolling wins unless a card swipe clearly crosses movement and direction-dominance thresholds.</li>
+<li>Moved Deal gesture instructions under search, added last-action Undo, and kept button/keyboard actions intact.</li>
+<li>Tightened Ask Greg mobile containers, draft/review surfaces, inputs, and button wrapping to avoid horizontal overflow.</li>
+<li>Made card detail Fogging Estandards editable via <code>householdStandard</code>, with wrapped purpose/standards text and persisted navigation-back verification.</li>
+<li>Updated e2e expectations, product/helper docs, wiki, decisions, and implementation notes for the desktop-only Little Alex and safer Deal gesture model.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run build</code></li>
+<li><code>npm run test:e2e</code> (28 Playwright tests)</li>
+<li><code>npm test -- --run</code> (90 files, 549 tests)</li>
+<li>Rendered browser QA at desktop and 320px mobile, plus a Chromium CDP touch-input probe for mobile Deal scroll safety and intentional horizontal swipe/Undo.</li>
+</ul>
+<h2 id="2026-05-08---local-e2e-and-prisma-stability">2026-05-08 - Local E2E And Prisma Stability</h2>
+<p>Requested by the user: fix the test server flakiness and local DB permission issues so they do not block the next pass.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Replaced Playwright&#39;s flaky <code>next dev --port 3101</code> server with build-plus-<code>next start --port 3101</code>.</li>
+<li>Added explicit Playwright web-server env for <code>APP_BASE_URL</code>, <code>DATABASE_URL</code>, <code>SHADOW_DATABASE_URL</code>, and <code>SESSION_SECRET</code>.</li>
+<li>Added <code>SHADOW_DATABASE_URL</code> to Prisma schema/env examples and npm Prisma scripts.</li>
+<li>Added <code>npm run db:shadow</code>, backed by <code>scripts/db/ensure-shadow-db.mjs</code>, to create/check the local Prisma shadow database before <code>migrate dev</code>.</li>
+<li>Added Docker init SQL so fresh Compose volumes create <code>fairplay_shadow</code> alongside the app database.</li>
+<li>Added developer-tooling regression tests for the e2e server and shadow DB configuration.</li>
+<li>Hardened two Little Alex Playwright assertions that were flaking due async drag timing, page animation noise in screenshot diffs, and subpixel viewport rounding.</li>
+<li>Added implementation documentation in <code>docs/implementation/2026-05-08-e2e-prisma-local-stability.md</code>.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>git diff --check</code></li>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm test -- --run</code> (90 files, 540 tests)</li>
+<li><code>npm run prisma:migrate -- --skip-seed</code></li>
+<li><code>npm run test:e2e</code> (28 tests)</li>
+</ul>
+<h2 id="2026-05-08---catalog-deal-board-and-little-alex-fix">2026-05-08 - Catalog Deal Board And Little Alex Fix</h2>
+<p>Requested by the user: make Library and Deal represent the same underlying card catalog, remove Library put-in-play and Board Unassigned, prevent duplicate catalog cards, normalize existing local/dev duplicate data safely, and fix Little Alex mobile grab/drag/fling behavior without unrelated UI changes.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Materialized the full Fairplay source-card catalog into one active household responsibility per source template before responsibility overview reads.</li>
+<li>Added safe duplicate cleanup that archives duplicate active rows by <code>templateId</code>, plus a partial unique index on active <code>(householdId, templateId)</code> rows.</li>
+<li>Preserved distinct real source cards with similar titles by deduping on stable template identity rather than card title.</li>
+<li>Removed visible Library put-in-play/lane-selection controls and updated Library guide/practice expectations.</li>
+<li>Kept Deal search and one-by-one browsing backed by the full catalog-derived dealable pool.</li>
+<li>Removed the Board Unassigned section and kept remove-from-board behavior only for Alex, Max, Save for later, and Not applicable categories.</li>
+<li>Separated Little Alex touch grab/drag state from ragdoll state, including pointer capture, touch cancellation, release velocity, and mobile/desktop regression coverage.</li>
+<li>Added implementation documentation in <code>docs/implementation/2026-05-08-catalog-deal-board-little-alex.md</code>.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm test -- --run</code> (89 files, 538 tests)</li>
+<li><code>npm run build</code></li>
+<li>Targeted Playwright for corrective responsive, Little Alex physics, guided learning, and auth-onboarding.</li>
+<li>Full <code>npm run test:e2e -- --workers=1</code> (28 tests).</li>
+<li>Local migration deploy applied <code>20260508120000_catalog_card_identity</code>; <code>prisma migrate dev --skip-seed</code> was blocked by local shadow DB permission <code>P3014</code>.</li>
+</ul>
+<h2 id="2026-05-08---deal-and-deck-naming-polish">2026-05-08 - Deal And Deck Naming Polish</h2>
+<p>Requested by the user: consider calling Distribute &quot;Deal&quot; as in dealing cards, and Your Cards &quot;Your Deck.&quot;</p>
+<p>Actions completed:</p>
+<ul>
+<li>Updated the primary app-shell tab labels to Your Deck and Deal while keeping stable routes <code>/app/your-cards</code> and <code>/app/distribute</code>.</li>
+<li>Updated Deal/Your Deck headings, search labels, empty states, onboarding/settings/crash-course links, and related tests.</li>
+<li>Updated current project memory/wiki/product docs to describe the new visible labels without changing route or data-model names.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>Focused Vitest passed: app shell, card workspace, crash-course flow, settings panel, and persistent welcome suites.</li>
+<li><code>npm run typecheck</code> and <code>npm run lint</code> passed.</li>
+<li>Targeted Playwright passed for the affected auth/onboarding, guided-learning, dark-mode, corrective responsive, and Little Alex nav specs: 20 tests.</li>
+</ul>
+<h2 id="2026-05-08---focused-patch-run">2026-05-08 - Focused Patch Run</h2>
+<p>Requested by the user: patch only the Distribute availability bug, the mobile More menu, and Little Alex intentional drag behavior; avoid broad Home/Board/Greg redesign; use subagents and separate branches where possible; merge fixes through ordered PRs; and confirm local/GitHub main alignment.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Merged PR #42 to keep the active Distribute card visible while a server move is pending and preserve remaining cards until they are assigned to Alex, Max, Saved for Later, or Not Applicable.</li>
+<li>Merged PR #44 to make the More menu a controlled visible menu with Check-in, Settings, Theory, and Card Library links, fixed mobile placement, and an outside-tap dismiss layer.</li>
+<li>Merged PR #43 to add Little Alex touch-intent gates, pointer-capture-safe drag activation, scroll cancellation, and helper-system documentation.</li>
+<li>Final rendered QA found and fixed leftover More-menu browser issues: a stale <code>[open]</code> CSS rule hid the controlled panel, bottom-nav blur constrained fixed overlay geometry, and pointerdown dismissal allowed click-through navigation.</li>
+<li>Added implementation/QA documentation at <code>docs/implementation/2026-05-08-focused-patch-run.md</code>.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>Baseline <code>npm test -- --run</code> passed on main before patching: 89 files, 517 tests.</li>
+<li>PR #42 focused Vitest, typecheck, and lint passed.</li>
+<li>PR #44 focused Vitest, typecheck, and lint passed.</li>
+<li>PR #43 focused Vitest, typecheck, and lint passed.</li>
+<li>Final integrated verification passed after rendered QA follow-up: Prisma validate, typecheck, lint, full Vitest (89 files, 520 tests), build, full Playwright e2e (27 tests), and rendered QA for Distribute, More, and Little Alex.</li>
+</ul>
+<h2 id="2026-05-08---mobile-card-ui-and-state-fix-pass">2026-05-08 - Mobile Card UI And State Fix Pass</h2>
+<p>Requested by the user: make the app revolve around the real Library card images across Distribute, Your Cards, and Board; fix mobile layout overflow; move the mobile Library overflow action to the bottom; remove the unnecessary welcome banner; make Little Alex grabbable on mobile; verify state movement across tabs; and use ordered sub-agent/PR workflow.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Merged PR #38 to expose <code>sourceCoverAssetPath</code> in responsibility summaries and add distribution state coverage.</li>
+<li>Merged PR #39 to move mobile overflow into the bottom navigation, constrain app/page shell width, remove the protected-app welcome banner surface, remove Settings welcome replay, and add touch fallback dragging for Little Alex.</li>
+<li>Merged PR #40 to redesign Distribute, Your Cards, and Board around image-first card components while keeping existing card-state helpers and server actions.</li>
+<li>Added implementation documentation at <code>docs/implementation/2026-05-08-mobile-card-ui-state-fix.md</code>.</li>
+<li>Updated project memory/wiki/product docs to reflect the current card-first mobile behavior and retired welcome surface.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>PR #38: focused responsibility/contract/repository suites, full Vitest, typecheck, and lint.</li>
+<li>PR #39: focused app-shell, guide, Settings, Little Alex, and distribution suites; full Vitest before merge; typecheck and lint.</li>
+<li>PR #40: focused card-workspace/distribution/shell/Little Alex suites, full Vitest, typecheck, and lint.</li>
+<li>Final integrated build/e2e/mobile smoke recorded in the implementation doc: Prisma validate, typecheck, lint, full Vitest, build, targeted responsive Playwright, and full Playwright all passed.</li>
+<li>Playwright QA caught and this pass fixed closed mobile overflow panel geometry overlapping Little Alex checks and duplicate fallback cover title text in compact Board cards.</li>
+</ul>
+<h2 id="2026-05-08---card-first-mobile-rebuild">2026-05-08 - Card-First Mobile Rebuild</h2>
+<p>Requested by the user: rebuild Fairplay as a polished mobile-first card responsibility app centered on swipe distribution, Your Cards, Board, Ask Greg, PWA/mobile safe areas, and simplified flip-card details.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Retired the homepage by redirecting <code>/app</code> and <code>/app/home</code> to Distribute.</li>
+<li>Added primary tabs: Your Cards, Distribute, Board, and Ask Greg, with Check-in, Theory, Settings, and Card Library behind overflow navigation.</li>
+<li>Added <code>CardWorkspace</code> and <code>card-state</code> mapping for normalized buckets over stable persisted lanes.</li>
+<li>Implemented Distribute search, card flip, swipe/arrow/button assignment, natural removal, and empty states.</li>
+<li>Implemented Your Cards as a card-file view with tap/click flip to assignment, purpose, and Fogging E-Standards.</li>
+<li>Implemented Board as grouped card buckets.</li>
+<li>Simplified card detail and Library card backs to purpose, Fogging E-Standards, and lane assignment only.</li>
+<li>Added PWA icons, manifest fields, viewport-fit cover, safe-area layout variables, and bottom-nav safe-area padding.</li>
+<li>Updated e2e specs from Home/Load Map expectations to the card-first flow.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>npm test -- --run</code>: 88 files, 510 tests passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run build</code>: passed.</li>
+<li><code>DATABASE_URL=... SESSION_SECRET=... npm run test:e2e</code>: 27 tests passed.</li>
+<li>Production iPhone 14 Playwright smoke passed for real auth, API-created cards, search, flip, Alex fallback button, touch swipe right to Max, Your Cards, Board, no document horizontal overflow, and PWA manifest fields.</li>
+</ul>
+<h2 id="2026-05-08---ordered-app-ux-polish">2026-05-08 - Ordered App UX Polish</h2>
+<p>Requested by the user: reduce text overload, strengthen backgrounds, simplify workflows, polish Home/Load Map/Library/Check-ins/Crash Course/Settings, and merge the fixes through ordered PRs.</p>
+<p>Actions completed so far:</p>
+<ul>
+<li>Merged UX foundation/background/copy, Load Map dashboard polish, Library/card practice polish, and lightweight Check-ins through PRs #32-#35.</li>
+<li>Strengthened generated backgrounds and theme-aware washes across the app shell and page hero surfaces.</li>
+<li>Shortened Home, Settings, Load Map, Library, Check-ins, card practice, and feature guide copy.</li>
+<li>Replaced the visible Check-ins workflow with scheduling, confirming that the check-in happened, and optional notes/minutes.</li>
+<li>Reworked Library card containment and replaced the six-tile move action with a compact destination control.</li>
+<li>Rewrote the Crash Course into concise concept-first storyboard frames with the app learning path only at the end.</li>
+<li>Updated current memory/wiki/product docs to reflect lightweight Check-ins and the final Crash Course polish.</li>
+</ul>
+<p>Verification so far:</p>
+<ul>
+<li>Focused unit/component suites passed on the completed branches.</li>
+<li>Current Crash Course focused suite passed: 2 files, 12 tests.</li>
+<li>Full lint, typecheck, Vitest, build, and responsive browser QA are still part of the final merge pass.</li>
+</ul>
+<h2 id="2026-05-07---learn-this-feature-onboarding-fixes">2026-05-07 - Learn This Feature Onboarding Fixes</h2>
+<p>Requested by the user: fix the Learn this feature onboarding workflows across Load Map, Library, Check-ins, and Settings using controller/worker subagents and focused branches.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Fixed the shared guide overlay so the explanation card is dynamically placed within the viewport and portaled above feature layouts.</li>
+<li>Fixed Settings guide startup so Settings launches the Settings-specific flow rather than Load Map.</li>
+<li>Clarified Check-ins dummy onboarding copy and action order.</li>
+<li>Added a temporary Library onboarding preview route that uses the learner&#39;s dummy request and does not persist a real card.</li>
+<li>Added reset events so dummy onboarding UI is removed on guide skip, completion, dismissal, or unmount.</li>
+<li>Added inline pointer/arrow callouts for the next required dummy action across Load Map, Library, Check-ins, and Settings.</li>
+<li>Left Crash Course unchanged.</li>
+<li>Added implementation documentation in <code>docs/implementation/2026-05-07-learn-feature-onboarding.md</code>.</li>
+</ul>
+<p>Branches and PRs:</p>
+<ul>
+<li><code>codex/onboarding-overlay-positioning</code>, PR #24.</li>
+<li><code>codex/onboarding-settings-checkins-flow</code>, PR #25.</li>
+<li><code>codex/onboarding-library-draft-generation</code>, PR #26.</li>
+<li><code>codex/onboarding-dummy-cleanup</code>, PR #27.</li>
+<li><code>codex/onboarding-click-guidance</code>, PR #28.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>Focused Vitest suites passed on each implementation branch.</li>
+<li><code>npm run typecheck</code> and <code>npm run lint</code> passed on each implementation branch.</li>
+<li>PR #28 Vercel preview failed before build because Prisma could not reach <code>db.prisma.io:5432</code> (<code>P1001</code>); the failure was documented on the PR and local validation passed.</li>
+</ul>
+<h2 id="2026-05-08---focused-patch-little-alex-deal-state-board-removal-check-in-history">2026-05-08 - Focused Patch: Little Alex, Deal State, Board Removal, Check-in History</h2>
+<p>Requested by the user: keep the existing FairPlay UI/behavior, pull latest main, investigate mobile Little Alex, fix swapped ragdoll hand assets, repair Deal/Library/Board card state, add Board removal, clean up Check-in scheduling, and persist Check-in history.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Confirmed local <code>main</code> and <code>origin/main</code> started on commit <code>4b7c580e3244f525188ff471eab88cd3ba8fc9c3</code>.</li>
+<li>Fixed Little Alex mobile grab alignment by keeping the grab overlay synced to the responsive sprite geometry, enlarging the mobile touch target, and exposing pending/dragging state for hold interactions.</li>
+<li>Corrected Little Alex ragdoll hand asset mapping without changing physics or assets.</li>
+<li>Normalized product card buckets through <code>bucketForCard</code>, including legacy active unowned <code>not_in_play</code> records as unclassified.</li>
+<li>Added <code>unassigned</code> distribution support so Board cards can be removed back to Deal/Library.</li>
+<li>Added a Library &quot;Cards ready to deal&quot; shelf backed by the same unclassified responsibility pool as Deal.</li>
+<li>Removed the visible Check-in guide launcher, split scheduling into consistent date/time pickers, and added persisted Check-in history rows.</li>
+<li>Updated Playwright coverage for real Check-in persistence, Board removal returning to Deal/Library, and corrected Little Alex sprite mapping.</li>
+<li>Documented findings, assumptions, QA steps, and state model changes in <code>docs/implementation/2026-05-08-focused-patch-alex-deal-checkins.md</code>.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run prisma:generate</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm test -- --run</code> (89 files / 530 tests)</li>
+<li><code>npm run build</code></li>
+<li><code>npx playwright test e2e/check-in.spec.ts e2e/corrective-responsive-visual.spec.ts --project=chromium</code></li>
+<li><code>npx playwright test e2e/little-alex-physics.spec.ts --project=chromium</code></li>
+<li><code>npm run test:e2e</code> (28 tests)</li>
+</ul>
+<h2 id="2026-05-07---crash-course-storyboard-refresh">2026-05-07 - Crash Course Storyboard Refresh</h2>
+<p>Requested by the user: put the crash-course storyboard and course text close together, make the text read like subtitles for the images, break the course into more parts, and generate new Qwen images that follow the course text.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Reworked the crash course from 5 long lessons into 14 short storyboard frames.</li>
+<li>Updated the crash-course UI so the image and subtitle-style course text live in the same framed stage, with storyboard number tabs and previous/next/finish controls nearby.</li>
+<li>Generated 14 new Qwen crash-course PNGs under <code>public/assets/fairplay/generated-ui/crash-course/</code>.</li>
+<li>Tightened generated UI prompts to treat crash-course art as silent storyboard frames with no labels, captions, UI text, readable text, or pseudo-writing.</li>
+<li>Preserved desktop right padding on the immersive route so Little Alex does not overlap subtitle controls.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>npm run assets:generate-ui -- --skip-existing --delay-ms=0</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm test -- --run</code></li>
+<li><code>npm run build</code></li>
+<li><code>npx playwright test e2e/corrective-responsive-visual.spec.ts --project=chromium --grep &quot;captures real app pages across responsive viewport sizes&quot;</code></li>
+</ul>
+<h2 id="2026-05-07---board-lane-compatibility-decision">2026-05-07 - Board Lane Compatibility Decision</h2>
+<p>Requested by the user: use the recommended board lane path before opening the PR to main.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Kept <code>ResponsibilityBoardLane</code> enum/API/database values stable.</li>
+<li>Documented that <code>cards_of_concern</code>, <code>player_1</code>, <code>player_2</code>, and <code>kid_split</code> are persisted keys with UI label mapping.</li>
+<li>Marked any future board lane rename as a separate compatibility migration rather than part of the Radar cleanup.</li>
+</ul>
+<h2 id="2026-05-07---radar-removal-documentation-update">2026-05-07 - Radar Removal Documentation Update</h2>
+<p>Requested by the user: update active project documentation only, within the approved docs scope, so current architecture and data-model docs reflect that the Radar backend/API/model/assets were removed in the cleanup pass.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Rewrote current-state memory/wiki/data-model/deployment references so Radar is no longer documented as an active product area, API, service, contract, Prisma model, load-snapshot metric, or generated asset set.</li>
+<li>Left only historical/removal references where they explain the cleanup or existing migration history.</li>
+<li>After implementation, applied the removal migration locally and verified the DB-backed repository suite through the full Vitest run.</li>
+</ul>
+<h2 id="2026-05-07---repo-index-and-memory-bootstrap">2026-05-07 - Repo Index And Memory Bootstrap</h2>
+<p>Requested by the user: use the memory/context skill pack on the existing project, index the haphazard repo before feature changes, create standard memory files, create wiki index/architecture/file-map pages, mark unclear/dead/suspicious files as <code>needs verification</code>, and finish with cleanup/refactor guidance.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Routed memory scope with <code>context-scope-router</code>.</li>
+<li>Confirmed standard memory files were missing.</li>
+<li>Used <code>project-context-bootstrap</code> and <code>ambient-context-retrieval</code>.</li>
+<li>Inspected README, package/config files, route inventories, App Router entrypoints, Prisma schema, migrations, tests, docs, agent logs, public assets, and major source directories.</li>
+<li>Created <code>AGENTS.md</code>.</li>
+<li>Created <code>docs/context/PROJECT.md</code>.</li>
+<li>Created <code>docs/context/STATUS.md</code>.</li>
+<li>Created <code>docs/context/DECISIONS.md</code>.</li>
+<li>Created <code>docs/context/SOURCES.md</code>.</li>
+<li>Created <code>docs/context/SKILLS.md</code>.</li>
+<li>Created <code>docs/context/LOG.md</code>.</li>
+<li>Created <code>docs/wiki/index.md</code>.</li>
+<li>Created <code>docs/wiki/architecture.md</code>.</li>
+<li>Created <code>docs/wiki/file-map.md</code>.</li>
+</ul>
+<p>Important findings:</p>
+<ul>
+<li><code>main</code> was clean and tracking <code>origin/main</code> before edits.</li>
+<li>The repo has substantial implementation and test coverage already, plus extensive agent task history.</li>
+<li>Current app surface no longer has a Radar page. A later cleanup pass removed the Radar backend/API/model/assets from the active product surface.</li>
+<li>Theme-only <code>localStorage</code> is allowed for non-sensitive UI preference; household/private/secrets storage remains prohibited in browser storage.</li>
+<li>DB-backed verification remains the recurring release concern when Postgres/Docker is unavailable.</li>
+<li>Ignored local clutter exists (<code>.DS_Store</code>, <code>tsconfig.tsbuildinfo</code>, local env/reference/build/test artifacts); no tracked matches were found for the checked ignored private/generated files.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li>Confirmed all requested memory/wiki files are present and non-empty.</li>
+<li>Ran a trailing-whitespace scan over <code>AGENTS.md</code>, <code>docs/context</code>, and <code>docs/wiki</code>; no matches.</li>
+<li>Did not rerun full app test suites because this pass changed documentation/index files only.</li>
+</ul>
+<h2 id="2026-05-09---dynamic-redesign-implementation">2026-05-09 - Dynamic Redesign Implementation</h2>
+<p>Requested by the user: implement the approved website redesign, keep mock assets out of the runtime app, make the redesign dynamic rather than specifically light/white, avoid breaking behavior, and finish with local/GitHub on the same merged commit.</p>
+<p>Actions completed:</p>
+<ul>
+<li>Converted the approved mock direction into a theme-adaptive app polish pass using Fairplay CSS tokens for page gradients, chrome, panels, cards, inputs, and active navigation.</li>
+<li>Updated shared shell/auth/UI primitives plus the main app pages: Your Deck, Deal, Board, Ask Greg, Check-ins, Theory, Settings, Card Library, Onboarding, and responsibility detail/edit surfaces.</li>
+<li>Preserved existing public assets; mock images were not copied into the app and no runtime asset replacement was performed.</li>
+<li>Increased the dark-mode visual QA timeout to reflect the heavier multi-page full-page screenshot pass.</li>
+</ul>
+<p>Verification:</p>
+<ul>
+<li><code>git diff --check</code></li>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm test -- --run</code></li>
+<li><code>npm run build</code></li>
+<li><code>npx playwright test e2e/dark-mode-visual.spec.ts</code></li>
+<li><code>npx playwright test e2e/little-alex-physics.spec.ts -g &quot;uses a static draggable-safe mode with reduced motion&quot;</code></li>
+<li><code>npm run test:e2e</code></li>
+<li>Browser-rendered authenticated QA across the main protected app pages, each with expected headings and zero console errors.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

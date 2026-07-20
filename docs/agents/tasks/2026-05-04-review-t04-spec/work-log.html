@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t04-spec/work-log.md">
+  <meta name="fairplay-document-source-sha256" content="763d7cc79878da7f5bdcc22c251cd467f2340e80f9b9535264517877edf0bafe">
+  <title>docs/agents/tasks/2026-05-04-review-t04-spec/work-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="work-log.md"><code>docs/agents/tasks/2026-05-04-review-t04-spec/work-log.md</code></a></p>
+    <article>
+<h1 id="work-log">Work Log</h1>
+<h2 id="2026-05-04">2026-05-04</h2>
+<ul>
+<li>Started T04 spec compliance review on <code>codex/v1-app</code> in <code>/Users/vishal/Developer/Fairplay/.worktrees/v1-app</code>.</li>
+<li>Read T04 and global constraints in <code>docs/superpowers/plans/2026-05-04-fairplay-v1-implementation.md</code>.</li>
+<li>Read <code>docs/product/user-flows.md</code>, <code>docs/product/ip-safety-review.md</code>, and <code>docs/agents/tasks/2026-05-04-gap-review/handoff.md</code>.</li>
+<li>Inspected T04 diff range <code>8865b093e92df346c4cfb58dd79ec97a52179e1b..1a795c87404a3ead864809af58408c0d5af39e74</code>.</li>
+<li>Reviewed password hashing metadata, session token hashing, cookie options, create-household/login/logout/me/persona routes, middleware redirects, browser storage usage, and T04 artifacts.</li>
+<li>Ran required verification commands:<ul>
+<li><code>git status --short</code>: clean before artifact edits.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm test -- --run src/server/auth src/app/api/auth src/app/api/personas</code>: passed, 7 files and 11 tests.</li>
+<li><code>npm test -- --run src/middleware.test.ts</code>: passed, 1 file and 3 tests.</li>
+<li><code>npm run build</code>: passed with the existing Next.js edge-runtime static-generation warning.</li>
+</ul>
+</li>
+<li>Recorded one blocking spec finding: authenticated reads validate idle expiration from <code>lastSeenAt</code> but do not refresh <code>lastSeenAt</code>, so &quot;idle&quot; expiration behaves like a seven-day cap from session creation or persona switch rather than seven days from last activity.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

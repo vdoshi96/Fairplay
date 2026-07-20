@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/helper-system/branch-log.md">
+  <meta name="fairplay-document-source-sha256" content="e01dc5ff05ca40493c0c68bf8b05364fe52bb88a815be6ac2bd59c4552dad826">
+  <title>docs/helper-system/branch-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="branch-log.md"><code>docs/helper-system/branch-log.md</code></a></p>
+    <article>
+<h1 id="helper-branch-log">Helper Branch Log</h1>
+<h2 id="helper-docs-and-investigation">helper-docs-and-investigation</h2>
+<ul>
+<li>Commit: <code>2a5fbc4</code></li>
+<li>Scope: documented current helper architecture, ragdoll root cause, skin tone root cause, implementation plan, QA checklist, pain points, asset workflow, and agent handoff.</li>
+<li>Checks: <code>npm run lint</code>, <code>npm run typecheck</code>, and <code>npm run build</code> passed.</li>
+<li>Manual QA: not applicable; this branch changed markdown only.</li>
+</ul>
+<h2 id="helper-ragdoll-state">helper-ragdoll-state</h2>
+<ul>
+<li>Scope: added a visual-only ragdoll lifecycle contract with <code>settled</code>, <code>dragging</code>, <code>flinging</code>, and <code>recovering</code> states.</li>
+<li>TDD red: <code>npm test -- src/components/little-alex/little-alex-physics.test.tsx --run</code> failed because <code>data-ragdoll-state</code> did not exist.</li>
+<li>TDD green: same focused test command passed after adding lifecycle hooks.</li>
+<li>Checks: <code>npm run lint</code>, <code>npm run typecheck</code>, and <code>npm run build</code> passed.</li>
+<li>Implementation note: this branch does not reveal limb sprites yet. It only adds the state hooks needed by the limb branch and leaves existing Matter.js velocity, walls, phrase bubble, idle timing, walking speed, and reduced-motion behavior unchanged.</li>
+</ul>
+<h2 id="helper-ragdoll-limbs">helper-ragdoll-limbs</h2>
+<ul>
+<li>Scope: rendered presentation-specific limb sprites inside the existing Matter.js body-part wrappers and toggled their visibility from the ragdoll visual state.</li>
+<li>TDD red: <code>npm test -- src/components/little-alex/little-alex-physics.test.tsx --run</code> failed because <code>little-alex-sprite</code> limb images were not present.</li>
+<li>TDD green: same focused test command passed after adding the limb sprite layer and opacity sync.</li>
+<li>Checks: <code>npm run lint</code>, <code>npm run typecheck</code>, and <code>npm run build</code> passed.</li>
+<li>Implementation note: the full-body sprite remains the visible settled/idle/reduced-motion character. Limb sprites are visible only for fling/recovery, then hide after the existing recovery timer and transition. The root/body trajectory still follows the existing Matter.js torso body.</li>
+</ul>
+<h2 id="helper-skin-tone-fix">helper-skin-tone-fix</h2>
+<ul>
+<li>Scope: added tone-aware visible sprite paths, centralized skin tone constants, deterministic skin tone asset generation, and 105 generated full/part PNG assets.</li>
+<li>TDD red: focused tests failed because the renderer still used presentation-only sprite paths and the tone assets were missing.</li>
+<li>TDD green: focused tests passed after path changes and generated assets.</li>
+<li>Checks: <code>npm run assets:generate-little-alex-skin-tones -- --dry-run</code>, <code>npm run assets:generate-little-alex-skin-tones</code>, focused Vitest coverage, <code>npm run lint</code>, <code>npm run typecheck</code>, and <code>npm run build</code> passed.</li>
+<li>Asset note: Qwen was not called on this branch. The script used existing approved Qwen assets as source images and Sharp for deterministic skin-pixel recoloring.</li>
+</ul>
+<h2 id="helper-polish-and-qa">helper-polish-and-qa</h2>
+<ul>
+<li>Scope: tightened the recovery transition so the visible limb layer enters <code>recovering</code> before idle pose sync writes neutral transforms.</li>
+<li>QA hardening: added e2e coverage for visible, connected limb sprites during both <code>flinging</code> and <code>recovering</code>, including full-body fade-out and body-part opacity checks.</li>
+<li>Checks: focused Vitest coverage, <code>npm run lint</code>, <code>npm run typecheck</code>, <code>npm run build</code>, and <code>npm run test:e2e -- little-alex-physics.spec.ts</code> passed.</li>
+<li>Documentation: refreshed the README skin-tone root cause text and QA checklist to reflect the implemented tone-aware sprite pipeline.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

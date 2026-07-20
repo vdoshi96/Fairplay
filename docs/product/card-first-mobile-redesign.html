@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/product/card-first-mobile-redesign.md">
+  <meta name="fairplay-document-source-sha256" content="d11b97963a1865cb95b31d3d42ddc8c88a78dfb989dc8e6d5e9c15bcff3aeb15">
+  <title>docs/product/card-first-mobile-redesign.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="card-first-mobile-redesign.md"><code>docs/product/card-first-mobile-redesign.md</code></a></p>
+    <article>
+<h1 id="card-first-mobile-redesign">Card-First Mobile Redesign</h1>
+<p>Last updated: 2026-05-08</p>
+<h2 id="rationale">Rationale</h2>
+<p>Fairplay is now centered on responsibility cards instead of a learning homepage or dashboard-first flow. The previous Home, Load Map, and Library model asked users to understand too many surfaces before doing the main job. The redesigned product puts one repeated action at the center: decide where the next responsibility card belongs.</p>
+<p>The design follows current mobile guidance: primary content must fit the device width without horizontal page overflow, touch targets must be at least 44px, swipe gestures need visible alternatives, and PWA presentation needs a manifest, icons, theme color, viewport settings, and safe-area-aware fixed navigation.</p>
+<h2 id="information-architecture">Information Architecture</h2>
+<p>Primary tabs:</p>
+<ul>
+<li>Your Deck: the effective home after cards are dealt. Shows cards assigned to the current persona in a searchable, cadence-filterable, image-first gallery.</li>
+<li>Deal: the card-swipe deck with a visible available-card list. Left assigns Alex, right assigns Max, up saves for later, and down marks not applicable.</li>
+<li>Board: a grouped card board for Alex, Max, Saved for Later, Not Applicable, and Unassigned, stacked/collapsible on mobile instead of horizontally scrolling lanes.</li>
+<li>Ask Greg: a focused card-generation and advisor surface.</li>
+</ul>
+<p>Overflow menu:</p>
+<ul>
+<li>Check-in</li>
+<li>Theory</li>
+<li>Settings</li>
+<li>Card Library</li>
+</ul>
+<p>On mobile, the overflow menu lives in the bottom navigation/action area so Card Library remains thumb-reachable.</p>
+<p>Legacy routing:</p>
+<ul>
+<li><code>/app/home</code> redirects away from the retired homepage.</li>
+<li><code>/app/load-map</code> redirects to the Board.</li>
+<li><code>/app/crash-course</code> remains the learning route but is labeled Theory in navigation.</li>
+<li>Root and post-login persona selection land on Deal.</li>
+</ul>
+<h2 id="card-state-model">Card State Model</h2>
+<p>The database keeps existing <code>ResponsibilityBoardLane</code> values for compatibility. The product layer maps them to normalized card buckets:</p>
+<div class="table-scroll" role="region" aria-label="Documentation table" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Product bucket</th>
+<th scope="col">Persisted lane</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>unassigned</code></td>
+<td><code>cards_of_concern</code></td>
+<td>Needs distribution</td>
+</tr>
+<tr>
+<td><code>alex</code></td>
+<td><code>player_1</code></td>
+<td>Assigned to Alex</td>
+</tr>
+<tr>
+<td><code>max</code></td>
+<td><code>player_2</code></td>
+<td>Assigned to Max</td>
+</tr>
+<tr>
+<td><code>savedForLater</code></td>
+<td><code>not_in_play</code></td>
+<td>Saved for later</td>
+</tr>
+<tr>
+<td><code>notApplicable</code></td>
+<td><code>trimmed</code></td>
+<td>Not applicable</td>
+</tr>
+</tbody></table></div>
+<p><code>kid_split</code> is legacy-compatible and displays as Unassigned until a dedicated migration decides whether to remove or remap it.</p>
+<h2 id="swipe-behavior">Swipe Behavior</h2>
+<ul>
+<li>Swipe left: assign to Alex.</li>
+<li>Swipe right: assign to Max.</li>
+<li>Swipe up: save for later.</li>
+<li>Swipe down: mark not applicable.</li>
+<li>Arrow keys mirror the gestures on desktop.</li>
+<li>Buttons are always visible for users who do not use gestures or assistive technology users who need an alternate input.</li>
+<li>Gesture instructions sit directly under the Deal search bar so the visible card and gesture meanings are read together.</li>
+<li>Touch gestures wait for clear card-swipe intent before preventing page scroll; vertical card actions require a stronger movement threshold than horizontal assignment.</li>
+<li>A successful distribution removes the top card from the deck. When the deck is empty, the empty state says: “No more cards to distribute. Generate more cards when ready.”</li>
+<li>The latest successful Deal assignment can be undone once, returning the card to the dealable pool and removing it from the assigned bucket.</li>
+<li>All available distributable cards remain visible in the side/below deck list, and selecting one promotes it to the active swipe card.</li>
+</ul>
+<h2 id="mobile-and-pwa">Mobile And PWA</h2>
+<ul>
+<li>Bottom tabs use fixed safe-area padding so they do not collide with iPhone home indicators.</li>
+<li>Content uses <code>svh</code>, safe-area variables, and no document-level horizontal overflow.</li>
+<li>Touch controls are at least 44px high.</li>
+<li>The app manifest and Apple web app metadata remain Vercel-hostable through Next.js App Router metadata routes.</li>
+<li>Service worker behavior is intentionally minimal and must not cache household data.</li>
+</ul>
+<h2 id="qa-checklist">QA Checklist</h2>
+<ul>
+<li>Mobile Safari-width layout has no horizontal overflow.</li>
+<li>Bottom navigation is reachable and clear of safe areas.</li>
+<li>Swipe deck works with touch, mouse drag, and arrow keys.</li>
+<li>Buttons perform the same actions as swipes.</li>
+<li>Empty states render for no distributable cards and no owned cards.</li>
+<li>Board groups all buckets with card-like components, not table panels.</li>
+<li>Your Deck and Board show the same Library cover art used by source cards.</li>
+<li>Mobile overflow opens from the bottom navigation, not the top app bar.</li>
+<li>Little Alex is desktop-only; mobile and touch-first layouts should not render the helper or reserve helper space.</li>
+<li>Ask Greg can create/review drafts using existing AI card flows.</li>
+<li>Root, login, and persona selection land on Deal.</li>
+<li>Vercel build path remains <code>npm run build</code>.</li>
+</ul>
+<h2 id="known-limitations">Known Limitations</h2>
+<ul>
+<li>Card bucket state uses the existing board-lane column rather than a new database enum to avoid a compatibility migration in this pass.</li>
+<li>Assignment records are updated for Alex/Max ownership moves and cleared for Saved for Later or Not Applicable. Historical lifecycle context is not rewritten by this pass.</li>
+<li>Deal Undo is last-action-only in this pass.</li>
+<li>iOS Add to Home Screen behavior still needs manual device verification outside automated Playwright.</li>
+</ul>
+<h2 id="future-improvements">Future Improvements</h2>
+<ul>
+<li>Add a dedicated <code>cardBucket</code> persistence field once compatibility and migration strategy are approved.</li>
+<li>Make generated cards enter the Deal deck directly after Greg finishes a draft.</li>
+<li>Add haptic-like visual feedback for successful swipes while respecting reduced motion.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

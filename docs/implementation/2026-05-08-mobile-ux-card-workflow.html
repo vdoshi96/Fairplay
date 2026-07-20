@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-08-mobile-ux-card-workflow.md">
+  <meta name="fairplay-document-source-sha256" content="5ed4a5ed92d869c45603fa2e0a1bd6117757f3ce3cc3bbba659f3b057bb4e591">
+  <title>docs/implementation/2026-05-08-mobile-ux-card-workflow.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-08-mobile-ux-card-workflow.md"><code>docs/implementation/2026-05-08-mobile-ux-card-workflow.md</code></a></p>
+    <article>
+<h1 id="mobile-ux-card-workflow-fix">Mobile UX Card Workflow Fix</h1>
+<p>Date: 2026-05-08</p>
+<h2 id="what-changed">What Changed</h2>
+<ul>
+<li>Little Alex now renders only on desktop pointer layouts: <code>(min-width: 1024px) and (hover: hover) and (pointer: fine)</code>.</li>
+<li>Mobile and touch-first layouts do not render Little Alex or reserve inline helper space, so the helper cannot compete with page scrolling.</li>
+<li>Settings includes a compact mobile-only note: “Little Alex is available on desktop. Open FairPlay on a desktop browser to play with him.”</li>
+<li>Ask Greg layout wrappers, draft cards, review panels, inputs, and buttons now constrain to the viewport with <code>min-w-0</code>, <code>max-w-full</code>, wrapping text, and mobile padding.</li>
+<li>Deal swipe instructions moved directly under search and above the active card.</li>
+<li>Deal stores the last successful assignment and exposes a one-step Undo that returns the card to the dealable pool.</li>
+<li>Card detail “Fogging Estandards” now uses an editable textarea backed by <code>Responsibility.householdStandard</code>; the purpose section remains read-only.</li>
+<li>Card backs and detail text use wrapping/expanding containers instead of clipped fixed-height text.</li>
+</ul>
+<h2 id="mobile-gesture-thresholds">Mobile Gesture Thresholds</h2>
+<p>Deal cards intentionally avoid locking touch gestures on <code>pointerdown</code>.</p>
+<ul>
+<li><code>TOUCH_SCROLL_DISTANCE_PX = 12</code>: once a touch moves vertically by at least 12px and vertical movement clearly dominates, the card drag is canceled so the page can scroll normally.</li>
+<li><code>TOUCH_DRAG_LOCK_DISTANCE_PX = 18</code>: horizontal card dragging starts only after a small but clear horizontal movement.</li>
+<li><code>HORIZONTAL_SWIPE_DISTANCE_PX = 112</code>: left/right assignment requires a committed horizontal drag, not a tap or small nudge.</li>
+<li><code>VERTICAL_SWIPE_DISTANCE_PX = 176</code>: up/down actions require a stronger drag than horizontal assignment because normal phone scrolling is vertical.</li>
+<li><code>HORIZONTAL_DOMINANCE_RATIO = 1.25</code>: left/right assignment requires horizontal movement to clearly exceed vertical movement.</li>
+<li><code>VERTICAL_DOMINANCE_RATIO = 1.45</code>: up/down assignment requires even stronger vertical dominance to avoid accidental Not Applicable or Save for later actions during scroll.</li>
+</ul>
+<p>The thresholds bias toward preserving page scroll on mobile. Button actions remain visible for all four Deal destinations.</p>
+<h2 id="manual-qa-steps">Manual QA Steps</h2>
+<ul>
+<li>Mobile 320px and 390px: open Deal, scroll the page starting on the card, and confirm no card is assigned.</li>
+<li>Mobile 320px and 390px: intentionally swipe left/right on the card and confirm Alex/Max assignment still works.</li>
+<li>Mobile: assign by button, confirm Undo appears, tap Undo, and confirm the same card returns to Deal.</li>
+<li>Mobile: open Settings and confirm Little Alex is absent from the page but the desktop-only note is visible in the Little Alex section.</li>
+<li>Desktop: open a protected app route and confirm Little Alex appears, can be dragged/flung, and still respects reduced motion.</li>
+<li>Mobile: open Ask Greg and confirm capture, tracker, review panel, message text, inputs, and buttons do not overflow horizontally.</li>
+<li>Mobile: open a card detail page with long purpose text, confirm it wraps, edit Fogging Estandards, save, navigate away/back, and confirm the edit persists.</li>
+<li>Desktop: spot-check Deal, Board, Your Deck, Library, and card detail workflows for unchanged card movement behavior.</li>
+</ul>
+<h2 id="verification-run">Verification Run</h2>
+<ul>
+<li><code>npm run prisma:validate</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm run build</code></li>
+<li><code>npm run test:e2e</code> passed with 28 Playwright tests.</li>
+<li><code>npm test -- --run</code> passed with 90 files and 549 tests.</li>
+<li>Browser QA against <code>http://localhost:3102</code> confirmed desktop Little Alex rendering, mobile Little Alex absence, mobile Settings note, Deal instructions, last-action Undo, Ask Greg mobile mount, and card-detail Estandards persistence after navigation.</li>
+<li>A Chromium 320px touch-input probe confirmed vertical touch movement on the active Deal card did not assign, intentional horizontal touch movement did assign, Undo restored the card, and Ask Greg document overflow was 0px.</li>
+</ul>
+<h2 id="known-limitations">Known Limitations</h2>
+<ul>
+<li>Undo is last-action-only for this pass.</li>
+<li>Vertical touch card actions are deliberately harder to trigger than horizontal assignment; use the visible buttons when phone scrolling takes priority.</li>
+<li>Little Alex settings remain editable on mobile, but the helper itself only renders on desktop pointer layouts.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

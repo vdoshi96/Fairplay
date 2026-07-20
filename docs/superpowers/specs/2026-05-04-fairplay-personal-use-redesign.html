@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/specs/2026-05-04-fairplay-personal-use-redesign.md">
+  <meta name="fairplay-document-source-sha256" content="cb9a7f205c704ba7d216e44fc7ba2b3f438023d2fc972e037ff688c5f813830a">
+  <title>docs/superpowers/specs/2026-05-04-fairplay-personal-use-redesign.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-04-fairplay-personal-use-redesign.md"><code>docs/superpowers/specs/2026-05-04-fairplay-personal-use-redesign.md</code></a></p>
+    <article>
+<h1 id="fairplay-personal-use-redesign-spec">Fairplay Personal-Use Redesign Spec</h1>
+<h2 id="intent">Intent</h2>
+<p>Redesign Fairplay from a plain household-planning MVP into a polished personal-use app that uses the user&#39;s Fair Play reference materials, live Trello copy, workbook, PDF deck, and book-report research as first-class product inputs.</p>
+<p>This spec supersedes the earlier v1 constraint that limited the app to a tiny invented seed set. The new product direction is private/personal use: the app may use original card titles, Trello board structure, card labels, CPE content, minimum standards, deck-inspired layout cues, and book-derived concepts from the local references and the user&#39;s Trello workspace copy.</p>
+<p>The implementation must still keep source-derived material private to this user&#39;s repository/deployment and avoid presenting copied long source passages in public docs, public marketing, or assistant responses.</p>
+<h2 id="required-inputs">Required Inputs</h2>
+<p>Implementation must use these artifacts as design and content references:</p>
+<ul>
+<li>Live Trello board: <code>Fairplay Copy</code> in Viahal&#39;s Workspace, board id <code>69f82d290f1cabd66e0fad29</code>.</li>
+<li>Trello lists: <code>Cards of Concern</code>, <code>Player 1</code>, <code>Player 2</code>, <code>Kid Split</code>, <code>Not in Play</code>, <code>Trimmed</code>.</li>
+<li>Trello labels: <code>Daily Grind</code>, <code>Caregiving</code>, <code>Out</code>, <code>Home</code>, <code>Magic</code>, <code>Wild</code>, <code>Happiness Trio</code>, <code>Kids</code>, <code>Kid Split</code>.</li>
+<li>Trello cards: the 100-card library currently in <code>Not in Play</code>, including card names, labels, descriptions, CPE sections, minimum standards, and PNG cover attachments.</li>
+<li>Workbook: <code>References/Copy of Fair Play Breakdown - Generic.xlsx</code>.</li>
+<li>Printable deck PDF: <code>References/61eb57f42331adae6bb733d1_Fairplay-PrintableCards.pdf</code>.</li>
+<li>Fair Play EPUB report: <code>docs/research/fair-play-book-report.md</code> and duplicate <code>References/fair-play-book-report.md</code>.</li>
+<li>A Better Share EPUB report: <code>docs/research/a-better-share-book-report.md</code> and duplicate <code>References/a-better-share-book-report.md</code>.</li>
+<li>Existing app code: <code>/Users/vishal/Developer/Fairplay/.worktrees/v1-app</code>.</li>
+</ul>
+<h2 id="product-promise">Product Promise</h2>
+<p>Fairplay should feel like a production-grade household operating system for a couple or family learning to use a card/deck model. It should make invisible work visible, help users understand ownership rather than mere helping, support CPE handoffs, and turn recurring tension into calm board movements, standards, radar notes, and check-ins.</p>
+<p>The target experience is not a generic chore tracker. It is a guided, tactile, studio-quality interpretation of the Fair Play workflow for personal use.</p>
+<h2 id="product-principles">Product Principles</h2>
+<ul>
+<li><strong>Ownership over chores:</strong> A card represents accountable ownership of a responsibility, not just a visible task.</li>
+<li><strong>CPE made visible:</strong> Conception, Planning, and Execution should be understandable from onboarding and inspectable in each card detail.</li>
+<li><strong>Standards before judgment:</strong> Each card should support a household-specific definition of &quot;done well enough&quot; or minimum acceptable standard.</li>
+<li><strong>Fair is dynamic:</strong> The app should encourage re-deals, handoffs, and reviews as life changes.</li>
+<li><strong>No scorekeeping as verdict:</strong> Counts and distributions are useful signals, not moral grades or partner diagnoses.</li>
+<li><strong>Board movement should mean something:</strong> Dragging a card into a lane should persist ownership/status/order and explain the implication.</li>
+<li><strong>Private preparation is valid:</strong> A solo starter can read, sort, and draft before sharing or discussing.</li>
+<li><strong>Polished enough to trust:</strong> The UI should feel deliberate, tactile, and refined, closer to a premium Apple-quality app than a Tailwind wireframe.</li>
+</ul>
+<h2 id="core-information-architecture">Core Information Architecture</h2>
+<p>The app should shift from separate plain pages into a cohesive board-centered product:</p>
+<ul>
+<li><code>/app/home</code>: polished command-center overview with deck progress, active owner counts, due reviews, open radar, next check-in, and crash-course progress.</li>
+<li><code>/app/load-map</code>: primary Trello-style board for responsibility cards.</li>
+<li><code>/app/library</code>: searchable full card library, source labels, card cover previews, and template/detail browsing.</li>
+<li><code>/app/cards/[id]</code> or <code>/app/responsibilities/[id]</code>: rich card detail sheet/page.</li>
+<li><code>/app/radar</code>: attention board for concerns and unclear standards.</li>
+<li><code>/app/check-ins</code>: guided review rituals and previous summaries.</li>
+<li><code>/app/crash-course</code>: skippable, replayable concept course.</li>
+<li><code>/app/settings</code>: household/persona controls, crash-course replay, welcome replay, data/import controls, logout.</li>
+</ul>
+<p>The app shell should include active route state, icons, a premium mobile tab bar, a desktop sidebar or split header, an active persona menu, and persistent welcome/crash-course entry points.</p>
+<h2 id="trello-style-load-board">Trello-Style Load Board</h2>
+<p>The Load Map should become a horizontal lane board using the live Trello structure as the baseline:</p>
+<ul>
+<li><code>Not in Play</code>: library/reserve cards that are not currently active.</li>
+<li><code>Cards of Concern</code>: cards needing discussion, standards, support, or review.</li>
+<li><code>Player 1</code>: cards owned by the first persona.</li>
+<li><code>Player 2</code>: cards owned by the second persona.</li>
+<li><code>Kid Split</code>: cards intentionally split by child, context, season, or sub-responsibility.</li>
+<li><code>Trimmed</code>: cards intentionally removed, paused, dropped, or irrelevant for now.</li>
+</ul>
+<p>Board requirements:</p>
+<ul>
+<li>Cards must be draggable between lanes on desktop and touch devices.</li>
+<li>Cards must also be movable by keyboard and explicit action menus.</li>
+<li>Dropping a card into a lane must persist lane, sort order, owner/status implications, and an event.</li>
+<li>The board must support filtering by label, owner, cadence, hidden load type, review state, and search text.</li>
+<li>Lane headers should show counts, concise explanations, and subtle color identity.</li>
+<li>Empty lanes should teach what belongs there without looking like placeholder scaffolding.</li>
+<li>Card movement should feel tactile: lift, shadow, scale, snap, and destination highlight, respecting reduced motion.</li>
+</ul>
+<p>Recommended technical path:</p>
+<ul>
+<li>Use <code>@dnd-kit/core</code> and sortable utilities for accessible drag/drop.</li>
+<li>Add first-class board placement fields rather than deriving lanes purely from visual state.</li>
+<li>Keep ownership and status fields canonical so future mobile/iOS clients do not depend on a web-only board abstraction.</li>
+</ul>
+<h2 id="card-library-and-source-deck-content">Card Library and Source Deck Content</h2>
+<p>The current 8-template seed is insufficient. The app should import the full 100-card personal-use library from Trello/workbook sources.</p>
+<p>Each template/card should store:</p>
+<ul>
+<li>Source/Trello card id.</li>
+<li>Slug.</li>
+<li>Title.</li>
+<li>Labels/categories.</li>
+<li>Definition/overview.</li>
+<li>Conception section.</li>
+<li>Planning section.</li>
+<li>Execution section.</li>
+<li>Minimum standard.</li>
+<li>Locally imported cover asset path under <code>/assets/fairplay/cards/</code>.</li>
+<li>Source version/import timestamp.</li>
+<li>Default lane, usually <code>Not in Play</code>.</li>
+<li>Optional flags such as Daily Grind, Happiness Trio, Kids, Kid Split, Wild.</li>
+</ul>
+<p>Each household responsibility instance should store:</p>
+<ul>
+<li>Template id nullable.</li>
+<li>Household-specific title override.</li>
+<li>Household-specific standard override.</li>
+<li>Notes.</li>
+<li>Lane.</li>
+<li>Board sort order.</li>
+<li>Owner/persona assignment state.</li>
+<li>CPE progress/notes.</li>
+<li>Cadence and relevant days.</li>
+<li>Visibility.</li>
+<li>Review dates.</li>
+<li>Radar links.</li>
+<li>Event history.</li>
+</ul>
+<p>The UI should clearly distinguish a source template from the household&#39;s working instance. Users should be able to browse source content, copy it into play, edit household-specific details, and preserve the original template for later reference.</p>
+<h2 id="source-asset-storage">Source Asset Storage</h2>
+<p>All Trello/deck card cover PNGs must be downloaded into the repository and committed to GitHub with the implementation branch. The app must reference local public assets such as <code>/assets/fairplay/cards/auto.png</code>; it must not hotlink Trello attachment URLs at runtime.</p>
+<p>Asset requirements:</p>
+<ul>
+<li>Store source card covers in <code>public/assets/fairplay/cards/</code>.</li>
+<li>Use stable slug-based filenames that match the template slug.</li>
+<li>Store an asset manifest or template field that maps each source card to its local <code>coverAssetPath</code>.</li>
+<li>Verify every non-null <code>coverAssetPath</code> exists on disk before completion.</li>
+<li>Keep the original Trello attachment URL only in worker notes or private import logs if needed for traceability; do not render it in the app.</li>
+</ul>
+<h2 id="rich-card-detail">Rich Card Detail</h2>
+<p>Opening a card should feel like a high-quality sheet, not a raw form.</p>
+<p>Required sections:</p>
+<ul>
+<li>Large card cover or premium reconstructed card face.</li>
+<li>Title and label chips.</li>
+<li>Current lane and owner state.</li>
+<li>Definition/overview.</li>
+<li>CPE tabs or stacked sections: Conception, Planning, Execution.</li>
+<li>Minimum standard/source standard.</li>
+<li>Household standard editable field.</li>
+<li>Notes and context.</li>
+<li>Handoff requirements.</li>
+<li>Review date and status.</li>
+<li>Actions: move lane, assign owner, split, flag for radar, schedule check-in, trim, restore.</li>
+</ul>
+<p>The sheet should be usable on mobile with stable bottom actions and on desktop as a side panel/modal that does not lose board context.</p>
+<h2 id="crash-course-and-onboarding">Crash Course and Onboarding</h2>
+<p>The crash course must teach the concepts before asking users to manipulate the board. It must be skippable, persistent until intentionally dismissed where appropriate, and retriggerable from Settings.</p>
+<p>The curriculum should combine the two book reports:</p>
+<ol>
+<li><p><strong>Why this is not a chore app</strong></p>
+<ul>
+<li>Household work includes visible execution, cognitive coordination, and emotional/care load.</li>
+<li>The board helps make work discussable rather than proving someone is bad.</li>
+</ul>
+</li>
+<li><p><strong>Owner vs. helper</strong></p>
+<ul>
+<li>Helping with a step is not the same as owning the outcome.</li>
+<li>The app&#39;s lanes and owner fields reflect accountability, not blame.</li>
+</ul>
+</li>
+<li><p><strong>CPE: Conception, Planning, Execution</strong></p>
+<ul>
+<li>Teach the lifecycle with a real card example.</li>
+<li>Show where each section appears in card detail.</li>
+</ul>
+</li>
+<li><p><strong>Minimum standards and done well enough</strong></p>
+<ul>
+<li>Explain why households define standards before judging follow-through.</li>
+<li>Prompt users to rewrite a standard in their own words.</li>
+</ul>
+</li>
+<li><p><strong>The board lanes</strong></p>
+<ul>
+<li>Explain <code>Not in Play</code>, <code>Cards of Concern</code>, <code>Player 1</code>, <code>Player 2</code>, <code>Kid Split</code>, and <code>Trimmed</code>.</li>
+<li>Show what happens when a card is dragged into each lane.</li>
+</ul>
+</li>
+<li><p><strong>Build your active deck</strong></p>
+<ul>
+<li>Start by trimming irrelevant cards.</li>
+<li>Move likely active cards into concern or owner lanes.</li>
+<li>Keep the rest in the library.</li>
+</ul>
+</li>
+<li><p><strong>Handoffs and re-deals</strong></p>
+<ul>
+<li>Ownership can change, but context must travel with it.</li>
+<li>Handoff requires standard, timing, access, dependencies, and review date.</li>
+</ul>
+</li>
+<li><p><strong>Radar and check-ins</strong></p>
+<ul>
+<li>Radar is for unclear expectations, blockers, and review topics.</li>
+<li>Check-ins convert board tension into decisions and next review dates.</li>
+</ul>
+</li>
+<li><p><strong>Fair is dynamic</strong></p>
+<ul>
+<li>The goal is a workable, revisable share of load, not perfect 50/50 math.</li>
+</ul>
+</li>
+<li><p><strong>Repair and resistance</strong></p>
+</li>
+</ol>
+<ul>
+<li>Normalize defensiveness, hidden expectations, and solo-starting.</li>
+<li>Encourage pausing, private drafting, and calm invitations to discuss.</li>
+</ul>
+<p>Crash-course UX requirements:</p>
+<ul>
+<li>First-run welcome splash persists across app routes until the user clicks close.</li>
+<li>Crash course can be skipped without losing the ability to restart it.</li>
+<li>Settings includes <code>Restart crash course</code> and <code>Show welcome again</code>.</li>
+<li>Course progress/dismissal is persisted server-side, ideally persona-scoped.</li>
+<li>The course should include interactive examples, not only text.</li>
+<li>It must avoid using visible in-app paragraphs to explain obvious UI mechanics; explanation belongs inside the guided lesson context.</li>
+</ul>
+<h2 id="persistent-welcome-splash">Persistent Welcome Splash</h2>
+<p>The new-household welcome splash must be persistent until explicitly closed.</p>
+<p>Requirements:</p>
+<ul>
+<li>Show after household creation/persona selection and on every protected route until dismissed.</li>
+<li>Dismiss only when the user clicks the close control.</li>
+<li>Store dismissal server-side.</li>
+<li>Do not store household/private state in <code>localStorage</code>.</li>
+<li>Provide Settings action to show it again.</li>
+<li>Welcome should point to the crash course, card library, and board, without blocking the user from navigating.</li>
+</ul>
+<h2 id="visual-and-interaction-direction">Visual and Interaction Direction</h2>
+<p>The redesign should be substantially more polished than the current app.</p>
+<p>Visual requirements:</p>
+<ul>
+<li>Move from repeated plain white panels to a designed system of glassy/soft operational surfaces, lane backgrounds, premium cards, chips, icon buttons, and sheets.</li>
+<li>Use a richer balanced palette: warm neutral base plus distinct label colors for Home, Out, Caregiving, Magic, Wild, Daily Grind, Happiness Trio, Kids, and Kid Split.</li>
+<li>Use icons for navigation and card actions.</li>
+<li>Use stable dimensions for lane cards, card covers, counts, chips, and action bars.</li>
+<li>Add subtle motion for card lift/drop, sheet open/close, course step transitions, and check-in completion.</li>
+<li>Avoid text overflow in chips, cards, and mobile lane headers.</li>
+<li>Preserve professional density: this is an operational product, not a marketing landing page.</li>
+</ul>
+<p>Interaction requirements:</p>
+<ul>
+<li>Drag/drop is the hero interaction.</li>
+<li>Card sheets should support fast edit, move, and radar actions.</li>
+<li>Bulk actions should be available for importing/resetting the deck.</li>
+<li>Mobile should support lane swipe or a compact board/list toggle.</li>
+<li>Accessibility must include keyboard movement, focus management, ARIA labels, and reduced-motion behavior.</li>
+</ul>
+<h2 id="data-and-api-changes">Data and API Changes</h2>
+<p>The implementation should add or adapt the schema to support:</p>
+<ul>
+<li>Full source card templates.</li>
+<li>Template import metadata.</li>
+<li>Board lane enum and sort order.</li>
+<li>Template-to-household responsibility instantiation.</li>
+<li>Persona-scoped preferences for welcome and crash-course state.</li>
+<li>Card detail sections for definition, CPE, and standards.</li>
+<li>Event history for lane moves, ownership changes, handoffs, trim/restore, and review decisions.</li>
+</ul>
+<p>Recommended enum:</p>
+<pre tabindex="0"><code class="language-text">ResponsibilityBoardLane:
+  cards_of_concern
+  player_1
+  player_2
+  kid_split
+  not_in_play
+  trimmed
+</code></pre>
+<p>Recommended routes:</p>
+<ul>
+<li><code>GET /api/card-templates</code></li>
+<li><code>POST /api/card-templates/import/trello</code></li>
+<li><code>POST /api/responsibilities/from-template</code></li>
+<li><code>PATCH /api/responsibilities/[id]/board-placement</code></li>
+<li><code>PATCH /api/preferences/onboarding</code></li>
+<li><code>POST /api/preferences/welcome/replay</code></li>
+</ul>
+<p>The API should keep explicit JSON contracts, stable string enums, and household/persona scoping.</p>
+<h2 id="implementation-sequencing">Implementation Sequencing</h2>
+<p>Implementation should be split into PRs that can be reviewed and merged in order:</p>
+<ol>
+<li><p><strong>Research and import foundation</strong></p>
+<ul>
+<li>Card template contract, parser/importer, full source library seed/import, and tests.</li>
+</ul>
+</li>
+<li><p><strong>Board data model</strong></p>
+<ul>
+<li>Board lane/sort fields, placement API, event history, migration, and tests.</li>
+</ul>
+</li>
+<li><p><strong>Design system and app chrome</strong></p>
+<ul>
+<li>Shared UI primitives, icons, nav redesign, global tokens, premium shell.</li>
+</ul>
+</li>
+<li><p><strong>Card library and detail</strong></p>
+<ul>
+<li>Library page, source card browsing, card sheet/detail, from-template creation.</li>
+</ul>
+</li>
+<li><p><strong>Trello-style Load Board</strong></p>
+<ul>
+<li>Drag/drop lanes, keyboard movement, filters, responsive board/list mode.</li>
+</ul>
+</li>
+<li><p><strong>Welcome and crash course</strong></p>
+<ul>
+<li>Persistent welcome, crash-course route, progress/dismissal preferences, Settings replay.</li>
+</ul>
+</li>
+<li><p><strong>Radar/check-in polish</strong></p>
+<ul>
+<li>Align radar and check-ins with the new concept model and visual system.</li>
+</ul>
+</li>
+<li><p><strong>End-to-end verification and deployment cleanup</strong></p>
+<ul>
+<li>Full regression, browser screenshots, build/type/lint/test, deployment checklist.</li>
+</ul>
+</li>
+</ol>
+<h2 id="github-and-merge-requirements">GitHub and Merge Requirements</h2>
+<p>All implementation work after this spec must follow this source-control discipline:</p>
+<ul>
+<li>Create a separate <code>codex/</code> branch for each major implementation PR unless a single PR is explicitly approved for a small slice.</li>
+<li>Commit every coherent task with a clear message.</li>
+<li>Push every implementation branch to GitHub.</li>
+<li>Open a GitHub pull request for each branch.</li>
+<li>Keep PRs reviewable and ordered according to the implementation sequence above.</li>
+<li>Do not merge a PR until its tests/build pass and any dependent earlier PR has merged.</li>
+<li>Merge PRs in dependency order.</li>
+<li>After the final PR merges, update local <code>main</code> from GitHub <code>main</code>.</li>
+<li>Verify local <code>main</code> and <code>origin/main</code> point to the same commit.</li>
+<li>Delete or leave feature branches only after the user confirms branch cleanup preference.</li>
+</ul>
+<p>The final task is not complete until local main and GitHub main are synchronized and the deployed app reflects the merged code.</p>
+<h2 id="testing-and-verification">Testing and Verification</h2>
+<p>Minimum verification for implementation:</p>
+<ul>
+<li>Unit/contract tests for template parsing/import and board placement.</li>
+<li>Repository/service/API tests for household scoping and lane movement.</li>
+<li>Component tests for crash-course progress, welcome persistence, settings replay, card library, card detail, board drag/drop fallback, and keyboard movement.</li>
+<li>E2E tests for create household, first-run welcome, crash course skip/replay, import/use card, drag card between lanes, open card detail, create radar item, and run check-in.</li>
+<li>Browser visual verification across mobile and desktop.</li>
+<li>Accessibility checks for focus traps, keyboard movement, reduced motion, and mobile tap targets.</li>
+<li><code>npm run lint</code>, <code>npm run typecheck</code>, <code>npm test</code>, <code>npm run build</code>, and targeted Playwright tests before any completion claim.</li>
+</ul>
+<h2 id="open-questions-for-implementation">Open Questions for Implementation</h2>
+<ul>
+<li>Should local Trello card cover PNGs later be optimized into additional responsive sizes, or is one committed PNG per source card enough for this private deployment?</li>
+<li>Should the full source card text be committed into the repository, imported from Trello at seed time, or kept in a private generated seed file?</li>
+<li>Should persona names remain Alex/Max or become Player 1/Player 2 to mirror the board?</li>
+<li>Should <code>Kid Split</code> be a lane only, or also a structured split model that can assign child/context-specific ownership?</li>
+<li>Should <code>Cards of Concern</code> be unified with Radar or remain a board lane that can optionally create radar items?</li>
+<li>Should the app support resetting the board from the source Trello copy?</li>
+<li>Is the GitHub repository private before source-derived card content is pushed?</li>
+</ul>
+<h2 id="definition-of-done">Definition of Done</h2>
+<p>The redesign is done when a new household can:</p>
+<ul>
+<li>See a persistent welcome until it is closed.</li>
+<li>Complete or skip a crash course and restart it from Settings.</li>
+<li>Browse the full personal-use card library.</li>
+<li>Open a rich card detail with CPE and minimum standard content.</li>
+<li>Move cards between Trello-style lanes with drag/drop and keyboard controls.</li>
+<li>Persist card lane, owner/status, and sort order.</li>
+<li>Create radar topics from unclear cards.</li>
+<li>Run a check-in that records decisions and review dates.</li>
+<li>Experience a cohesive, polished app chrome and visual system on mobile and desktop.</li>
+<li>Pass tests, build, browser verification, PR review, ordered merges, and final local/GitHub main synchronization.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

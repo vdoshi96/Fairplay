@@ -1,6 +1,6 @@
 # Fairplay Wiki
 
-Last updated: 2026-07-16
+Last updated: 2026-07-20
 
 ## System Summary
 
@@ -35,6 +35,13 @@ Fairplay is a Next.js App Router household planning app with Prisma/Postgres per
 - `../implementation/2026-05-08-mobile-card-ui-state-fix.md`: mobile card UI/state fix report, changed files, state flow, PR order, and QA notes.
 - `../implementation/2026-05-08-mobile-ux-card-workflow.md`: Little Alex desktop-only behavior, Ask Greg mobile layout, Deal gesture/Undo thresholds, editable Fogging Estandards, and manual QA steps.
 - `../implementation/2026-07-16-security-reliability.md`: request hardening, signup limits, browser matrix, accessibility policy, motion recording, and iOS Add-to-Home-Screen evidence.
+
+## Documentation Parity
+
+- Project-owned Markdown and supported prose sources are canonical; every current source has a same-directory `.html` counterpart with the same basename.
+- Run `npm run docs:html` after documentation additions, edits, renames, or removals. The generator owns all marked counterpart HTML.
+- Run `npm run docs:html:check` for deterministic completeness/content-parity verification. `npm run lint` and `npm test` invoke this gate automatically.
+- Discovery is Git-scoped and excludes private `References/`, ignored root `.superpowers/`, dependencies, builds, caches, and QA output while retaining tracked `docs/superpowers/` history.
 
 ## Current Cleanup Priority
 
