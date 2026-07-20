@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/specs/2026-05-04-guided-learning-and-login-splash.md">
+  <meta name="fairplay-document-source-sha256" content="b9bb2cce3d459c0e5f67cd7d4fde20f51b1762affbcfea7686d16c2d6be2572d">
+  <title>docs/superpowers/specs/2026-05-04-guided-learning-and-login-splash.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-04-guided-learning-and-login-splash.md"><code>docs/superpowers/specs/2026-05-04-guided-learning-and-login-splash.md</code></a></p>
+    <article>
+<h1 id="guided-learning-and-login-splash-design">Guided Learning and Login Splash Design</h1>
+<h2 id="purpose">Purpose</h2>
+<p>Fairplay now explains the household methodology well through the crash course, but users still need practical app guidance: what &quot;in play&quot; means, how cards become responsibilities, how lanes work, how assignment and editing behave, and when to use Radar or Check-ins. The login page also needs a warmer first impression that matches the app&#39;s helpful, original character system.</p>
+<p>This design adds user-triggered product guidance without forcing tours on people who already know the system.</p>
+<h2 id="product-direction">Product Direction</h2>
+<p>Use two learning layers:</p>
+<ul>
+<li><strong>Crash course:</strong> methodology and mindset. It teaches why the app exists: invisible work, ownership, CPE, standards, handoffs, and fair-is-dynamic thinking.</li>
+<li><strong>App guide:</strong> practical usage. It teaches where to click, what terms mean, how to create and move cards, how to edit responsibilities, and how Radar/Check-ins connect to the board.</li>
+</ul>
+<p>Both layers should be reachable from Home and Settings. Neither layer should block normal use unless the user intentionally starts a guided tour.</p>
+<h2 id="home-learning-surface">Home Learning Surface</h2>
+<p>Home should replace the current generic cards with a more useful learning hub plus contextual feature entry points.</p>
+<p>Recommended layout:</p>
+<ul>
+<li>A compact hero/banner titled around &quot;Learn Fairplay in layers.&quot;</li>
+<li>Primary actions:<ul>
+<li>&quot;Crash course&quot; for methodology.</li>
+<li>&quot;App guide 101&quot; for basic usage.</li>
+<li>&quot;Card library&quot; for browsing the source deck.</li>
+</ul>
+</li>
+<li>Feature cards for Load Map, Library, Radar, Check-ins, and Settings.</li>
+<li>Each feature card includes a friendly helper character and a <strong>Learn this feature</strong> action.</li>
+</ul>
+<p>The old &quot;Open load map&quot; action in the persistent welcome can be replaced by the more useful Home learning choices: crash course, app guide, and card library.</p>
+<h2 id="guided-tour-behavior">Guided Tour Behavior</h2>
+<p>Feature guidance should be user-triggered only. No first-time auto-start.</p>
+<p>When the user taps <strong>Learn this feature</strong>:</p>
+<ul>
+<li>The app enters a temporary teach mode.</li>
+<li>The page dims the background.</li>
+<li>One interface region is highlighted at a time.</li>
+<li>A coach bubble/text box explains the highlighted area in plain language.</li>
+<li>Unrelated clicks are blocked while the bubble is open.</li>
+<li>Controls include <code>Back</code>, <code>Next</code>, <code>Skip</code>, and <code>Done</code>.</li>
+<li><code>Skip</code> immediately exits teach mode.</li>
+<li><code>Done</code> exits and stores progress for that persona when persistence is available.</li>
+<li>Escape key exits teach mode.</li>
+<li>Reduced-motion users see static highlights with no animated travel.</li>
+</ul>
+<p>The tour should feel like common software onboarding: focused, skippable, and practical. It should not feel like a modal quiz or a mandatory course.</p>
+<h2 id="guide-levels">Guide Levels</h2>
+<p>The app guide should be organized as 101, 201, and 301.</p>
+<h3 id="app-guide-101-basic-use">App Guide 101: Basic Use</h3>
+<p>Topics:</p>
+<ul>
+<li>What a card is.</li>
+<li>What &quot;in play&quot; means: a source card has become an active household responsibility.</li>
+<li>What &quot;not in play&quot; means: the card exists in the library/reserve but is not currently part of the household&#39;s active operating system.</li>
+<li>How to browse the card library.</li>
+<li>How to put a card in play.</li>
+<li>How to find the created responsibility.</li>
+<li>How to use the Load Map lanes at a basic level.</li>
+</ul>
+<h3 id="app-guide-201-editing-and-ownership">App Guide 201: Editing and Ownership</h3>
+<p>Topics:</p>
+<ul>
+<li>How assignment works.</li>
+<li>Difference between owner, shared owner, helper, and backup.</li>
+<li>How to edit a responsibility.</li>
+<li>How household standards differ from source minimum standards.</li>
+<li>How to move a card between lanes.</li>
+<li>What happens when ownership changes.</li>
+<li>Why handoff context matters.</li>
+</ul>
+<h3 id="app-guide-301-operating-the-system">App Guide 301: Operating the System</h3>
+<p>Topics:</p>
+<ul>
+<li>How Radar is used for blockers, unclear standards, and decisions that need calm review.</li>
+<li>How Check-ins turn Radar topics into decisions, deferrals, and next steps.</li>
+<li>How to trim, pause, or mark work not relevant.</li>
+<li>How review dates keep the system dynamic.</li>
+<li>How to avoid using card counts as a score.</li>
+</ul>
+<h2 id="feature-tour-scripts">Feature Tour Scripts</h2>
+<p>Each feature tour should be short and concrete.</p>
+<ul>
+<li><strong>Load Map:</strong> lanes, in-play state, owner lanes, cards of concern, not in play, trimmed, drag/drop or move menu, filters.</li>
+<li><strong>Library:</strong> labels, search, source card detail, source minimum standard, CPE sections, Put in play.</li>
+<li><strong>Responsibility detail/edit:</strong> title, standard, notes, lifecycle fields, assignment controls, visibility, status actions.</li>
+<li><strong>Radar:</strong> draft/private topic, publish to check-in, defer, resolve, use for ambiguity not blame.</li>
+<li><strong>Check-ins:</strong> preview agenda, skip/defer/record decision, completion summary.</li>
+<li><strong>Settings:</strong> replay welcome, restart crash course, switch persona, logout.</li>
+</ul>
+<p>Tours should use real UI labels and real terms from the app. They should avoid generic onboarding copy.</p>
+<h2 id="crash-course-character-scenes">Crash Course Character Scenes</h2>
+<p>Update the crash course so each methodology lesson can include a small friendly cartoon scene that emphasizes the point.</p>
+<p>Use original Fairplay characters:</p>
+<ul>
+<li>Alex and Max as balanced, non-stereotyped persona figures.</li>
+<li>Household helper as a guide beside the concept.</li>
+<li>Nature/home motifs as gentle background support, not decoration overload.</li>
+</ul>
+<p>Examples:</p>
+<ul>
+<li>Owner vs helper: one character carries the outcome path while another supports a step.</li>
+<li>CPE: helper points to three connected stages: conception, planning, execution.</li>
+<li>Minimum standards: characters align around a small shared note, not a judgment mark.</li>
+<li>Board lanes: helper points to lane signs.</li>
+<li>Handoffs: context travels with the card between characters.</li>
+<li>Radar and check-ins: a soft signal becomes a calm decision path.</li>
+</ul>
+<p>These scenes should be lightweight and accessible. They can be implemented with SVG/CSS illustration components first, with richer assets later.</p>
+<h2 id="login-splash">Login Splash</h2>
+<p>Replace the plain login shell with a warm animated tableau.</p>
+<p>Layout:</p>
+<ul>
+<li>Desktop: two-column composition.<ul>
+<li>Left: Fairplay mark, concise value proposition, login form.</li>
+<li>Right: original character scene with a small household board, helper spark, plants, clouds, and soft nature/home-garden background.</li>
+</ul>
+</li>
+<li>Mobile: form remains first-class and readable, with the illustration above or below depending on viewport height.</li>
+</ul>
+<p>Visual behavior:</p>
+<ul>
+<li>Characters gently bob.</li>
+<li>Clouds drift subtly.</li>
+<li>Leaves sway lightly.</li>
+<li>Helper spark pulses.</li>
+<li>The small household board eases into view.</li>
+<li><code>prefers-reduced-motion: reduce</code> freezes these into a static illustration.</li>
+</ul>
+<p>Tone:</p>
+<ul>
+<li>Warm, adult, original, and lively.</li>
+<li>No source-deck visual copying.</li>
+<li>No childish or therapy-office framing.</li>
+<li>No one partner appears as manager, mess-maker, nag, or fixer.</li>
+</ul>
+<h2 id="settings-and-retriggering">Settings and Retriggering</h2>
+<p>Settings should keep restart controls and add/reword guide controls:</p>
+<ul>
+<li>Restart crash course.</li>
+<li>Show welcome again.</li>
+<li>Open App Guide 101.</li>
+<li>Replay feature tours, either as a simple list or through each feature&#39;s &quot;Learn this feature&quot; button.</li>
+</ul>
+<p>Progress persistence can be lightweight:</p>
+<ul>
+<li>Crash course progress already persists.</li>
+<li>Feature tour completion can be stored per persona if the existing preferences model is extended.</li>
+<li>If persistence is deferred, teach mode still works as a user-triggered session feature with clear skip controls.</li>
+</ul>
+<h2 id="accessibility">Accessibility</h2>
+<ul>
+<li>Coach bubbles use <code>role=&quot;dialog&quot;</code> or a clearly labeled region depending on implementation.</li>
+<li>Focus moves into the active bubble and returns to the triggering control on exit.</li>
+<li><code>Back</code>, <code>Next</code>, <code>Skip</code>, and <code>Done</code> are keyboard accessible.</li>
+<li>Escape exits teach mode.</li>
+<li>Highlighted target has an accessible name in the bubble copy.</li>
+<li>The overlay must not trap users permanently if a target is missing; it should skip missing steps or exit with a friendly fallback.</li>
+<li>Animations honor reduced motion.</li>
+<li>Character illustrations are decorative unless they communicate essential content; essential meaning must also appear in text.</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<p>Use TDD for implementation.</p>
+<p>Required coverage:</p>
+<ul>
+<li>Home renders the learning hub and <code>Learn this feature</code> entries.</li>
+<li>Starting a feature tour shows a dimmed overlay, highlighted step, coach bubble, and navigation controls.</li>
+<li>Skip exits the tour.</li>
+<li>Next/Back change steps.</li>
+<li>Missing target handling does not crash.</li>
+<li>Settings exposes guide replay controls.</li>
+<li>Crash course renders character scene slots for lessons.</li>
+<li>Login page renders the new splash illustration and keeps the login form accessible.</li>
+<li>Reduced-motion CSS disables looping/ambient motion.</li>
+<li>Playwright smoke covers login page render and at least one guided tour path.</li>
+</ul>
+<h2 id="rollout">Rollout</h2>
+<p>Implement in a PR branch and merge only after:</p>
+<ul>
+<li>Lint passes.</li>
+<li>Typecheck passes.</li>
+<li>Unit/component tests pass.</li>
+<li>Build passes.</li>
+<li>Playwright smoke passes.</li>
+<li>Vercel preview passes.</li>
+</ul>
+<p>After merge, local <code>main</code> and <code>origin/main</code> should match.</p>
+    </article>
+  </main>
+</body>
+</html>

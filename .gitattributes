@@ -1,0 +1,21 @@
+# Keep canonical documentation and deterministic generated counterparts stable across platforms.
+*.adoc text eol=lf
+*.asciidoc text eol=lf
+*.html text eol=lf
+*.markdown text eol=lf
+*.md text eol=lf
+*.mdown text eol=lf
+*.mdx text eol=lf
+*.mkd text eol=lf
+*.rst text eol=lf
+*.txt text eol=lf
+AUTHORS* text eol=lf
+CHANGELOG* text eol=lf
+CODE_OF_CONDUCT* text eol=lf
+CONTRIBUTORS* text eol=lf
+COPYING* text eol=lf
+LICENSE* text eol=lf
+NOTICE* text eol=lf
+README text eol=lf
+SECURITY* text eol=lf
+scripts/docs-html*.mjs text eol=lf

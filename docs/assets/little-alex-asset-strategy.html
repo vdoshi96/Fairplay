@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/assets/little-alex-asset-strategy.md">
+  <meta name="fairplay-document-source-sha256" content="98ca0d2c5ff3c8167f083f8599a00a894d647f20cba6d75d45750e3d3873a20b">
+  <title>docs/assets/little-alex-asset-strategy.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="little-alex-asset-strategy.md"><code>docs/assets/little-alex-asset-strategy.md</code></a></p>
+    <article>
+<h1 id="little-alex-coherent-asset-strategy">Little Alex Coherent Asset Strategy</h1>
+<h2 id="decision">Decision</h2>
+<p>Use an original in-repo full-body proportion template as the contract for future Little Alex sprite generation. Do not use copied internet assets, celebrity/public-figure references, app mascots, stock mannequins, or third-party body templates.</p>
+<p>The local repository does not contain a documented open-license or public-domain mannequin asset. Because there is no local license evidence to cite, the safest path is the project-owned template at <code>docs/assets/little-alex-proportion-template.svg</code> plus the matching prompt contract in <code>src/server/ai/little-alex-sprite-assets.ts</code>.</p>
+<h2 id="existing-source-sheet-review">Existing Source Sheet Review</h2>
+<p>Checked local Qwen source sheets:</p>
+<ul>
+<li><code>public/assets/fairplay/little-alex-sprites/source-sheets/neutral-sheet.png</code></li>
+<li><code>public/assets/fairplay/little-alex-sprites/source-sheets/masculine-sheet.png</code></li>
+<li><code>public/assets/fairplay/little-alex-sprites/source-sheets/feminine-sheet.png</code></li>
+</ul>
+<p>The sheets are local generated PNGs with no documented external source image. The manifest already identified Qwen <code>qwen-image-2.0-pro</code>, and this change adds an explicit original proportion-template record to the asset contract and manifest prompts.</p>
+<h2 id="asset-contract">Asset Contract</h2>
+<p>The contract now requires:</p>
+<ul>
+<li>One coherent imagined full-body character before parts are separated.</li>
+<li>A single shared centerline, balanced shoulders and hips, and compact 3.2 to 3.5 head-height proportions.</li>
+<li>Equal left/right arm length, sleeve width, hand scale, shoulder-cap size, and line weight.</li>
+<li>Equal left/right leg length, shoe scale, ankle width, and line weight.</li>
+<li>No internet image reference, third-party mannequin, real-person likeness, public figure resemblance, copied mascot, logo, or watermark.</li>
+</ul>
+<p>The SVG template is for human QA and documentation. The generation script remains text-prompt based, so the same geometry is encoded directly in <code>buildLittleAlexSpritePrompt</code>.</p>
+<h2 id="regeneration-flow">Regeneration Flow</h2>
+<ol>
+<li>Review <code>docs/product/ip-safety-review.md</code>, <code>docs/product/visual-system.md</code>, and this strategy.</li>
+<li>Keep the template provenance unchanged unless a new template is created in-repo and documented.</li>
+<li>Run a dry run first:</li>
+</ol>
+<pre tabindex="0"><code class="language-bash">npm run assets:generate-little-alex -- --dry-run
+</code></pre>
+<ol start="4">
+<li>If regenerating source sheets, use only the approved Qwen model in the contract and inspect the source sheets before committing cropped sprites.</li>
+<li>Reject any sheet that shows a copied character, grid labels/text, assembled full-body thumbnails, unequal limb pairs, mismatched suit/skin/line style, or body parts that cannot assemble into one coherent Little Alex.</li>
+<li>Keep e2e pixel QA in the QA-owned branch/worktree. This asset work should update prompts, manifests, source sheets, or docs only.</li>
+</ol>
+<h2 id="license-position">License Position</h2>
+<p><code>docs/assets/little-alex-proportion-template.svg</code> is an original project asset created for Fairplay. It is not a public-domain mannequin and does not rely on an external license. If a future task proposes a public-domain/open-license mannequin, it must be present locally with its license file or source citation documented before use.</p>
+    </article>
+  </main>
+</body>
+</html>

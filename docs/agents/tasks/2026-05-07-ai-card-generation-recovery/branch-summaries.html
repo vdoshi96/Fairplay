@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-ai-card-generation-recovery/branch-summaries.md">
+  <meta name="fairplay-document-source-sha256" content="b56a76107bfac7c91e7db4c7322bf98b7f6385d5905f3fe8566f8bddc4a26d07">
+  <title>docs/agents/tasks/2026-05-07-ai-card-generation-recovery/branch-summaries.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="branch-summaries.md"><code>docs/agents/tasks/2026-05-07-ai-card-generation-recovery/branch-summaries.md</code></a></p>
+    <article>
+<h1 id="ai-card-generation-recovery-branch-summaries">AI Card Generation Recovery Branch Summaries</h1>
+<p>Date: 2026-05-07</p>
+<h2 id="main-integration-branch">Main Integration Branch</h2>
+<ul>
+<li>Branch: <code>codex/ai-card-generation-recovery</code></li>
+<li>Role: integration branch for the final fix in this workspace.</li>
+<li>Scope: persisted failed/canceled draft cleanup, retry recovery, API/repository/service contracts, focused UI reconciliation, QA, and final docs.</li>
+<li>Files changed:<ul>
+<li><code>src/components/library/ai-task-manager.tsx</code></li>
+<li><code>src/components/library/ai-task-manager.test.tsx</code></li>
+<li><code>src/app/api/ai-card-drafts/[id]/route.ts</code></li>
+<li><code>src/app/api/ai-card-drafts/[id]/route.test.ts</code></li>
+<li><code>src/server/ai-card-drafts/service.ts</code></li>
+<li><code>src/server/ai-card-drafts/service.test.ts</code></li>
+<li><code>src/server/repositories/ai-card-drafts.ts</code></li>
+<li><code>src/server/repositories/ai-card-drafts.test.ts</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="documentation-audit-branch">Documentation Audit Branch</h2>
+<ul>
+<li>Branch: <code>codex/ai-card-recovery-doc-audit</code></li>
+<li>Worktree: <code>.worktrees/ai-card-recovery-doc-audit</code></li>
+<li>Agent: Dewey</li>
+<li>Scope: documentation-only repository history audit.</li>
+<li>Output: <code>.worktrees/ai-card-recovery-doc-audit/docs/agents/tasks/2026-05-07-ai-card-generation-recovery/doc-audit.md</code></li>
+<li>Findings folded into this integration:<ul>
+<li>The active Library card-generation path is text-only.</li>
+<li>New Library generation must not revive ASR, OCR, audio uploads, cover-byte requirements, image prompts, or regenerate-image behavior.</li>
+<li>Prior failures included all-in-one provider configuration and media-stage coupling.</li>
+<li>Live Qwen/OpenAI provider smoke remains a separate staging validation gap.</li>
+</ul>
+</li>
+</ul>
+<h2 id="service-branch">Service Branch</h2>
+<ul>
+<li>Branch: <code>codex/ai-card-recovery-service</code></li>
+<li>Worktree: <code>.worktrees/ai-card-recovery-service</code></li>
+<li>Agent: Nash</li>
+<li>Scope: backend/service retry investigation.</li>
+<li>Output: <code>.worktrees/ai-card-recovery-service/docs/agents/tasks/2026-05-07-ai-card-generation-recovery/service-branch.md</code></li>
+<li>Finding folded into this integration:<ul>
+<li>Retry was ineffective when a failed draft already had complete generated text fields because retry called <code>saveGeneration</code> while the draft status was <code>failed</code>.</li>
+<li>The integrated fix marks such drafts <code>ready</code> directly instead of rewriting generated fields.</li>
+</ul>
+</li>
+<li>Integration delta beyond the service branch:<ul>
+<li>Added persisted discard/delete support for failed and canceled drafts, because the user-visible stuck state needed a true remove path, not another terminal cancel.</li>
+</ul>
+</li>
+</ul>
+<h2 id="uiqa-branch">UI/QA Branch</h2>
+<ul>
+<li>Branch: <code>codex/ai-card-recovery-ui-qa</code></li>
+<li>Worktree: <code>.worktrees/ai-card-recovery-ui-qa</code></li>
+<li>Agent: McClintock</li>
+<li>Scope: UI tracker cleanup and stale-detail exploration.</li>
+<li>Status at integration: long-running agent did not return a final report before the main branch moved ahead.</li>
+<li>Partial branch diff inspected:<ul>
+<li>It hid canceled drafts client-side and added tests around stale detail after cancel/retry.</li>
+<li>The final integration kept canceled drafts visible with an explicit <code>Remove</code> action, then added a backend <code>DELETE</code> contract.</li>
+<li>The stale retry-detail idea was preserved: after retry returns a ready draft, local tracker state now reconciles immediately instead of waiting for route refresh.</li>
+</ul>
+</li>
+</ul>
+<h2 id="branch-coordination-notes">Branch Coordination Notes</h2>
+<ul>
+<li>Branches were created as separate git worktrees under <code>.worktrees/</code>.</li>
+<li>Branch agents worked in isolated worktrees and did not revert one another&#39;s edits.</li>
+<li>Final integration was done in the shared workspace after inspecting branch outputs and applying the stronger combined fix.</li>
+<li>No branch-agent changes were merged mechanically; each relevant finding was reviewed before integration.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

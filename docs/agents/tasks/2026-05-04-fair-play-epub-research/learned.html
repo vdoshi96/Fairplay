@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-fair-play-epub-research/learned.md">
+  <meta name="fairplay-document-source-sha256" content="8991b86a7138e9423b7bbbfb6494678366e2263a76b5ffc3b44485567684d038">
+  <title>docs/agents/tasks/2026-05-04-fair-play-epub-research/learned.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="learned.md"><code>docs/agents/tasks/2026-05-04-fair-play-epub-research/learned.md</code></a></p>
+    <article>
+<h1 id="learned">Learned</h1>
+<h2 id="high-level-source-concepts">High-Level Source Concepts</h2>
+<ul>
+<li>The central problem framing is invisible coordination work: remembering, noticing, deciding, reminding, and following through often become more burdensome than the visible chore itself.</li>
+<li>Household work is presented as a lifecycle, not a single task. A responsibility can include recognizing the need, deciding the approach, preparing, executing, monitoring, and adapting.</li>
+<li>Fairness depends less on equal task counts and more on whether each person has clear authority, context, accountability, and time that is treated as valuable.</li>
+<li>Ownership works best when one person can carry a responsibility end-to-end for a defined period, with shared standards agreed in advance.</li>
+<li>Shared standards should be explicit enough to reduce rework, resentment, hidden supervision, and &quot;I thought you meant...&quot; loops.</li>
+<li>The source repeatedly warns against scorekeeping, blame, and using reassignment conversations as a way to dump work.</li>
+<li>Review moments are part of the system. Responsibilities should be revisited when seasons, capacity, work schedules, family needs, or standards change.</li>
+<li>Personal time, identity, rest, and self-directed pursuits are framed as legitimate household needs, not rewards after all domestic work is finished.</li>
+<li>Emotional labor includes anticipation, social coordination, relational repair, and remembering what matters to others; a v1 app should make this visible without pathologizing users.</li>
+<li>The book uses a branded card-game structure and named exercises; those are useful as cautionary inspiration but should not be mirrored directly.</li>
+</ul>
+<h2 id="original-product-implications">Original Product Implications</h2>
+<ul>
+<li>Model each responsibility as a durable object with owner, expected outcome, cadence, lifecycle notes, and review date, not as a disposable to-do item.</li>
+<li>Add an ownership mode that distinguishes &quot;helps with&quot; from &quot;accountable for outcome&quot; so shared work does not hide unmanaged coordination.</li>
+<li>Prompt users to define a practical &quot;done well enough&quot; standard in their own words for each responsibility.</li>
+<li>Include a calm check-in flow that asks what changed, what is blocked, what should be rebalanced, and what needs a clearer standard.</li>
+<li>Track changes to ownership and cadence so users can see patterns without turning the app into a points ledger.</li>
+<li>Treat personal time and recovery as legitimate planning categories, while avoiding branded language from the source.</li>
+<li>Support seasonal or life-event reviews because fairness changes when constraints change.</li>
+<li>Let households create their own categories and responsibilities instead of shipping a source-derived deck or taxonomy.</li>
+<li>Use neutral language focused on clarity, capacity, and follow-through rather than blame, diagnosis, or partner scoring.</li>
+<li>Design for conversation preparation: surface prompts and summaries that help users talk, but avoid prescriptive therapy-like advice.</li>
+<li>Make emotional and social coordination representable as work, while letting users choose whether to track it.</li>
+<li>Keep reallocation actions intentional: ask why a responsibility is changing and whether context/standards are being handed off.</li>
+</ul>
+<h2 id="ip-and-safety-risks">IP and Safety Risks</h2>
+<ul>
+<li>Do not copy the source&#39;s card names, suits, card descriptions, exercises, quizzes, examples, glossary definitions, or assessment wording.</li>
+<li>Avoid a literal card-game UI, the same count of cards, or a category structure that maps closely to the source.</li>
+<li>Avoid source-branded terminology in the product experience unless later cleared by an IP review.</li>
+<li>Do not use images or diagrams from the EPUB or related printable-card PDF.</li>
+<li>Avoid marketing claims that imply affiliation with, endorsement by, or reproduction of the Fair Play method.</li>
+<li>Keep the app positioned as household organization and relationship support, not therapy, diagnosis, legal advice, financial advice, or crisis support.</li>
+<li>Be careful with emotionally loaded prompts; the product should encourage reflection and boundaries without directing users to confront a partner in unsafe circumstances.</li>
+<li>If future agents use templates seeded from reference materials, those templates need separate IP review before implementation.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

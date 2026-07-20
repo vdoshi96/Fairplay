@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-06-little-alex-rig-proportions/full-body-assets.md">
+  <meta name="fairplay-document-source-sha256" content="4c81958b2d38fb2667ddf397f714df423e1578c853b3b57541ef1a927a91bea2">
+  <title>docs/agents/tasks/2026-05-06-little-alex-rig-proportions/full-body-assets.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="full-body-assets.md"><code>docs/agents/tasks/2026-05-06-little-alex-rig-proportions/full-body-assets.md</code></a></p>
+    <article>
+<h1 id="little-alex-coherent-full-body-assets">Little Alex Coherent Full-Body Assets</h1>
+<h2 id="why-this-branch-exists">Why This Branch Exists</h2>
+<p>The separated Qwen body-part rig still looked visually wrong after wrapper-level QA passed. The visible screenshots showed disconnected limbs and duplicate clipboard art because the old contract generated separate paper-doll pieces and even asked for a clipboard on both torso and arm cells.</p>
+<h2 id="approach">Approach</h2>
+<ul>
+<li>Keep the Matter.js body parts as hidden physics and bounds geometry.</li>
+<li>Render a single visible Qwen-generated full-body sprite per presentation on top of those physics bodies.</li>
+<li>Clamp the visible sprite against the same play area used by the physics rig.</li>
+<li>Preserve variant switching with <code>neutral-full.png</code>, <code>masculine-full.png</code>, and <code>feminine-full.png</code>.</li>
+<li>Remove the older separated body-part images from the rendered DOM entirely; body-part wrappers remain only as invisible Matter.js geometry.</li>
+</ul>
+<h2 id="asset-contract">Asset Contract</h2>
+<ul>
+<li>Original Fairplay helper character only; no internet mannequin or copied likeness.</li>
+<li>One complete coherent body, centered and full-length.</li>
+<li>Equal left/right arm lengths and equal left/right leg lengths.</li>
+<li>Black suit, white shirt, and exactly one tan clipboard.</li>
+<li>Feminine variant keeps visibly long hair.</li>
+</ul>
+<h2 id="qa">QA</h2>
+<ul>
+<li><code>npm test -- src/components/little-alex/little-alex-physics.test.tsx --run</code> passed with 22 tests.</li>
+<li><code>npm run test:e2e -- little-alex-physics.spec.ts --grep &quot;captures visual QA&quot;</code> passed.</li>
+<li><code>npm run test:e2e -- little-alex-physics.spec.ts</code> passed with 9 tests.</li>
+<li>The e2e DOM contract asserts <code>0</code> legacy <code>little-alex-sprite</code> image nodes, no image children inside body-part wrappers, and computed opacity <code>0</code> for every body-part wrapper.</li>
+<li>The e2e visual QA now includes pixel recognition over the actual full-body PNGs:<ul>
+<li>significant visible body area is one near-connected component,</li>
+<li>exactly one large central tan clipboard region,</li>
+<li>full-body aspect ratio stays human-like,</li>
+<li>left/right leg heights and areas stay within proportion thresholds.</li>
+</ul>
+</li>
+</ul>
+<h2 id="visual-evidence">Visual Evidence</h2>
+<ul>
+<li><code>test-results/little-alex-qwen-sprites/neutral.png</code></li>
+<li><code>test-results/little-alex-qwen-sprites/masculine.png</code></li>
+<li><code>test-results/little-alex-qwen-sprites/feminine.png</code></li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

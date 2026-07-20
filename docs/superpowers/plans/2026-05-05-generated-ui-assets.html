@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-05-generated-ui-assets.md">
+  <meta name="fairplay-document-source-sha256" content="7e6bcbeabc08ef92edd8726787ecc6647302ed1d4c5fdfe4e52964cff385b20e">
+  <title>docs/superpowers/plans/2026-05-05-generated-ui-assets.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-05-generated-ui-assets.md"><code>docs/superpowers/plans/2026-05-05-generated-ui-assets.md</code></a></p>
+    <article>
+<h1 id="generated-ui-assets-implementation-plan">Generated UI Assets Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [x]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Replace non-card UI visuals with cute flat 2D generated assets while preserving source-card cover assets.</p>
+<p><strong>Architecture:</strong> Add a Qwen-only UI asset generator and a central generated UI asset map. Wire reusable visual components, login splash, crash course scenes, guide helpers, and the AI task manager sidekick to generated PNGs under <code>public/assets/fairplay/generated-ui/</code>.</p>
+<p><strong>Tech Stack:</strong> Next.js App Router, React, TypeScript, Vitest, Testing Library, Qwen <code>qwen-image-2.0-pro</code> via Vercel env.</p>
+<hr>
+<h2 data-source-heading-level="3" id="task-1-document-scope-and-inventory">Task 1: Document Scope And Inventory</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>docs/agents/tasks/2026-05-05-generated-ui-assets/task.md</code></p>
+</li>
+<li><p>Create: <code>docs/agents/tasks/2026-05-05-generated-ui-assets/work-log.md</code></p>
+</li>
+<li><p>Create: <code>docs/agents/tasks/2026-05-05-generated-ui-assets/gaps.md</code></p>
+</li>
+<li><p>Create: <code>docs/agents/tasks/2026-05-05-generated-ui-assets/learned.md</code></p>
+</li>
+<li><p>Create: <code>docs/superpowers/outcomes/2026-05-05-generated-ui-assets.md</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 1: Record task boundary</strong></p>
+</li>
+</ul>
+<p>Write that <code>public/assets/fairplay/cards/</code> is excluded and all generated UI assets must live under <code>public/assets/fairplay/generated-ui/</code>.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 2: Record subagent findings</strong></li>
+</ul>
+<p>Summarize visual inventory, generation prompts, QA risks, and blockers in the work log and outcomes doc.</p>
+<h2 data-source-heading-level="3" id="task-2-add-ui-asset-generation-pipeline">Task 2: Add UI Asset Generation Pipeline</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/server/ai/generated-ui-assets.ts</code></p>
+</li>
+<li><p>Create: <code>src/server/ai/generated-ui-assets.test.ts</code></p>
+</li>
+<li><p>Create: <code>scripts/generate-ui-assets.mjs</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 1: Write failing tests</strong></p>
+</li>
+</ul>
+<p>Add tests proving UI asset specs are non-card, use generated UI output paths, require PNG filenames, and expose approved Qwen-only generation metadata.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 2: Run focused tests</strong></li>
+</ul>
+<p>Run: <code>npm run test -- src/server/ai/generated-ui-assets.test.ts</code></p>
+<p>Expected before implementation: fail because the modules do not exist.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 3: Implement specs and prompts</strong></li>
+</ul>
+<p>Define assets for login, avatars, helper mascot, app mark, radar, check-in, guide helper thumbnails, AI sidekick, crash-course completion, and each crash-course lesson background.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 4: Implement generator</strong></li>
+</ul>
+<p>Create a Qwen-only script that validates <code>QWEN_IMAGE_MODEL === &quot;qwen-image-2.0-pro&quot;</code>, writes PNGs and a manifest, and supports <code>--dry-run</code>, <code>--slugs</code>, <code>--limit</code>, and <code>--output-dir</code>.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 5: Verify focused tests pass</strong></li>
+</ul>
+<p>Run: <code>npm run test -- src/server/ai/generated-ui-assets.test.ts</code></p>
+<h2 data-source-heading-level="3" id="task-3-generate-and-commit-ui-assets">Task 3: Generate And Commit UI Assets</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/*.png</code></p>
+</li>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/generation-manifest.json</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 1: Dry-run prompts</strong></p>
+</li>
+</ul>
+<p>Run: <code>npm run assets:generate-ui -- --dry-run --output-dir=/tmp/fairplay-generated-ui-dry-run</code></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 2: Generate through Vercel production env</strong></li>
+</ul>
+<p>Run from the root checkout Vercel context while targeting the worktree when needed:</p>
+<p><code>npx --yes vercel env run -e production -- bash -lc &#39;cd /Users/vishal/Developer/Fairplay/.worktrees/generated-ui-assets &amp;&amp; npm run assets:generate-ui -- --output-dir=public/assets/fairplay/generated-ui&#39;</code></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 3: Inspect dimensions</strong></li>
+</ul>
+<p>Run: <code>sips -g pixelWidth -g pixelHeight public/assets/fairplay/generated-ui/*.png</code></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 4: Reject or regenerate broken assets</strong></li>
+</ul>
+<p>Reject assets with readable text, logos, non-2D style, poor framing, or obvious mismatch to the intended UI.</p>
+<h2 data-source-heading-level="3" id="task-4-wire-generated-assets-into-ui">Task 4: Wire Generated Assets Into UI</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/visuals/fairplay-visuals.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/visuals/fairplay-visuals.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/auth/login-splash-illustration.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/auth/login-splash-illustration.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/crash-course/crash-course-scene.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/crash-course/crash-course-scene.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/guide/feature-guide-helper.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/guide/feature-guide-helper.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/ai-task-manager.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/ai-task-manager.test.tsx</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 1: Write failing tests</strong></p>
+</li>
+</ul>
+<p>Update tests to expect <code>/assets/fairplay/generated-ui/</code> paths and not old SVG/CSS-only visuals.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 2: Run focused tests</strong></li>
+</ul>
+<p>Run: <code>npm run test -- src/components/visuals/fairplay-visuals.test.tsx src/components/auth/login-splash-illustration.test.tsx src/components/crash-course/crash-course-scene.test.tsx src/components/guide/feature-guide-helper.test.tsx src/components/library/ai-task-manager.test.tsx</code></p>
+<p>Expected before implementation: fail on old paths/rendering.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 3: Implement UI wiring</strong></li>
+</ul>
+<p>Use generated PNGs for non-card visuals while keeping <code>public/assets/fairplay/cards/</code> references untouched.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 4: Verify focused tests pass</strong></li>
+</ul>
+<p>Run the same focused test command and confirm all pass.</p>
+<h2 data-source-heading-level="3" id="task-5-final-qa-and-documentation">Task 5: Final QA And Documentation</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>docs/superpowers/outcomes/2026-05-05-generated-ui-assets.md</code></p>
+</li>
+<li><p>Modify: <code>docs/agents/tasks/2026-05-05-generated-ui-assets/work-log.md</code></p>
+</li>
+<li><p>Modify: <code>docs/agents/tasks/2026-05-05-generated-ui-assets/gaps.md</code></p>
+</li>
+<li><p>Modify: <code>docs/agents/tasks/2026-05-05-generated-ui-assets/learned.md</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 1: Run verification</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm run typecheck
+npm run lint
+npm run test
+npm run build
+git diff --check
+</code></pre>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 2: Browser QA</strong></li>
+</ul>
+<p>Run Playwright browser checks and spot-check representative generated artwork before committing.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 3: Record outcome</strong></li>
+</ul>
+<p>Record generated asset count, files touched, verification results, and blockers.</p>
+    </article>
+  </main>
+</body>
+</html>

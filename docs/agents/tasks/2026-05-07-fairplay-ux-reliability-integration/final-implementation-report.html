@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-fairplay-ux-reliability-integration/final-implementation-report.md">
+  <meta name="fairplay-document-source-sha256" content="67259589ac491be2098c4c5f01c23b831376856178544826ec758ed676c7bed2">
+  <title>docs/agents/tasks/2026-05-07-fairplay-ux-reliability-integration/final-implementation-report.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="final-implementation-report.md"><code>docs/agents/tasks/2026-05-07-fairplay-ux-reliability-integration/final-implementation-report.md</code></a></p>
+    <article>
+<h1 id="fairplay-ux-reliability-integration-report">Fairplay UX Reliability Integration Report</h1>
+<h2 id="scope">Scope</h2>
+<p>This integration combined five isolated workstreams:</p>
+<ul>
+<li><code>codex/home-loadmap-refresh</code></li>
+<li><code>codex/learner-sandbox-flows</code></li>
+<li><code>codex/ai-draft-reliability</code></li>
+<li><code>codex/crash-course-redesign</code></li>
+<li><code>codex/library-action-reliability</code></li>
+</ul>
+<p>The integration branch is <code>codex/fairplay-ux-reliability-integration</code>.</p>
+<h2 id="summary">Summary</h2>
+<ul>
+<li>Removed the duplicate Welcome Banner learner-feature button while keeping the homepage <code>Learn a feature</code> anchor as the single clean entry point.</li>
+<li>Expanded homepage visual treatment so the generated background lives behind the whole learning surface instead of only a small card.</li>
+<li>Reworked Load Map diagnostics and filters into a denser themed workbench with grouped ownership, card detail, attention, and search controls.</li>
+<li>Renamed board lane copy from Player 1 and Player 2 to Alex and Max in Load Map and card detail surfaces touched by the workstream.</li>
+<li>Lowered guided-tour dialogs into a viewport-safe placement with internal scrolling.</li>
+<li>Made required dummy practice steps interactive by allowing page-level sandbox controls to receive clicks after the learner starts the practice workflow.</li>
+<li>Rebuilt Library, Radar, and Check-in dummy workflows as temporary sandbox workspaces with guided fields, mock artifacts, status feedback, and cleanup actions.</li>
+<li>Added a Check-in empty agenda modal so Preview Agenda no longer fails silently when there is nothing to preview.</li>
+<li>Improved real responsibility detail/edit reliability with Back to library / Back to Load Map navigation, visible Save/status/radar feedback, response checking, and unavailable-action explanation.</li>
+<li>Fixed AI draft generation root cause by scoping Qwen/OpenAI config to the operation being performed: text, ASR, or image.</li>
+<li>Updated crash-course lessons and layout around the book-report concepts: visible/hidden work, owner versus helper, CPE, standards, dynamic fairness, check-ins, deferral, repair, and safety.</li>
+<li>Fixed dark-mode contrast regressions introduced by new translucent Load Map surfaces.</li>
+</ul>
+<h2 id="root-cause-findings">Root-Cause Findings</h2>
+<h3 id="ai-card-draft-generation">AI Card Draft Generation</h3>
+<p>Failure source: provider configuration was all-or-nothing. Text structuring could fail before a provider call if unrelated ASR or image environment variables were missing.</p>
+<p>Architectural cause: shared config readers forced every operation to require text, ASR, and image settings at once.</p>
+<p>Implemented fix: <code>src/server/ai/qwen-config.ts</code> and <code>src/server/ai/openai-config.ts</code> now expose operation-scoped config readers. <code>src/server/ai/card-generator.ts</code> requests only the fallback config needed by the failed stage.</p>
+<p>Validation: focused AI tests and full unit suite passed. No live Qwen/OpenAI calls were made during QA.</p>
+<h3 id="learner-workflow-trapping">Learner Workflow Trapping</h3>
+<p>Failure source: the centered guide dialog and backdrop could intercept pointer events for page-level dummy controls after the dummy workflow started.</p>
+<p>Implemented fix: the guide remains modal before practice starts, then makes the backdrop click-through only while required page-level practice is active and incomplete. Dialog placement is lower and scroll-safe.</p>
+<p>Validation: guided-learning Playwright flow now completes the dummy Library workflow and exits the guide.</p>
+<h3 id="load-map-dark-contrast">Load Map Dark Contrast</h3>
+<p>Failure source: new light Tailwind alpha classes and diagnostic tone classes were not covered by the dark theme overrides.</p>
+<p>Implemented fix: added dark-theme overrides for the new <code>bg-white/*</code> alpha values and diagnostic tile color classes.</p>
+<p>Validation: dark-mode Playwright contrast and screenshot QA passed.</p>
+<h2 id="documentation">Documentation</h2>
+<p>Branch-level notes were added under:</p>
+<ul>
+<li><code>docs/agents/tasks/2026-05-07-ai-draft-reliability/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-crash-course-redesign/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-home-loadmap-refresh/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-learner-sandbox-flows/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-library-action-reliability/</code></li>
+</ul>
+<p>This file is the final integration summary.</p>
+<h2 id="visual-qa">Visual QA</h2>
+<p>Playwright generated dark-mode screenshots at:</p>
+<ul>
+<li><code>test-results/dark-mode-polish/home.png</code></li>
+<li><code>test-results/dark-mode-polish/library.png</code></li>
+<li><code>test-results/dark-mode-polish/load-map.png</code></li>
+<li><code>test-results/dark-mode-polish/radar.png</code></li>
+<li><code>test-results/dark-mode-polish/check-ins.png</code></li>
+<li><code>test-results/dark-mode-polish/crash-course.png</code></li>
+<li><code>test-results/dark-mode-polish/settings.png</code></li>
+</ul>
+<p>The e2e suite also ran responsive visual smoke checks and Little Alex pixel/sprite QA.</p>
+<h2 id="verification">Verification</h2>
+<p>Latest integrated verification:</p>
+<ul>
+<li><code>npm test -- --run</code>: passed, 95 files / 529 tests.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run build</code>: passed.</li>
+<li><code>npm run test:e2e</code>: passed, 26 Playwright tests.</li>
+<li><code>git diff --check main..HEAD</code> and <code>git diff --check</code>: passed after final report updates.</li>
+</ul>
+<h2 id="code-review">Code Review</h2>
+<p>Independent review flagged two issues:</p>
+<ul>
+<li>The guide backdrop briefly made the whole page clickable during required practice. Fixed by cutting a measured pointer aperture only around <code>[data-guide-practice-surface]</code>, leaving the rest of the backdrop blocking.</li>
+<li>Card detail move labels still said Player 1 / Player 2. Fixed to Alex / Max.</li>
+</ul>
+<p>Both fixes were covered by focused unit tests and the final full verification sweep.</p>
+<h2 id="rollback-instructions">Rollback Instructions</h2>
+<p>The integration branch keeps each workstream as a merge commit. To rollback a specific workstream before merging to main, revert the matching merge commit on <code>codex/fairplay-ux-reliability-integration</code>.</p>
+<p>High-scope rollback targets:</p>
+<ul>
+<li>AI config behavior: revert <code>Merge AI draft reliability workstream</code>.</li>
+<li>Crash course content/layout: revert <code>Merge crash course redesign workstream</code>.</li>
+<li>Homepage and Load Map layout: revert <code>Merge home and load map refresh workstream</code>.</li>
+<li>Learner sandbox workflows: revert <code>Merge learner sandbox flow workstream</code>.</li>
+<li>Detail/editor action reliability: revert <code>Merge library action reliability workstream</code>.</li>
+</ul>
+<p>After merge to <code>main</code>, use normal revert commits rather than rewriting history.</p>
+<h2 id="unresolved-issues">Unresolved Issues</h2>
+<ul>
+<li>No live provider generation was performed in QA. Provider availability, billing, and rate limits remain external runtime risks.</li>
+<li>Existing generated visual assets were reused; no new Qwen image assets were committed in this integration because the repository already contained thematic assets for the touched surfaces.</li>
+<li>Seeded source-card titles still contain original Fair Play card names such as <code>Adult Friendships (Player 1)</code> and <code>Adult Friendships (Player 2)</code>. Those were left intact as source-card content rather than app lane labels.</li>
+</ul>
+<h2 id="future-recommendations">Future Recommendations</h2>
+<ul>
+<li>Add a small reusable dark-mode utility for translucent card surfaces so future alpha classes do not need one-off global overrides.</li>
+<li>Consider wiring CardDetailSheet footer actions on the detail page instead of only explaining their unavailable state.</li>
+<li>Add a dedicated Learner Feature sidebar tab if future navigation needs outgrow the homepage anchor.</li>
+<li>Run occasional live AI draft smoke tests in a staging environment with known-safe provider credentials.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

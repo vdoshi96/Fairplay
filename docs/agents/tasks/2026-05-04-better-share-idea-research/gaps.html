@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-better-share-idea-research/gaps.md">
+  <meta name="fairplay-document-source-sha256" content="f41d206782117315ad067929d0125f94315c989b84709cfb145ea739796a31ae">
+  <title>docs/agents/tasks/2026-05-04-better-share-idea-research/gaps.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="gaps.md"><code>docs/agents/tasks/2026-05-04-better-share-idea-research/gaps.md</code></a></p>
+    <article>
+<h1 id="gaps">Gaps</h1>
+<h2 id="product-architecture-questions">Product Architecture Questions</h2>
+<ul>
+<li>Decide whether v1 is primarily for romantic couples, couples with children,
+or broader shared households.</li>
+<li>Decide whether the Load Map should use original templates, user-created
+responsibilities only, or a hybrid with IP-reviewed starter examples.</li>
+<li>Define the minimum viable difference between assessment results, a household
+responsibility map, and a task manager.</li>
+<li>Decide how much partner comparison to show before both partners have
+completed their own assessment.</li>
+<li>Define how check-in history should summarize commitments without becoming a
+grievance archive.</li>
+<li>Decide whether short experiments belong in v1 or should wait until the core
+Load Map, Radar, and Check-In flows prove useful.</li>
+<li>Decide whether AI phrasing help is in MVP; if yes, constrain it to
+non-clinical language rewriting and clear safety boundaries.</li>
+</ul>
+<h2 id="safety-and-trust-risks">Safety and Trust Risks</h2>
+<ul>
+<li>Users may use results as proof that a partner is failing. Product language
+needs to steer toward shared problem solving.</li>
+<li>Relationship prompts can escalate conflict in unsafe or coercive
+relationships. Onboarding, terms, and in-flow guidance need clear boundaries.</li>
+<li>Private drafts and shared household spaces are easy to confuse. The product
+needs persistent visibility labels and confirmation before sharing.</li>
+<li>A partner invite can feel accusatory. The invite flow should emphasize
+clarity, teamwork, and optional participation rather than judgment.</li>
+<li>Metrics can become manipulative if they imply a &quot;bad partner&quot; score.</li>
+<li>Sexual relationship content from the book is out of scope for v1 unless
+separately reviewed; the current app should stay focused on household
+organization and relationship support.</li>
+</ul>
+<h2 id="ip-review-risks">IP Review Risks</h2>
+<ul>
+<li>Responsibility templates, assessment questions, check-in prompts,
+experiments, scripts, education modules, and category names need review for
+similarity to Better Share and other private references.</li>
+<li>Avoid source-derived frameworks even when renamed if the structure remains
+substantially similar.</li>
+<li>Public-product inspiration from <code>idea.md</code> should be translated into original
+IA and copy before design or implementation.</li>
+<li>Future docs should cite this research as inspiration only and should not
+import private reference text into specs, tests, fixtures, or seed data.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

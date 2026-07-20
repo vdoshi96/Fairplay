@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t01-code-quality/handoff.md">
+  <meta name="fairplay-document-source-sha256" content="4b66f5df6c26ac4d408c2a931bf7c9e0b8b85c0c6d022307b6e9e4abed273257">
+  <title>docs/agents/tasks/2026-05-04-review-t01-code-quality/handoff.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="handoff.md"><code>docs/agents/tasks/2026-05-04-review-t01-code-quality/handoff.md</code></a></p>
+    <article>
+<h1 id="handoff">Handoff</h1>
+<h2 id="status">Status</h2>
+<p>APPROVED_WITH_NOTES for T01 code quality.</p>
+<h2 id="findings">Findings</h2>
+<ul>
+<li>P2 non-blocking dependency audit note: <code>npm audit --omit=dev</code> reports 2 moderate vulnerabilities because <code>next@15.5.15</code> bundles <code>postcss@8.4.31</code> in <code>package-lock.json</code>. See <code>package.json:22</code>, <code>package-lock.json:6865</code>, and <code>package-lock.json:6935</code>. Do not apply npm&#39;s suggested <code>npm audit fix --force</code> because it would install <code>next@9.3.3</code>, a breaking downgrade. Owner: dependency/platform owner for a future safe Next/PostCSS update.</li>
+</ul>
+<h2 id="quality-assessment">Quality Assessment</h2>
+<ul>
+<li>Package scripts are coherent: <code>dev</code>, <code>build</code>, <code>start</code>, <code>lint</code>, <code>typecheck</code>, <code>test</code>, <code>test:watch</code>, and <code>test:e2e</code> map cleanly to Next, ESLint, TypeScript, Vitest, and Playwright.</li>
+<li>TypeScript is strict and alias resolution works under <code>npm run typecheck</code>.</li>
+<li>ESLint extends <code>next/core-web-vitals</code> and <code>next/typescript</code> through flat config and ignores generated output.</li>
+<li>Root app files avoid client-side sensitive storage and avoid implementing auth/session behavior prematurely.</li>
+<li>PWA manifest and icon routes are lightweight and build-safe; build warns only that edge icon routes are dynamic.</li>
+<li>Tailwind/global CSS follows the documented visual system with multiple functional accent colors, stable spacing, and accessible target sizing.</li>
+<li>Playwright and Vitest setup is minimal and not brittle for a scaffold.</li>
+<li>No real secrets, private reference files, local env files, <code>.DS_Store</code>, <code>.next</code>, Playwright output, or <code>node_modules</code> were committed.</li>
+</ul>
+<h2 id="verification">Verification</h2>
+<ul>
+<li><code>git status --short</code>: clean before review artifact edits.</li>
+<li><code>git diff --stat 151b815..33862e8</code>: reviewed.</li>
+<li><code>git diff --name-only 151b815..33862e8</code>: reviewed.</li>
+<li><code>git diff --check 151b815..33862e8</code>: passed.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm test -- --run</code>: passed with no unit test files found.</li>
+<li><code>npm run build</code>: passed.</li>
+<li><code>npm run test:e2e</code>: passed, 1 Chromium test.</li>
+<li><code>npm audit --omit=dev</code>: failed with 2 moderate vulnerabilities in Next&#39;s transitive PostCSS; non-blocking for T01, report only.</li>
+</ul>
+<h2 id="next-owner-notes">Next Owner Notes</h2>
+<ul>
+<li>Dependency/platform owner should revisit the audit issue when a safe Next release or override path is available.</li>
+<li>Feature owners should add focused Vitest coverage when domain/server logic lands.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

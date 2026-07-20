@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-04-guided-learning-and-login-splash-implementation.md">
+  <meta name="fairplay-document-source-sha256" content="525badeb76800c9e39a800dfa5082af2e4cca0b273a0e4155e081a06558d44fe">
+  <title>docs/superpowers/plans/2026-05-04-guided-learning-and-login-splash-implementation.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-04-guided-learning-and-login-splash-implementation.md"><code>docs/superpowers/plans/2026-05-04-guided-learning-and-login-splash-implementation.md</code></a></p>
+    <article>
+<h1 id="guided-learning-and-login-splash-implementation-plan">Guided Learning and Login Splash Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Add user-triggered guided feature tours, practical App Guide 101/201/301 learning surfaces, character-enhanced crash-course lessons, and a warm animated login splash.</p>
+<p><strong>Architecture:</strong> Create a reusable guide layer that reads declarative feature-tour content and highlights existing UI via stable <code>data-guide-id</code> markers. Keep methodology learning in the crash course, practical product learning in Home/feature tours, and first-impression visual polish in the auth shell. Split work by file ownership so workers can build in parallel without overwriting each other.</p>
+<p><strong>Tech Stack:</strong> Next.js App Router, React client components, TypeScript, Tailwind CSS, Vitest/Testing Library, Playwright, existing Fairplay visual SVG assets and CSS motion tokens.</p>
+<hr>
+<h2 id="file-ownership-map">File Ownership Map</h2>
+<ul>
+<li>Guide foundation:<ul>
+<li>Create <code>src/components/guide/guide-content.ts</code></li>
+<li>Create <code>src/components/guide/guided-tour.tsx</code></li>
+<li>Create <code>src/components/guide/feature-guide-launcher.tsx</code></li>
+<li>Create <code>src/components/guide/guided-tour.test.tsx</code></li>
+<li>Create <code>src/components/guide/feature-guide-launcher.test.tsx</code></li>
+</ul>
+</li>
+<li>Home, welcome, and settings:<ul>
+<li>Modify <code>src/app/app/home/page.tsx</code></li>
+<li>Modify <code>src/components/welcome/persistent-welcome.tsx</code></li>
+<li>Modify <code>src/components/welcome/persistent-welcome.test.tsx</code></li>
+<li>Modify <code>src/components/settings/settings-panel.tsx</code></li>
+<li>Modify <code>src/components/settings/settings-panel.test.tsx</code></li>
+<li>Modify <code>src/components/app-shell/app-shell.test.tsx</code></li>
+</ul>
+</li>
+<li>Feature tour markers and launchers:<ul>
+<li>Modify <code>src/components/responsibilities/responsibility-load-map.tsx</code></li>
+<li>Modify <code>src/components/responsibilities/responsibility-load-map.test.tsx</code></li>
+<li>Modify <code>src/components/library/card-library.tsx</code></li>
+<li>Modify <code>src/components/library/card-library.test.tsx</code></li>
+<li>Modify <code>src/components/radar/radar-board.tsx</code></li>
+<li>Modify <code>src/components/radar/radar-board.test.tsx</code></li>
+<li>Modify <code>src/components/check-ins/check-in-flow.tsx</code></li>
+<li>Modify <code>src/components/check-ins/check-in-flow.test.tsx</code></li>
+</ul>
+</li>
+<li>Crash-course scenes:<ul>
+<li>Create <code>src/components/crash-course/crash-course-scene.tsx</code></li>
+<li>Create <code>src/components/crash-course/crash-course-scene.test.tsx</code></li>
+<li>Modify <code>src/components/crash-course/crash-course-content.ts</code></li>
+<li>Modify <code>src/components/crash-course/crash-course-flow.tsx</code></li>
+<li>Modify <code>src/components/crash-course/crash-course-flow.test.tsx</code></li>
+</ul>
+</li>
+<li>Login splash:<ul>
+<li>Create <code>src/components/auth/login-splash-illustration.tsx</code></li>
+<li>Create <code>src/components/auth/login-splash-illustration.test.tsx</code></li>
+<li>Modify <code>src/components/auth/auth-page-shell.tsx</code></li>
+<li>Modify <code>src/components/auth/login-page-client.tsx</code></li>
+<li>Modify <code>src/components/auth/auth-forms.test.tsx</code></li>
+<li>Modify <code>src/app/globals.css</code></li>
+</ul>
+</li>
+<li>Verification and docs:<ul>
+<li>Create task reports under <code>docs/implementation/</code></li>
+<li>Modify <code>e2e/auth-onboarding.spec.ts</code></li>
+<li>Create <code>e2e/guided-learning.spec.ts</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="parallelization-strategy">Parallelization Strategy</h2>
+<ul>
+<li>Batch A can run in parallel:<ul>
+<li>Task 1 guide foundation.</li>
+<li>Task 4 login splash.</li>
+<li>Task 5 crash-course scenes.</li>
+</ul>
+</li>
+<li>Batch B starts after Task 1 lands:<ul>
+<li>Task 2 Home/welcome/settings wiring.</li>
+<li>Task 3 feature tour markers and launchers.</li>
+</ul>
+</li>
+<li>Controller owns final integration, docs, full verification, PR, and merge.</li>
+</ul>
+<p>Every implementation worker must write a report in <code>docs/implementation/</code> with:</p>
+<pre tabindex="0"><code class="language-markdown"># Task N: &lt;Name&gt;
+
+## Expectations
+
+## Outputs
+
+## Verification
+
+## Challenges
+</code></pre>
+<h2 id="task-1-guide-foundation">Task 1: Guide Foundation</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/components/guide/guide-content.ts</code></p>
+</li>
+<li><p>Create: <code>src/components/guide/guided-tour.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/guide/feature-guide-launcher.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/guide/guided-tour.test.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/guide/feature-guide-launcher.test.tsx</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-11-guide-foundation.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing guided-tour tests</strong></p>
+</li>
+</ul>
+<p>Create <code>src/components/guide/guided-tour.test.tsx</code> with tests for start state, next/back, skip, done, missing target fallback, Escape exit, and blocked background interaction.</p>
+<pre tabindex="0"><code class="language-tsx">import { fireEvent, render, screen } from &quot;@testing-library/react&quot;;
+import { describe, expect, it, vi } from &quot;vitest&quot;;
+
+import { GuidedTour, type GuideStep } from &quot;./guided-tour&quot;;
+
+const steps: GuideStep[] = [
+  {
+    id: &quot;first&quot;,
+    title: &quot;This is the Load Map&quot;,
+    body: &quot;Cards in play live here so the household can see ownership.&quot;,
+    targetId: &quot;load-map-board&quot;
+  },
+  {
+    id: &quot;second&quot;,
+    title: &quot;Move cards deliberately&quot;,
+    body: &quot;Use drag and drop or the move menu when the lane decision changes.&quot;,
+    targetId: &quot;move-menu&quot;
+  }
+];
+
+describe(&quot;GuidedTour&quot;, () =&gt; {
+  it(&quot;shows a coach bubble, highlights the active target, and blocks background clicks&quot;, () =&gt; {
+    const onBackgroundClick = vi.fn();
+    render(
+      &lt;div&gt;
+        &lt;button data-guide-id=&quot;load-map-board&quot; onClick={onBackgroundClick}&gt;
+          Board target
+        &lt;/button&gt;
+        &lt;GuidedTour featureName=&quot;Load Map&quot; onExit={vi.fn()} steps={steps} /&gt;
+      &lt;/div&gt;
+    );
+
+    expect(screen.getByRole(&quot;dialog&quot;, { name: &quot;Load Map guide&quot; })).toBeVisible();
+    expect(screen.getByText(&quot;This is the Load Map&quot;)).toBeVisible();
+    expect(screen.getByText(&quot;Step 1 of 2&quot;)).toBeVisible();
+
+    fireEvent.click(screen.getByLabelText(&quot;Guided tour backdrop&quot;));
+
+    expect(onBackgroundClick).not.toHaveBeenCalled();
+  });
+
+  it(&quot;moves forward and backward through steps&quot;, () =&gt; {
+    render(&lt;GuidedTour featureName=&quot;Load Map&quot; onExit={vi.fn()} steps={steps} /&gt;);
+
+    fireEvent.click(screen.getByRole(&quot;button&quot;, { name: &quot;Next&quot; }));
+    expect(screen.getByText(&quot;Move cards deliberately&quot;)).toBeVisible();
+
+    fireEvent.click(screen.getByRole(&quot;button&quot;, { name: &quot;Back&quot; }));
+    expect(screen.getByText(&quot;This is the Load Map&quot;)).toBeVisible();
+  });
+
+  it(&quot;exits through skip, done, and Escape&quot;, () =&gt; {
+    const onExit = vi.fn();
+    const { rerender } = render(
+      &lt;GuidedTour featureName=&quot;Load Map&quot; onExit={onExit} steps={steps} /&gt;
+    );
+
+    fireEvent.click(screen.getByRole(&quot;button&quot;, { name: &quot;Skip&quot; }));
+    expect(onExit).toHaveBeenCalledTimes(1);
+
+    rerender(&lt;GuidedTour featureName=&quot;Load Map&quot; onExit={onExit} steps={[steps[0]]} /&gt;);
+    fireEvent.click(screen.getByRole(&quot;button&quot;, { name: &quot;Done&quot; }));
+    expect(onExit).toHaveBeenCalledTimes(2);
+
+    rerender(&lt;GuidedTour featureName=&quot;Load Map&quot; onExit={onExit} steps={steps} /&gt;);
+    fireEvent.keyDown(document, { key: &quot;Escape&quot; });
+    expect(onExit).toHaveBeenCalledTimes(3);
+  });
+
+  it(&quot;uses a friendly fallback when a target is missing&quot;, () =&gt; {
+    render(
+      &lt;GuidedTour
+        featureName=&quot;Library&quot;
+        onExit={vi.fn()}
+        steps={[
+          {
+            id: &quot;missing&quot;,
+            title: &quot;Search cards&quot;,
+            body: &quot;Use search to find a source card.&quot;,
+            targetId: &quot;not-present&quot;
+          }
+        ]}
+      /&gt;
+    );
+
+    expect(screen.getByText(&quot;Search cards&quot;)).toBeVisible();
+    expect(
+      screen.getByText(&quot;This part of the page is not visible right now.&quot;)
+    ).toBeVisible();
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Write failing guide launcher tests</strong></li>
+</ul>
+<p>Create <code>src/components/guide/feature-guide-launcher.test.tsx</code>.</p>
+<pre tabindex="0"><code class="language-tsx">import { fireEvent, render, screen } from &quot;@testing-library/react&quot;;
+import { beforeEach, describe, expect, it, vi } from &quot;vitest&quot;;
+
+import { FEATURE_GUIDES } from &quot;./guide-content&quot;;
+import { FeatureGuideLauncher } from &quot;./feature-guide-launcher&quot;;
+
+const queryValue = vi.hoisted(() =&gt; ({ value: &quot;&quot; }));
+
+vi.mock(&quot;next/navigation&quot;, () =&gt; ({
+  useSearchParams: () =&gt; new URLSearchParams(queryValue.value)
+}));
+
+describe(&quot;FeatureGuideLauncher&quot;, () =&gt; {
+  beforeEach(() =&gt; {
+    queryValue.value = &quot;&quot;;
+  });
+
+  it(&quot;starts a user-triggered feature guide with a helper character&quot;, () =&gt; {
+    render(&lt;FeatureGuideLauncher guide={FEATURE_GUIDES.loadMap} /&gt;);
+
+    fireEvent.click(screen.getByRole(&quot;button&quot;, { name: &quot;Learn this feature&quot; }));
+
+    expect(screen.getByRole(&quot;dialog&quot;, { name: &quot;Load Map guide&quot; })).toBeVisible();
+    expect(screen.getByAltText(&quot;&quot;)).toHaveAttribute(&quot;aria-hidden&quot;, &quot;true&quot;);
+  });
+
+  it(&quot;does not auto-start before the user taps the guide&quot;, () =&gt; {
+    render(&lt;FeatureGuideLauncher guide={FEATURE_GUIDES.library} /&gt;);
+
+    expect(screen.queryByRole(&quot;dialog&quot;, { name: &quot;Library guide&quot; })).not.toBeInTheDocument();
+  });
+
+  it(&quot;starts from a guide query only when the user arrived from a guide link&quot;, () =&gt; {
+    queryValue.value = &quot;guide=library&quot;;
+
+    render(&lt;FeatureGuideLauncher guide={FEATURE_GUIDES.library} /&gt;);
+
+    expect(screen.getByRole(&quot;dialog&quot;, { name: &quot;Library guide&quot; })).toBeVisible();
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Run tests and verify red</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npx vitest run src/components/guide/guided-tour.test.tsx src/components/guide/feature-guide-launcher.test.tsx
+</code></pre>
+<p>Expected: FAIL because guide components do not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Implement guide content</strong></li>
+</ul>
+<p>Create <code>src/components/guide/guide-content.ts</code>.</p>
+<pre tabindex="0"><code class="language-ts">export type FeatureGuideId =
+  | &quot;loadMap&quot;
+  | &quot;library&quot;
+  | &quot;radar&quot;
+  | &quot;checkIns&quot;
+  | &quot;settings&quot;;
+
+export type GuideStep = {
+  id: string;
+  title: string;
+  body: string;
+  targetId: string;
+};
+
+export type FeatureGuide = {
+  id: FeatureGuideId;
+  title: string;
+  description: string;
+  steps: GuideStep[];
+};
+
+export const FEATURE_GUIDES: Record&lt;FeatureGuideId, FeatureGuide&gt; = {
+  loadMap: {
+    id: &quot;loadMap&quot;,
+    title: &quot;Load Map&quot;,
+    description: &quot;Learn lanes, in-play cards, owner lanes, filters, and moving cards.&quot;,
+    steps: [
+      {
+        id: &quot;board&quot;,
+        title: &quot;The Load Map is your operating board&quot;,
+        body: &quot;Cards in play are active household responsibilities. The board makes ownership visible without turning it into a score.&quot;,
+        targetId: &quot;load-map-board&quot;
+      },
+      {
+        id: &quot;lanes&quot;,
+        title: &quot;Lanes describe the card&#39;s current state&quot;,
+        body: &quot;Cards of Concern need attention, owner lanes show accountable ownership, Not in Play is reserve, and Trimmed is intentionally out.&quot;,
+        targetId: &quot;load-map-lanes&quot;
+      },
+      {
+        id: &quot;move&quot;,
+        title: &quot;Move cards when the household decision changes&quot;,
+        body: &quot;Drag cards or use the move menu. Moving a card should mean the lane now reflects the real agreement.&quot;,
+        targetId: &quot;load-map-move&quot;
+      },
+      {
+        id: &quot;filters&quot;,
+        title: &quot;Filters help you inspect the system&quot;,
+        body: &quot;Use owner, status, cadence, hidden effort, radar, and search filters to understand the current load.&quot;,
+        targetId: &quot;load-map-filters&quot;
+      }
+    ]
+  },
+  library: {
+    id: &quot;library&quot;,
+    title: &quot;Library&quot;,
+    description: &quot;Learn search, labels, source cards, and putting a card in play.&quot;,
+    steps: [
+      {
+        id: &quot;search&quot;,
+        title: &quot;Search the source deck&quot;,
+        body: &quot;The library is the reserve deck. Search and labels help you find responsibilities that may matter to your household.&quot;,
+        targetId: &quot;library-search&quot;
+      },
+      {
+        id: &quot;labels&quot;,
+        title: &quot;Labels group related work&quot;,
+        body: &quot;Labels are not assignments. They are ways to browse kinds of household work before deciding what is in play.&quot;,
+        targetId: &quot;library-labels&quot;
+      },
+      {
+        id: &quot;put-in-play&quot;,
+        title: &quot;Putting a card in play creates a responsibility&quot;,
+        body: &quot;In play means this source card becomes part of your household operating system and appears on the Load Map.&quot;,
+        targetId: &quot;library-put-in-play&quot;
+      }
+    ]
+  },
+  radar: {
+    id: &quot;radar&quot;,
+    title: &quot;Radar&quot;,
+    description: &quot;Learn private drafts, publishing, deferring, and resolving unclear work.&quot;,
+    steps: [
+      {
+        id: &quot;draft&quot;,
+        title: &quot;Radar starts with a neutral topic&quot;,
+        body: &quot;Use Radar for blockers, unclear standards, or overloaded areas. It is a signal board, not a blame board.&quot;,
+        targetId: &quot;radar-create&quot;
+      },
+      {
+        id: &quot;visibility&quot;,
+        title: &quot;Visibility controls when a topic is shared&quot;,
+        body: &quot;You can keep a draft private until it is ready, then publish it to shared household space or a check-in.&quot;,
+        targetId: &quot;radar-visibility&quot;
+      },
+      {
+        id: &quot;actions&quot;,
+        title: &quot;Resolve, defer, or schedule&quot;,
+        body: &quot;Radar topics should move toward a calm next step: decide now, defer with context, schedule, or resolve.&quot;,
+        targetId: &quot;radar-actions&quot;
+      }
+    ]
+  },
+  checkIns: {
+    id: &quot;checkIns&quot;,
+    title: &quot;Check-ins&quot;,
+    description: &quot;Learn agenda preview, decisions, deferrals, and completion summaries.&quot;,
+    steps: [
+      {
+        id: &quot;agenda&quot;,
+        title: &quot;Preview the agenda&quot;,
+        body: &quot;Check-ins turn Radar topics into a calm list of things to discuss, skip, defer, or decide.&quot;,
+        targetId: &quot;check-in-agenda&quot;
+      },
+      {
+        id: &quot;decision&quot;,
+        title: &quot;Record the decision, not the argument&quot;,
+        body: &quot;Capture what changed, who owns the outcome, and when the household should review it.&quot;,
+        targetId: &quot;check-in-decision&quot;
+      },
+      {
+        id: &quot;complete&quot;,
+        title: &quot;Complete with a clear next step&quot;,
+        body: &quot;Completion summarizes decisions and keeps the board from becoming a memory test.&quot;,
+        targetId: &quot;check-in-complete&quot;
+      }
+    ]
+  },
+  settings: {
+    id: &quot;settings&quot;,
+    title: &quot;Settings&quot;,
+    description: &quot;Learn replay controls, persona switching, and session actions.&quot;,
+    steps: [
+      {
+        id: &quot;persona&quot;,
+        title: &quot;Persona controls the current viewpoint&quot;,
+        body: &quot;Switching persona changes which partner is active for this session.&quot;,
+        targetId: &quot;settings-persona&quot;
+      },
+      {
+        id: &quot;guided-start&quot;,
+        title: &quot;Replay learning whenever you need it&quot;,
+        body: &quot;Restart the crash course, show the welcome again, or open the app guide from here.&quot;,
+        targetId: &quot;settings-guided-start&quot;
+      },
+      {
+        id: &quot;logout&quot;,
+        title: &quot;End the shared session&quot;,
+        body: &quot;Log out when you are done using the shared household account on this device.&quot;,
+        targetId: &quot;settings-logout&quot;
+      }
+    ]
+  }
+};
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Implement <code>GuidedTour</code></strong></li>
+</ul>
+<p>Create <code>src/components/guide/guided-tour.tsx</code> as a client component. It should:</p>
+<ul>
+<li><p>Accept <code>{ featureName, steps, onExit }</code>.</p>
+</li>
+<li><p>Query <code>[data-guide-id=&quot;&lt;targetId&gt;&quot;]</code> for the active step.</p>
+</li>
+<li><p>Render a fixed dimming backdrop with <code>aria-label=&quot;Guided tour backdrop&quot;</code>.</p>
+</li>
+<li><p>Render a highlight rectangle when the target exists.</p>
+</li>
+<li><p>Render fallback text <code>This part of the page is not visible right now.</code> when missing.</p>
+</li>
+<li><p>Trap practical interaction by overlaying the page and moving focus into the bubble.</p>
+</li>
+<li><p>Support Escape to exit.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Implement <code>FeatureGuideLauncher</code></strong></p>
+</li>
+</ul>
+<p>Create <code>src/components/guide/feature-guide-launcher.tsx</code> as a client component that renders:</p>
+<ul>
+<li><p>A small helper mascot using <code>HelperMascot</code>.</p>
+</li>
+<li><p>A <code>Learn this feature</code> button.</p>
+</li>
+<li><p>Optional description text.</p>
+</li>
+<li><p><code>GuidedTour</code> only after the button is tapped.</p>
+</li>
+<li><p><code>GuidedTour</code> on initial render only when <code>useSearchParams().get(&quot;guide&quot;) === guide.id</code>, so Home can deep-link into a tour without first-time auto-start behavior.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Verify green</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npx vitest run src/components/guide/guided-tour.test.tsx src/components/guide/feature-guide-launcher.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 8: Write implementation report and commit</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-11-guide-foundation.md</code> with expectations, outputs, verification, and challenges.</p>
+<p>Commit:</p>
+<pre tabindex="0"><code class="language-bash">git add src/components/guide docs/implementation/2026-05-04-task-11-guide-foundation.md
+git commit -m &quot;feat: add guided tour foundation&quot;
+</code></pre>
+<h2 id="task-2-home-welcome-and-settings-learning-surfaces">Task 2: Home, Welcome, and Settings Learning Surfaces</h2>
+<p><strong>Depends on:</strong> Task 1.</p>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/app/app/home/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/welcome/persistent-welcome.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/welcome/persistent-welcome.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/settings/settings-panel.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/settings/settings-panel.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/app-shell/app-shell.test.tsx</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-12-home-settings-learning.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing Home shell tests</strong></p>
+</li>
+</ul>
+<p>Update <code>src/components/app-shell/app-shell.test.tsx</code> to assert:</p>
+<pre tabindex="0"><code class="language-tsx">expect(screen.getByRole(&quot;heading&quot;, { name: &quot;Learn Fairplay in layers&quot; })).toBeVisible();
+expect(screen.getByRole(&quot;link&quot;, { name: /Crash course/i })).toHaveAttribute(&quot;href&quot;, &quot;/app/crash-course&quot;);
+expect(screen.getByRole(&quot;link&quot;, { name: /App Guide 101/i })).toHaveAttribute(&quot;href&quot;, &quot;/app/home#app-guide-101&quot;);
+expect(screen.getByRole(&quot;link&quot;, { name: /Card library/i })).toHaveAttribute(&quot;href&quot;, &quot;/app/library&quot;);
+expect(screen.getAllByRole(&quot;link&quot;, { name: &quot;Learn this feature&quot; }).length).toBeGreaterThanOrEqual(1);
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Write failing welcome/settings tests</strong></li>
+</ul>
+<p>Update welcome test to expect <code>App guide</code>, <code>Crash course</code>, and <code>Card library</code> links in the persistent welcome.</p>
+<p>Update settings test to expect:</p>
+<pre tabindex="0"><code class="language-tsx">expect(screen.getByRole(&quot;button&quot;, { name: &quot;Restart crash course&quot; })).toBeVisible();
+expect(screen.getByRole(&quot;link&quot;, { name: &quot;Open App Guide 101&quot; })).toHaveAttribute(&quot;href&quot;, &quot;/app/home#app-guide-101&quot;);
+expect(screen.getByText(&quot;Replay feature tours from each feature page using Learn this feature.&quot;)).toBeVisible();
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Run tests and verify red</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npx vitest run src/components/app-shell/app-shell.test.tsx src/components/welcome/persistent-welcome.test.tsx src/components/settings/settings-panel.test.tsx
+</code></pre>
+<p>Expected: FAIL because the learning hub and revised links do not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Implement Home learning hub</strong></li>
+</ul>
+<p>Modify <code>src/app/app/home/page.tsx</code> to:</p>
+<ul>
+<li><p>Replace the three generic cards with a learning hub.</p>
+</li>
+<li><p>Include helper visuals using existing <code>HelperMascot</code>.</p>
+</li>
+<li><p>Render <code>Crash course</code>, <code>App Guide 101</code>, and <code>Card library</code> actions.</p>
+</li>
+<li><p>Render feature rows/cards for Load Map, Library, Radar, Check-ins, and Settings.</p>
+</li>
+<li><p>For feature cards, use <code>Learn this feature</code> links with guide intent:</p>
+<ul>
+<li>Load Map: <code>/app/load-map?guide=loadMap</code></li>
+<li>Library: <code>/app/library?guide=library</code></li>
+<li>Radar: <code>/app/radar?guide=radar</code></li>
+<li>Check-ins: <code>/app/check-ins/new?guide=checkIns</code></li>
+<li>Settings: <code>/app/settings?guide=settings</code></li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Update welcome links</strong></p>
+</li>
+</ul>
+<p>Modify <code>PersistentWelcome</code> so <code>welcomeLinks</code> are:</p>
+<ul>
+<li><code>/app/crash-course</code> labeled <code>Crash course</code>.</li>
+<li><code>/app/home#app-guide-101</code> labeled <code>App guide</code>.</li>
+<li><code>/app/library</code> labeled <code>Card library</code>.</li>
+</ul>
+<p>Update copy to say the welcome points to the methodology, product guide, and source deck.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Update settings guided start</strong></li>
+</ul>
+<p>Modify Settings guided section to include:</p>
+<ul>
+<li>Restart crash course button.</li>
+<li>Show welcome again button.</li>
+<li>Link to <code>Open App Guide 101</code>.</li>
+<li>Text: <code>Replay feature tours from each feature page using Learn this feature.</code></li>
+</ul>
+<p>Add <code>data-guide-id</code> markers:</p>
+<ul>
+<li><p><code>settings-persona</code></p>
+</li>
+<li><p><code>settings-guided-start</code></p>
+</li>
+<li><p><code>settings-logout</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Verify green</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npx vitest run src/components/app-shell/app-shell.test.tsx src/components/welcome/persistent-welcome.test.tsx src/components/settings/settings-panel.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 8: Write report and commit</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-12-home-settings-learning.md</code>.</p>
+<p>Commit:</p>
+<pre tabindex="0"><code class="language-bash">git add src/app/app/home/page.tsx src/components/welcome src/components/settings src/components/app-shell/app-shell.test.tsx docs/implementation/2026-05-04-task-12-home-settings-learning.md
+git commit -m &quot;feat: add home learning hub&quot;
+</code></pre>
+<h2 id="task-3-feature-tour-markers-and-launchers">Task 3: Feature Tour Markers and Launchers</h2>
+<p><strong>Depends on:</strong> Task 1.</p>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-load-map.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-load-map.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/card-library.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/card-library.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/radar/radar-board.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/radar/radar-board.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/check-ins/check-in-flow.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/check-ins/check-in-flow.test.tsx</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-13-feature-tour-markers.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing tests for launch buttons and markers</strong></p>
+</li>
+</ul>
+<p>Add targeted assertions:</p>
+<pre tabindex="0"><code class="language-tsx">expect(screen.getByRole(&quot;button&quot;, { name: &quot;Learn this feature&quot; })).toBeVisible();
+expect(screen.getByTestId(&quot;load-map-board&quot;)).toHaveAttribute(&quot;data-guide-id&quot;, &quot;load-map-board&quot;);
+</code></pre>
+<p>For Library:</p>
+<pre tabindex="0"><code class="language-tsx">expect(screen.getByLabelText(&quot;Search cards&quot;)).toHaveAttribute(&quot;data-guide-id&quot;, &quot;library-search&quot;);
+expect(screen.getByRole(&quot;button&quot;, { name: /put Auto in play/i })).toHaveAttribute(&quot;data-guide-id&quot;, &quot;library-put-in-play&quot;);
+</code></pre>
+<p>For Radar:</p>
+<pre tabindex="0"><code class="language-tsx">expect(screen.getByRole(&quot;button&quot;, { name: &quot;Learn this feature&quot; })).toBeVisible();
+expect(screen.getByLabelText(&quot;Topic&quot;)).toHaveAttribute(&quot;data-guide-id&quot;, &quot;radar-create&quot;);
+</code></pre>
+<p>For Check-ins:</p>
+<pre tabindex="0"><code class="language-tsx">expect(screen.getByRole(&quot;button&quot;, { name: &quot;Learn this feature&quot; })).toBeVisible();
+expect(screen.getByLabelText(&quot;Decision summary&quot;)).toHaveAttribute(&quot;data-guide-id&quot;, &quot;check-in-decision&quot;);
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run tests and verify red</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npx vitest run src/components/responsibilities/responsibility-load-map.test.tsx src/components/library/card-library.test.tsx src/components/radar/radar-board.test.tsx src/components/check-ins/check-in-flow.test.tsx
+</code></pre>
+<p>Expected: FAIL because guide launchers and data markers are missing.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Add guide launchers</strong></li>
+</ul>
+<p>Import <code>FeatureGuideLauncher</code> and <code>FEATURE_GUIDES</code> in each component:</p>
+<ul>
+<li>Load Map: <code>FEATURE_GUIDES.loadMap</code></li>
+<li>Library: <code>FEATURE_GUIDES.library</code></li>
+<li>Radar: <code>FEATURE_GUIDES.radar</code></li>
+<li>Check-ins: <code>FEATURE_GUIDES.checkIns</code></li>
+</ul>
+<p>Place the launcher near the page heading or primary workflow entry, with helper character visible but not blocking work.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Add stable <code>data-guide-id</code> markers</strong></li>
+</ul>
+<p>Add markers matching Task 1 content:</p>
+<ul>
+<li><p>Load Map:</p>
+<ul>
+<li>board wrapper: <code>data-guide-id=&quot;load-map-board&quot;</code> and <code>data-testid=&quot;load-map-board&quot;</code></li>
+<li>lane row/columns wrapper: <code>data-guide-id=&quot;load-map-lanes&quot;</code></li>
+<li>first move menu button: <code>data-guide-id=&quot;load-map-move&quot;</code></li>
+<li>filters panel: <code>data-guide-id=&quot;load-map-filters&quot;</code></li>
+</ul>
+</li>
+<li><p>Library:</p>
+<ul>
+<li>search input: <code>data-guide-id=&quot;library-search&quot;</code></li>
+<li>label rail: <code>data-guide-id=&quot;library-labels&quot;</code></li>
+<li>Put in play button: <code>data-guide-id=&quot;library-put-in-play&quot;</code></li>
+</ul>
+</li>
+<li><p>Radar:</p>
+<ul>
+<li>create form/topic input area: <code>data-guide-id=&quot;radar-create&quot;</code></li>
+<li>visibility select: <code>data-guide-id=&quot;radar-visibility&quot;</code></li>
+<li>action buttons area: <code>data-guide-id=&quot;radar-actions&quot;</code></li>
+</ul>
+</li>
+<li><p>Check-ins:</p>
+<ul>
+<li>agenda/current item area: <code>data-guide-id=&quot;check-in-agenda&quot;</code></li>
+<li>decision form area: <code>data-guide-id=&quot;check-in-decision&quot;</code></li>
+<li>complete button/summary area: <code>data-guide-id=&quot;check-in-complete&quot;</code></li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Verify green</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npx vitest run src/components/responsibilities/responsibility-load-map.test.tsx src/components/library/card-library.test.tsx src/components/radar/radar-board.test.tsx src/components/check-ins/check-in-flow.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Write report and commit</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-13-feature-tour-markers.md</code>.</p>
+<p>Commit:</p>
+<pre tabindex="0"><code class="language-bash">git add src/components/responsibilities src/components/library src/components/radar src/components/check-ins docs/implementation/2026-05-04-task-13-feature-tour-markers.md
+git commit -m &quot;feat: add feature tour entry points&quot;
+</code></pre>
+<h2 id="task-4-login-splash-illustration">Task 4: Login Splash Illustration</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/components/auth/login-splash-illustration.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/auth/login-splash-illustration.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/auth/auth-page-shell.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/auth/login-page-client.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/auth/auth-forms.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/globals.css</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-14-login-splash.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing splash tests</strong></p>
+</li>
+</ul>
+<p>Create <code>src/components/auth/login-splash-illustration.test.tsx</code>.</p>
+<pre tabindex="0"><code class="language-tsx">import { render, screen } from &quot;@testing-library/react&quot;;
+import { describe, expect, it } from &quot;vitest&quot;;
+
+import { LoginSplashIllustration } from &quot;./login-splash-illustration&quot;;
+
+describe(&quot;LoginSplashIllustration&quot;, () =&gt; {
+  it(&quot;renders an accessible animated household garden scene&quot;, () =&gt; {
+    render(&lt;LoginSplashIllustration /&gt;);
+
+    expect(
+      screen.getByRole(&quot;img&quot;, { name: &quot;Animated Fairplay household garden scene&quot; })
+    ).toBeVisible();
+    expect(screen.getByTestId(&quot;login-splash-alex&quot;)).toHaveClass(&quot;fp-motion-persona-bob&quot;);
+    expect(screen.getByTestId(&quot;login-splash-cloud&quot;)).toHaveClass(&quot;fp-motion-cloud-drift&quot;);
+    expect(screen.getByTestId(&quot;login-splash-spark&quot;)).toHaveClass(&quot;fp-motion-radar-pulse&quot;);
+  });
+});
+</code></pre>
+<p>Update <code>src/components/auth/auth-forms.test.tsx</code> or add a login page client test to assert:</p>
+<pre tabindex="0"><code class="language-tsx">expect(screen.getByRole(&quot;heading&quot;, { name: &quot;Log in to Fairplay&quot; })).toBeVisible();
+expect(screen.getByRole(&quot;img&quot;, { name: &quot;Animated Fairplay household garden scene&quot; })).toBeVisible();
+expect(screen.getByLabelText(&quot;Household username&quot;)).toBeVisible();
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run tests and verify red</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npx vitest run src/components/auth/login-splash-illustration.test.tsx src/components/auth/auth-forms.test.tsx
+</code></pre>
+<p>Expected: FAIL because illustration does not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Implement illustration</strong></li>
+</ul>
+<p>Create <code>LoginSplashIllustration</code> as original CSS/SVG-like JSX:</p>
+<ul>
+<li><p>wrapper <code>role=&quot;img&quot;</code> and label <code>Animated Fairplay household garden scene</code></p>
+</li>
+<li><p>Alex and Max character blocks</p>
+</li>
+<li><p>helper spark</p>
+</li>
+<li><p>cloud and plant elements</p>
+</li>
+<li><p>small household board</p>
+</li>
+<li><p>no text inside the illustration</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Update auth shell</strong></p>
+</li>
+</ul>
+<p>Modify <code>AuthPageShell</code> to accept a <code>visual?: ReactNode</code> prop and a wider layout variant for pages that provide a visual. For login, use a two-column desktop layout and mobile-friendly stacked layout. Keep form labels and footer unchanged.</p>
+<p>Modify <code>LoginPageClient</code> to pass <code>&lt;LoginSplashIllustration /&gt;</code> and update summary copy to the calmer household rhythm direction.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Add motion CSS</strong></li>
+</ul>
+<p>Add to <code>src/app/globals.css</code>:</p>
+<pre tabindex="0"><code class="language-css">@keyframes fp-cloud-drift {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(8px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes fp-leaf-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.fp-motion-cloud-drift {
+  animation: fp-cloud-drift 8s ease-in-out infinite;
+}
+
+.fp-motion-leaf-sway {
+  animation: fp-leaf-sway 4s ease-in-out infinite;
+}
+</code></pre>
+<p>Ensure existing reduced-motion media query includes these classes.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Verify green</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npx vitest run src/components/auth/login-splash-illustration.test.tsx src/components/auth/auth-forms.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Write report and commit</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-14-login-splash.md</code>.</p>
+<p>Commit:</p>
+<pre tabindex="0"><code class="language-bash">git add src/components/auth src/app/globals.css docs/implementation/2026-05-04-task-14-login-splash.md
+git commit -m &quot;feat: add animated login splash&quot;
+</code></pre>
+<h2 id="task-5-crash-course-character-scenes">Task 5: Crash Course Character Scenes</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/components/crash-course/crash-course-scene.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/crash-course/crash-course-scene.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/crash-course/crash-course-content.ts</code></p>
+</li>
+<li><p>Modify: <code>src/components/crash-course/crash-course-flow.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/crash-course/crash-course-flow.test.tsx</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-15-crash-course-scenes.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing scene tests</strong></p>
+</li>
+</ul>
+<p>Create <code>src/components/crash-course/crash-course-scene.test.tsx</code>.</p>
+<pre tabindex="0"><code class="language-tsx">import { render, screen } from &quot;@testing-library/react&quot;;
+import { describe, expect, it } from &quot;vitest&quot;;
+
+import { CrashCourseScene } from &quot;./crash-course-scene&quot;;
+
+describe(&quot;CrashCourseScene&quot;, () =&gt; {
+  it(&quot;renders a balanced owner and helper scene&quot;, () =&gt; {
+    render(&lt;CrashCourseScene scene=&quot;owner-helper&quot; /&gt;);
+
+    expect(screen.getByRole(&quot;img&quot;, { name: &quot;Owner and helper learning scene&quot; })).toBeVisible();
+    expect(screen.getByTestId(&quot;scene-alex&quot;)).toBeVisible();
+    expect(screen.getByTestId(&quot;scene-max&quot;)).toBeVisible();
+    expect(screen.getByTestId(&quot;scene-helper&quot;)).toBeVisible();
+  });
+
+  it(&quot;renders CPE as three connected stages&quot;, () =&gt; {
+    render(&lt;CrashCourseScene scene=&quot;cpe-path&quot; /&gt;);
+
+    expect(screen.getByText(&quot;Conception&quot;)).toBeVisible();
+    expect(screen.getByText(&quot;Planning&quot;)).toBeVisible();
+    expect(screen.getByText(&quot;Execution&quot;)).toBeVisible();
+  });
+});
+</code></pre>
+<p>Update <code>crash-course-flow.test.tsx</code>:</p>
+<pre tabindex="0"><code class="language-tsx">render(&lt;CrashCourseFlow currentStep={1} /&gt;);
+expect(screen.getByRole(&quot;img&quot;, { name: &quot;Owner and helper learning scene&quot; })).toBeVisible();
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run tests and verify red</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npx vitest run src/components/crash-course/crash-course-scene.test.tsx src/components/crash-course/crash-course-flow.test.tsx
+</code></pre>
+<p>Expected: FAIL because scene component and lesson scene keys do not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Add scene keys to lessons</strong></li>
+</ul>
+<p>Extend <code>CrashCourseLesson</code> with:</p>
+<pre tabindex="0"><code class="language-ts">scene:
+  | &quot;not-chore&quot;
+  | &quot;owner-helper&quot;
+  | &quot;cpe-path&quot;
+  | &quot;standards-note&quot;
+  | &quot;board-lanes&quot;
+  | &quot;active-deck&quot;
+  | &quot;handoff&quot;
+  | &quot;radar-check-in&quot;
+  | &quot;dynamic-fair&quot;
+  | &quot;repair&quot;;
+</code></pre>
+<p>Assign a scene to each existing lesson.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Implement <code>CrashCourseScene</code></strong></li>
+</ul>
+<p>Use original, simple JSX illustration:</p>
+<ul>
+<li><p>Balanced Alex/Max dots/characters.</p>
+</li>
+<li><p>Helper marker.</p>
+</li>
+<li><p>Scene-specific signs or path labels where useful.</p>
+</li>
+<li><p><code>role=&quot;img&quot;</code> with meaningful labels.</p>
+</li>
+<li><p>Decorative nature/home shapes.</p>
+</li>
+<li><p>No copied card art.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Place scene in crash course layout</strong></p>
+</li>
+</ul>
+<p>Modify <code>CrashCourseFlow</code> so the scene appears beside the lesson intro on desktop and above lesson content on mobile. Keep text readable and controls stable.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Verify green</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npx vitest run src/components/crash-course/crash-course-scene.test.tsx src/components/crash-course/crash-course-flow.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Write report and commit</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-15-crash-course-scenes.md</code>.</p>
+<p>Commit:</p>
+<pre tabindex="0"><code class="language-bash">git add src/components/crash-course docs/implementation/2026-05-04-task-15-crash-course-scenes.md
+git commit -m &quot;feat: add crash course scenes&quot;
+</code></pre>
+<h2 id="task-6-end-to-end-guided-learning-verification">Task 6: End-to-End Guided Learning Verification</h2>
+<p><strong>Depends on:</strong> Tasks 1-5.</p>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>e2e/guided-learning.spec.ts</code></p>
+</li>
+<li><p>Modify: <code>e2e/auth-onboarding.spec.ts</code></p>
+</li>
+<li><p>Create: <code>docs/implementation/2026-05-04-task-16-guided-learning-verification.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write Playwright guided-learning smoke</strong></p>
+</li>
+</ul>
+<p>Create <code>e2e/guided-learning.spec.ts</code> with a route-mocked test that:</p>
+<ul>
+<li><p>Opens <code>/app/home</code>.</p>
+</li>
+<li><p>Confirms <code>Learn Fairplay in layers</code>.</p>
+</li>
+<li><p>Clicks a <code>Learn this feature</code> control.</p>
+</li>
+<li><p>Sees a guide dialog.</p>
+</li>
+<li><p>Clicks <code>Next</code>.</p>
+</li>
+<li><p>Clicks <code>Skip</code>.</p>
+</li>
+<li><p>Confirms the guide closes.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Update login visual smoke</strong></p>
+</li>
+</ul>
+<p>Update <code>e2e/auth-onboarding.spec.ts</code> login-related smoke to expect:</p>
+<pre tabindex="0"><code class="language-ts">await expect(
+  page.getByRole(&quot;img&quot;, { name: &quot;Animated Fairplay household garden scene&quot; })
+).toBeVisible();
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Run focused e2e</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npx playwright test e2e/guided-learning.spec.ts e2e/auth-onboarding.spec.ts
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Run full verification</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm run lint
+npm run typecheck
+DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npm test
+DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npm run build
+DATABASE_URL=&#39;postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay?schema=public&#39; npm run test:e2e
+</code></pre>
+<p>Expected: all pass.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Write report and commit</strong></li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-04-task-16-guided-learning-verification.md</code>.</p>
+<p>Commit:</p>
+<pre tabindex="0"><code class="language-bash">git add e2e docs/implementation/2026-05-04-task-16-guided-learning-verification.md
+git commit -m &quot;test: add guided learning browser smoke&quot;
+</code></pre>
+<h2 id="task-7-pr-vercel-merge-and-local-main-alignment">Task 7: PR, Vercel, Merge, and Local Main Alignment</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify or create: <code>docs/implementation/2026-05-04-task-17-guided-learning-pr-merge.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Push branch</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git push -u origin codex/guided-learning-splash
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Open PR</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">gh pr create --base main --head codex/guided-learning-splash --title &quot;Guided learning and login splash&quot; --body-file docs/superpowers/plans/2026-05-04-guided-learning-and-login-splash-implementation.md --draft
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Wait for Vercel</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">gh pr checks --watch --interval 10
+</code></pre>
+<p>Expected: Vercel and preview comments pass.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Mark ready and merge</strong></li>
+</ul>
+<p>After local verification and Vercel pass:</p>
+<pre tabindex="0"><code class="language-bash">gh pr ready
+gh pr merge --merge --delete-branch
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Align local main</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">git switch main
+git pull --ff-only origin main
+git status --short --branch
+</code></pre>
+<p>Expected: <code>main...origin/main</code> with no local changes.</p>
+<h2 id="plan-self-review">Plan Self-Review</h2>
+<ul>
+<li>Spec coverage:<ul>
+<li>User-triggered tours: Task 1 and Task 3.</li>
+<li>Highlights, bubbles, blocked interaction, skip: Task 1.</li>
+<li>App Guide 101/201/301 and Home learning hub: Task 2.</li>
+<li>Welcome and Settings retriggering: Task 2.</li>
+<li>Crash-course character scenes: Task 5.</li>
+<li>Login splash with nature, characters, animation, reduced motion: Task 4.</li>
+<li>E2E and full verification: Task 6.</li>
+<li>PR, Vercel, merge, local-main alignment: Task 7.</li>
+</ul>
+</li>
+<li>Placeholder scan: no unresolved placeholders or vague &quot;write tests&quot; steps remain.</li>
+<li>Type consistency: <code>GuideStep</code>, <code>FeatureGuide</code>, <code>FEATURE_GUIDES</code>, <code>GuidedTour</code>, and <code>FeatureGuideLauncher</code> names are used consistently across tasks.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

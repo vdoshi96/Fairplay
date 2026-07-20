@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/specs/2026-05-06-ui-layout-composition-design.md">
+  <meta name="fairplay-document-source-sha256" content="c49a15287e357ace26e04be558e03c5fc8eef6c54b0c4bc93044d33fbe56eaff">
+  <title>docs/superpowers/specs/2026-05-06-ui-layout-composition-design.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-06-ui-layout-composition-design.md"><code>docs/superpowers/specs/2026-05-06-ui-layout-composition-design.md</code></a></p>
+    <article>
+<h1 id="fairplay-ui-layout-composition-design">Fairplay UI Layout Composition Design</h1>
+<h2 id="goal">Goal</h2>
+<p>Refactor the Fairplay protected-app visual system so page art, cards, spacing, and route structure feel cohesive and intentional while preserving existing product functionality and leaving the floating Little Alex assistant untouched.</p>
+<p>The user&#39;s May 6, 2026 brief is treated as the approved design direction for this execution pass.</p>
+<h2 id="scope">Scope</h2>
+<p>In scope:</p>
+<ul>
+<li>Shared protected-app page primitives for consistent width, padding, spacing, z-index, and page background behavior.</li>
+<li>Controlled background-art layers using existing Qwen-generated assets where available.</li>
+<li>Persistent, less-dominant welcome banner behavior and copy density.</li>
+<li>A centered, calm New Check-in launcher layout with grouped CTAs and restrained decoration.</li>
+<li>A final polish pass across Library, Radar, Check-ins, Crash course, and Settings.</li>
+<li>Lint, typecheck, build, and focused component verification after each branch.</li>
+</ul>
+<p>Out of scope:</p>
+<ul>
+<li>Backend/data-flow changes unless needed to preserve existing UI behavior.</li>
+<li>Source card cover art regeneration.</li>
+<li>Repositioning, restyling, or redesigning Little Alex or its floating physics surface.</li>
+<li>Broad animation rewrites or new visual metaphors.</li>
+</ul>
+<h2 id="visual-direction">Visual Direction</h2>
+<p>The app should feel warm, calm, playful, modern, and operational. Generated art becomes atmosphere, not foreground hero content. Text and controls sit on reliable readable surfaces with clear elevation, borders, and rhythm.</p>
+<p>The composition should avoid a corporate dashboard feel, harsh stacked cards, accidental overlaps, giant cropped illustration panels, visual clutter, and one-note beige or purple-blue dominance.</p>
+<h2 id="architecture">Architecture</h2>
+<p><code>AppShell</code> remains responsible for navigation, session chrome, and Little Alex. A new page layer under <code>src/components/app-shell/</code> standardizes protected-page composition:</p>
+<ul>
+<li><code>PageShell</code> owns max width, horizontal padding, vertical spacing, foreground z-index, and optional route-level background art.</li>
+<li><code>PageHeader</code> creates compact, repeatable route headings and action slots.</li>
+<li><code>PageSurface</code> or local Tailwind utility patterns are used for elevated content surfaces with consistent border/shadow/backdrop treatment.</li>
+<li>Background art is rendered as absolute, pointer-events-none layers behind content and masked/faded in CSS instead of being a repeated <code>backgroundImage</code> on cards.</li>
+</ul>
+<p>Feature pages consume these primitives incrementally. Logic stays in existing route/component modules; UI-only props and wrappers should not change server actions, fetch calls, mutation behavior, guide hooks, or form state.</p>
+<h2 id="branch-plan">Branch Plan</h2>
+<ol>
+<li><p><code>codex/layout-shell-refactor</code></p>
+<ul>
+<li>Add shared page-shell primitives.</li>
+<li>Move standard app-main spacing/background responsibility out of ad hoc page cards.</li>
+<li>Update major route wrappers to use the shell without changing behavior.</li>
+</ul>
+</li>
+<li><p><code>codex/background-art-integration</code></p>
+<ul>
+<li>Convert existing Qwen assets into background layers.</li>
+<li>Add masking, opacity, and responsive sizing.</li>
+<li>Remove foreground-style illustration panels where they fight content.</li>
+</ul>
+</li>
+<li><p><code>codex/welcome-banner-cleanup</code></p>
+<ul>
+<li>Keep existing persistent dismissal API.</li>
+<li>Reduce welcome dominance on non-home pages.</li>
+<li>Add compact contextual rendering using pathname-aware client behavior.</li>
+</ul>
+</li>
+<li><p><code>codex/check-in-page-redesign</code></p>
+<ul>
+<li>Redesign New Check-in as a centered workflow.</li>
+<li>Preserve preview, remove suggested item, start, practice, and started-check-in behavior.</li>
+</ul>
+</li>
+<li><p><code>codex/page-polish-pass</code></p>
+<ul>
+<li>Final route consistency pass for Library, Radar, Check-ins, Crash course, and Settings.</li>
+<li>Tighten responsive behavior and route-specific spacing after all dependencies merge.</li>
+</ul>
+</li>
+</ol>
+<p>Branches merge into <code>main</code> in that order. Each branch gets focused tests plus <code>npm run lint</code>, <code>npm run typecheck</code>, and <code>npm run build</code> before merge.</p>
+<h2 id="testing">Testing</h2>
+<p>Testing emphasizes behavior preservation and structural UI guarantees:</p>
+<ul>
+<li>App shell tests assert standard pages expose the page-layer hooks and immersive crash course remains full canvas.</li>
+<li>Visual component tests assert background layers are decorative and use existing generated asset paths.</li>
+<li>Welcome tests assert dismissal still persists and compact behavior does not remove links.</li>
+<li>Check-in tests assert preview/start/remove/decision/complete flows keep working while the launcher layout changes.</li>
+<li>Final verification includes focused component tests, lint, typecheck, build, and browser screenshots/descriptions for the required routes.</li>
+</ul>
+<h2 id="risks-and-controls">Risks And Controls</h2>
+<ul>
+<li>Background art could reduce readability. Control with opacity, masks, and content surfaces.</li>
+<li>Page-shell changes can disturb route layouts. Control with narrow wrappers and existing component tests.</li>
+<li>Welcome persistence could regress. Control by preserving the existing PATCH endpoint and dismissed prop contract.</li>
+<li>Check-in layout edits can accidentally alter workflow state. Control by keeping mutation functions intact and testing the existing flow.</li>
+<li>Little Alex sits at a fixed z-index. Control by keeping page background/content z-index below modals and avoiding edits to Little Alex files.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-06-professional-qwen-visual-refresh.md">
+  <meta name="fairplay-document-source-sha256" content="77c1245d55d9d419669d4759658b06e4475057550a9465e70cf48ac29fbcff65">
+  <title>docs/superpowers/plans/2026-05-06-professional-qwen-visual-refresh.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-06-professional-qwen-visual-refresh.md"><code>docs/superpowers/plans/2026-05-06-professional-qwen-visual-refresh.md</code></a></p>
+    <article>
+<h1 id="professional-qwen-visual-refresh-implementation-plan">Professional Qwen Visual Refresh Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Generate and incorporate professional Qwen backgrounds across Fairplay without breaking existing app behavior.</p>
+<p><strong>Architecture:</strong> A foundation branch adds new generated UI asset specs and PNG files. Two downstream UI branches consume the asset contract in separate page groups, then <code>main</code> receives the branches in dependency order.</p>
+<p><strong>Tech Stack:</strong> Next.js App Router, React, TypeScript, Tailwind CSS, Vitest, Playwright, Qwen image generation through <code>scripts/generate-ui-assets.mjs</code>.</p>
+<hr>
+<h2 data-source-heading-level="3" id="task-1-qwen-background-asset-contract">Task 1: Qwen Background Asset Contract</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/server/ai/generated-ui-assets.test.ts</code></p>
+</li>
+<li><p>Modify: <code>src/server/ai/generated-ui-assets.ts</code></p>
+</li>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/backgrounds/auth-warm-threshold.png</code></p>
+</li>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/backgrounds/app-shell-household-canvas.png</code></p>
+</li>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/backgrounds/home-learning-studio.png</code></p>
+</li>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/backgrounds/onboarding-rhythm-path.png</code></p>
+</li>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/backgrounds/load-map-workbench.png</code></p>
+</li>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/backgrounds/library-shelf.png</code></p>
+</li>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/backgrounds/radar-signal-room.png</code></p>
+</li>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/backgrounds/check-in-table.png</code></p>
+</li>
+<li><p>Create: <code>public/assets/fairplay/generated-ui/backgrounds/settings-preferences.png</code></p>
+</li>
+<li><p>Modify: <code>public/assets/fairplay/generated-ui/generation-manifest.json</code></p>
+</li>
+<li><p><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 1: Write the failing asset coverage test</strong></p>
+</li>
+</ul>
+<pre tabindex="0"><code class="language-ts">expect(GENERATED_UI_ASSETS.map((asset) =&gt; asset.slug)).toEqual(
+  expect.arrayContaining([
+    &quot;auth-warm-threshold-background&quot;,
+    &quot;app-shell-household-canvas&quot;,
+    &quot;home-learning-studio-background&quot;,
+    &quot;onboarding-rhythm-path-background&quot;,
+    &quot;load-map-workbench-background&quot;,
+    &quot;library-shelf-background&quot;,
+    &quot;radar-signal-room-background&quot;,
+    &quot;check-in-table-background&quot;,
+    &quot;settings-preferences-background&quot;
+  ])
+);
+</code></pre>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 2: Run test to verify it fails</strong></li>
+</ul>
+<p>Run: <code>npm run test -- src/server/ai/generated-ui-assets.test.ts --run</code>
+Expected: FAIL because the new slugs are not in <code>GENERATED_UI_ASSETS</code>.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 3: Add the asset specs</strong></li>
+</ul>
+<p>Add a <code>professionalPageBackgroundSpecs</code> array with the nine slugs above, output paths under <code>public/assets/fairplay/generated-ui/backgrounds/</code>, and approved <code>qwen-image-2.0-pro</code> generation metadata through the existing exported asset list.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 4: Run test to verify it passes</strong></li>
+</ul>
+<p>Run: <code>npm run test -- src/server/ai/generated-ui-assets.test.ts --run</code>
+Expected: PASS.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 5: Generate Qwen PNGs</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm run assets:generate-ui -- --slugs=auth-warm-threshold-background,app-shell-household-canvas,home-learning-studio-background,onboarding-rhythm-path-background,load-map-workbench-background,library-shelf-background,radar-signal-room-background,check-in-table-background,settings-preferences-background --delay-ms=15000
+</code></pre>
+<p>Expected: nine PNG files and a refreshed <code>generation-manifest.json</code>.</p>
+<ul>
+<li><input checked="" disabled="" type="checkbox" aria-label="Completed task"><strong>Step 6: Verify generated files</strong></li>
+</ul>
+<p>Run: <code>npm run test -- src/server/ai/generated-ui-assets.test.ts src/server/ai/generated-ui-asset-files.test.ts --run</code>
+Expected: PASS with every declared PNG present and matching expected dimensions.</p>
+<h2 data-source-heading-level="3" id="task-2-auth-home-and-onboarding-ui-branch">Task 2: Auth, Home, And Onboarding UI Branch</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/auth/auth-page-shell.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/auth/create-household-page-client.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/auth/choose-persona-client.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/app/home/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/onboarding/onboarding-guide.tsx</code></p>
+</li>
+<li><p>Modify: focused component tests for those surfaces</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing tests</strong></p>
+</li>
+</ul>
+<p>Add assertions that auth pages render the generated auth background, the home page renders the learning studio background, and onboarding renders the rhythm path background.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run focused tests and verify they fail</strong></li>
+</ul>
+<p>Run: <code>npm run test -- src/components/app-shell/app-shell.test.tsx src/components/auth/auth-forms.test.tsx src/components/onboarding/onboarding-flow.test.tsx --run</code>
+Expected: FAIL on missing generated visual hooks.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Wire generated visuals</strong></li>
+</ul>
+<p>Use the committed background assets as decorative images or covered panels with solid text surfaces. Preserve existing links, form behavior, guide anchors, and skip routing.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Run focused tests and verify they pass</strong></li>
+</ul>
+<p>Run: <code>npm run test -- src/components/app-shell/app-shell.test.tsx src/components/auth/auth-forms.test.tsx src/components/onboarding/onboarding-flow.test.tsx --run</code>
+Expected: PASS.</p>
+<h2 data-source-heading-level="3" id="task-3-feature-pages-ui-branch">Task 3: Feature Pages UI Branch</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>src/components/responsibilities/responsibility-load-map.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/card-library.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/app/library/page.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/radar/radar-board.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/check-ins/check-in-flow.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/settings/settings-panel.tsx</code></p>
+</li>
+<li><p>Modify: focused component tests for those surfaces</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing tests</strong></p>
+</li>
+</ul>
+<p>Add assertions that Load Map, Library, Radar, Check-ins, and Settings render their page-specific generated backgrounds without changing existing workflow controls.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run focused tests and verify they fail</strong></li>
+</ul>
+<p>Run: <code>npm run test -- src/components/responsibilities/responsibility-load-map.test.tsx src/components/library/card-library.test.tsx src/components/radar/radar-board.test.tsx src/components/check-ins/check-in-flow.test.tsx src/components/settings/settings-panel.test.tsx --run</code>
+Expected: FAIL on missing generated visual hooks.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Wire generated visuals</strong></li>
+</ul>
+<p>Add professional page headers and contextual visual panels that keep operational controls scannable and maintain current guide targets.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Run focused tests and verify they pass</strong></li>
+</ul>
+<p>Run: <code>npm run test -- src/components/responsibilities/responsibility-load-map.test.tsx src/components/library/card-library.test.tsx src/components/radar/radar-board.test.tsx src/components/check-ins/check-in-flow.test.tsx src/components/settings/settings-panel.test.tsx --run</code>
+Expected: PASS.</p>
+<h2 data-source-heading-level="3" id="task-4-merge-qa-and-github-sync">Task 4: Merge QA And GitHub Sync</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>docs/superpowers/outcomes/2026-05-06-professional-qwen-visual-refresh.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Merge branches in order</strong></p>
+</li>
+</ul>
+<p>Merge <code>codex/visual-asset-system</code>, then <code>codex/visual-auth-home</code>, then <code>codex/visual-feature-pages</code> into <code>main</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run full local verification</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm run lint
+npm run typecheck
+npm run test -- --run
+npm run build
+npm run test:e2e
+</code></pre>
+<p>Expected: all commands exit 0.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Record outcome</strong></li>
+</ul>
+<p>Document branch order, subagent responsibilities, blockers, achievements, and verification evidence in <code>docs/superpowers/outcomes/2026-05-06-professional-qwen-visual-refresh.md</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Push <code>main</code></strong></li>
+</ul>
+<p>Run: <code>git push origin main</code>
+Expected: <code>origin/main</code> points at the same commit as local <code>main</code>.</p>
+    </article>
+  </main>
+</body>
+</html>

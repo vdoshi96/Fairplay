@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-05-openai-fallback-implementation.md">
+  <meta name="fairplay-document-source-sha256" content="1a4ef2e296e0198fe9b4b923ad02b86ae912bafac67a1886b123ff2b2602aa90">
+  <title>docs/superpowers/plans/2026-05-05-openai-fallback-implementation.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-05-openai-fallback-implementation.md"><code>docs/superpowers/plans/2026-05-05-openai-fallback-implementation.md</code></a></p>
+    <article>
+<h1 id="openai-fallback-implementation-plan">OpenAI Fallback Implementation Plan</h1>
+<blockquote>
+<p>REQUIRED SUB-SKILLS: Use superpowers:test-driven-development and superpowers:subagent-driven-development. Keep changes scoped to the AI provider layer and docs unless tests show a service import needs adjustment.</p>
+</blockquote>
+<p><strong>Goal:</strong> Add OpenAI text and image fallback for AI Task Manager while keeping Qwen primary and preserving the current audio flow.</p>
+<p><strong>Architecture:</strong> Introduce a provider-neutral <code>card-generator</code> module that the AI draft service imports. It delegates to Qwen first and calls OpenAI only after Qwen throws and fallback is enabled. Add an OpenAI fallback config module plus OpenAI text/image client functions.</p>
+<hr>
+<h2 id="task-1-red-tests-and-provider-contract">Task 1: Red Tests And Provider Contract</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create <code>src/server/ai/openai-config.test.ts</code></p>
+</li>
+<li><p>Create <code>src/server/ai/openai-card-generator.test.ts</code></p>
+</li>
+<li><p>Create <code>src/server/ai/card-generator.test.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing config tests for enabled/disabled fallback env resolution.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing OpenAI client tests for Responses API structured card output and image base64 output.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write failing provider-neutral wrapper tests for Qwen-first, fallback-on-Qwen-failure, disabled fallback, and ASR fallback behavior.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused AI tests and confirm they fail because the fallback modules do not exist yet.</p>
+</li>
+</ul>
+<h2 id="task-2-shared-card-generation-utilities">Task 2: Shared Card Generation Utilities</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create <code>src/server/ai/card-generation-shared.ts</code></p>
+</li>
+<li><p>Modify <code>src/server/ai/qwen-card-generator.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Move shared generated card types, Zod schema, prompts, image prompt builders, safe raster MIME handling, and prompt caps into the shared module.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Keep Qwen behavior unchanged by importing the shared helpers.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run existing Qwen generator tests and confirm they remain green.</p>
+</li>
+</ul>
+<h2 id="task-3-openai-fallback-provider">Task 3: OpenAI Fallback Provider</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create <code>src/server/ai/openai-config.ts</code></p>
+</li>
+<li><p>Create <code>src/server/ai/openai-card-generator.ts</code></p>
+</li>
+<li><p>Modify <code>.env.example</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement fallback config with <code>AI_PROVIDER_FALLBACK_ENABLED</code> gating required OpenAI values.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement OpenAI card structuring through <code>/responses</code> with strict JSON schema output.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement OpenAI image generation through <code>/images/generations</code> with <code>1024x1536</code>, low quality, PNG output, and base64 decoding.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Support URL output defensively with the same safe download validation.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add OpenAI env placeholders to <code>.env.example</code>.</p>
+</li>
+</ul>
+<h2 id="task-4-provider-neutral-wrapper">Task 4: Provider-Neutral Wrapper</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create <code>src/server/ai/card-generator.ts</code></p>
+</li>
+<li><p>Modify <code>src/server/ai-card-drafts/service.ts</code></p>
+</li>
+<li><p>Modify <code>src/server/ai-card-drafts/service.test.ts</code> only if type imports require it</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Export <code>transcribeAudio</code>, <code>structureTaskAsCard</code>, and <code>generateCardCover</code> from the wrapper.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">For audio transcription, call Qwen first and OpenAI only after a thrown error when fallback is enabled.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">For structuring and image generation, call Qwen first and OpenAI only after a thrown error when fallback is enabled.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Change the AI draft service default deps to import the wrapper.</p>
+</li>
+</ul>
+<h2 id="task-5-verification-review-and-merge">Task 5: Verification, Review, And Merge</h2>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused AI tests.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run full <code>npm test -- --run</code>.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Run <code>npm run lint</code>, <code>npm run typecheck</code>, <code>npm run prisma:validate</code>, and <code>npm run build</code>.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Request subagent review for spec compliance and code quality.</li>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task">Push <code>codex/openai-fallback</code>, open a PR, wait for checks, merge to <code>main</code>, delete the branch, and fast-forward local <code>main</code>.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

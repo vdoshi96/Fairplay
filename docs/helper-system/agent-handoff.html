@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/helper-system/agent-handoff.md">
+  <meta name="fairplay-document-source-sha256" content="7f7e2f24052411cc4ccc2bb2d60afe942ea78f7abf9fe37d041f7e802be64091">
+  <title>docs/helper-system/agent-handoff.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="agent-handoff.md"><code>docs/helper-system/agent-handoff.md</code></a></p>
+    <article>
+<h1 id="agent-handoff">Agent Handoff</h1>
+<h2 id="shared-rules">Shared Rules</h2>
+<ul>
+<li>Do not redesign Little Alex.</li>
+<li>Do not change the default full-body neutral pose.</li>
+<li>Do not change phrases, walking speed, walking direction, wall geometry, fling velocity, or idle timing unless a failing test proves the existing behavior is broken.</li>
+<li>Only merge branches created for this helper track.</li>
+<li>Sync from <code>origin/main</code> when needed, but do not merge another agent&#39;s feature branch.</li>
+</ul>
+<h2 id="branch-responsibilities">Branch Responsibilities</h2>
+<ul>
+<li><code>helper-docs-and-investigation</code>: docs only.</li>
+<li><code>helper-ragdoll-state</code>: visual lifecycle state only.</li>
+<li><code>helper-ragdoll-limbs</code>: visible limb mechanics and connection tuning only.</li>
+<li><code>helper-skin-tone-fix</code>: tone-aware assets/rendering only.</li>
+<li><code>helper-polish-and-qa</code>: tuning, docs updates, browser QA, final checks only.</li>
+</ul>
+<h2 id="sub-agent-roles-used">Sub-Agent Roles Used</h2>
+<ul>
+<li>Ragdoll/physics explorer: map Matter.js lifecycle and tests.</li>
+<li>Skin tone/assets explorer: map UI preference propagation, asset specs, and Qwen workflow.</li>
+</ul>
+<h2 id="current-best-guess">Current Best Guess</h2>
+<p>The least risky solution is hybrid rendering:</p>
+<ul>
+<li>settled states use the current coherent full-body sprite;</li>
+<li>fling/recovery states reveal constrained body-part sprites;</li>
+<li>visible asset paths include both presentation and skin tone;</li>
+<li>generated tone variants are derived from the current approved Qwen assets unless visual QA forces new Qwen generation.</li>
+</ul>
+<h2 id="final-evidence-to-capture">Final Evidence To Capture</h2>
+<ul>
+<li>Commit list per branch.</li>
+<li>Files changed.</li>
+<li>Checks run and outcomes.</li>
+<li>Browser/manual QA notes.</li>
+<li>Whether Qwen was called.</li>
+<li>Final local <code>main</code> SHA.</li>
+<li>Final <code>origin/main</code> SHA.</li>
+<li>Confirmation that local <code>main</code> and <code>origin/main</code> match after pushing.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

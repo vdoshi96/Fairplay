@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t05-code-quality/task.md">
+  <meta name="fairplay-document-source-sha256" content="ad64393be000c6dd494faffda3de3e92d060d85268359bb542847ef59e77fe0b">
+  <title>docs/agents/tasks/2026-05-04-review-t05-code-quality/task.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="task.md"><code>docs/agents/tasks/2026-05-04-review-t05-code-quality/task.md</code></a></p>
+    <article>
+<h1 id="t05-code-quality-review">T05 Code Quality Review</h1>
+<h2 id="assignment">Assignment</h2>
+<p>Review implementation task T05 at commit <code>c93da78</code> for frontend quality, accessibility, state handling, responsive design, API interaction, and test quality.</p>
+<h2 id="scope">Scope</h2>
+<ul>
+<li>Reviewed T05 production changes under <code>src/app</code>, <code>src/components</code>, and T05 tests under <code>e2e</code> and <code>src/components</code>.</li>
+<li>Ignored prior review/task artifact commits except as context.</li>
+<li>Did not modify production code.</li>
+</ul>
+<h2 id="outcome">Outcome</h2>
+<p>CHANGES_REQUESTED</p>
+<h2 id="findings">Findings</h2>
+<ol>
+<li><p><code>[P2]</code> Persona-switch confirmation is not keyboard-modal.</p>
+<ul>
+<li>File: <code>src/components/settings/settings-panel.tsx:113</code></li>
+<li>The switch confirmation uses <code>role=&quot;dialog&quot;</code> and <code>aria-modal=&quot;true&quot;</code>, but opening it leaves focus on the underlying <code>Switch persona</code> trigger, does not trap focus inside the dialog, does not restore focus on close, and does not support Escape dismissal. Because the dialog is appended after the page controls, keyboard users can tab to the obscured <code>Log out</code> button before reaching <code>Continue</code> or <code>Cancel</code>. This breaks modal accessibility and makes the confirmation less robust than the visual UI suggests.</li>
+</ul>
+</li>
+<li><p><code>[P3]</code> Mocked e2e coverage replaces protected app UI with fixture HTML.</p>
+<ul>
+<li>File: <code>e2e/auth-onboarding.spec.ts:86</code></li>
+<li><code>mockProtectedDocuments</code> fulfills <code>/app/onboarding</code> and <code>/app/home</code> with handcrafted HTML, so the create/login/persona flows do not exercise the real <code>AppShell</code>, <code>OnboardingGuide</code>, home content, protected layout redirects, mobile nav, or focus behavior after persona selection. This is acceptable as a DB-unavailable limitation only if paired with real component/page coverage for those surfaces; currently the e2e can pass while protected-page UI regressions remain hidden.</li>
+</ul>
+</li>
+</ol>
+<h2 id="required-fixes">Required Fixes</h2>
+<ul>
+<li>Owner: T05 frontend worker.</li>
+<li>Fix <code>SettingsPanel</code> dialog focus handling using a native <code>&lt;dialog&gt;</code> or an accessible modal pattern: move focus into the dialog on open, keep Tab/Shift+Tab inside while open, restore focus to the trigger on close, support Escape/Cancel, and prevent background controls from being reachable while <code>aria-modal</code> is true.</li>
+<li>Add or adjust tests to cover the dialog keyboard path and to ensure protected app UI is exercised by real components/pages rather than only handcrafted Playwright HTML fixtures.</li>
+</ul>
+<h2 id="verification">Verification</h2>
+<ul>
+<li><code>git status --short</code>: clean before review artifact edits.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm test -- --run src/components/auth src/components/onboarding</code>: passed, 2 files and 7 tests.</li>
+<li><code>npm run test:e2e -- --grep &quot;auth|onboarding&quot;</code>: passed, 4 tests with route mocks.</li>
+<li><code>npm run build</code>: passed, with the existing non-blocking Next.js edge-runtime static-generation warning.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

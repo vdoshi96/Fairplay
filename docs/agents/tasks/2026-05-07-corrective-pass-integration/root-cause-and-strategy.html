@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-corrective-pass-integration/root-cause-and-strategy.md">
+  <meta name="fairplay-document-source-sha256" content="4568a9bf1aa990e24106248f293a4faae2a66c7f4d25dadc0b08dc1fb6f9a6f3">
+  <title>docs/agents/tasks/2026-05-07-corrective-pass-integration/root-cause-and-strategy.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="root-cause-and-strategy.md"><code>docs/agents/tasks/2026-05-07-corrective-pass-integration/root-cause-and-strategy.md</code></a></p>
+    <article>
+<h1 id="corrective-pass-root-cause-and-strategy">Corrective Pass Root Cause And Strategy</h1>
+<h2 id="context-read">Context Read</h2>
+<p>Before implementation, the orchestrator and read-only explorers reviewed the current repository state, all current markdown inventories, prior 2026-05-07 workstream docs, product docs, book reports, helper-system notes, deployment notes, generated asset notes, and high-signal implementation history. The most relevant prior files are:</p>
+<ul>
+<li><code>docs/agents/tasks/2026-05-07-fairplay-ux-reliability-integration/final-implementation-report.md</code></li>
+<li><code>docs/agents/tasks/2026-05-07-ai-draft-reliability/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-crash-course-redesign/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-home-loadmap-refresh/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-learner-sandbox-flows/</code></li>
+<li><code>docs/agents/tasks/2026-05-07-library-action-reliability/</code></li>
+<li><code>docs/research/fair-play-book-report.md</code></li>
+<li><code>docs/research/a-better-share-book-report.md</code></li>
+<li><code>References/fair-play-book-report.md</code></li>
+<li><code>References/a-better-share-book-report.md</code></li>
+<li><code>docs/product/visual-system.md</code></li>
+<li><code>docs/product/user-flows.md</code></li>
+</ul>
+<h2 id="corrective-root-causes">Corrective Root Causes</h2>
+<h3 id="responsive-shell">Responsive Shell</h3>
+<p>The protected layout still splits spacing responsibilities across <code>AppShell</code>, <code>PageShell</code>, Little Alex physics bounds, and page-local hero/card wrappers. There are no shared tokens for sidebar width, bottom nav height, safe-area padding, or Little Alex reservation. That is why learner buttons and the character drift relative to bottom navigation and desktop sidebars.</p>
+<h3 id="page-backgrounds">Page Backgrounds</h3>
+<p>The previous pass placed generated backgrounds inside individual hero cards or workbench panels. This made art disappear behind cards and left the page itself reading as a plain beige canvas. A reusable page-level background system is needed so backgrounds scale with the viewport instead of local card dimensions.</p>
+<h3 id="load-map">Load Map</h3>
+<p>Load Map received visual polish but retained a high-scroll board-first structure. Filters remain stacked, diagnostic values can clip, and the lane scroller dominates smaller viewports. This needs a dashboard redesign, not more local padding.</p>
+<h3 id="ai-draft-generation">AI Draft Generation</h3>
+<p>The prior reliability fix decoupled provider config, but the product pipeline still made text drafts depend on image generation. <code>ready</code> still meant text plus generated cover, <code>Put in play</code> required cover bytes, and the UI used one global pending action. A failed image stage could still make text generation appear broken and could leave requests awkwardly stuck.</p>
+<h3 id="crash-course">Crash Course</h3>
+<p>The prior rewrite covered source concepts, but it stayed as ten passive lessons and did not fully solve the image/text separation on short viewports. The corrective course should become a shorter conceptual primer with final-section-only app learning path.</p>
+<h3 id="player-labels">Player Labels</h3>
+<p>Internal enum values <code>player_1</code> and <code>player_2</code> are expected and should remain. Remaining user-facing <code>Player 1</code> / <code>Player 2</code> text is in seeded source-card display content, which renders in Library and detail surfaces.</p>
+<h2 id="branch-strategy">Branch Strategy</h2>
+<ul>
+<li><code>codex/layout-background-corrective</code>: shared shell tokens, page backgrounds, guide action placement, Little Alex safe areas, homepage learner button cleanup.</li>
+<li><code>codex/load-map-dashboard-corrective</code>: Load Map dashboard overhaul, compact filters, diagnostics, lane usability.</li>
+<li><code>codex/text-only-card-generation</code>: text-only independent AI card requests, no image/audio dependencies in card generation, request-detail UX, save/retry/cancel.</li>
+<li><code>codex/crash-content-labels-corrective</code>: five-beat Crash Course rewrite/layout and user-facing Player label cleanup.</li>
+<li><code>codex/fairplay-corrective-pass-integration</code>: merge branch, cross-workstream docs, final QA, PR source.</li>
+</ul>
+<h2 id="rollback-guidance">Rollback Guidance</h2>
+<p>Each workstream branch should be merged with a merge commit. If a workstream causes regression before final PR merge, revert the matching merge commit on the integration branch. After merge to <code>main</code>, use normal revert commits.</p>
+<p>High-risk rollback areas:</p>
+<ul>
+<li>Text-only AI: service/repository/contract/UI changes around AI drafts.</li>
+<li>Layout shell: <code>AppShell</code>, <code>PageShell</code>, global CSS tokens, Little Alex bounds.</li>
+<li>Load Map: <code>ResponsibilityLoadMap</code> dashboard structure.</li>
+<li>Crash/content labels: crash course lesson array and seed display labels.</li>
+</ul>
+<h2 id="qa-expectations">QA Expectations</h2>
+<p>Final integration must run focused branch tests, full unit suite, typecheck, lint, build, Playwright e2e, and responsive visual checks across Home, Load Map, Library, Radar, Check-ins, Settings, and Crash Course.</p>
+<p>Visual checks must cover mobile, tablet/small desktop, normal desktop, and short-height viewports. Required findings: no horizontal overflow, no clipped filter controls, no huge unexplained whitespace, no controls hidden behind bottom nav, Little Alex fully visible, learner buttons aligned, Crash Course image/text connected, background visible/readable, Load Map usable, and AI failed requests not blocking later requests.</p>
+    </article>
+  </main>
+</body>
+</html>

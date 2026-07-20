@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/specs/2026-05-05-generated-ui-assets-design.md">
+  <meta name="fairplay-document-source-sha256" content="190a57d826a5a3f8ff58477c8af7ba15ba365241383acf0d1e1139e47c7e6746">
+  <title>docs/superpowers/specs/2026-05-05-generated-ui-assets-design.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-05-generated-ui-assets-design.md"><code>docs/superpowers/specs/2026-05-05-generated-ui-assets-design.md</code></a></p>
+    <article>
+<h1 id="generated-ui-assets-design">Generated UI Assets Design</h1>
+<h2 id="goal">Goal</h2>
+<p>Replace non-card placeholder, CSS, and SVG artwork with cute, polished, flat 2D generated raster assets while preserving the existing Fairplay source-card covers that come from the reference/PDF workflow.</p>
+<h2 id="scope">Scope</h2>
+<p>In scope:</p>
+<ul>
+<li>Login page household illustration.</li>
+<li>Persona avatars for Alex and Max.</li>
+<li>Shared helper/mascot imagery, including the AI task manager sidekick.</li>
+<li>App mark, radar visual, check-in visual, and guide helper thumbnails.</li>
+<li>Crash course lesson backgrounds and completion celebration artwork.</li>
+<li>Documentation of tasks, outcomes, and blockers in Markdown.</li>
+</ul>
+<p>Out of scope:</p>
+<ul>
+<li>Any file in <code>public/assets/fairplay/cards/</code>.</li>
+<li>Source-card cover replacement, source-card generation prompts, or card PDF/reference-derived image handling.</li>
+<li><code>gpt-image-2</code> or any unapproved substitute model.</li>
+</ul>
+<h2 id="visual-direction">Visual Direction</h2>
+<p>All new art should be original, cute, cartoon-like, flat 2D, warm, and product-polished. It should avoid readable text, logos, watermarks, brand marks, public deck layouts, photorealism, 3D rendering, gender stereotypes, and real-person exact likenesses.</p>
+<p>The style should feel like a cohesive app illustration system: rounded forms, soft paper texture, warm off-white backgrounds, balanced teal/blue/coral/gold/green accents, clean compositions, and clear silhouettes that still read when displayed small.</p>
+<h2 id="architecture">Architecture</h2>
+<p>Generated UI art lives in <code>public/assets/fairplay/generated-ui/</code>. Components reference that directory through a central asset map so paths stay discoverable and tests can prove card-cover assets are not accidentally changed.</p>
+<p><code>scripts/generate-ui-assets.mjs</code> is a separate Qwen-only generator for non-card UI assets. It uses Vercel/local <code>QWEN_IMAGE_*</code> configuration, validates PNG responses, writes a manifest, and refuses unapproved models.</p>
+<h2 id="component-changes">Component Changes</h2>
+<ul>
+<li><code>src/components/visuals/fairplay-visuals.tsx</code> remains the shared wrapper for app-wide reusable visuals.</li>
+<li><code>LoginSplashIllustration</code> becomes a generated background illustration rather than layered CSS shapes.</li>
+<li><code>CrashCourseScene</code> renders generated lesson background images keyed by existing lesson scene ids.</li>
+<li><code>FeatureGuideHelper</code> renders generated helper thumbnails keyed by guide id.</li>
+<li><code>AiTaskManager</code> renders a generated sidekick image next to the existing speech bubble.</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<p>Tests should cover:</p>
+<ul>
+<li>Shared visual components point to generated UI assets, not card assets.</li>
+<li>Login splash renders a generated image and keeps its accessible label.</li>
+<li>Crash course scene ids resolve to generated UI assets and preserve lesson-specific labels.</li>
+<li>Feature guide helper thumbnails resolve to generated UI assets.</li>
+<li>AI task manager sidekick uses the generated image and keeps the speech bubble.</li>
+<li>No test should require visual pixel equality.</li>
+</ul>
+<h2 id="qa">QA</h2>
+<p>Run focused component tests, full Vitest, typecheck, lint, and build. Use browser verification on login, crash course, library, load map, radar, and check-ins if a dev server is started. Confirm generated images have dimensions matching their expected aspect ratios and are present in <code>public/assets/fairplay/generated-ui/</code>.</p>
+<h2 id="risks">Risks</h2>
+<ul>
+<li>Qwen generation may produce pseudo-text inside illustrations. Reject/regenerate any asset with readable text.</li>
+<li>Large PNGs may increase repo size. Keep dimensions practical for UI usage and avoid unnecessary multi-megabyte assets.</li>
+<li>Crash course images are decorative but must not reduce contrast or obscure the lesson panel.</li>
+<li>The Little Alex Horne sidekick must stay stylized and cute rather than an exact real-person likeness.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-05-ai-task-manager-implementation.md">
+  <meta name="fairplay-document-source-sha256" content="15159f7f0a27c4df87546d829c36a5b9d129e72dc7335d4a1fc1a14ac4558370">
+  <title>docs/superpowers/plans/2026-05-05-ai-task-manager-implementation.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-05-ai-task-manager-implementation.md"><code>docs/superpowers/plans/2026-05-05-ai-task-manager-implementation.md</code></a></p>
+    <article>
+<h1 id="ai-task-manager-implementation-plan">AI Task Manager Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Build a Library-first AI Task Manager that turns text or uploaded voice into tracked, reviewable AI-created cards and puts accepted cards in play.</p>
+<p><strong>Architecture:</strong> Add a household-scoped <code>AiCardDraft</code> model that stores generation status, structured card fields, cover image bytes, and temporary audio bytes. Add a server-side AI service for Qwen ASR, Qwen card structuring, and Qwen image generation, then expose draft lifecycle APIs and Library UI for capture, tracker, review, retry, and put-in-play.</p>
+<p><strong>Tech Stack:</strong> Next.js App Router, TypeScript, Prisma/Postgres, Zod contracts, Vitest, Testing Library, Qwen OpenAI-compatible chat, Qwen DashScope image generation.</p>
+<hr>
+<h2 id="file-structure">File Structure</h2>
+<ul>
+<li>Modify <code>prisma/schema.prisma</code>: add AI draft enums/model and relations.</li>
+<li>Create <code>prisma/migrations/20260505010000_add_ai_card_drafts/migration.sql</code>: schema migration.</li>
+<li>Modify <code>.env.example</code>: Qwen/ASR env vars.</li>
+<li>Create <code>src/contracts/ai-card-drafts.ts</code>: Zod schemas and exported draft types.</li>
+<li>Create <code>src/contracts/ai-card-drafts.test.ts</code>: contract tests.</li>
+<li>Create <code>src/server/ai/qwen-config.ts</code>: server env resolution.</li>
+<li>Create <code>src/server/ai/qwen-card-generator.ts</code>: Qwen ASR, structuring, image generation client.</li>
+<li>Create <code>src/server/ai/qwen-card-generator.test.ts</code>: fetch-mocked unit tests.</li>
+<li>Create <code>src/server/repositories/ai-card-drafts.ts</code>: persistence and cover/audio deletion helpers.</li>
+<li>Create <code>src/server/repositories/ai-card-drafts.test.ts</code>: repository integration tests.</li>
+<li>Create <code>src/server/ai-card-drafts/service.ts</code>: lifecycle orchestration and put-in-play behavior.</li>
+<li>Create <code>src/server/ai-card-drafts/service.test.ts</code>: service tests.</li>
+<li>Create <code>src/app/api/ai-card-drafts/route.ts</code>: list/create route.</li>
+<li>Create <code>src/app/api/ai-card-drafts/route.test.ts</code>: route tests.</li>
+<li>Create <code>src/app/api/ai-card-drafts/[id]/route.ts</code>: detail/update route.</li>
+<li>Create <code>src/app/api/ai-card-drafts/[id]/route.test.ts</code>: route tests.</li>
+<li>Create <code>src/app/api/ai-card-drafts/[id]/cover/route.ts</code>: cover streaming route.</li>
+<li>Create <code>src/app/api/ai-card-drafts/[id]/cover/route.test.ts</code>: route tests.</li>
+<li>Create <code>src/app/api/ai-card-drafts/[id]/retry/route.ts</code>: retry route.</li>
+<li>Create <code>src/app/api/ai-card-drafts/[id]/regenerate-image/route.ts</code>: image regeneration route.</li>
+<li>Create <code>src/app/api/ai-card-drafts/[id]/put-in-play/route.ts</code>: accept route.</li>
+<li>Create <code>src/app/api/ai-card-drafts/[id]/cancel/route.ts</code>: cancel route.</li>
+<li>Create <code>src/components/library/ai-task-manager.tsx</code>: capture sheet, audio recorder, tracker, review controls.</li>
+<li>Create <code>src/components/library/ai-task-manager.test.tsx</code>: component tests.</li>
+<li>Modify <code>src/components/library/card-library.tsx</code>: render AI section and open capture sheet.</li>
+<li>Modify <code>src/components/library/card-library.test.tsx</code>: Library integration tests.</li>
+<li>Modify <code>src/app/app/library/page.tsx</code>: load AI drafts and refresh after server actions.</li>
+<li>Create <code>docs/implementation/2026-05-05-ai-task-manager.md</code>: implementation note with API/env/audio retention details.</li>
+</ul>
+<hr>
+<h3 id="task-1-contracts-prisma-model-and-environment">Task 1: Contracts, Prisma Model, And Environment</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify: <code>prisma/schema.prisma</code></p>
+</li>
+<li><p>Create: <code>prisma/migrations/20260505010000_add_ai_card_drafts/migration.sql</code></p>
+</li>
+<li><p>Modify: <code>.env.example</code></p>
+</li>
+<li><p>Create: <code>src/contracts/ai-card-drafts.ts</code></p>
+</li>
+<li><p>Create: <code>src/contracts/ai-card-drafts.test.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing contract tests</strong></p>
+</li>
+</ul>
+<p>Create <code>src/contracts/ai-card-drafts.test.ts</code> with tests that verify:</p>
+<pre tabindex="0"><code class="language-ts">import { describe, expect, it } from &quot;vitest&quot;;
+
+import {
+  AiCardDraftCreateSchema,
+  AiCardDraftSummarySchema,
+  AiCardDraftUpdateSchema
+} from &quot;./ai-card-drafts&quot;;
+
+describe(&quot;AI card draft contracts&quot;, () =&gt; {
+  it(&quot;accepts text capture input and rejects missing text/audio&quot;, () =&gt; {
+    expect(
+      AiCardDraftCreateSchema.parse({
+        inputText: &quot;Remember the dog&#39;s heartworm meds.&quot;
+      })
+    ).toMatchObject({ inputText: &quot;Remember the dog&#39;s heartworm meds.&quot; });
+
+    expect(() =&gt; AiCardDraftCreateSchema.parse({})).toThrow();
+  });
+
+  it(&quot;accepts tracker-ready summaries with generated cover API paths&quot;, () =&gt; {
+    expect(
+      AiCardDraftSummarySchema.parse({
+        id: &quot;550e8400-e29b-41d4-a716-446655440090&quot;,
+        title: &quot;Pet medication rhythm&quot;,
+        promptPreview: &quot;Remember the dog&#39;s heartworm meds.&quot;,
+        status: &quot;ready&quot;,
+        generationStage: &quot;ready&quot;,
+        sourceInputType: &quot;text&quot;,
+        summary: &quot;Keep pet medication refills and monthly doses handled.&quot;,
+        areaKeys: [&quot;Home&quot;],
+        hiddenEffortKeys: [&quot;noticing&quot;, &quot;planning&quot;, &quot;follow_through&quot;],
+        cadence: &quot;monthly&quot;,
+        coverUrl: &quot;/api/ai-card-drafts/550e8400-e29b-41d4-a716-446655440090/cover&quot;,
+        failureMessage: null,
+        acceptedResponsibilityId: null,
+        createdAt: &quot;2026-05-05T12:00:00.000Z&quot;,
+        updatedAt: &quot;2026-05-05T12:00:00.000Z&quot;
+      })
+    ).toMatchObject({ status: &quot;ready&quot;, coverUrl: expect.stringContaining(&quot;/cover&quot;) });
+  });
+
+  it(&quot;accepts generated field updates before put-in-play&quot;, () =&gt; {
+    expect(
+      AiCardDraftUpdateSchema.parse({
+        title: &quot;Pet meds&quot;,
+        hiddenEffortKeys: [&quot;follow_through&quot;],
+        cadence: &quot;monthly&quot;
+      })
+    ).toMatchObject({ title: &quot;Pet meds&quot; });
+  });
+});
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run contract test to verify it fails</strong></li>
+</ul>
+<p>Run: <code>npm test -- --run src/contracts/ai-card-drafts.test.ts</code></p>
+<p>Expected: FAIL because <code>src/contracts/ai-card-drafts.ts</code> does not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Add Prisma model and migration</strong></li>
+</ul>
+<p>Add enums to <code>prisma/schema.prisma</code>:</p>
+<pre tabindex="0"><code class="language-prisma">enum AiCardDraftStatus {
+  processing
+  ready
+  failed
+  accepted
+  canceled
+}
+
+enum AiCardGenerationStage {
+  queued
+  transcribing
+  structuring
+  generating_image
+  saving_image
+  ready
+  failed
+}
+
+enum AiCardSourceInputType {
+  text
+  audio
+}
+</code></pre>
+<p>Add relations:</p>
+<pre tabindex="0"><code class="language-prisma">model Household {
+  // existing fields
+  aiCardDrafts AiCardDraft[]
+}
+
+model Persona {
+  // existing fields
+  createdAiCardDrafts AiCardDraft[] @relation(&quot;CreatedAiCardDrafts&quot;)
+}
+
+model Responsibility {
+  // existing fields
+  acceptedAiCardDraft AiCardDraft? @relation(&quot;AcceptedAiCardDraft&quot;)
+}
+</code></pre>
+<p>Add model:</p>
+<pre tabindex="0"><code class="language-prisma">model AiCardDraft {
+  id                        String                @id @default(uuid())
+  householdId               String
+  createdByPersonaId        String
+  sourceInputType           AiCardSourceInputType
+  inputText                 String?
+  audioBytes                Bytes?
+  audioMimeType             String?
+  audioTranscript           String?
+  status                    AiCardDraftStatus     @default(processing)
+  generationStage           AiCardGenerationStage @default(queued)
+  failureCode               String?
+  failureMessage            String?
+  title                     String?
+  summary                   String?
+  areaKeys                  String[]
+  hiddenEffortKeys          HiddenEffortKey[]
+  cadence                   Cadence?
+  definition                String?
+  conception                String?
+  planning                  String?
+  execution                 String?
+  minimumStandard           String?
+  imagePrompt               String?
+  imageNegativePrompt       String?
+  coverImageBytes           Bytes?
+  coverImageMimeType        String?
+  acceptedResponsibilityId  String?               @unique
+  readyAt                   DateTime?
+  acceptedAt                DateTime?
+  canceledAt                DateTime?
+  audioDeletedAt            DateTime?
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
+  household                 Household             @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  createdByPersona          Persona               @relation(&quot;CreatedAiCardDrafts&quot;, fields: [createdByPersonaId], references: [id], onDelete: Cascade)
+  acceptedResponsibility    Responsibility?       @relation(&quot;AcceptedAiCardDraft&quot;, fields: [acceptedResponsibilityId], references: [id], onDelete: SetNull)
+
+  @@index([householdId, status, createdAt])
+  @@index([createdByPersonaId])
+}
+</code></pre>
+<p>Create SQL migration mirroring the Prisma changes with enum creation, <code>AiCardDraft</code> table, indexes, and foreign keys.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Add contracts</strong></li>
+</ul>
+<p>Create <code>src/contracts/ai-card-drafts.ts</code> with:</p>
+<pre tabindex="0"><code class="language-ts">import { z } from &quot;zod&quot;;
+
+import { CadenceSchema, HiddenEffortKeySchema } from &quot;@/domain/enums&quot;;
+import { IsoDateTimeSchema } from &quot;@/domain/time&quot;;
+import { ResponsibilityIdSchema } from &quot;@/domain/ids&quot;;
+
+export const AI_CARD_DRAFT_STATUSES = [
+  &quot;processing&quot;,
+  &quot;ready&quot;,
+  &quot;failed&quot;,
+  &quot;accepted&quot;,
+  &quot;canceled&quot;
+] as const;
+
+export const AI_CARD_GENERATION_STAGES = [
+  &quot;queued&quot;,
+  &quot;transcribing&quot;,
+  &quot;structuring&quot;,
+  &quot;generating_image&quot;,
+  &quot;saving_image&quot;,
+  &quot;ready&quot;,
+  &quot;failed&quot;
+] as const;
+
+export const AI_CARD_SOURCE_INPUT_TYPES = [&quot;text&quot;, &quot;audio&quot;] as const;
+
+export const AiCardDraftStatusSchema = z.enum(AI_CARD_DRAFT_STATUSES);
+export const AiCardGenerationStageSchema = z.enum(AI_CARD_GENERATION_STAGES);
+export const AiCardSourceInputTypeSchema = z.enum(AI_CARD_SOURCE_INPUT_TYPES);
+
+export const AiCardDraftCreateSchema = z
+  .object({
+    inputText: z.string().trim().min(1).max(4000).optional()
+  })
+  .strict()
+  .superRefine((value, ctx) =&gt; {
+    if (!value.inputText) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [&quot;inputText&quot;],
+        message: &quot;Text input or an audio upload is required.&quot;
+      });
+    }
+  });
+
+export const AiCardDraftSummarySchema = z
+  .object({
+    id: z.string().uuid(),
+    title: z.string().trim().min(1).max(140).nullable(),
+    promptPreview: z.string().trim().min(1).max(180),
+    status: AiCardDraftStatusSchema,
+    generationStage: AiCardGenerationStageSchema,
+    sourceInputType: AiCardSourceInputTypeSchema,
+    summary: z.string().trim().max(700).nullable(),
+    areaKeys: z.array(z.string().trim().min(1).max(80)),
+    hiddenEffortKeys: z.array(HiddenEffortKeySchema),
+    cadence: CadenceSchema.nullable(),
+    coverUrl: z.string().startsWith(&quot;/api/ai-card-drafts/&quot;).nullable(),
+    failureMessage: z.string().trim().max(1000).nullable(),
+    acceptedResponsibilityId: ResponsibilityIdSchema.nullable(),
+    createdAt: IsoDateTimeSchema,
+    updatedAt: IsoDateTimeSchema
+  })
+  .strict();
+
+export const AiCardDraftDetailSchema = AiCardDraftSummarySchema.extend({
+  inputText: z.string().trim().max(4000).nullable(),
+  audioTranscript: z.string().trim().max(4000).nullable(),
+  definition: z.string().trim().max(3000).nullable(),
+  conception: z.string().trim().max(3000).nullable(),
+  planning: z.string().trim().max(3000).nullable(),
+  execution: z.string().trim().max(3000).nullable(),
+  minimumStandard: z.string().trim().max(3000).nullable(),
+  imagePrompt: z.string().trim().max(3000).nullable(),
+  imageNegativePrompt: z.string().trim().max(3000).nullable()
+}).strict();
+
+export const AiCardDraftUpdateSchema = z
+  .object({
+    title: z.string().trim().min(1).max(140).optional(),
+    summary: z.string().trim().max(700).nullable().optional(),
+    areaKeys: z.array(z.string().trim().min(1).max(80)).optional(),
+    hiddenEffortKeys: z.array(HiddenEffortKeySchema).optional(),
+    cadence: CadenceSchema.optional(),
+    definition: z.string().trim().max(3000).nullable().optional(),
+    conception: z.string().trim().max(3000).nullable().optional(),
+    planning: z.string().trim().max(3000).nullable().optional(),
+    execution: z.string().trim().max(3000).nullable().optional(),
+    minimumStandard: z.string().trim().max(3000).nullable().optional()
+  })
+  .strict();
+
+export type AiCardDraftSummary = z.infer&lt;typeof AiCardDraftSummarySchema&gt;;
+export type AiCardDraftDetail = z.infer&lt;typeof AiCardDraftDetailSchema&gt;;
+export type AiCardDraftUpdate = z.infer&lt;typeof AiCardDraftUpdateSchema&gt;;
+export type AiCardDraftCreate = z.infer&lt;typeof AiCardDraftCreateSchema&gt;;
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Update <code>.env.example</code></strong></li>
+</ul>
+<p>Ensure it contains:</p>
+<pre tabindex="0"><code class="language-env">QWEN_CARD_MODEL=&quot;qwen3.6-max-preview&quot;
+QWEN_ASR_MODEL=&quot;qwen3-asr-flash&quot;
+QWEN_OPENAI_BASE_URL=&quot;https://dashscope-intl.aliyuncs.com/compatible-mode/v1&quot;
+QWEN_CARD_API_KEY=&quot;replace-with-qwen-key-for-card-structuring-and-asr&quot;
+QWEN_IMAGE_MODEL=&quot;qwen-image-2.0-pro&quot;
+QWEN_IMAGE_BASE_URL=&quot;https://dashscope-intl.aliyuncs.com/api/v1&quot;
+QWEN_IMAGE_API_KEY=&quot;replace-with-qwen-key-for-card-front-generation&quot;
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 6: Verify</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- --run src/contracts/ai-card-drafts.test.ts
+npm run prisma:validate
+</code></pre>
+<p>Expected: both pass.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 7: Commit</strong></li>
+</ul>
+<pre tabindex="0"><code class="language-bash">git add .env.example prisma/schema.prisma prisma/migrations/20260505010000_add_ai_card_drafts/migration.sql src/contracts/ai-card-drafts.ts src/contracts/ai-card-drafts.test.ts
+git commit -m &quot;feat: add AI card draft contracts&quot;
+</code></pre>
+<hr>
+<h3 id="task-2-qwen-ai-client">Task 2: Qwen AI Client</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/server/ai/qwen-config.ts</code></p>
+</li>
+<li><p>Create: <code>src/server/ai/qwen-card-generator.ts</code></p>
+</li>
+<li><p>Create: <code>src/server/ai/qwen-card-generator.test.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing tests</strong></p>
+</li>
+</ul>
+<p>Create tests that mock <code>fetch</code> and verify:</p>
+<ul>
+<li>Missing env throws <code>QwenConfigError</code>.</li>
+<li><code>structureTaskAsCard</code> calls <code>/chat/completions</code> with <code>qwen3.6-max-preview</code> and parses strict JSON.</li>
+<li><code>transcribeAudio</code> calls <code>/chat/completions</code> with <code>qwen3-asr-flash</code> and <code>input_audio</code>.</li>
+<li><code>generateCardCover</code> calls DashScope image generation and returns downloaded bytes.</li>
+<li>Image response without an image URL throws <code>QwenGenerationError</code>.</li>
+</ul>
+<p>Run: <code>npm test -- --run src/server/ai/qwen-card-generator.test.ts</code></p>
+<p>Expected: FAIL because files do not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Implement config</strong></li>
+</ul>
+<p><code>qwen-config.ts</code> must export:</p>
+<pre tabindex="0"><code class="language-ts">export type QwenConfig = {
+  cardApiKey: string;
+  cardModel: string;
+  asrModel: string;
+  openAiBaseUrl: string;
+  imageApiKey: string;
+  imageModel: string;
+  imageBaseUrl: string;
+};
+
+export class QwenConfigError extends Error {
+  readonly code = &quot;QWEN_CONFIG_MISSING&quot;;
+}
+
+export function getQwenConfig(env = process.env): QwenConfig {
+  // read required env vars and throw QwenConfigError listing only missing names
+}
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Implement generator</strong></li>
+</ul>
+<p><code>qwen-card-generator.ts</code> must export:</p>
+<pre tabindex="0"><code class="language-ts">export type StructuredAiCard = {
+  title: string;
+  summary: string;
+  areaKeys: string[];
+  hiddenEffortKeys: Array&lt;&quot;noticing&quot; | &quot;planning&quot; | &quot;doing&quot; | &quot;follow_through&quot; | &quot;emotional_attention&quot;&gt;;
+  cadence: &quot;daily&quot; | &quot;weekly&quot; | &quot;monthly&quot; | &quot;seasonal&quot; | &quot;event_based&quot; | &quot;as_needed&quot; | &quot;one_time&quot;;
+  definition: string;
+  conception: string;
+  planning: string;
+  execution: string;
+  minimumStandard: string;
+  imagePrompt: string;
+  imageNegativePrompt: string;
+};
+
+export type GeneratedCoverImage = {
+  bytes: Uint8Array;
+  mimeType: string;
+};
+</code></pre>
+<p>Implement:</p>
+<ul>
+<li><code>transcribeAudio(input: { bytes: Uint8Array; mimeType: string; contextText?: string }, deps?)</code></li>
+<li><code>structureTaskAsCard(input: { taskText: string; existingDraft?: Partial&lt;StructuredAiCard&gt; }, deps?)</code></li>
+<li><code>generateCardCover(input: { title: string; imagePrompt: string; negativePrompt: string }, deps?)</code></li>
+</ul>
+<p>Use dependency injection for <code>fetch</code> and config so tests do not hit network.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Verify</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- --run src/server/ai/qwen-card-generator.test.ts
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Commit</strong></li>
+</ul>
+<pre tabindex="0"><code class="language-bash">git add src/server/ai/qwen-config.ts src/server/ai/qwen-card-generator.ts src/server/ai/qwen-card-generator.test.ts
+git commit -m &quot;feat: add Qwen card generator&quot;
+</code></pre>
+<hr>
+<h3 id="task-3-ai-card-draft-repository-and-service">Task 3: AI Card Draft Repository And Service</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/server/repositories/ai-card-drafts.ts</code></p>
+</li>
+<li><p>Create: <code>src/server/repositories/ai-card-drafts.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/server/ai-card-drafts/service.ts</code></p>
+</li>
+<li><p>Create: <code>src/server/ai-card-drafts/service.test.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing repository and service tests</strong></p>
+</li>
+</ul>
+<p>Tests must cover:</p>
+<ul>
+<li>Creating a text draft scoped to household/persona.</li>
+<li>Creating an audio draft stores <code>audioBytes</code> and metadata.</li>
+<li>Listing summaries maps cover bytes to <code>/api/ai-card-drafts/:id/cover</code>.</li>
+<li>Updating generation status/stage and failure message.</li>
+<li>Saving structured fields and cover bytes.</li>
+<li>Deleting audio on accept and cancel.</li>
+<li><code>putInPlay</code> creates a responsibility with generated source fields and accepted responsibility id.</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- --run src/server/repositories/ai-card-drafts.test.ts src/server/ai-card-drafts/service.test.ts
+</code></pre>
+<p>Expected: FAIL because files do not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Implement repository</strong></li>
+</ul>
+<p>Repository functions:</p>
+<ul>
+<li><code>createAiCardDraft(input)</code></li>
+<li><code>listAiCardDrafts(householdId)</code></li>
+<li><code>getAiCardDraft(input)</code></li>
+<li><code>updateAiCardDraft(input)</code></li>
+<li><code>markAiCardDraftStage(input)</code></li>
+<li><code>saveAiCardDraftGeneration(input)</code></li>
+<li><code>saveAiCardDraftFailure(input)</code></li>
+<li><code>saveAiCardDraftCover(input)</code></li>
+<li><code>deleteAiCardDraftAudio(input)</code></li>
+<li><code>cancelAiCardDraft(input)</code></li>
+<li><code>markAiCardDraftAccepted(input)</code></li>
+<li><code>getAiCardDraftCover(input)</code></li>
+</ul>
+<p>Mapping rules:</p>
+<ul>
+<li><p>Summary <code>promptPreview</code> uses <code>title</code>, then <code>inputText</code>, then <code>audioTranscript</code>, then <code>&quot;Audio card draft&quot;</code>.</p>
+</li>
+<li><p><code>coverUrl</code> is non-null only when cover bytes exist.</p>
+</li>
+<li><p>Never return <code>audioBytes</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Implement service</strong></p>
+</li>
+</ul>
+<p>Service responsibilities:</p>
+<ul>
+<li><p>Require selected persona.</p>
+</li>
+<li><p>Validate household ownership for every draft.</p>
+</li>
+<li><p>Cap audio upload at 10 MB.</p>
+</li>
+<li><p>For text input, structure and generate image.</p>
+</li>
+<li><p>For audio input, transcribe then structure and generate image.</p>
+</li>
+<li><p>Persist intermediate stages in the order transcribing/structuring/generating_image/saving_image/ready.</p>
+</li>
+<li><p>On image failure, keep structured fields and mark failed.</p>
+</li>
+<li><p><code>retry</code> restarts from failed stage.</p>
+</li>
+<li><p><code>regenerateImage</code> only reruns image generation.</p>
+</li>
+<li><p><code>putInPlay</code> creates a responsibility using <code>createResponsibility</code>, copies source fields, sets <code>sourceCoverAssetPath</code> to <code>/api/ai-card-drafts/:id/cover</code>, marks accepted, and deletes audio.</p>
+</li>
+<li><p><code>cancel</code> marks canceled and deletes audio.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Verify</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- --run src/server/repositories/ai-card-drafts.test.ts src/server/ai-card-drafts/service.test.ts
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: Commit</strong></li>
+</ul>
+<pre tabindex="0"><code class="language-bash">git add src/server/repositories/ai-card-drafts.ts src/server/repositories/ai-card-drafts.test.ts src/server/ai-card-drafts/service.ts src/server/ai-card-drafts/service.test.ts
+git commit -m &quot;feat: persist AI card drafts&quot;
+</code></pre>
+<hr>
+<h3 id="task-4-ai-card-draft-api-routes">Task 4: AI Card Draft API Routes</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/app/api/ai-card-drafts/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/ai-card-drafts/route.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/ai-card-drafts/[id]/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/ai-card-drafts/[id]/route.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/ai-card-drafts/[id]/cover/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/ai-card-drafts/[id]/cover/route.test.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/ai-card-drafts/[id]/retry/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/ai-card-drafts/[id]/regenerate-image/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/ai-card-drafts/[id]/put-in-play/route.ts</code></p>
+</li>
+<li><p>Create: <code>src/app/api/ai-card-drafts/[id]/cancel/route.ts</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing route tests</strong></p>
+</li>
+</ul>
+<p>Tests must mock auth and service. Cover:</p>
+<ul>
+<li><code>GET /api/ai-card-drafts</code> requires auth and lists drafts.</li>
+<li><code>POST /api/ai-card-drafts</code> accepts JSON text.</li>
+<li><code>POST /api/ai-card-drafts</code> accepts multipart <code>audio</code>.</li>
+<li><code>GET /api/ai-card-drafts/[id]/cover</code> streams image bytes and content type.</li>
+<li>Mutation routes return 401 for unauthenticated sessions, 400 for validation or invalid-input service errors, 404 for not-found service errors, 201 for put-in-play success, and 200 for retry/regenerate/cancel success.</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- --run &#39;src/app/api/ai-card-drafts/**/*.test.ts&#39; src/app/api/ai-card-drafts/route.test.ts
+</code></pre>
+<p>Expected: FAIL because routes do not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Implement routes</strong></li>
+</ul>
+<p>All routes:</p>
+<ul>
+<li><p>Use <code>runtime = &quot;nodejs&quot;</code>.</p>
+</li>
+<li><p>Use <code>getCurrentSession</code>.</p>
+</li>
+<li><p>Return <code>{ error: &quot;Authentication required.&quot; }</code> for missing session.</p>
+</li>
+<li><p>Return <code>{ error: &quot;Invalid request.&quot; }</code> for validation failures.</p>
+</li>
+<li><p>Convert service <code>AUTH_REQUIRED</code>, <code>INVALID_INPUT</code>, and <code>NOT_FOUND</code> errors like existing route patterns.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Verify</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- --run &#39;src/app/api/ai-card-drafts/**/*.test.ts&#39; src/app/api/ai-card-drafts/route.test.ts
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Commit</strong></li>
+</ul>
+<pre tabindex="0"><code class="language-bash">git add src/app/api/ai-card-drafts
+git commit -m &quot;feat: add AI card draft APIs&quot;
+</code></pre>
+<hr>
+<h3 id="task-5-library-ai-task-manager-ui">Task 5: Library AI Task Manager UI</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>src/components/library/ai-task-manager.tsx</code></p>
+</li>
+<li><p>Create: <code>src/components/library/ai-task-manager.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/card-library.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/components/library/card-library.test.tsx</code></p>
+</li>
+<li><p>Modify: <code>src/app/app/library/page.tsx</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write failing component tests</strong></p>
+</li>
+</ul>
+<p>Tests must verify:</p>
+<ul>
+<li>Library renders an <code>AI Task Manager</code> button.</li>
+<li>Clicking opens capture sheet with text input and audio recording controls.</li>
+<li>Generated draft tracker shows processing, failed, ready, and accepted cards.</li>
+<li>Failed draft shows retry and cancel actions.</li>
+<li>Ready draft shows review and put-in-play actions.</li>
+<li>Capture submits text to <code>/api/ai-card-drafts</code>.</li>
+<li>Audio capture stores a <code>Blob</code> and submits multipart form data.</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- --run src/components/library/ai-task-manager.test.tsx src/components/library/card-library.test.tsx
+</code></pre>
+<p>Expected: FAIL because UI does not exist.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Implement UI</strong></li>
+</ul>
+<p>Create focused components in <code>ai-task-manager.tsx</code>:</p>
+<ul>
+<li><code>AiTaskManager</code></li>
+<li><code>AiCardTracker</code></li>
+<li><code>AiCardCaptureSheet</code></li>
+<li><code>AiCardReviewPanel</code></li>
+</ul>
+<p>Use existing UI primitives and lucide icons. Use <code>MediaRecorder</code> when available and show a disabled voice control with explanatory label when unavailable. Do not store audio in browser storage.</p>
+<p>Modify <code>CardLibrary</code> props:</p>
+<pre tabindex="0"><code class="language-ts">type CardLibraryProps = {
+  templates: CardTemplateSummary[];
+  aiDrafts?: AiCardDraftSummary[];
+  onCreateFromTemplate?: (templateId: string) =&gt; void;
+};
+</code></pre>
+<p>Render AI-created cards above source labels. Keep source label filtering scoped to source cards.</p>
+<p>Modify <code>LibraryPage</code> to fetch drafts server-side through repository/service and pass them to <code>CardLibrary</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Verify</strong></li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- --run src/components/library/ai-task-manager.test.tsx src/components/library/card-library.test.tsx
+</code></pre>
+<p>Expected: PASS.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Commit</strong></li>
+</ul>
+<pre tabindex="0"><code class="language-bash">git add src/components/library src/app/app/library/page.tsx
+git commit -m &quot;feat: add AI task manager library UI&quot;
+</code></pre>
+<hr>
+<h3 id="task-6-documentation-integration-checks-and-pr-readiness">Task 6: Documentation, Integration Checks, And PR Readiness</h3>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Create: <code>docs/implementation/2026-05-05-ai-task-manager.md</code></p>
+</li>
+<li><p>Modify: <code>README.md</code> if needed for env references.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 1: Write implementation documentation</strong></p>
+</li>
+</ul>
+<p>Create <code>docs/implementation/2026-05-05-ai-task-manager.md</code> documenting:</p>
+<ul>
+<li><p>User flow.</p>
+</li>
+<li><p>API routes.</p>
+</li>
+<li><p>Qwen env vars.</p>
+</li>
+<li><p>Audio retention and deletion rules.</p>
+</li>
+<li><p>Image persistence and temporary provider URL handling.</p>
+</li>
+<li><p>Known v1 limitations.</p>
+</li>
+<li><p>Manual smoke test steps.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 2: Run full verification</strong></p>
+</li>
+</ul>
+<p>Run:</p>
+<pre tabindex="0"><code class="language-bash">npm run lint
+npm run typecheck
+npm test -- --run
+npm run prisma:validate
+</code></pre>
+<p>Expected: all pass.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 3: Commit</strong></li>
+</ul>
+<pre tabindex="0"><code class="language-bash">git add docs/implementation/2026-05-05-ai-task-manager.md README.md
+git commit -m &quot;docs: document AI task manager&quot;
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 4: Final review</strong></li>
+</ul>
+<p>Dispatch final code review against the full branch before creating a PR.</p>
+<ul>
+<li><input disabled="" type="checkbox" aria-label="Incomplete task"><strong>Step 5: PR</strong></li>
+</ul>
+<p>Push branch <code>codex/ai-task-manager</code>, create a PR to <code>main</code>, include verification results and implementation docs in the PR body.</p>
+    </article>
+  </main>
+</body>
+</html>

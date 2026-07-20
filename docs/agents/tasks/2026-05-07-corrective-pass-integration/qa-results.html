@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-corrective-pass-integration/qa-results.md">
+  <meta name="fairplay-document-source-sha256" content="e22349d5166b657ef6d74f570b166928f296bbf60519251e9823ef3dd5f1ab31">
+  <title>docs/agents/tasks/2026-05-07-corrective-pass-integration/qa-results.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="qa-results.md"><code>docs/agents/tasks/2026-05-07-corrective-pass-integration/qa-results.md</code></a></p>
+    <article>
+<h1 id="corrective-pass-qa-results">Corrective Pass QA Results</h1>
+<h2 id="status">Status</h2>
+<p>Final integration QA is passing as of the latest sequential run on the integration branch.</p>
+<h2 id="automated-verification">Automated Verification</h2>
+<ul>
+<li><code>npm test -- --run</code><ul>
+<li>Result: passed.</li>
+<li>Scope: full Vitest suite, 96 files and 528 tests.</li>
+</ul>
+</li>
+<li><code>npm run lint</code><ul>
+<li>Result: passed.</li>
+</ul>
+</li>
+<li><code>npm run typecheck</code><ul>
+<li>Result: passed.</li>
+</ul>
+</li>
+<li><code>npm run prisma:validate</code><ul>
+<li>Result: passed.</li>
+</ul>
+</li>
+<li><code>npm run build</code><ul>
+<li>Result: passed after removing stale <code>.next</code> output from an earlier command collision.</li>
+</ul>
+</li>
+<li><code>npm run test:e2e</code><ul>
+<li>Result: passed.</li>
+<li>Scope: 27 Playwright tests, including the new corrective responsive visual suite.</li>
+</ul>
+</li>
+</ul>
+<h2 id="source-audits">Source Audits</h2>
+<ul>
+<li>User-facing <code>Player 1</code> / <code>Player 2</code> audit:<ul>
+<li>Command: <code>rg -n &quot;Player 1|Player 2|player 1|player 2&quot; src prisma e2e</code></li>
+<li>Result: only negative assertions in tests remain.</li>
+</ul>
+</li>
+<li>Active card-generation image/audio dependency audit:<ul>
+<li>Command checked active Library generation UI, card-draft contracts, service, create route, and deprecated regenerate-image route for image/audio terms.</li>
+<li>Result: no active <code>coverUrl</code>, image prompt, audio source, transcribing, or regenerate-image UI hooks remain.</li>
+</ul>
+</li>
+</ul>
+<h2 id="visual-qa">Visual QA</h2>
+<p>Screenshots were generated by <code>e2e/corrective-responsive-visual.spec.ts</code> at mobile, small tablet, desktop, and short-desktop viewport sizes for:</p>
+<ul>
+<li>Home</li>
+<li>Load Map</li>
+<li>Library</li>
+<li>Radar</li>
+<li>Check-ins</li>
+<li>Settings</li>
+<li>Crash Course</li>
+</ul>
+<p>Reviewed artifacts live in <code>test-results/corrective-responsive-visual/</code>.</p>
+<p>Findings:</p>
+<ul>
+<li>Home now uses a full page-level background treatment and no longer shows the duplicate top-row <code>Learn a feature</code> shortcut.</li>
+<li>Load Map is usable as a compact dashboard on desktop and mobile; filters wrap inside grouped panels and diagnostic labels are no longer clipped.</li>
+<li>Crash Course image and text are visually paired on mobile and desktop, with the learning path kept to the final section.</li>
+<li>Library remains navigable during the long list/request surface and the text-only generation request UI no longer traps the user behind a failed image stage.</li>
+<li>Radar, Check-ins, and Settings inherit page-level background framing instead of floating on blank beige space.</li>
+<li>Little Alex remains within the viewport in reviewed screenshots and is positioned above the mobile bottom navigation.</li>
+<li>A final review pass found that geometry-only assertions could miss safe-area paint clipping and control overlap. The corrective spec now injects a nonzero safe-area override, checks Little Alex against the shell paint bounds, verifies overlap against navigation and interactive controls, and confirms page background image assets load and contain painted pixels.</li>
+<li>A second final review pass caught an invalid Tailwind <code>calc()</code> arbitrary value. The class now uses underscore-spaced subtraction, and the corrective visual spec directly asserts that PageShell min-height resolves.</li>
+</ul>
+<h2 id="residual-risks">Residual Risks</h2>
+<ul>
+<li>Text-only card generation uses independent client request state and server draft records, but generation is still a synchronous request/response operation rather than a durable background queue.</li>
+<li>Legacy database fields and deprecated media endpoints remain for migration/backward compatibility; the current product flow no longer depends on them.</li>
+<li><code>Track for later</code> is intentionally marked unavailable instead of pretending to work.</li>
+<li>Live external AI-provider calls were not exercised in final QA; tests validate request behavior, fallback/error isolation, and UI state independence.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

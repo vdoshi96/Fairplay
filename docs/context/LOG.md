@@ -1,5 +1,36 @@
 # Fairplay Context Log
 
+## 2026-07-20 - Global HTML Documentation Parity
+
+Task: implement the global HTML Documentation Parity Rule retroactively for every tracked project-owned prose-documentation artifact, while preserving historical records and excluding private or ignored material.
+
+Outcome:
+
+- Inventoried 612 canonical Markdown sources with no other tracked prose formats, extensionless candidates, occupied targets, or case-folded collisions.
+- Preserved all 501 intentional `docs/agents/` historical sources unchanged and included tracked project-owned `docs/superpowers/`.
+- Added one Git-scoped deterministic bulk generator that creates accessible same-directory HTML, rewrites links between local documentation counterparts, adds stable heading anchors and source SHA-256 metadata, refuses unmanaged overwrites, and safely removes only marker-owned orphan counterparts.
+- Added exact completeness/content-parity checking and ten focused generator tests; `npm run lint` and `npm test` enforce parity through lifecycle hooks.
+- Corrected verified stale dependency versions and tracked source/test/asset counts in current authoritative context documentation.
+- Recorded the pre-existing high-severity production audit finding against locked Next.js 15.5.15; remediation requires a separate patch upgrade and app regression pass.
+- Kept private `References/`, ignored root `.superpowers/`, dependencies, builds, caches, and QA output outside discovery and generation.
+
+Files changed: documentation generator/tests, package scripts and lockfile, current README/context/wiki sources, and 612 generated HTML counterparts. Historical source logs were not rewritten.
+
+Verification:
+
+- `npm run docs:html`: 612 counterparts generated deterministically.
+- `npm run docs:html:check`: 612/612 passed.
+- `npm run docs:html:test`: 10/10 passed.
+- Independent JSDOM/SHA-256 audit: 0 failures across 612 pages.
+- Full generated-page Axe audit in headless Chromium: 0 violations across 612 pages.
+- `npm run lint`: passed, including the parity precheck.
+- `npm run typecheck`: passed.
+- `npm test -- --run --maxWorkers=4`: 110 files / 679 tests passed.
+- `npm run build`: passed with 38 pages and middleware.
+- `git diff --check`: passed.
+
+Next handoff: keep prose sources canonical, run `npm run docs:html` with every documentation change, and do not hand-edit generated counterparts. Separately upgrade Next.js to at least 15.5.18 and rerun application regression coverage for the recorded production audit finding.
+
 ## 2026-07-16 - Security, Reliability, And Final Improvement Program QA
 
 Task: complete milestone 5 and final QA for the Fairplay Improvement Program without API keys, live provider calls, or private reference material.

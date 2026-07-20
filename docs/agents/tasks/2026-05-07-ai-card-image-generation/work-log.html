@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-ai-card-image-generation/work-log.md">
+  <meta name="fairplay-document-source-sha256" content="4dcaf9d0ce4bc4dddce75dbb06fd07fbfe8f8c9699cadfa6366f2cb194bd6def">
+  <title>docs/agents/tasks/2026-05-07-ai-card-image-generation/work-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="work-log.md"><code>docs/agents/tasks/2026-05-07-ai-card-image-generation/work-log.md</code></a></p>
+    <article>
+<h1 id="work-log">Work Log</h1>
+<h2 id="2026-05-07">2026-05-07</h2>
+<ul>
+<li>Read the prior AI Task Manager implementation notes, text-only architecture decision, deployment docs, provider code, repository code, route tests, UI tests, and current Library asset files.</li>
+<li>Created integration branch <code>codex/ai-card-image-generation</code>.</li>
+<li>Created sidecar worktrees for backend and UI/QA branch managers.</li>
+<li>Added red tests for missing cover path contracts, missing cover generation stages, missing repository cover propagation, stale Qwen prompt expectations, and missing UI cover rendering.</li>
+<li>Restored cover generation in the AI draft service while keeping text input only.</li>
+<li>Added contract-level cover path exposure.</li>
+<li>Added repository cover-path serialization and acceptance propagation.</li>
+<li>Rendered generated cover images in tracker cards and review panels.</li>
+<li>Retargeted Qwen and OpenAI image prompts to current Library card assets.</li>
+<li>Updated README, local development docs, AI Task Manager implementation notes, and task documentation.</li>
+</ul>
+<h2 id="test-commands-run">Test Commands Run</h2>
+<ul>
+<li><code>npm test -- src/contracts/ai-card-drafts.test.ts src/server/ai-card-drafts/service.test.ts src/server/repositories/ai-card-drafts.test.ts src/server/ai/qwen-card-generator.test.ts src/components/library/ai-task-manager.test.tsx src/components/library/card-library.test.tsx &#39;src/app/api/ai-card-drafts/route.test.ts&#39; &#39;src/app/api/ai-card-drafts/[id]/route.test.ts&#39; &#39;src/app/api/ai-card-drafts/[id]/cover/route.test.ts&#39; &#39;src/app/api/ai-card-drafts/[id]/put-in-play/route.test.ts&#39; --run</code></li>
+<li><code>npm run typecheck</code></li>
+<li><code>npm run lint</code></li>
+<li><code>npm test -- --run</code></li>
+<li><code>npm test -- src/server/ai/openai-card-generator.test.ts --run</code></li>
+<li><code>npm run build</code></li>
+<li><code>npm run prisma:validate</code></li>
+</ul>
+<h2 id="live-provider-checks">Live Provider Checks</h2>
+<ul>
+<li>Qwen broad prompt smoke: did not match current Library assets closely enough.</li>
+<li>Qwen current-Library prompt smoke: closer, but still provider-dependent.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

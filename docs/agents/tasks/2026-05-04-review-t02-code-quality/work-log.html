@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t02-code-quality/work-log.md">
+  <meta name="fairplay-document-source-sha256" content="18b451df014537460971aaf3f5fe5a552c938cf87efa62f20945b1e25eff4fb7">
+  <title>docs/agents/tasks/2026-05-04-review-t02-code-quality/work-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="work-log.md"><code>docs/agents/tasks/2026-05-04-review-t02-code-quality/work-log.md</code></a></p>
+    <article>
+<h1 id="work-log">Work Log</h1>
+<h2 id="2026-05-04">2026-05-04</h2>
+<ul>
+<li>Loaded reviewer and verification instructions and confirmed the target worktree <code>/Users/vishal/Developer/Fairplay/.worktrees/v1-app</code>.</li>
+<li>Ran <code>git status --short</code>.<ul>
+<li>Output: clean worktree before review artifact edits.</li>
+</ul>
+</li>
+<li>Confirmed branch and context with <code>git branch --show-current</code> and recent log.<ul>
+<li>Output: branch <code>codex/v1-app</code>; HEAD <code>27c63d9</code> with target commits <code>b8dfb24</code> and <code>3e3235e</code> in history.</li>
+</ul>
+</li>
+<li>Ran <code>git diff --stat b8dfb242ecfdaea2ce6a210f23f1131175655307^ 3e3235e022ae4c81099e5afa2de32cc4ec03e445 -- src/domain src/contracts src/seed</code>.<ul>
+<li>Output: 20 reviewed files under <code>src/domain</code>, <code>src/contracts</code>, and <code>src/seed</code>, 1810 insertions.</li>
+</ul>
+</li>
+<li>Inspected the T02 source modules:<ul>
+<li><code>src/domain/enums.ts</code></li>
+<li><code>src/domain/ids.ts</code></li>
+<li><code>src/domain/time.ts</code></li>
+<li><code>src/domain/visibility.ts</code></li>
+<li><code>src/domain/load-signals.ts</code></li>
+<li><code>src/contracts/auth.ts</code></li>
+<li><code>src/contracts/personas.ts</code></li>
+<li><code>src/contracts/responsibilities.ts</code></li>
+<li><code>src/contracts/radar.ts</code></li>
+<li><code>src/contracts/check-ins.ts</code></li>
+<li><code>src/seed/demo-content.ts</code></li>
+<li><code>src/lib/safety-copy.ts</code></li>
+<li><code>src/lib/formatting.ts</code></li>
+<li><code>src/test/factories/domain.ts</code></li>
+</ul>
+</li>
+<li>Inspected focused tests under <code>src/domain</code>, <code>src/contracts</code>, and <code>src/seed</code>.</li>
+<li>Inspected prior T02 spec review, visibility-fix handoff, and spec re-review for context.</li>
+<li>Checked implementation plan lines for username normalization, responsibility visibility defaults, load signals, seed content, and T03 dependency risk.</li>
+<li>Found two blocking code-quality issues:<ul>
+<li>Auth username contracts accept values that can normalize to empty or unsafe identifiers.</li>
+<li>Responsibility create accepts <code>private</code> visibility even though v1 reserves private drafts for radar unless product review explicitly adds private responsibility drafts.</li>
+</ul>
+</li>
+<li>Noted a non-blocking alias/tooling issue:<ul>
+<li><code>vitest.config.ts</code> does not configure the <code>@/*</code> TypeScript path alias, so future Vitest tests should either keep relative imports or fix test alias resolution before/inside T03.</li>
+</ul>
+</li>
+<li>Ran <code>npm run lint</code>.<ul>
+<li>Output: passed.</li>
+</ul>
+</li>
+<li>Ran <code>npm run typecheck</code>.<ul>
+<li>Output: passed.</li>
+</ul>
+</li>
+<li>Ran <code>npm test -- --run src/domain src/contracts src/seed</code>.<ul>
+<li>Output: passed, 9 test files and 20 tests.</li>
+</ul>
+</li>
+<li>Ran <code>npm run build</code>.<ul>
+<li>Output: passed. Next repeated the known warning that using edge runtime on a page disables static generation for that page.</li>
+</ul>
+</li>
+</ul>
+<h2 id="review-result">Review Result</h2>
+<p>CHANGES_REQUESTED for T02 code quality.</p>
+    </article>
+  </main>
+</body>
+</html>

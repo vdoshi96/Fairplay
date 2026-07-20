@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/context/STATUS.md">
+  <meta name="fairplay-document-source-sha256" content="03c564461d540e5bd9b62a61518c0f18d082e55697642c9c4127d036ab1b8a32">
+  <title>docs/context/STATUS.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="STATUS.md"><code>docs/context/STATUS.md</code></a></p>
+    <article>
+<h1 id="fairplay-status">Fairplay Status</h1>
+<p>Last updated: 2026-07-20</p>
+<h2 id="current-phase">Current Phase</h2>
+<p>The global HTML Documentation Parity Rule is implemented retroactively. All 612 tracked project-owned Markdown sources remain canonical and have deterministic, accessible, same-directory HTML counterparts. One Git-scoped generator handles additions, edits, renames, and marker-owned removals; exact regenerated-output checking runs before <code>npm run lint</code> and <code>npm test</code>.</p>
+<p>All five Fairplay Improvement Program milestones are implemented in the current code: atomic card distribution and Ask Greg-to-Deal continuity; descriptive household work mapping with explicit ownership agreements; UI/accessibility/motion polish; server, client-bundle, physics, CSS, and responsive-asset efficiency; and security/reliability hardening with cross-browser accessibility coverage.</p>
+<p>The previous tooling follow-up stabilized local verification: Playwright e2e now builds the app and runs against <code>next start</code> with explicit local runtime env, and Prisma local migration uses a dedicated <code>SHADOW_DATABASE_URL</code> plus a shadow DB setup helper so app roles without <code>CREATEDB</code> no longer block <code>migrate dev</code>.</p>
+<h2 id="branch-and-working-tree">Branch And Working Tree</h2>
+<ul>
+<li>Documentation parity was implemented from the clean <code>main</code> commit produced by PR #60, without changing historical agent sources or application runtime behavior.</li>
+<li>Improvement Program correctness shipped in PR #56 and descriptive equity/ownership agreements shipped in PR #57; local <code>main</code> was synchronized to each merge before the next milestone began.</li>
+<li>UI/accessibility/motion shipped in PR #58 and performance/assets shipped in PR #59. Security/reliability is complete in the final milestone and passed the complete local regression ladder.</li>
+<li>Earlier merged UX/card PRs include #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, #45 focused patch QA/docs, and #47 catalog/deal/board plus Little Alex fix.</li>
+</ul>
+<h2 id="what-exists">What Exists</h2>
+<ul>
+<li>Production app scaffold and feature implementation are present.</li>
+<li>Standard memory files were missing before this pass and have now been created.</li>
+<li>Existing history is extensive under <code>docs/agents/tasks/</code> with 96 task directories.</li>
+<li>The documentation inventory has 612 Markdown sources and 612 generated HTML counterparts; 501 sources are intentional <code>docs/agents/</code> history.</li>
+<li>Current route inventory includes the card-first app routes <code>/app/your-cards</code>, <code>/app/distribute</code>, <code>/app/board</code>, and <code>/app/ask-greg</code>; <code>/app/home</code> and <code>/app/load-map</code> redirect to the new flow.</li>
+<li>Current tracked inventory includes 286 TypeScript/TSX files under <code>src/</code>, 121 test/spec files across <code>src</code> and <code>e2e</code>, and 351 Fairplay public asset files.</li>
+</ul>
+<h2 id="recent-product-state">Recent Product State</h2>
+<ul>
+<li><p>Browser document responses use a per-request nonce CSP with centralized frame, referrer, permissions, and content-type protections; cookie-authenticated unsafe methods require exact same-origin requests.</p>
+</li>
+<li><p>Household creation enforces an 8 KiB streamed body ceiling and bounded privacy-hashed client/process attempt limits before Argon2id or database work. The application limiter is process-local.</p>
+</li>
+<li><p>Production session cookies remain secure by default; only the local Playwright production server opts into the HTTP-loopback exception.</p>
+</li>
+<li><p>Chromium, desktop WebKit, iPhone WebKit, and touch Chromium verify the real Deal-to-Board-to-Check-in path with full-report WCAG A/AA Axe scans.</p>
+</li>
+<li><p>Household catalog reconciliation is gated by an additive version marker. Existing households reconcile once; current-version overview reads perform no catalog writes.</p>
+</li>
+<li><p>Summary pages select current assignments without loading assignment history or lifecycle-note payloads; responsibility details retain complete editor/history data.</p>
+</li>
+<li><p>Session resolution is memoized per React server request and activity writes occur at most once every five minutes without weakening revocation or expiration checks.</p>
+</li>
+<li><p>Board, Deal, and Your Deck now ship route-specific card workspaces and shared pure helpers instead of one all-view client module.</p>
+</li>
+<li><p>Little Alex physics loads only for desktop fine-pointer environments and pauses while hidden, settled, standing, dragged, or reduced-motion. Mobile route requests do not load Matter.js.</p>
+</li>
+<li><p>Operational/auth backgrounds have local 768/1536 AVIF and WebP variants with PNG fallback; local card covers use responsive Next image optimization.</p>
+</li>
+<li><p>Global styling is split into ordered token/theme, shell/background, motion, Little Alex, and reduced-motion layers with existing values preserved.</p>
+</li>
+<li><p>Board and Deal now show a descriptive household work map derived only from active and needs-review responsibilities; it reports ownership, shared work, high-frequency work, hidden effort, and review timing without scores or partner rankings.</p>
+</li>
+<li><p>Shared-owned responsibilities are derived into a Shared Board section and appear in both owners&#39; decks without adding or renaming a persisted board lane.</p>
+</li>
+<li><p>Responsibility details now expose conception, planning, execution, hidden-effort context, standards, review timing, and a complete ownership agreement for accountable/shared owners, helpers, and backups.</p>
+</li>
+<li><p>Existing-owner changes use one transaction-backed, revision-guarded agreement. Former owners require an explicit replace-or-retain-as-helper choice, and stale same-owner/helper/review edits return a conflict instead of overwriting newer work.</p>
+</li>
+<li><p>Check-ins include a read-only Worth reviewing area with due-card links and optional next-check-in scheduling; notes remain optional and the retired agenda builder remains absent.</p>
+</li>
+<li><p>Deal advances optimistically with a 200ms exit, exact failure rollback, reduced-motion state changes, a mobile-collapsed Available Cards browser, and no more than 20 mounted catalog rows.</p>
+</li>
+<li><p>Board uses one ownership-safe Move menu per card with card-level pending/error state, keyboard focus continuity, last-move Undo, and compact empty lanes.</p>
+</li>
+<li><p>Archive and ownership confirmations use a shared focus-trapped dialog/alert-dialog primitive with Escape close, background isolation, focus restoration, and modal-local error announcements.</p>
+</li>
+<li><p>Check-in history stacks below the tablet breakpoint; filters and operational controls use at least 44px targets with explicit pressed state where applicable.</p>
+</li>
+<li><p>Authentication content now sits on a high-opacity theme-adaptive surface over decorative art, and global page washes reduce background competition without removing the warm artwork.</p>
+</li>
+<li><p>Global generated backgrounds are stronger and paired with theme-aware washes so foreground surfaces remain readable.</p>
+</li>
+<li><p>The previous homepage is retired. Root, login, and persona selection land on Deal for signed-in selected-persona sessions.</p>
+</li>
+<li><p>Cards are the primary interaction model: Distribution supports search, an available-card list, tap/click flip, swipe left/right/up/down, arrow keys, and large fallback buttons.</p>
+</li>
+<li><p>Your Deck is a searchable, cadence-filterable, image-first assigned-card gallery; tapping a card flips it to show assignment, purpose, and Fogging Estandards.</p>
+</li>
+<li><p>Board groups only real dealt/categorized cards: Alex, Max, Saved for Later, and Not Applicable. Unassigned is now an internal dealable-pool state, not a Board lane.</p>
+</li>
+<li><p>Board desktop now treats Alex and Max as primary lanes, with Save for Later and Not Applicable as secondary responsive buckets. Board cards use image-first styling aligned with Your Deck card polish.</p>
+</li>
+<li><p>Your Deck and Board now include concise explanatory subtitles.</p>
+</li>
+<li><p>Mobile overflow navigation now opens from the bottom action area with visible Check-in, Settings, Theory, and Card Library links plus an outside-tap dismiss layer that closes without click-through navigation. The persistent welcome banner is no longer mounted in the protected app shell.</p>
+</li>
+<li><p>Little Alex is desktop-only on protected app routes; mobile and touch-first layouts do not render the helper, and Settings shows a compact mobile note explaining desktop availability.</p>
+</li>
+<li><p>Settings now persists Little Alex hair color per persona and the desktop helper reflects the saved hair color with sprite-derived transparent hair layers instead of a hand-painted overlay.</p>
+</li>
+<li><p>Deal now shows concise swipe instructions under search, uses safer touch-intent thresholds before locking a card drag, and exposes last-action Undo after assignment.</p>
+</li>
+<li><p>Card detail Fogging Estandards are editable via the existing <code>householdStandard</code> persistence field, while long purpose/standards text wraps instead of clipping.</p>
+</li>
+<li><p>Library cards flip in place as the full source catalog. The visible put-in-play/lane-pick workflow has been removed from the Library catalog flow.</p>
+</li>
+<li><p>Deal shows the full catalog-backed dealable pool and dedupes by stable template identity; Board removal clears categorization back into that pool without creating duplicate cards.</p>
+</li>
+<li><p>Ask Greg is a main tab for drafting more cards.</p>
+</li>
+<li><p>Ask Greg desktop now uses a cohesive two-column panel with a larger Greg asset and tighter header/action/draft spacing.</p>
+</li>
+<li><p>Ask Greg now hides the task manager&#39;s small Greg avatar on that page, leaving one Greg image in the composition.</p>
+</li>
+<li><p>Check-ins is now a lightweight schedule, confirm, optional notes, and persisted history flow; agenda/decision concepts and the visible feature guide launcher are no longer visible in the UI.</p>
+</li>
+<li><p>Crash Course has been rewritten as concise concept-first storyboard frames with the app learning path only at the end.</p>
+</li>
+<li><p>Product-surface cleanup retired the Radar page/component from the app navigation surface.</p>
+</li>
+<li><p>This cleanup pass removed the Radar backend/API/model/assets from the active product surface.</p>
+</li>
+<li><p>AI card generation was restored to produce generated cover art for successful text-input drafts.</p>
+</li>
+<li><p>Crash course now uses a 14-frame storyboard with subtitle-style course text attached to the image frame.</p>
+</li>
+<li><p>Crash-course storyboard art was regenerated with Qwen into 14 textless 3:2 PNGs under <code>public/assets/fairplay/generated-ui/crash-course/</code>.</p>
+</li>
+<li><p>Corrective QA on the latest integration branch reported passing Vitest, lint, typecheck, Prisma validate, build, and Playwright e2e.</p>
+</li>
+<li><p>Active feature-guide launchers, guide practice components, generated UI registry entries, Library/Settings dummy workflows, and the onboarding-preview AI route are removed from active code.</p>
+</li>
+</ul>
+<h2 id="verification-from-this-pass">Verification From This Pass</h2>
+<p>HTML documentation parity verification passed:</p>
+<pre tabindex="0"><code class="language-bash">npm run docs:html
+npm run docs:html:check
+npm run docs:html:test
+npm run lint
+npm run typecheck
+npm test -- --run --maxWorkers=4
+npm run build
+git diff --check
+</code></pre>
+<p>The generator check verified 612 canonical sources and 612 exact deterministic counterparts. Focused generator tests passed 10/10, including headings and duplicate anchors, GFM structures, historical inline-code table pipes, local link rewriting, image alt text, raw-HTML/active-URL safety, normalized source hashing, cross-platform paths, target collisions, and safe marker-owned orphan removal. An independent JSDOM and SHA-256 audit reported zero failures across all 612 pages for provenance metadata, document landmarks, skip links, canonical-source links, and current source hashes; all seven table pages parsed with valid table heads and scoped column headers. A full Axe audit finished with zero violations across all 612 pages after source heading gaps were normalized accessibly while retained in metadata. ESLint, TypeScript, 110 Vitest files / 679 tests, and the production build with 38 pages and middleware passed. Application Playwright e2e was not rerun because this change adds repository documentation artifacts and tooling without changing application runtime or browser behavior; headless Chromium was used for the generated-page Axe audit.</p>
+<p>Security/reliability milestone verification passed:</p>
+<pre tabindex="0"><code class="language-bash">npm run db:wait
+npm run prisma:validate
+npm run prisma:generate
+npm run prisma:migrate -- --skip-seed
+npm run lint
+npm run typecheck
+npm test -- --run --maxWorkers=4
+npm run build
+npx playwright test --workers=1
+</code></pre>
+<p>The final Vitest run passed 110 files / 679 tests, including DB-backed integration coverage. The production build completed with 38 pages and middleware. Playwright passed 35/35 scenarios across Chromium, desktop WebKit, iPhone WebKit, and touch Chromium; the cross-browser scenario performs a real Deal assignment, verifies Board persistence, schedules a Check-in, validates the response/theme CSP nonce integration, and fails every scoped WCAG A/AA violation. A dedicated real-browser Little Alex recording and an iOS 26.5 simulator Add-to-Home-Screen/standalone-launch smoke are retained under ignored <code>test-results/</code>. The connected physical iPhone was unavailable. Details are in <code>docs/implementation/2026-07-16-security-reliability.md</code>.</p>
+<p>Performance/assets milestone verification passed:</p>
+<pre tabindex="0"><code class="language-bash">npm run db:wait
+npm run prisma:validate
+npm run prisma:generate
+npm run prisma:migrate -- --skip-seed
+npm run lint
+npm run typecheck
+npm test -- --run --maxWorkers=4
+npm run build
+npx playwright test --project=chromium --workers=1
+</code></pre>
+<p>The final Vitest run passed 106 files / 637 tests, including DB-backed coverage. The final Chromium Playwright run passed 31/31 scenarios. A mobile production-network gate confirms responsive background requests, optimized card-cover delivery, a bounded 20-row Available Cards window, and no Matter.js request. Current light/dark/responsive and Little Alex captures are retained under ignored <code>test-results/</code>; details are in <code>docs/implementation/2026-07-16-performance-assets.md</code>.</p>
+<p>UI/accessibility/motion milestone verification passed:</p>
+<pre tabindex="0"><code class="language-bash">npm run prisma:validate
+npm run prisma:generate
+npm run lint
+npm run typecheck
+npm test -- --run --maxWorkers=4
+npm run build
+npx playwright test
+</code></pre>
+<p>The full Vitest run passed 98 files / 612 tests, including DB-backed integration coverage. The full Chromium Playwright run passed 30/30 scenarios. Corrective browser QA covered 320, 390, 768, 1024, 1280, and 1366 widths, a 200% desktop-zoom layout equivalent, rendered 44px action-target checks, populated Board behavior, explicit ownership return-to-Deal, light/dark surfaces, reduced motion, touch behavior, and the Little Alex regressions.</p>
+<p>Mobile UX/card workflow verification passed:</p>
+<pre tabindex="0"><code class="language-bash">npm run prisma:validate
+npm run typecheck
+npm run lint
+npm run build
+npm run test:e2e
+npm test -- --run
+</code></pre>
+<p>Rendered browser QA also covered desktop Deal/Little Alex, 320px mobile Deal instructions/Little Alex absence, scroll-like Deal movement without assignment, last-action Undo, Ask Greg mobile layout, Settings desktop-only note, card-detail Fogging Estandards persistence, and a Chromium touch-input probe for mobile scroll safety plus intentional horizontal swipe assignment.</p>
+<p>Card-first mobile fix branch verification passed:</p>
+<pre tabindex="0"><code class="language-bash">npm test -- --run
+npm run typecheck
+npm run lint
+</code></pre>
+<p>PR-specific focused suites also covered responsibility distribution state, card workspace rendering, app shell overflow placement, Settings welcome removal, and Little Alex touch handling. Final integrated build/e2e/mobile smoke passed and is tracked in <code>docs/implementation/2026-05-08-mobile-card-ui-state-fix.md</code>.</p>
+<p>Focused patch-run verification covered Distribute pending card availability, mobile More menu visibility/dismiss behavior, and Little Alex touch intent. Rendered browser QA also confirmed a four-card distribution flow, visible mobile/desktop More links, outside-tap close without navigation, and deliberate Little Alex touch dragging. Details are tracked in <code>docs/implementation/2026-05-08-focused-patch-run.md</code>.</p>
+<p>The latest focused patch pass covered Little Alex mobile grab alignment and ragdoll hand mapping, Deal/Library/Board card-state normalization, Board removal back to the unclassified pool, consistent Check-in scheduling, and persisted Check-in history. Details are tracked in <code>docs/implementation/2026-05-08-focused-patch-alex-deal-checkins.md</code>.</p>
+<p>Desktop layout and Learn cleanup verification passed:</p>
+<pre tabindex="0"><code class="language-bash">git diff --check
+npm run prisma:validate
+npm run lint
+npm run typecheck
+npm test -- --run
+npm run build
+npx playwright test e2e/little-alex-physics.spec.ts --project=chromium --grep &quot;uses a static draggable-safe mode with reduced motion&quot;
+npm run test:e2e
+</code></pre>
+<p>Rendered QA covered Ask Greg and Board at 1440x900, 1024x768, 390x844, and 320x740, plus Library/Settings guide-query checks confirming no active &quot;Learn this feature&quot; workflow remains accessible. Details are tracked in <code>docs/implementation/2026-05-08-desktop-layout-learn-cleanup.md</code>.</p>
+<p>Little Alex hair and Ask Greg cleanup verification passed:</p>
+<pre tabindex="0"><code class="language-bash">npm run db:wait
+npm run prisma:migrate
+npm run prisma:generate
+npm run prisma:validate
+npm run lint
+npm run typecheck
+npm test -- --run
+npm run build
+npx playwright test e2e/dark-mode-visual.spec.ts
+npm run test:e2e
+</code></pre>
+<p><code>npm run db:up</code> was attempted first, but local Docker is not installed; the already-running local Postgres database was reachable and the new migration applied successfully. Details are tracked in <code>docs/implementation/2026-05-08-little-alex-hair-ask-greg-cleanup.md</code>.</p>
+<p>The catalog/deal/board and Little Alex fix materialized one active household responsibility per source template, added safe duplicate archival/indexing, removed Library put-in-play controls, removed Board Unassigned, and verified mobile/desktop Little Alex drag/fling behavior. Details are tracked in <code>docs/implementation/2026-05-08-catalog-deal-board-little-alex.md</code>.</p>
+<p>The local tooling stability pass replaced the flaky <code>next dev</code> Playwright server with build-plus-<code>next start</code>, injected e2e runtime env, added an explicit Prisma shadow database URL, and added a local shadow DB setup helper. Details are tracked in <code>docs/implementation/2026-05-08-e2e-prisma-local-stability.md</code>.</p>
+<h2 id="known-blockers">Known Blockers</h2>
+<ul>
+<li><code>npm audit --omit=dev</code> on 2026-07-20 reports one pre-existing high-severity production advisory group against locked Next.js 15.5.15; the current advisories require at least 15.5.18 for full coverage. A dedicated Next.js patch upgrade and application regression pass is required outside this documentation-only change.</li>
+<li>Vercel preview for PR #28 historically failed before build because <code>prisma migrate deploy</code> could not reach <code>db.prisma.io:5432</code> (<code>P1001</code>). Confirm deployment DB reachability before release if that infrastructure has not changed.</li>
+<li>Production runtime needs both <code>DATABASE_URL</code> and <code>SESSION_SECRET</code>; local Playwright now provides safe test defaults for its <code>next start</code> server, but real deployments still need environment-specific values.</li>
+<li><code>.env.local</code> exists locally and is ignored; it was not read.</li>
+<li><code>References/</code> exists locally and is ignored; it was not read.</li>
+</ul>
+<h2 id="needs-verification">Needs Verification</h2>
+<ul>
+<li>Deprecated <code>/api/ai-card-drafts/[id]/regenerate-image</code> route behavior and whether it should remain for compatibility.</li>
+<li>Shared signup throttling across multiple production processes remains an infrastructure follow-up; the application limiter is intentionally bounded and process-local.</li>
+<li>A physical-iPhone Add-to-Home-Screen smoke remains desirable when the connected iPhone is available; the completed fallback used an iOS 26.5 iPhone 17 simulator.</li>
+<li>Local ignored clutter: <code>.DS_Store</code>, <code>docs/.DS_Store</code>, <code>docs/agents/.DS_Store</code>, <code>docs/superpowers/.DS_Store</code>, <code>References/.DS_Store</code>, and <code>tsconfig.tsbuildinfo</code>.</li>
+</ul>
+<h2 id="verified-this-pass">Verified This Pass</h2>
+<ul>
+<li>Applied <code>20260507120000_remove_radar</code> to the local Postgres database.</li>
+<li>Reran <code>npm run test -- --run</code>; all 85 test files and 475 tests passed, including <code>src/server/repositories/persistence.integration.test.ts</code>.</li>
+<li>Accepted the board lane recommendation: keep persisted lane keys stable and use UI labels; any rename should be a separate compatibility migration.</li>
+<li>For the crash-course storyboard refresh, ran <code>npm run assets:generate-ui -- --skip-existing --delay-ms=0</code>, <code>npm run lint</code>, <code>npm run typecheck</code>, <code>npm test -- --run</code> with 85 test files and 481 tests passing, <code>npm run build</code>, and the targeted Playwright responsive visual check for app pages.</li>
+<li>For the current Crash Course concept polish, <code>npm test -- src/components/crash-course/crash-course-flow.test.tsx src/components/crash-course/crash-course-page-client.test.tsx --run</code> passed with 2 files and 12 tests.</li>
+<li>Final branch verification passed: <code>npm run lint</code>, <code>npm run typecheck</code>, <code>npm test -- --run</code> (86 files, 498 tests), <code>npm run prisma:validate</code>, <code>npm run build</code>, <code>npx playwright test e2e/corrective-responsive-visual.spec.ts --project=chromium</code>, <code>npx playwright test e2e/dark-mode-visual.spec.ts e2e/guided-learning.spec.ts --project=chromium</code> after stale QA assertions were updated, and <code>npx playwright test e2e/guided-learning.spec.ts --project=chromium</code>.</li>
+<li>Card-first rebuild verification passed: Vitest 88 files / 510 tests, full Playwright e2e 27 tests, typecheck, lint, build, and mobile production smoke.</li>
+<li>Mobile card UI/state fix branch verification passed before merge: PR #38 focused tests/full Vitest/typecheck/lint, PR #39 focused tests/full Vitest/typecheck/lint, and PR #40 focused tests/full Vitest/typecheck/lint.</li>
+<li>Final integrated mobile card UI/state verification passed: <code>npm run prisma:validate</code>, <code>npm run typecheck</code>, <code>npm run lint</code>, <code>npm test -- --run</code> (89 files, 517 tests), <code>npm run build</code>, <code>npx playwright test e2e/corrective-responsive-visual.spec.ts --project=chromium</code>, and full <code>npm run test:e2e</code> (27 tests). Responsive visual QA now includes 320px, 390px, 768px, 1024px, 1280px, and 1366px widths.</li>
+<li>Focused patch run before the final documentation PR passed a baseline <code>npm test -- --run</code> on main (89 files, 517 tests), plus focused Vitest/typecheck/lint on PRs #42, #44, and #43.</li>
+<li>Final focused patch-run verification passed after the documentation/rendered QA follow-up: <code>npm run prisma:validate</code>, <code>npm run typecheck</code>, <code>npm run lint</code>, <code>npm test -- --run</code> (89 files, 520 tests), <code>npm run build</code>, full <code>npm run test:e2e</code> (27 Playwright tests), and rendered Playwright browser QA for the requested Distribute, More menu, and Little Alex flows.</li>
+<li>Focused Little Alex/Deal/Board/Check-in patch verification passed: <code>npm run prisma:validate</code>, <code>npm run prisma:generate</code>, <code>npm run lint</code>, <code>npm run typecheck</code>, <code>npm test -- --run</code> (89 files, 530 tests), <code>npm run build</code>, targeted Check-in/corrective responsive/Little Alex Playwright, and full <code>npm run test:e2e</code> (28 tests).</li>
+<li>Catalog/deal/board and Little Alex verification passed: <code>npm run prisma:validate</code>, <code>npm run typecheck</code>, <code>npm run lint</code>, <code>npm test -- --run</code> (89 files, 538 tests), <code>npm run build</code>, targeted corrective responsive/Little Alex/guided-learning/auth Playwright specs, and full <code>npm run test:e2e -- --workers=1</code> (28 tests). <code>npm run prisma:migrate -- --skip-seed</code> hit local shadow DB permission <code>P3014</code>; <code>prisma migrate deploy</code> applied the catalog identity migration successfully.</li>
+<li>Local e2e/Prisma stability verification passed: <code>git diff --check</code>, <code>npm run prisma:validate</code>, <code>npm run typecheck</code>, <code>npm run lint</code>, <code>npm test -- --run</code> (90 files, 540 tests), <code>npm run prisma:migrate -- --skip-seed</code>, and full <code>npm run test:e2e</code> (28 tests). The previous local shadow DB permission <code>P3014</code> is resolved by <code>SHADOW_DATABASE_URL</code> and <code>npm run db:shadow</code>.</li>
+<li>Dynamic redesign verification passed: <code>git diff --check</code>, <code>npm run prisma:validate</code>, <code>npm run lint</code>, <code>npm run typecheck</code>, <code>npm test -- --run</code> (84 files, 496 tests), <code>npm run build</code>, targeted dark-mode visual QA, targeted reduced-motion Little Alex QA, full <code>npm run test:e2e</code> (28 tests), and Browser-rendered authenticated QA across the main app pages with zero console errors. Details are tracked in <code>docs/implementation/2026-05-09-dynamic-redesign.md</code>.</li>
+<li>Current browser storage inspection found only the allowed theme-mode key in runtime <code>localStorage</code> calls and no runtime <code>sessionStorage</code> or IndexedDB use.</li>
+</ul>
+<h2 id="suggested-cleanup-plan">Suggested Cleanup Plan</h2>
+<ol>
+<li>Stabilize this memory/wiki layer as the shared map for future agents.</li>
+<li>Verify deprecated AI routes before deleting compatibility behavior.</li>
+<li>Split cleanup into small PRs by ownership: docs hygiene, generated/ignored clutter, schema naming compatibility, and asset inventory.</li>
+<li>Add or refresh tests before removing legacy route/service/schema behavior.</li>
+<li>Run full verification, including DB-backed repository tests and persisted browser flows, after each behavioral cleanup.</li>
+</ol>
+    </article>
+  </main>
+</body>
+</html>

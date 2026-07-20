@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-ai-draft-reliability/debugging-log.md">
+  <meta name="fairplay-document-source-sha256" content="6436e8a501edb83da4a9273c9ea5cd77d7337eb8dbd5f2b832fb6b17175fa0d2">
+  <title>docs/agents/tasks/2026-05-07-ai-draft-reliability/debugging-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="debugging-log.md"><code>docs/agents/tasks/2026-05-07-ai-draft-reliability/debugging-log.md</code></a></p>
+    <article>
+<h1 id="debugging-log">Debugging Log</h1>
+<h2 id="2026-05-07">2026-05-07</h2>
+<ul>
+<li>Confirmed worktree path and branch: <code>/Users/vishal/Developer/Fairplay/.worktrees/ai-draft-reliability</code> on <code>codex/ai-draft-reliability</code>.</li>
+<li>Inspected <code>src/server/ai/qwen-config.ts</code>, <code>src/server/ai/qwen-card-generator.ts</code>, <code>src/server/ai/openai-config.ts</code>, <code>src/server/ai/openai-card-generator.ts</code>, and <code>src/server/ai/card-generator.ts</code>.</li>
+<li>Found Qwen card structuring, Qwen ASR, and Qwen image generation all called one full <code>getQwenConfig()</code> reader. That reader required <code>QWEN_CARD_*</code>, <code>QWEN_ASR_MODEL</code>, <code>QWEN_OPENAI_BASE_URL</code>, and <code>QWEN_IMAGE_*</code> for every operation.</li>
+<li>Found OpenAI direct fallback generation used one full fallback config reader, so text fallback required ASR and image env, ASR fallback required text and image env, and image fallback required text and ASR env.</li>
+<li>Reproduced with failing regression tests that provided only the env required by each operation. Failures happened before mocked <code>fetch</code> calls, proving the failure source was local config validation rather than a provider outage.</li>
+<li>Confirmed service/API safe failure mapping already returns <code>GENERATION_FAILED</code> with request/draft IDs and without raw provider details.</li>
+</ul>
+<h2 id="root-cause">Root Cause</h2>
+<p>AI provider configuration was modeled as one all-or-nothing bundle even though generation is a three-step pipeline with different dependencies:</p>
+<ul>
+<li>Text/card structuring needs text model, text API key, and compatible base URL.</li>
+<li>Audio transcription needs ASR model, ASR-capable API key, and compatible base URL.</li>
+<li>Image generation needs image model, image API key, and image base URL.</li>
+</ul>
+<p>Because of that coupling, missing audio or image env could break a text-only draft before the app made any Qwen/OpenAI request.</p>
+    </article>
+  </main>
+</body>
+</html>

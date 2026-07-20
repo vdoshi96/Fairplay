@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-ai-card-image-generation/branch-summaries.md">
+  <meta name="fairplay-document-source-sha256" content="a6dd94128c7059ce060648e5c51bd7448c3a2a08e9a27b9d4f2de14e37ca623f">
+  <title>docs/agents/tasks/2026-05-07-ai-card-image-generation/branch-summaries.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="branch-summaries.md"><code>docs/agents/tasks/2026-05-07-ai-card-image-generation/branch-summaries.md</code></a></p>
+    <article>
+<h1 id="branch-summaries">Branch Summaries</h1>
+<h2 id="main-orchestrator">Main Orchestrator</h2>
+<ul>
+<li>Branch: <code>codex/ai-card-image-generation</code></li>
+<li>Role: integration branch for the production fix, documentation, and final verification.</li>
+<li>Outcome: restored generated cover plumbing, exposed cover URLs through contracts, rendered cover images in the Library AI draft UI, and updated tests/docs.</li>
+</ul>
+<h2 id="backend-branch-manager">Backend Branch Manager</h2>
+<ul>
+<li>Branch: <code>codex/ai-card-image-backend</code></li>
+<li>Worktree: <code>.worktrees/ai-card-image-backend</code></li>
+<li>Role: backend-focused investigation of service, repository, provider prompt, and contract failures.</li>
+<li>Outcome: exploratory red-test edits identified missing cover generation, missing cover path serialization, and stale provider prompt expectations. Implementation was consolidated on the integration branch.</li>
+<li>Status: local-only sidecar worktree and branch were removed after the integration PR merged.</li>
+</ul>
+<h2 id="uiqa-branch-manager">UI/QA Branch Manager</h2>
+<ul>
+<li>Branch: <code>codex/ai-card-image-ui-qa</code></li>
+<li>Worktree: <code>.worktrees/ai-card-image-ui-qa</code></li>
+<li>Role: UI-focused investigation of draft tracker and review-panel behavior.</li>
+<li>Outcome: exploratory red-test edits confirmed that ready drafts had no generated cover rendering path. Implementation was consolidated on the integration branch.</li>
+<li>Status: local-only sidecar worktree and branch were removed after the integration PR merged.</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<p>The sidecar branches were useful for independent fault isolation, but their changes overlapped with the final integrated patch. They were kept out of the integration branch to avoid merging partial exploratory test diffs.</p>
+    </article>
+  </main>
+</body>
+</html>

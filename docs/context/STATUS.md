@@ -1,8 +1,10 @@
 # Fairplay Status
 
-Last updated: 2026-07-16
+Last updated: 2026-07-20
 
 ## Current Phase
+
+The global HTML Documentation Parity Rule is implemented retroactively. All 612 tracked project-owned Markdown sources remain canonical and have deterministic, accessible, same-directory HTML counterparts. One Git-scoped generator handles additions, edits, renames, and marker-owned removals; exact regenerated-output checking runs before `npm run lint` and `npm test`.
 
 All five Fairplay Improvement Program milestones are implemented in the current code: atomic card distribution and Ask Greg-to-Deal continuity; descriptive household work mapping with explicit ownership agreements; UI/accessibility/motion polish; server, client-bundle, physics, CSS, and responsive-asset efficiency; and security/reliability hardening with cross-browser accessibility coverage.
 
@@ -10,6 +12,7 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 
 ## Branch And Working Tree
 
+- Documentation parity was implemented from the clean `main` commit produced by PR #60, without changing historical agent sources or application runtime behavior.
 - Improvement Program correctness shipped in PR #56 and descriptive equity/ownership agreements shipped in PR #57; local `main` was synchronized to each merge before the next milestone began.
 - UI/accessibility/motion shipped in PR #58 and performance/assets shipped in PR #59. Security/reliability is complete in the final milestone and passed the complete local regression ladder.
 - Earlier merged UX/card PRs include #32 foundation/background/copy, #33 Load Map dashboard, #34 Library/card practice, #35 lightweight Check-ins, #38 state/artwork summaries, #39 mobile shell/touch/welcome removal, #40 image-first card workspace, #42 Distribute availability, #44 More menu, #43 Little Alex touch intent, #45 focused patch QA/docs, and #47 catalog/deal/board plus Little Alex fix.
@@ -19,8 +22,9 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Production app scaffold and feature implementation are present.
 - Standard memory files were missing before this pass and have now been created.
 - Existing history is extensive under `docs/agents/tasks/` with 96 task directories.
+- The documentation inventory has 612 Markdown sources and 612 generated HTML counterparts; 501 sources are intentional `docs/agents/` history.
 - Current route inventory includes the card-first app routes `/app/your-cards`, `/app/distribute`, `/app/board`, and `/app/ask-greg`; `/app/home` and `/app/load-map` redirect to the new flow.
-- Current source inventory includes about 236 TypeScript/TSX files under `src/`, 95 test/spec files across `src` and `e2e`, and 270 Fairplay public asset files.
+- Current tracked inventory includes 286 TypeScript/TSX files under `src/`, 121 test/spec files across `src` and `e2e`, and 351 Fairplay public asset files.
 
 ## Recent Product State
 
@@ -75,6 +79,21 @@ The previous tooling follow-up stabilized local verification: Playwright e2e now
 - Active feature-guide launchers, guide practice components, generated UI registry entries, Library/Settings dummy workflows, and the onboarding-preview AI route are removed from active code.
 
 ## Verification From This Pass
+
+HTML documentation parity verification passed:
+
+```bash
+npm run docs:html
+npm run docs:html:check
+npm run docs:html:test
+npm run lint
+npm run typecheck
+npm test -- --run --maxWorkers=4
+npm run build
+git diff --check
+```
+
+The generator check verified 612 canonical sources and 612 exact deterministic counterparts. Focused generator tests passed 10/10, including headings and duplicate anchors, GFM structures, historical inline-code table pipes, local link rewriting, image alt text, raw-HTML/active-URL safety, normalized source hashing, cross-platform paths, target collisions, and safe marker-owned orphan removal. An independent JSDOM and SHA-256 audit reported zero failures across all 612 pages for provenance metadata, document landmarks, skip links, canonical-source links, and current source hashes; all seven table pages parsed with valid table heads and scoped column headers. A full Axe audit finished with zero violations across all 612 pages after source heading gaps were normalized accessibly while retained in metadata. ESLint, TypeScript, 110 Vitest files / 679 tests, and the production build with 38 pages and middleware passed. Application Playwright e2e was not rerun because this change adds repository documentation artifacts and tooling without changing application runtime or browser behavior; headless Chromium was used for the generated-page Axe audit.
 
 Security/reliability milestone verification passed:
 
@@ -187,6 +206,7 @@ The local tooling stability pass replaced the flaky `next dev` Playwright server
 
 ## Known Blockers
 
+- `npm audit --omit=dev` on 2026-07-20 reports one pre-existing high-severity production advisory group against locked Next.js 15.5.15; the current advisories require at least 15.5.18 for full coverage. A dedicated Next.js patch upgrade and application regression pass is required outside this documentation-only change.
 - Vercel preview for PR #28 historically failed before build because `prisma migrate deploy` could not reach `db.prisma.io:5432` (`P1001`). Confirm deployment DB reachability before release if that infrastructure has not changed.
 - Production runtime needs both `DATABASE_URL` and `SESSION_SECRET`; local Playwright now provides safe test defaults for its `next start` server, but real deployments still need environment-specific values.
 - `.env.local` exists locally and is ignored; it was not read.

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/wiki/index.md">
+  <meta name="fairplay-document-source-sha256" content="bed04e3250ac551d117367bd713c45006a85c3709531938f9c4b51a96db6ed44">
+  <title>docs/wiki/index.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="index.md"><code>docs/wiki/index.md</code></a></p>
+    <article>
+<h1 id="fairplay-wiki">Fairplay Wiki</h1>
+<p>Last updated: 2026-07-20</p>
+<h2 id="system-summary">System Summary</h2>
+<p>Fairplay is a Next.js App Router household planning app with Prisma/Postgres persistence, server-managed household sessions, nonce-protected browser responses, persona-aware app state, a mobile-first card app shell, image-first Your Deck/Deal/Board/Ask Greg primary tabs, descriptive household work mapping, explicit ownership agreements, lightweight check-in records, learning surfaces, settings, and desktop-only Little Alex physics.</p>
+<h2 id="wiki-pages">Wiki Pages</h2>
+<ul>
+<li><code>architecture.md</code>: current app architecture, data flow, service boundaries, and verification map.</li>
+<li><code>file-map.md</code>: practical repo index, source directories, docs/assets inventory, and <code>needs verification</code> areas.</li>
+</ul>
+<h2 id="high-level-feature-map">High-Level Feature Map</h2>
+<ul>
+<li>Auth and session: bounded household creation, login/logout/me, persona selection, opaque sessions, request-cached resolution, nonce CSP/security headers, and same-origin cookie-mutation enforcement.</li>
+<li>Card workflow: Your Deck searchable assigned-card gallery, Deal swipe deck plus available-card list, Board bucket sections, Ask Greg card generation.</li>
+<li>Learning: Theory, onboarding, and Crash Course; the retired feature-guide practice workflow is not mounted.</li>
+<li>Responsibilities: stable persisted lanes, product bucket mapping, assignment/status/visibility/placement routes, simplified card detail.</li>
+<li>Library: full source catalog cards with flip-to-back details; Deal uses the same catalog-backed dealable pool.</li>
+<li>Check-ins: schedule a check-in, confirm it happened, and save optional minutes/notes.</li>
+<li>Settings: theme mode, persona/Little Alex settings, logout, and crash-course restart.</li>
+</ul>
+<h2 id="important-context-links">Important Context Links</h2>
+<ul>
+<li><code>../context/PROJECT.md</code>: durable product and technical summary.</li>
+<li><code>../context/STATUS.md</code>: current status and cleanup candidates.</li>
+<li><code>../context/DECISIONS.md</code>: durable architecture/product decisions.</li>
+<li><code>../context/SOURCES.md</code>: source policy and consulted materials.</li>
+<li><code>../product/ip-safety-review.md</code>: blocking IP/privacy/safety guide.</li>
+<li><code>../product/visual-system.md</code>: visual and motion direction.</li>
+<li><code>../deployment/local-development.md</code>: local DB, shadow DB, and verification workflow.</li>
+<li><code>../agents/manifest.md</code>: historical agent task registry.</li>
+<li><code>../product/card-first-mobile-redesign.md</code>: current card-first redesign rationale, IA, state model, gestures, PWA notes, QA, limitations, and future work.</li>
+<li><code>../implementation/2026-05-08-mobile-card-ui-state-fix.md</code>: mobile card UI/state fix report, changed files, state flow, PR order, and QA notes.</li>
+<li><code>../implementation/2026-05-08-mobile-ux-card-workflow.md</code>: Little Alex desktop-only behavior, Ask Greg mobile layout, Deal gesture/Undo thresholds, editable Fogging Estandards, and manual QA steps.</li>
+<li><code>../implementation/2026-07-16-security-reliability.md</code>: request hardening, signup limits, browser matrix, accessibility policy, motion recording, and iOS Add-to-Home-Screen evidence.</li>
+</ul>
+<h2 id="documentation-parity">Documentation Parity</h2>
+<ul>
+<li>Project-owned Markdown and supported prose sources are canonical; every current source has a same-directory <code>.html</code> counterpart with the same basename.</li>
+<li>Run <code>npm run docs:html</code> after documentation additions, edits, renames, or removals. The generator owns all marked counterpart HTML.</li>
+<li>Run <code>npm run docs:html:check</code> for deterministic completeness/content-parity verification. <code>npm run lint</code> and <code>npm test</code> invoke this gate automatically.</li>
+<li>Discovery is Git-scoped and excludes private <code>References/</code>, ignored root <code>.superpowers/</code>, dependencies, builds, caches, and QA output while retaining tracked <code>docs/superpowers/</code> history.</li>
+</ul>
+<h2 id="current-cleanup-priority">Current Cleanup Priority</h2>
+<ol>
+<li>Add coordinated shared signup throttling only if production runs multiple instances and requires a cross-instance ceiling.</li>
+<li>Repeat the completed simulator Add-to-Home-Screen smoke on the physical iPhone when it is available.</li>
+<li>Separate current docs from historical agent logs.</li>
+<li>Revisit board lane enum renames only as a dedicated compatibility migration.</li>
+</ol>
+    </article>
+  </main>
+</body>
+</html>

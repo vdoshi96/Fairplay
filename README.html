@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="README.md">
+  <meta name="fairplay-document-source-sha256" content="116cd98136b2331565b789d808518e52aa7c88721dc4bffd298c9faeacfe332e">
+  <title>README.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="README.md"><code>README.md</code></a></p>
+    <article>
+<h1 id="fairplay">Fairplay</h1>
+<p>Fairplay helps households make shared work visible, negotiable, and easier to maintain over time. The v1 app is a mobile-first Next.js App Router project with Prisma, Postgres-compatible persistence, server-managed sessions, Vitest, Playwright, ESLint, and Vercel deployment readiness.</p>
+<h2 id="v1-goal">v1 Goal</h2>
+<p>The first version should support a small, practical household workflow:</p>
+<ul>
+<li>Define household responsibilities and expectations.</li>
+<li>Assign ownership with explicit handoffs and review points.</li>
+<li>Track current load and surface imbalances without blame-oriented language.</li>
+<li>Preserve enough history to support recurring check-ins.</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Node.js <code>&gt;=20.9.0</code>.</li>
+<li>npm.</li>
+<li>Docker with Docker Compose for local Postgres verification.</li>
+<li>A Postgres-compatible database for DB-backed tests and deployed environments.</li>
+</ul>
+<h2 id="install">Install</h2>
+<pre tabindex="0"><code class="language-bash">npm install
+</code></pre>
+<h2 id="environment">Environment</h2>
+<p>Copy <code>.env.example</code> to <code>.env.local</code> and replace placeholders with local or managed values:</p>
+<pre tabindex="0"><code class="language-bash">cp .env.example .env.local
+</code></pre>
+<p>Required variables:</p>
+<ul>
+<li><code>DATABASE_URL</code>: Postgres-compatible connection string. Use the Docker Compose database for local work or a Vercel Marketplace Postgres-compatible storage connection for deployed environments.</li>
+<li><code>SESSION_SECRET</code>: long random secret for server-managed sessions. Use a different value per environment.</li>
+<li><code>AUTH_COOKIE_NAME</code>: defaults to <code>fairplay_session</code>.</li>
+<li><code>APP_BASE_URL</code>: app origin, such as <code>http://localhost:3000</code> locally.</li>
+<li>AI Task Manager card generation uses Qwen for text structuring and generated cover images styled after the current local Library cards. Configure <code>QWEN_CARD_API_KEY</code>, <code>QWEN_CARD_MODEL</code>, <code>QWEN_OPENAI_BASE_URL</code>, <code>QWEN_IMAGE_API_KEY</code>, <code>QWEN_IMAGE_MODEL</code>, and <code>QWEN_IMAGE_BASE_URL</code>; it does not require ASR, OCR, audio, or upload variables.</li>
+<li>Optional OpenAI fallback is enabled only when <code>AI_PROVIDER_FALLBACK_ENABLED=true</code>. The Library card-generation path can use <code>OPENAI_BASE_URL</code>, <code>OPENAI_TEXT_MODEL</code>, <code>OPENAI_TEXT_API_KEY</code>, <code>OPENAI_IMAGE_MODEL</code>, and <code>OPENAI_IMAGE_API_KEY</code>.</li>
+</ul>
+<p>Environment variables must be configured outside source. Do not commit <code>.env</code>, <code>.env.local</code>, managed database credentials, real session secrets, plaintext passwords, seed real household records, or private reference materials.</p>
+<h2 id="local-development">Local Development</h2>
+<p>Start local Postgres:</p>
+<pre tabindex="0"><code class="language-bash">npm run db:up
+npm run db:wait
+</code></pre>
+<p>Run the app:</p>
+<pre tabindex="0"><code class="language-bash">npm run dev
+</code></pre>
+<p>Open <code>http://localhost:3000</code>.</p>
+<p>Stop local Postgres:</p>
+<pre tabindex="0"><code class="language-bash">npm run db:down
+</code></pre>
+<p>See <a href="docs/deployment/local-development.html">local development</a> for the full Docker Compose and Prisma workflow.</p>
+<h2 id="commands">Commands</h2>
+<pre tabindex="0"><code class="language-bash">npm run lint
+npm run typecheck
+npm test -- --run
+npm run test:e2e
+npm run build
+npm run docs:html
+npm run docs:html:check
+npm run prisma:validate
+npm run prisma:generate
+npm run prisma:migrate
+npm run prisma:seed
+</code></pre>
+<p>Prisma migrations live in <code>prisma/migrations/</code>. Use <code>npm run prisma:migrate</code> for local development migrations. Use <code>npx prisma migrate deploy</code> against the selected managed database before production release.</p>
+<p>Playwright tests run with <code>npm run test:e2e</code>. Some protected-route e2e flows are route-mocked in this workspace because Docker/Postgres is unavailable here; DB-backed repository and e2e tests must run in a Postgres-capable environment before production readiness.</p>
+<h2 id="documentation-html-parity">Documentation HTML Parity</h2>
+<p>Tracked project Markdown and other supported prose-documentation files are canonical. After adding or editing documentation, run <code>npm run docs:html</code> to deterministically regenerate the accessible same-directory <code>.html</code> counterpart for every source. Run <code>npm run docs:html:check</code> to verify completeness and exact generated-content parity; <code>npm run lint</code> and <code>npm test</code> run this check automatically through their lifecycle hooks.</p>
+<p>The generator discovers only tracked or new non-ignored files through Git, refuses source/target collisions and hand-authored target overwrites, rewrites links between local documentation counterparts, escapes raw HTML and active URL schemes, and embeds the canonical source path and normalized SHA-256 in each generated page. LF normalization and <code>.gitattributes</code> keep output stable across platforms. It explicitly excludes private <code>References/</code>, ignored root <code>.superpowers/</code>, dependencies, builds, caches, and QA output. Tracked <code>docs/superpowers/</code> remains project-owned documentation and is included.</p>
+<h2 id="sessions-and-cookies">Sessions And Cookies</h2>
+<p>Household passwords are created through the app and must be stored only as slow password hashes, never as plaintext. Set <code>SESSION_SECRET</code> outside source control with a long random value. Fairplay session cookies are expected to be server-managed and configured as <code>HttpOnly</code>, <code>Secure</code> in production, and <code>SameSite=Lax</code>, with idle and absolute expiration. Do not store session secrets, household records, private drafts, or concern details in browser storage.</p>
+<h2 id="vercel-deployment">Vercel Deployment</h2>
+<p>Fairplay uses Vercel&#39;s default Next.js behavior. No <code>vercel.json</code> is currently needed because the app does not require custom runtime, build, route, or install settings.</p>
+<p>Configure <code>DATABASE_URL</code>, <code>SESSION_SECRET</code>, <code>AUTH_COOKIE_NAME</code>, and <code>APP_BASE_URL</code> in Vercel Project Settings. Vercel stores project environment variables encrypted at rest. Use a Vercel Marketplace Postgres-compatible storage connection for <code>DATABASE_URL</code>, then run:</p>
+<pre tabindex="0"><code class="language-bash">npm run prisma:generate
+npx prisma migrate deploy
+npm run prisma:seed
+</code></pre>
+<p>Recommended deploy flow:</p>
+<ol>
+<li>Push a branch and review the Vercel preview deployment.</li>
+<li>Run the readiness checklist against the same commit.</li>
+<li>Run migrations against the selected database.</li>
+<li>Promote or merge to production only after checks and review pass.</li>
+</ol>
+<p>See <a href="docs/deployment/vercel.html">Vercel deployment</a> for details.</p>
+<h2 id="vercel-readiness-checklist">Vercel Readiness Checklist</h2>
+<pre tabindex="0"><code class="language-bash">npm run lint
+npm run typecheck
+npm test -- --run
+npm run test:e2e
+npm run build
+npm run prisma:validate
+npx prisma migrate deploy
+</code></pre>
+<p><code>npx prisma migrate deploy</code> must run with <code>DATABASE_URL</code> set to the selected target database. Docker is unavailable in the current implementation workspace, so DB-backed repository/e2e tests were not run here; they must run in a Postgres-capable environment before production readiness.</p>
+<h2 id="reference-material-policy">Reference Material Policy</h2>
+<p>Private reference materials in <code>References/</code> are excluded from git. These files may inform future product thinking only after an IP-safety review, and no source text, cards, exports, PDFs, EPUBs, or spreadsheets should be copied into the repository unless they are already intentionally tracked and cleared for use.</p>
+    </article>
+  </main>
+</body>
+</html>

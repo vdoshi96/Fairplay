@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/specs/2026-05-06-fairplay-interaction-upgrades-design.md">
+  <meta name="fairplay-document-source-sha256" content="cbd1fdbc43061756ab1eccf675c54007424abd6b27bb9ff1e1ff69de6179b851">
+  <title>docs/superpowers/specs/2026-05-06-fairplay-interaction-upgrades-design.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-06-fairplay-interaction-upgrades-design.md"><code>docs/superpowers/specs/2026-05-06-fairplay-interaction-upgrades-design.md</code></a></p>
+    <article>
+<h1 id="fairplay-interaction-upgrades-design">Fairplay Interaction Upgrades Design</h1>
+<h2 id="goal">Goal</h2>
+<p>Upgrade Fairplay&#39;s learning, generated imagery, app theme, login ergonomics, and global Little Alex Horne presence without regressing existing protected app flows.</p>
+<h2 id="current-context">Current Context</h2>
+<p>Fairplay is a Next.js App Router application with protected routes under <code>src/app/app</code>, shared chrome in <code>src/components/app-shell/app-shell.tsx</code>, Tailwind classes backed by CSS custom properties in <code>src/app/globals.css</code>, Vitest unit/component tests, and Playwright end-to-end tests under <code>e2e/</code>.</p>
+<p>The existing state is light-only, uses native form submission for login, has a short skippable <code>GuidedTour</code>, displays generated Qwen card images as small card-like previews, and renders Little Alex Horne only inside the Library AI task manager.</p>
+<h2 id="workstreams">Workstreams</h2>
+<h3 id="1-theme-and-login-ergonomics">1. Theme And Login Ergonomics</h3>
+<p>Add a <code>System / Light / Dark</code> appearance control in Settings. System mode follows <code>prefers-color-scheme</code>; explicit Light or Dark overrides the system. The preference can be persisted in <code>localStorage</code> because this is a device appearance preference, not household data. Theme application should happen before paint using a tiny client script or an early mounted provider so the root element receives a stable theme attribute.</p>
+<p>Login should preserve native form semantics and gain regression coverage that pressing Enter inside logged-out username or password fields submits the login form exactly like pressing the button. No global key handler should be added for login.</p>
+<h3 id="2-integrated-qwen-generated-art">2. Integrated Qwen Generated Art</h3>
+<p>Generated Qwen images should stop reading as small cards pasted onto coordinates. Prompts should ask for original textless Fairplay app illustrations with a large central silhouette, generous whitespace, no fake card border, no title text, and app-native colors. The visual reference is Duolingo&#39;s homepage treatment: a cartoon/illustration is a primary layout character, not a framed thumbnail.</p>
+<p>The AI draft review panel and accepted responsibility detail page should present generated images as large blended art panels. Accepted AI-generated covers already persist as <code>sourceCoverAssetPath</code>; the detail contract and detail page should expose that field so generated responsibility art survives after putting a draft in play.</p>
+<h3 id="3-learn-by-doing-feature-guides">3. Learn-By-Doing Feature Guides</h3>
+<p>The guide may remain skippable and exitable. Advancing past required practice steps must require the user to complete page-level practice actions. The existing one-click coach-box actions are not enough.</p>
+<p>Each feature guide should include hands-on practice that exercises the real surface or a clearly safe dummy sandbox on the real surface:</p>
+<ul>
+<li>Load Map: move a dummy card between lanes, open and use a move menu, and remove or trim a dummy card.</li>
+<li>Library: open Greg capture, fill a dummy task, review a dummy draft, edit generated fields, regenerate/preview the image flow when safe, and put a dummy card in play.</li>
+<li>Radar: create a dummy draft topic, publish or keep it private, defer/schedule, resolve, and delete/dismiss a dummy item.</li>
+<li>Check-ins: build or preview an agenda, assign a topic, record a decision, defer an item, and complete a dummy check-in.</li>
+<li>Settings: change appearance mode, replay welcome, switch persona flow up to confirmation, and locate the learning hub without leaving the guide.</li>
+</ul>
+<p>Practice data must not mutate real household data unless an action is already a safe existing user action. Dummy workflows should be local component state or explicit practice fixtures.</p>
+<h3 id="4-physics-little-alex-horne">4. Physics Little Alex Horne</h3>
+<p>Little Alex Horne should become a global decorative physics object rendered by the protected app shell on every <code>/app/*</code> route. He should be draggable and flingable, bounce off viewport edges, and have ragdoll-like body-part motion. He is not required to be keyboard accessible and should not be used for required app flows.</p>
+<p>The implementation should use a proven browser physics engine for the core simulation. It should respect reduced-motion by settling into a static draggable object or disabling continuous animation. It must avoid blocking normal app pointer interactions except when directly grabbing Little Alex.</p>
+<h3 id="5-documentation-and-qa">5. Documentation And QA</h3>
+<p>Each workstream runs in an independent branch/worktree. Each orchestrator branch owns its docs in <code>docs/agents/tasks/2026-05-06-fairplay-interaction-upgrades/</code> and records responsibilities, blockers, work log, QA commands, and achievements.</p>
+<p>Merges happen back to <code>main</code> in a deliberate order:</p>
+<ol>
+<li>Coordination docs.</li>
+<li>Theme and login.</li>
+<li>Integrated Qwen art.</li>
+<li>Learn-by-doing guides.</li>
+<li>Physics Little Alex Horne.</li>
+</ol>
+<p>After every merge, run focused verification for the merged feature. After all merges, run full verification: lint, typecheck, Vitest, and Playwright end-to-end tests.</p>
+<h2 id="non-goals">Non-Goals</h2>
+<p>This pass does not require server-side persistence for appearance preferences, real Qwen image regeneration during tests, or changing auth/session semantics. It does not make Little Alex part of the accessibility tree or a required control.</p>
+<h2 id="risks">Risks</h2>
+<p>The physics feature adds a runtime dependency and animation loop, so it needs reduced-motion behavior and performance checks. The guide work touches many pages and can create brittle tests if dummy practice is not well isolated. Theme work can expose hard-coded <code>bg-white</code> and <code>text-white</code> classes; changes should prioritize shared surfaces and the pages touched by this upgrade rather than rewriting the entire app in one pass.</p>
+<h2 id="acceptance-criteria">Acceptance Criteria</h2>
+<ul>
+<li>Pressing Enter in logged-out login fields submits the form.</li>
+<li>Settings exposes <code>System</code>, <code>Light</code>, and <code>Dark</code>; the selected mode persists locally and system mode responds to <code>prefers-color-scheme</code>.</li>
+<li>Qwen/OpenAI image prompts no longer request title text, fake card framing, or card-cover layout.</li>
+<li>AI draft review and accepted generated responsibility detail pages show generated art in larger blended panels.</li>
+<li>Feature tours can be exited, but required practice steps must be completed before <code>Next</code> enables.</li>
+<li>Practice steps exercise multi-step page workflows, not only buttons inside the guide dialog.</li>
+<li>Little Alex appears on all protected app pages, can be dragged/flung, bounces at viewport edges, and respects reduced motion.</li>
+<li>Final QA includes lint, typecheck, unit/component tests, and Playwright end-to-end tests after all feature branches are merged.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

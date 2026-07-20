@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-review-t04-code-quality-rereview/handoff.md">
+  <meta name="fairplay-document-source-sha256" content="b03d6603e6d5fda59c5cf6356e8028b1b668ab0c3b322b0dbb8aecd17550825e">
+  <title>docs/agents/tasks/2026-05-04-review-t04-code-quality-rereview/handoff.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="handoff.md"><code>docs/agents/tasks/2026-05-04-review-t04-code-quality-rereview/handoff.md</code></a></p>
+    <article>
+<h1 id="handoff">Handoff</h1>
+<h2 id="status">Status</h2>
+<p>APPROVED</p>
+<h2 id="findings">Findings</h2>
+<ul>
+<li>None.</li>
+</ul>
+<h2 id="prior-finding-resolution">Prior Finding Resolution</h2>
+<ul>
+<li>Resolved: <code>src/app/api/auth/login/route.ts:50</code> now chooses either the stored credential hash or <code>MISSING_CREDENTIAL_PASSWORD_HASH</code>, then calls <code>verifyPassword</code> at <code>src/app/api/auth/login/route.ts:53</code> for all non-throttled login attempts. Absent usernames and wrong passwords still return the same generic <code>401</code> body.</li>
+<li>Resolved: <code>src/server/auth/passwords.ts:44</code> wraps Argon2 verification in a <code>try</code>/<code>catch</code> and returns <code>false</code> on malformed or corrupt stored hashes, allowing routes to respond with generic auth failure instead of <code>500</code>.</li>
+<li>Resolved: <code>src/server/auth/cookies.ts:21</code> rejects invalid expiration inputs, and <code>src/server/auth/cookies.ts:25</code> computes <code>Max-Age</code> directly with a floor of <code>0</code>, so immediate or past expirations do not become default active cookies.</li>
+</ul>
+<h2 id="test-coverage-confirmation">Test Coverage Confirmation</h2>
+<ul>
+<li>Missing username verifier path: <code>src/app/api/auth/login/route.test.ts:132</code> verifies <code>verifyPassword</code> is called with <code>MISSING_CREDENTIAL_PASSWORD_HASH</code> and returns the generic <code>401</code>.</li>
+<li>Malformed stored hash route behavior: <code>src/app/api/auth/login/route.test.ts:149</code> verifies a corrupt hash returns the generic <code>401</code>.</li>
+<li>Malformed stored hash helper behavior: <code>src/server/auth/passwords.test.ts:38</code> verifies <code>verifyPassword</code> resolves to <code>false</code>.</li>
+<li>Cookie expiration edge cases: <code>src/server/auth/cookies.test.ts:7</code>, <code>src/server/auth/cookies.test.ts:20</code>, <code>src/server/auth/cookies.test.ts:33</code>, and <code>src/server/auth/cookies.test.ts:46</code> cover future, immediate, past, and invalid expirations.</li>
+</ul>
+<h2 id="regression-sweep">Regression Sweep</h2>
+<ul>
+<li>Cookie helpers remain <code>httpOnly</code>, production-only <code>secure</code>, <code>sameSite: &quot;lax&quot;</code>, and path <code>/</code>.</li>
+<li>Session-token posture remains sound at static-review level: raw tokens are generated from 32 random bytes, persisted as HMAC token hashes, and exposed only to route handlers for cookie setting.</li>
+<li>No <code>localStorage</code> or <code>sessionStorage</code> usage was found in <code>src/</code>.</li>
+<li>Auth/persona route handlers remain consistent with node runtime declarations for server auth/repository work.</li>
+<li>Persona selection remains household-scoped through the session household boundary.</li>
+</ul>
+<h2 id="verification">Verification</h2>
+<ul>
+<li><code>git status --short</code>: passed; clean before review artifact edits.</li>
+<li><code>npm run lint</code>: passed.</li>
+<li><code>npm run typecheck</code>: passed.</li>
+<li><code>npm test -- --run src/server/auth src/app/api/auth src/app/api/personas</code>: passed; 9 files and 22 tests.</li>
+<li><code>npm test -- --run src/middleware.test.ts</code>: passed; 1 file and 3 tests.</li>
+<li><code>npm run build</code>: passed with the existing edge-runtime static-generation warning.</li>
+</ul>
+<h2 id="owner">Owner</h2>
+<p>No implementation owner action required for this code-quality re-review.</p>
+    </article>
+  </main>
+</body>
+</html>

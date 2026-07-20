@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/wiki/architecture.md">
+  <meta name="fairplay-document-source-sha256" content="fa5beafc36fdff7fa372530d57bfcbf5a370bcf6aa45d56cb8c215cbb8e494ec">
+  <title>docs/wiki/architecture.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="architecture.md"><code>docs/wiki/architecture.md</code></a></p>
+    <article>
+<h1 id="fairplay-architecture">Fairplay Architecture</h1>
+<p>Last updated: 2026-07-16</p>
+<h2 id="runtime-shape">Runtime Shape</h2>
+<p>Fairplay is a Next.js App Router application. Pages and route handlers live under <code>src/app/</code>. Protected app pages are wrapped by <code>src/app/app/layout.tsx</code>, which loads the current session view, redirects unauthenticated users, loads persona preferences, and renders <code>AppShell</code>.</p>
+<p><code>src/middleware.ts</code> rejects obviously anonymous <code>/app/**</code> requests, creates the per-request CSP nonce, applies browser protection headers, and enforces exact same-origin <code>Origin</code> values for cookie-authenticated unsafe methods. It never self-fetches or forwards cookies to a host-derived URL. Server rendering performs the authoritative session/persona load through <code>getAppSessionView()</code> and <code>getCurrentSession()</code>.</p>
+<h2 id="major-layers">Major Layers</h2>
+<h3 id="routes">Routes</h3>
+<ul>
+<li>Auth pages: <code>/login</code>, <code>/create-household</code>, <code>/choose-persona</code>.</li>
+<li>Primary app pages: <code>/app/your-cards</code>, <code>/app/distribute</code>, <code>/app/board</code>, <code>/app/ask-greg</code>.</li>
+<li>Secondary app pages: <code>/app/library</code>, <code>/app/check-ins</code>, <code>/app/check-ins/new</code>, <code>/app/check-ins/[id]</code>, <code>/app/crash-course</code>, <code>/app/onboarding</code>, <code>/app/responsibilities/new</code>, <code>/app/responsibilities/[id]</code>, <code>/app/settings</code>.</li>
+<li>Legacy compatibility routes: <code>/app/home</code> redirects to Deal and <code>/app/load-map</code> redirects to Board.</li>
+<li>API routes: auth, personas, preferences, responsibilities, load snapshot, card templates, AI card drafts, and check-ins.</li>
+</ul>
+<h3 id="ui-components">UI Components</h3>
+<p><code>src/components/</code> is grouped by product surface:</p>
+<ul>
+<li><code>app-shell</code>: navigation, page shell, session view, layout tokens.</li>
+<li><code>auth</code>: forms, login/create/persona clients, auth page shell.</li>
+<li><code>cards</code>: card-state mapping, route-specific Your Deck/Deal/Board workspaces, shared card presentation/pure transition helpers, and the responsibility detail sheet. A compatibility workspace export remains but is not imported by app routes.</li>
+<li><code>library</code>: card library and AI task manager.</li>
+<li><code>responsibilities</code>: responsibility editor; card distribution and board bucket mapping now live in <code>cards</code> plus server responsibility services.</li>
+<li><code>check-ins</code>: lightweight schedule, confirmation, and notes flow.</li>
+<li><code>crash-course</code> and <code>onboarding</code>: active learning and onboarding surfaces. The old feature-guide overlay/practice workflow has been removed. <code>welcome</code> remains as retired compatibility code and is not mounted in the protected app shell.</li>
+<li><code>little-alex</code>, <code>settings</code>, <code>theme</code>, <code>visuals</code>, <code>motion</code>, <code>ui</code>: helper, preferences, theme, visual primitives, motion, and shared UI.</li>
+</ul>
+<h3 id="contracts-and-domain">Contracts And Domain</h3>
+<p><code>src/contracts/</code> defines Zod schemas and TypeScript types for route payloads and client/server contracts. <code>src/domain/</code> owns stable enums, ids, load-signal calculations, visibility helpers, and time helpers. These are intended to stay platform-neutral for a possible future client.</p>
+<h3 id="server-services">Server Services</h3>
+<p><code>src/server/</code> separates business behavior from route handlers:</p>
+<ul>
+<li><code>auth</code>: cookies, current session, password hashing, session token handling, throttling, bounded household-creation bodies, and bounded process-local creation attempts.</li>
+<li><code>repositories</code>: Prisma read/write functions by aggregate.</li>
+<li><code>responsibilities</code>, <code>check-ins</code>, <code>ai-card-drafts</code>: service-level behavior and tests.</li>
+<li><code>ai</code>: provider selection, Qwen/OpenAI adapters, diagnostics, generated asset metadata.</li>
+<li><code>db</code>: Prisma client and repository error helpers.</li>
+</ul>
+<h3 id="persistence">Persistence</h3>
+<p><code>prisma/schema.prisma</code> models households, credentials, personas, onboarding/Little Alex preferences, sessions, responsibilities, assignments, lifecycle notes, templates, AI card drafts, check-ins, compatibility check-in items/decisions, responsibility events, load snapshots, and auth throttling.</p>
+<p>Migrations currently include initial schema, legacy Radar timing/removal history, personal-use redesign, cascade behavior, AI card drafts, and Little Alex preferences.</p>
+<h2 id="data-flow">Data Flow</h2>
+<ol>
+<li>Middleware establishes the document CSP/security headers and rejects cross-origin cookie mutations before route execution.</li>
+<li>A user authenticates through <code>/api/auth/create-household</code> or <code>/api/auth/login</code>; household creation is size- and rate-limited before password hashing or persistence.</li>
+<li>The server stores password/session state through repositories and sets an opaque session cookie.</li>
+<li>The user selects a persona through <code>/api/personas/select</code>.</li>
+<li>Protected pages load <code>getAppSessionView()</code>, then service/repository data for the current household/persona.</li>
+<li>Responsibility overview reads reconcile the household source-card catalog only when its version marker is missing/stale, then load summary fields and current assignments. Card distribution calls server actions that route through <code>distributeResponsibilityCard()</code> and preserve stable persisted lane keys.</li>
+<li>Other client components submit JSON to API route handlers.</li>
+<li>Route handlers validate with Zod contracts and call service/repository layers.</li>
+<li>Repositories persist through Prisma.</li>
+<li>Pages/components refresh or navigate after successful mutation.</li>
+</ol>
+<p>Card cover art flows from Library source templates into responsibility summaries as <code>sourceCoverAssetPath</code>. Deal, Your Deck, and Board all render from <code>responsibilityService.listOverview(session)</code> through their own client entry plus shared card primitives, so assignment movement and cover art stay consistent without cross-shipping all three views. Library and Deal represent the same source catalog; <code>templateId</code> is the stable card identity when present, and Board display is derived from assignment/categorization rather than duplicated card objects. The Board intentionally excludes the internal unassigned/dealable-pool bucket.</p>
+<p>Generated page/auth backgrounds use local AVIF/WebP image sets with PNG fallback. Little Alex&#39;s Matter.js implementation is a desktop fine-pointer-only dynamic import; its runner pauses outside active motion and while the document is hidden.</p>
+<h2 id="verification-map">Verification Map</h2>
+<ul>
+<li>Unit/component tests live beside source under <code>src/**/*.test.ts(x)</code>.</li>
+<li>Repository integration coverage includes <code>src/server/repositories/persistence.integration.test.ts</code>, which needs live Postgres.</li>
+<li>Playwright specs live in <code>e2e/</code>. Chromium owns the complete suite; desktop WebKit, iPhone WebKit, and touch Chromium own the mutation-based accessibility core flow, and touch Chromium also owns the mobile asset/bundle gate.</li>
+<li><code>e2e/helpers/accessibility.ts</code> runs WCAG 2.0/2.1/2.2 A/AA Axe checks, fails every scoped violation, and attaches complete reports.</li>
+<li>Visual QA artifacts are generated under ignored <code>test-results/</code>.</li>
+<li>Prisma checks: <code>npm run prisma:validate</code>, <code>npm run prisma:generate</code>, migrations, and seed.</li>
+</ul>
+<h2 id="architecture-risks">Architecture Risks</h2>
+<ul>
+<li>Board lane enum values are intentionally stable persisted keys; do not rename them without a dedicated compatibility migration.</li>
+<li>The card-first UI depends on the compatibility mapping and dedupe helpers in <code>src/components/cards/card-state.ts</code>; update tests and docs if persisted lanes or catalog identity ever migrate.</li>
+<li>Active household catalog responsibilities are protected by a partial <code>(householdId, templateId)</code> unique index. Migration/seed changes must preserve the distinction between duplicate rows for the same template and distinct source cards that happen to have similar titles.</li>
+<li>Built-in catalog changes must bump <code>FAIRPLAY_SOURCE_VERSION</code>; otherwise current household markers intentionally skip reconciliation.</li>
+<li>Household-creation throttling is bounded and process-local. Add an edge or shared datastore limiter if a multi-instance deployment requires coordinated global enforcement.</li>
+<li>Production cookies fail secure unless the local Playwright server explicitly opts into an HTTP-loopback exception; never set that flag for deployed origins.</li>
+<li>Some generated assets/prompts may reference retired surfaces: needs verification.</li>
+<li><code>docs/agents/tasks/</code> is useful history but very large and not a concise onboarding layer.</li>
+<li>Full DB-backed behavior was verified locally after the Radar removal migration; production deployment should still run normal migration verification.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

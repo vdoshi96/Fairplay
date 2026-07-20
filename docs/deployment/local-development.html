@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/deployment/local-development.md">
+  <meta name="fairplay-document-source-sha256" content="c8b10f80454ec3511d7354e7fddd26edee3572df19c537e79cf066b8af76ce4e">
+  <title>docs/deployment/local-development.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="local-development.md"><code>docs/deployment/local-development.md</code></a></p>
+    <article>
+<h1 id="local-development">Local Development</h1>
+<p>Fairplay is a Next.js App Router app with Prisma and a Postgres-compatible database.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Node.js <code>&gt;=20.9.0</code>.</li>
+<li>npm.</li>
+<li>A local or hosted Postgres-compatible database.</li>
+<li>Docker with Docker Compose is optional for the default local Postgres service.</li>
+</ul>
+<h2 id="install">Install</h2>
+<pre tabindex="0"><code class="language-bash">npm install
+</code></pre>
+<h2 id="environment">Environment</h2>
+<p>Copy the placeholder file and fill in local values outside source control:</p>
+<pre tabindex="0"><code class="language-bash">cp .env.example .env.local
+</code></pre>
+<p>Required variables:</p>
+<ul>
+<li><code>DATABASE_URL</code>: Postgres-compatible connection string. For local Docker, use values matching <code>compose.yaml</code>; for hosted environments, use the managed provider connection string.</li>
+<li><code>SHADOW_DATABASE_URL</code>: separate empty Postgres database used by <code>prisma migrate dev</code>. For local Docker defaults, use <code>postgresql://fairplay:fairplay_local_password@localhost:5432/fairplay_shadow?schema=public</code>.</li>
+<li><code>SESSION_SECRET</code>: long random secret used for server-managed session signing/hashing flows. Generate a new value per environment.</li>
+<li><code>AUTH_COOKIE_NAME</code>: defaults to <code>fairplay_session</code>.</li>
+<li><code>APP_BASE_URL</code>: local app URL, usually <code>http://localhost:3000</code>.</li>
+</ul>
+<p>AI Task Manager card generation uses Qwen for structured text and generated cover images styled after the current local Library cards. It needs the Qwen card key/model/base URL values plus <code>QWEN_IMAGE_API_KEY</code>, <code>QWEN_IMAGE_MODEL</code>, and <code>QWEN_IMAGE_BASE_URL</code>; it does not require ASR, OCR, audio, or upload variables. When <code>AI_PROVIDER_FALLBACK_ENABLED=true</code>, the Library generation path may use OpenAI text and image fallback variables.</p>
+<p>Do not commit local env files, managed database credentials, plaintext passwords, seed real household records, or private reference materials.</p>
+<h2 id="local-postgres">Local Postgres</h2>
+<p>Start the local Postgres service:</p>
+<pre tabindex="0"><code class="language-bash">npm run db:up
+npm run db:wait
+</code></pre>
+<p>The npm Prisma scripts include fallback connection strings for the Docker Compose service when <code>DATABASE_URL</code> or <code>SHADOW_DATABASE_URL</code> is not set. For normal development, keep the same connections in <code>.env.local</code> so Next.js and Prisma use the selected local database consistently.</p>
+<p>The Compose service creates both <code>fairplay</code> and <code>fairplay_shadow</code> for fresh volumes. If you are using an existing local Postgres where the app user cannot create databases, run the helper once:</p>
+<pre tabindex="0"><code class="language-bash">npm run db:shadow
+</code></pre>
+<p>The helper checks <code>SHADOW_DATABASE_URL</code>, creates the shadow database when possible, and falls back to the local OS Postgres admin connection for localhost setups.</p>
+<p>Stop the database when finished:</p>
+<pre tabindex="0"><code class="language-bash">npm run db:down
+</code></pre>
+<h2 id="prisma">Prisma</h2>
+<p>Generate the Prisma client:</p>
+<pre tabindex="0"><code class="language-bash">npm run prisma:generate
+</code></pre>
+<p>Validate the schema:</p>
+<pre tabindex="0"><code class="language-bash">npm run prisma:validate
+</code></pre>
+<p>Apply local development migrations:</p>
+<pre tabindex="0"><code class="language-bash">npm run prisma:migrate
+</code></pre>
+<p><code>npm run prisma:migrate</code> runs <code>npm run db:shadow</code> first so Prisma does not need to create its own shadow database with the application role.</p>
+<p>Seed reviewed original demo content only:</p>
+<pre tabindex="0"><code class="language-bash">npm run prisma:seed
+</code></pre>
+<p>Migrations currently live under:</p>
+<ul>
+<li><code>prisma/migrations/20260504000000_init/</code></li>
+<li><code>prisma/migrations/20260504130000_add_radar_timing_fields/</code> (legacy migration history)</li>
+<li><code>prisma/migrations/20260507120000_remove_radar/</code></li>
+</ul>
+<h2 id="run-the-app">Run The App</h2>
+<pre tabindex="0"><code class="language-bash">npm run dev
+</code></pre>
+<p>Open <code>http://localhost:3000</code>.</p>
+<h2 id="verification">Verification</h2>
+<p>Run the docs-safe local checks before handing work off:</p>
+<pre tabindex="0"><code class="language-bash">npm run lint
+npm run typecheck
+npm test -- --run
+npm run test:e2e
+npm run build
+npm run prisma:validate
+</code></pre>
+<p><code>npm run test:e2e</code> builds the app first and then uses Playwright against <code>next start</code> on port 3101. The Playwright web server injects local default <code>DATABASE_URL</code>, <code>SHADOW_DATABASE_URL</code>, <code>SESSION_SECRET</code>, and <code>APP_BASE_URL</code> values so the local production server behaves like a real runtime instead of depending on the developer shell.</p>
+    </article>
+  </main>
+</body>
+</html>

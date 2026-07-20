@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/product/data-model.md">
+  <meta name="fairplay-document-source-sha256" content="22aa75dc316d60e41b2efcabe6416494cc989ba66c5f99c4c23ef351eda37947">
+  <title>docs/product/data-model.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="data-model.md"><code>docs/product/data-model.md</code></a></p>
+    <article>
+<h1 id="fairplay-v1-data-model">Fairplay v1 Data Model</h1>
+<p>This is a product architecture model, not a physical migration. Implementation should translate these entities into Prisma models backed by a Postgres-compatible managed database connected through Vercel Marketplace storage.</p>
+<h2 id="modeling-principles">Modeling Principles</h2>
+<ul>
+<li>Use UUID strings for entity ids.</li>
+<li>Use ISO 8601 timestamps and store the household timezone.</li>
+<li>Use stable string enums so JSON contracts remain compatible with future iOS clients.</li>
+<li>Keep user-authored content separate from reviewed demo/seed content.</li>
+<li>Treat ownership, visibility, status, review timing, and history as first-class fields.</li>
+<li>Avoid source-derived category systems, source card names, copied prompts, and deck-like catalog assumptions.</li>
+<li>Keep aggregate load signals non-punitive; never model a partner score.</li>
+</ul>
+<h2 id="stack-decision">Stack Decision</h2>
+<ul>
+<li>Web/runtime: Next.js App Router on Vercel.</li>
+<li>Language: TypeScript.</li>
+<li>Styling: Tailwind CSS.</li>
+<li>Persistence: Postgres-compatible database through Vercel Marketplace storage.</li>
+<li>ORM: Prisma, chosen for a conservative typed schema workflow, readable migrations, and broad contributor familiarity.</li>
+<li>API style: explicit JSON Route Handlers for durable actions; Server Actions may wrap the same domain services for web-only forms.</li>
+</ul>
+<h2 id="authentication-and-session-entities">Authentication and Session Entities</h2>
+<h3 id="household"><code>Household</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>name</code></li>
+<li><code>usernameNormalized</code></li>
+<li><code>timezone</code></li>
+<li><code>createdAt</code></li>
+<li><code>updatedAt</code></li>
+</ul>
+<h3 id="householdcredential"><code>HouseholdCredential</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>householdId</code></li>
+<li><code>passwordHash</code></li>
+<li><code>hashAlgorithm</code></li>
+<li><code>hashParamsVersion</code></li>
+<li><code>createdAt</code></li>
+<li><code>updatedAt</code></li>
+<li><code>lastRotatedAt</code></li>
+</ul>
+<p>Password hashes must use Argon2id, bcrypt, or scrypt with production parameters. Argon2id is preferred for v1. Plaintext passwords must never be stored, logged, seeded, or returned by APIs.</p>
+<h3 id="persona"><code>Persona</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>householdId</code></li>
+<li><code>key</code>: <code>alex</code> or <code>max</code></li>
+<li><code>displayName</code></li>
+<li><code>avatarKey</code></li>
+<li><code>createdAt</code></li>
+<li><code>updatedAt</code></li>
+</ul>
+<p>V1 creates Alex and Max by default. Future versions may allow additional members or deeper identity, but v1 should not imply per-person secrecy when both personas share household credentials.</p>
+<h3 id="session"><code>Session</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>householdId</code></li>
+<li><code>selectedPersonaId</code></li>
+<li><code>createdAt</code></li>
+<li><code>lastSeenAt</code></li>
+<li><code>expiresAt</code></li>
+<li><code>revokedAt</code></li>
+<li><code>userAgentHash</code></li>
+</ul>
+<p>Sessions should be server-managed or referenced by signed/encrypted opaque cookies. Cookies must be <code>HttpOnly</code>, <code>Secure</code>, and <code>SameSite=Lax</code>. Exact idle and absolute expiration windows are implementation-stage decisions.</p>
+<h2 id="responsibility-entities">Responsibility Entities</h2>
+<h3 id="responsibility"><code>Responsibility</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>householdId</code></li>
+<li><code>createdByPersonaId</code></li>
+<li><code>templateId</code> nullable</li>
+<li><code>title</code></li>
+<li><code>summary</code> nullable</li>
+<li><code>areaKeys</code>: array of original household area keys</li>
+<li><code>hiddenEffortKeys</code>: array of effort dimensions</li>
+<li><code>cadence</code></li>
+<li><code>relevantDays</code>: nullable array</li>
+<li><code>status</code></li>
+<li><code>visibility</code></li>
+<li><code>householdStandard</code> nullable user-authored text</li>
+<li><code>notes</code> nullable</li>
+<li><code>lastReviewedAt</code> nullable</li>
+<li><code>nextReviewAt</code> nullable</li>
+<li><code>createdAt</code></li>
+<li><code>updatedAt</code></li>
+<li><code>archivedAt</code> nullable</li>
+</ul>
+<p>Responsibilities are durable household accountabilities, not disposable to-dos. They can be created from scratch or from a reviewed demo/template record, but user-authored fields become the household source of truth.</p>
+<h3 id="responsibilityassignment"><code>ResponsibilityAssignment</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>responsibilityId</code></li>
+<li><code>personaId</code></li>
+<li><code>role</code></li>
+<li><code>scope</code></li>
+<li><code>startsAt</code></li>
+<li><code>endsAt</code> nullable</li>
+<li><code>createdByPersonaId</code></li>
+<li><code>createdAt</code></li>
+</ul>
+<p>Use dated assignments so the current owner can be derived while preserving handoff history. Shared ownership is allowed, but each role must say whether the persona carries the outcome, a part, backup support, or helper support.</p>
+<h3 id="responsibilitylifecyclenotes"><code>ResponsibilityLifecycleNotes</code></h3>
+<ul>
+<li><code>responsibilityId</code></li>
+<li><code>noticeDecideNotes</code> nullable</li>
+<li><code>planPrepareNotes</code> nullable</li>
+<li><code>executeFollowThroughNotes</code> nullable</li>
+<li><code>dependencies</code> nullable</li>
+<li><code>blockers</code> nullable</li>
+<li><code>supportNeeded</code> nullable</li>
+<li><code>handoffNotes</code> nullable</li>
+<li><code>updatedAt</code></li>
+</ul>
+<p>These are optional structured notes that make hidden coordination visible without copying source lifecycle wording into the UI.</p>
+<h3 id="responsibilitytemplate"><code>ResponsibilityTemplate</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>slug</code></li>
+<li><code>title</code></li>
+<li><code>summary</code></li>
+<li><code>areaKeys</code></li>
+<li><code>defaultCadence</code></li>
+<li><code>hiddenEffortKeys</code></li>
+<li><code>sourceReviewStatus</code></li>
+<li><code>contentVersion</code></li>
+<li><code>createdAt</code></li>
+<li><code>updatedAt</code></li>
+</ul>
+<p>V1 should not ship a full starter library. This entity exists to support a tiny reviewed demo seed set and possible future templates. All template content must be original and IP-reviewed before entering code, tests, fixtures, screenshots, or production data.</p>
+<h2 id="check-in-and-history-entities">Check-In and History Entities</h2>
+<p>Radar was retired before this version of the active model. The visible Check-ins product is now a lightweight schedule, confirmation, and notes record. Legacy item and decision tables remain in the schema for compatibility unless a later migration proves they can be removed safely.</p>
+<h3 id="checkin"><code>CheckIn</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>householdId</code></li>
+<li><code>state</code></li>
+<li><code>scheduledFor</code> nullable</li>
+<li><code>startedAt</code> nullable</li>
+<li><code>completedAt</code> nullable</li>
+<li><code>facilitatorPersonaId</code> nullable</li>
+<li><code>summary</code> nullable</li>
+<li><code>createdAt</code></li>
+<li><code>updatedAt</code></li>
+</ul>
+<h3 id="checkinitem"><code>CheckInItem</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>checkInId</code></li>
+<li><code>responsibilityId</code> nullable</li>
+<li><code>itemType</code></li>
+<li><code>state</code></li>
+<li><code>promptKey</code></li>
+<li><code>response</code> nullable</li>
+<li><code>decisionId</code> nullable</li>
+<li><code>sortOrder</code></li>
+</ul>
+<h3 id="decision"><code>Decision</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>householdId</code></li>
+<li><code>checkInId</code> nullable</li>
+<li><code>responsibilityId</code> nullable</li>
+<li><code>decisionType</code></li>
+<li><code>summary</code></li>
+<li><code>effectiveAt</code></li>
+<li><code>reviewOn</code> nullable</li>
+<li><code>createdByPersonaId</code></li>
+<li><code>createdAt</code></li>
+</ul>
+<h3 id="responsibilityevent"><code>ResponsibilityEvent</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>householdId</code></li>
+<li><code>responsibilityId</code> nullable</li>
+<li><code>actorPersonaId</code> nullable</li>
+<li><code>eventType</code></li>
+<li><code>payload</code></li>
+<li><code>occurredAt</code></li>
+</ul>
+<p>Events should support auditability and trust. Product views should summarize events neutrally and avoid turning history into a blame ledger.</p>
+<h3 id="loadsnapshot"><code>LoadSnapshot</code></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>householdId</code></li>
+<li><code>periodStart</code></li>
+<li><code>periodEnd</code></li>
+<li><code>computedAt</code></li>
+<li><code>ownerDistribution</code></li>
+<li><code>sharedDistribution</code></li>
+<li><code>areaDistribution</code></li>
+<li><code>cadenceDistribution</code></li>
+<li><code>reviewDueCount</code></li>
+<li><code>pausedOrNotRelevantCount</code></li>
+<li><code>hiddenEffortMix</code></li>
+</ul>
+<p>Snapshots are aggregate household summaries. They must not produce a &quot;bad partner&quot; score, winner/loser comparison, morality grade, or diagnosis.</p>
+<h2 id="enum-candidates">Enum Candidates</h2>
+<ul>
+<li><code>PersonaKey</code>: <code>alex</code>, <code>max</code></li>
+<li><code>ResponsibilityStatus</code>: <code>unassigned</code>, <code>active</code>, <code>needs_review</code>, <code>paused</code>, <code>not_relevant</code>, <code>archived</code></li>
+<li><code>AssignmentRole</code>: <code>accountable_owner</code>, <code>shared_owner</code>, <code>helper</code>, <code>backup</code></li>
+<li><code>AssignmentScope</code>: <code>outcome</code>, <code>part</code>, <code>support</code>, <code>temporary</code></li>
+<li><code>Visibility</code>: <code>private</code>, <code>shared_household</code>, <code>partner_visible</code>, <code>check_in_only</code></li>
+<li><code>Cadence</code>: <code>daily</code>, <code>weekly</code>, <code>monthly</code>, <code>seasonal</code>, <code>event_based</code>, <code>as_needed</code>, <code>one_time</code></li>
+<li><code>HiddenEffortKey</code>: <code>noticing</code>, <code>planning</code>, <code>doing</code>, <code>follow_through</code>, <code>emotional_attention</code></li>
+<li><code>CheckInState</code>: <code>draft</code>, <code>scheduled</code>, <code>active</code>, <code>completed</code>, <code>skipped</code></li>
+<li><code>CheckInItemState</code>: <code>queued</code>, <code>discussed</code>, <code>deferred</code>, <code>skipped</code> (compatibility only in the current UI)</li>
+<li><code>DecisionType</code>: <code>assign_owner</code>, <code>change_role</code>, <code>change_standard</code>, <code>change_cadence</code>, <code>pause</code>, <code>mark_not_relevant</code>, <code>archive</code>, <code>schedule_review</code>, <code>custom_note</code></li>
+<li><code>ResponsibilityBoardLane</code>: <code>cards_of_concern</code>, <code>player_1</code>, <code>player_2</code>, <code>kid_split</code>, <code>not_in_play</code>, <code>trimmed</code></li>
+<li><code>SourceReviewStatus</code>: <code>not_reviewed</code>, <code>approved_original</code>, <code>blocked</code>, <code>needs_review</code></li>
+</ul>
+<p><code>ResponsibilityBoardLane</code> values are persisted internal API/database keys. Display labels such as Alex, Max, Cards of Concern, and Kid Split are mapped in UI metadata; do not rename the enum values without a dedicated compatibility migration.</p>
+<h2 id="platform-neutral-json-contracts">Platform-Neutral JSON Contracts</h2>
+<p>These contracts define product boundaries for web and future iOS clients. Exact route names may change during implementation, but payloads should remain explicit JSON and should not depend on React state.</p>
+<h3 id="create-household">Create Household</h3>
+<p>Request:</p>
+<pre tabindex="0"><code class="language-json">{
+  &quot;householdName&quot;: &quot;Maple House&quot;,
+  &quot;username&quot;: &quot;maple-house&quot;,
+  &quot;password&quot;: &quot;client-supplied secret&quot;,
+  &quot;timezone&quot;: &quot;America/Chicago&quot;
+}
+</code></pre>
+<p>Response:</p>
+<pre tabindex="0"><code class="language-json">{
+  &quot;household&quot;: { &quot;id&quot;: &quot;uuid&quot;, &quot;name&quot;: &quot;Maple House&quot;, &quot;timezone&quot;: &quot;America/Chicago&quot; },
+  &quot;personas&quot;: [
+    { &quot;id&quot;: &quot;uuid&quot;, &quot;key&quot;: &quot;alex&quot;, &quot;displayName&quot;: &quot;Alex&quot; },
+    { &quot;id&quot;: &quot;uuid&quot;, &quot;key&quot;: &quot;max&quot;, &quot;displayName&quot;: &quot;Max&quot; }
+  ],
+  &quot;requiresPersonaSelection&quot;: true
+}
+</code></pre>
+<p>The password is accepted only over HTTPS, hashed server-side, and never returned.</p>
+<h3 id="login">Login</h3>
+<p>Request:</p>
+<pre tabindex="0"><code class="language-json">{
+  &quot;username&quot;: &quot;maple-house&quot;,
+  &quot;password&quot;: &quot;client-supplied secret&quot;
+}
+</code></pre>
+<p>Response:</p>
+<pre tabindex="0"><code class="language-json">{
+  &quot;household&quot;: { &quot;id&quot;: &quot;uuid&quot;, &quot;name&quot;: &quot;Maple House&quot; },
+  &quot;personas&quot;: [
+    { &quot;id&quot;: &quot;uuid&quot;, &quot;key&quot;: &quot;alex&quot;, &quot;displayName&quot;: &quot;Alex&quot; },
+    { &quot;id&quot;: &quot;uuid&quot;, &quot;key&quot;: &quot;max&quot;, &quot;displayName&quot;: &quot;Max&quot; }
+  ],
+  &quot;requiresPersonaSelection&quot;: true
+}
+</code></pre>
+<h3 id="select-persona">Select Persona</h3>
+<p>Request:</p>
+<pre tabindex="0"><code class="language-json">{ &quot;personaId&quot;: &quot;uuid&quot; }
+</code></pre>
+<p>Response:</p>
+<pre tabindex="0"><code class="language-json">{
+  &quot;session&quot;: {
+    &quot;householdId&quot;: &quot;uuid&quot;,
+    &quot;selectedPersonaId&quot;: &quot;uuid&quot;,
+    &quot;expiresAt&quot;: &quot;2026-05-05T12:00:00.000Z&quot;
+  }
+}
+</code></pre>
+<h3 id="responsibility-summary">Responsibility Summary</h3>
+<pre tabindex="0"><code class="language-json">{
+  &quot;id&quot;: &quot;uuid&quot;,
+  &quot;title&quot;: &quot;Evening kitchen reset&quot;,
+  &quot;areaKeys&quot;: [&quot;home_base&quot;, &quot;food_flow&quot;],
+  &quot;hiddenEffortKeys&quot;: [&quot;doing&quot;, &quot;follow_through&quot;],
+  &quot;cadence&quot;: &quot;daily&quot;,
+  &quot;status&quot;: &quot;active&quot;,
+  &quot;visibility&quot;: &quot;shared_household&quot;,
+  &quot;currentAssignments&quot;: [
+    { &quot;personaKey&quot;: &quot;alex&quot;, &quot;role&quot;: &quot;accountable_owner&quot;, &quot;scope&quot;: &quot;outcome&quot; }
+  ],
+  &quot;nextReviewAt&quot;: &quot;2026-06-01T00:00:00.000Z&quot;
+}
+</code></pre>
+<h2 id="original-demo-area-keys">Original Demo Area Keys</h2>
+<p>V1 demo data may use this small original set after review:</p>
+<ul>
+<li><code>home_base</code>: recurring upkeep and shared-space reset.</li>
+<li><code>food_flow</code>: meals, groceries, supplies, and kitchen readiness.</li>
+<li><code>calendar_lane</code>: appointments, reminders, plans, and errands.</li>
+<li><code>care_circle</code>: care routines for people or pets in the household.</li>
+<li><code>paper_trail</code>: bills, forms, records, benefits, and household admin.</li>
+<li><code>fix_and_fetch</code>: repairs, maintenance, transport, and things that need replacing.</li>
+<li><code>recharge</code>: rest, personal time, appreciation, and sustainable routines.</li>
+<li><code>big_shifts</code>: moves, illness, job changes, travel, guests, and other temporary seasons.</li>
+</ul>
+<p>These keys are product-original working labels. They must not be expanded into a source-like catalog without IP review.</p>
+    </article>
+  </main>
+</body>
+</html>

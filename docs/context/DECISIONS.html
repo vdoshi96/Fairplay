@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/context/DECISIONS.md">
+  <meta name="fairplay-document-source-sha256" content="08d14097765a48c57d7b9cf7c64c0c53a2762b1931864f35dea137d6199e3ce8">
+  <title>docs/context/DECISIONS.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="DECISIONS.md"><code>docs/context/DECISIONS.md</code></a></p>
+    <article>
+<h1 id="fairplay-decisions">Fairplay Decisions</h1>
+<p>Last updated: 2026-07-20</p>
+<h2 id="decision-log">Decision Log</h2>
+<div class="table-scroll" role="region" aria-label="Documentation table" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Date</th>
+<th scope="col">Decision</th>
+<th scope="col">Rationale</th>
+<th scope="col">Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-07-20</td>
+<td>Keep project prose sources canonical and generate every same-directory HTML counterpart through one Git-scoped deterministic command, with exact deterministic generated-output parity enforced before lint and tests.</td>
+<td>The global parity rule covers hundreds of intentional historical artifacts; one source-derived renderer preserves that history, avoids hand-maintained drift, excludes private/ignored material, and makes missing, stale, orphaned, or colliding outputs fail loudly.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-07-16</td>
+<td>Enforce one middleware-owned nonce CSP and same-origin checks for cookie-authenticated mutations; keep production cookies secure unless an explicit HTTP-loopback QA opt-in is active.</td>
+<td>Browser security policy must match App Router scripts without inline-policy drift, and local WebKit verification must not create a production cookie downgrade path.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-07-16</td>
+<td>Bound household-creation bodies and process-local attempts before Argon2 or database work, committing client/global quota only when both gates allow.</td>
+<td>Expensive unauthenticated work needs predictable resource limits, privacy-preserving client keys, bounded memory, and isolation so one rejected client cannot consume another client&#39;s capacity.</td>
+<td>Accepted; shared multi-instance limiting remains an infrastructure option</td>
+</tr>
+<tr>
+<td>2026-07-16</td>
+<td>Gate releases with one real mutation workflow across Chromium, WebKit, iPhone WebKit, and touch Chromium, failing every scoped WCAG A/AA Axe violation.</td>
+<td>Navigation-only smoke tests and severity filtering could miss engine-specific persistence, touch, nonce, and standards failures.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-07-16</td>
+<td>Gate household catalog reconciliation by a marker written after success, use current-assignment summary reads, and throttle session activity persistence to five-minute intervals.</td>
+<td>Routine page reads should not upsert a stable catalog, load historical detail payloads, or rewrite session activity repeatedly; nullable/version-last and conditional-write behavior keep migration, retry, revocation, and expiration semantics safe.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-07-16</td>
+<td>Ship route-specific Board/Deal/Deck clients, fine-pointer-gated Little Alex physics, responsive local artwork, and ordered global CSS layers.</td>
+<td>The primary routes should not cross-ship unrelated views or mobile physics, and decorative artwork should use modern responsive formats while retaining local fallbacks and the established visual cascade.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-07-16</td>
+<td>Use one accessible modal primitive for destructive/ownership confirmations, optimistic single-flight Deal transitions, and ownership-safe Board move menus.</td>
+<td>Focus isolation and restoration make confirmations dependable; single-flight optimistic state keeps Deal responsive without stale rollback; assigned cards must change owners through the explicit agreement instead of a shortcut.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-07-16</td>
+<td>Keep household equity descriptive and route every existing-owner change through one revision-guarded ownership agreement.</td>
+<td>Counts make hidden and due work visible without scoring partners; a row-locked agreement preserves helpers/backups, requires an explicit former-owner handoff, and derives shared presentation without changing persisted lane values.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-08</td>
+<td>Make cards the primary product surface and retire the homepage.</td>
+<td>The user requested a full mobile-first product rethink around card distribution; direct action beats a learning/dashboard landing page.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-08</td>
+<td>Treat Library and Deal as the same source catalog, with assignment/status stored separately.</td>
+<td>The user rejected the put-in-play workflow and duplicate card instances; source template identity should be stable while Board display is derived from assignment/categorization.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-08</td>
+<td>Enforce one active household responsibility per source template.</td>
+<td>A partial unique index plus duplicate archival migration prevents repeated Library/Deal actions from creating duplicate catalog cards while preserving distinct source cards with similar titles.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-08</td>
+<td>Keep persisted board-lane keys but normalize product buckets in the UI/service layer.</td>
+<td>Avoids a database compatibility migration while enabling <code>unassigned</code>, <code>alex</code>, <code>max</code>, <code>savedForLater</code>, and <code>notApplicable</code> behavior.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-08</td>
+<td>Rename visible card standards copy to Fogging Estandards.</td>
+<td>The user explicitly requested the new label and removal of old minimum-standard card-detail clutter.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-08</td>
+<td>Make Little Alex desktop-only.</td>
+<td>Mobile touch scrolling and dragging compete too often; preserving mobile scroll is more important than forcing a novelty interaction on touch-first layouts.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-08</td>
+<td>Retire the feature-guide and dummy practice workflow.</td>
+<td>The current card-first app is simple enough without extra &quot;Learn this feature&quot; launchers, and the dummy Library/Settings practice flows added maintenance cost without improving the core path.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-08</td>
+<td>Use PWA/safe-area metadata and fixed mobile bottom tabs for the core app shell.</td>
+<td>Mobile Safari and Add to Home Screen are primary targets for this redesign.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-07</td>
+<td>Add standard repo memory and wiki files without reorganizing source files.</td>
+<td>The repo organization is haphazard, and future agents need a reliable index before feature work or cleanup.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-07</td>
+<td>Treat this as repo-level project memory, not global memory.</td>
+<td>The facts are specific to Fairplay&#39;s product, codebase, source policy, and current architecture.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-07</td>
+<td>Mark unclear/dead/suspicious areas as <code>needs verification</code>.</td>
+<td>The user explicitly asked not to guess, and several legacy pieces may be compatibility code.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-07</td>
+<td>Retire Radar as an active product/backend area.</td>
+<td>The cleanup branch removed Radar API routes, server services, contracts, model links, and generated assets after the UI had already been retired.</td>
+<td>Accepted; local DB-backed verification passed</td>
+</tr>
+<tr>
+<td>2026-05-07</td>
+<td>Keep board lane enum values stable for now.</td>
+<td><code>cards_of_concern</code>, <code>player_1</code>, <code>player_2</code>, and <code>kid_split</code> are persisted API/database keys; the UI already maps them to user-facing labels. Renaming belongs in a separate compatibility migration.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-07</td>
+<td>Treat device theme persistence in <code>localStorage</code> as allowed non-sensitive UI state.</td>
+<td>Later interaction-upgrade docs explicitly permit theme mode in <code>localStorage</code>; older release scans are stale.</td>
+<td>Accepted, but audit sensitive storage separately</td>
+</tr>
+<tr>
+<td>2026-05-07</td>
+<td>Keep generated cover art in AI card draft success path.</td>
+<td>Latest AI card image generation handoff says ready drafts require generated text and cover bytes.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-07</td>
+<td>Use Qwen as primary AI generation provider with optional OpenAI fallback.</td>
+<td>README and env example define Qwen primary variables and fallback gated by <code>AI_PROVIDER_FALLBACK_ENABLED</code>.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Use Next.js App Router, TypeScript, Tailwind CSS, Prisma, Postgres-compatible storage, and Vercel deployment readiness.</td>
+<td>Existing product architecture docs chose a conservative typed web stack and Vercel-compatible persistence.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Use shared household credentials with post-login Alex/Max persona selection.</td>
+<td>V1 targets low-friction household planning while avoiding claims of per-person secrecy.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Use server-managed sessions and slow password hashing.</td>
+<td>Privacy/security baseline requires opaque session cookies, expiration, logout, auth throttling, and no plaintext passwords.</td>
+<td>Accepted</td>
+</tr>
+<tr>
+<td>2026-05-04</td>
+<td>Keep IP/safety constraints blocking for user-facing copy, seed data, templates, prompts, visuals, auth/session, and relationship-support flows.</td>
+<td>Fairplay must not copy private references or become a therapy, scoring, or unsafe-confrontation tool.</td>
+<td>Accepted</td>
+</tr>
+</tbody></table></div>
+<h2 id="naming-and-compatibility-notes">Naming And Compatibility Notes</h2>
+<ul>
+<li>Database and contract board lane enums intentionally keep persisted keys such as <code>cards_of_concern</code>, <code>player_1</code>, <code>player_2</code>, and <code>kid_split</code>; use UI label mapping for display and defer any rename to a dedicated migration.</li>
+<li>Platform-neutral card bucket/lane contracts live in <code>src/domain/card-distribution.ts</code>, with compatibility and UI-only presentation helpers retained in <code>src/components/cards/card-state.ts</code>; <code>unassigned</code> remains an internal dealable-pool bucket.</li>
+<li>Catalog card identity is <code>Responsibility.templateId</code> when present. Do not dedupe source cards by title; there are intentional same-title variants such as Alex/Max source cards.</li>
+<li>Deprecated AI routes and media fields may be compatibility scaffolding: needs verification before removal.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

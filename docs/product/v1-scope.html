@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/product/v1-scope.md">
+  <meta name="fairplay-document-source-sha256" content="400636a5d059b6c7aee219d2a524b4d6a0c62a6a15874f1c0e925095ae4f1b96">
+  <title>docs/product/v1-scope.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="v1-scope.md"><code>docs/product/v1-scope.md</code></a></p>
+    <article>
+<h1 id="fairplay-v1-scope">Fairplay v1 Scope</h1>
+<h2 id="goal">Goal</h2>
+<p>Create a mobile-first household responsibility planning tool that helps two household partners make shared work visible, assign ownership clearly, and keep simple recurring check-in records.</p>
+<p>Fairplay v1 is household organization and relationship support. It is not therapy, counseling, diagnosis, legal advice, financial advice, medical advice, or crisis support.</p>
+<h2 id="target-users">Target Users</h2>
+<ul>
+<li>A two-person household using the default personas Alex and Max.</li>
+<li>A solo starter who creates the household and begins mapping responsibilities before the second persona participates.</li>
+<li>Households that want practical support for responsibilities, expectations, hidden coordination, and check-ins without partner scoring or blame.</li>
+</ul>
+<h2 id="in-scope">In Scope</h2>
+<ul>
+<li>Account creation with one household username and one household password.</li>
+<li>Login with the shared household credentials.</li>
+<li>Post-login persona selection between Alex and Max.</li>
+<li>Session persistence that preserves household and selected persona.</li>
+<li>Secure password handling: slow password hashes only, never plaintext.</li>
+<li>Mobile-first PWA-friendly web UI deployable to Vercel.</li>
+<li>Onboarding and education that explain the product as practical household planning, not clinical advice.</li>
+<li>Household load map with responsibility overview, ownership state, cadence, review timing, hidden effort dimensions, and status.</li>
+<li>Responsibility creation and editing using user-authored titles, notes, standards, tags, and cadence.</li>
+<li>Assignment between Alex and Max using explicit roles such as accountable owner, shared owner, helper, and backup.</li>
+<li>Lightweight check-in flow that schedules a check-in, confirms it happened, and saves optional minutes/notes.</li>
+<li>Persisted household, persona, responsibility, assignment, check-in, decision, event, and snapshot data.</li>
+<li>Small demo/seed data made from original categories and invented examples only, reviewed before implementation.</li>
+<li>README deployment instructions for the eventual Vercel app setup.</li>
+</ul>
+<h2 id="architecture-direction">Architecture Direction</h2>
+<ul>
+<li>Use Next.js App Router, TypeScript, and Tailwind CSS for the web app.</li>
+<li>Deploy to Vercel and keep runtime assumptions compatible with serverless hosting.</li>
+<li>Use a Postgres-compatible managed database connected through Vercel Marketplace storage.</li>
+<li>Use Prisma as the v1 ORM because it provides a conservative typed schema/migration workflow, strong TypeScript support, and broad Postgres familiarity for future contributors.</li>
+<li>Keep domain services and JSON API contracts platform-neutral so a future iOS app can share the same concepts without depending on React components or web-only form behavior.</li>
+<li>Prefer Route Handlers for explicit JSON APIs. Server Actions may be used for web form ergonomics only when they call the same domain/service layer.</li>
+</ul>
+<h2 id="out-of-scope">Out of Scope</h2>
+<ul>
+<li>Legal, financial, therapeutic, or medical advice.</li>
+<li>Marketplace, community, or public sharing features.</li>
+<li>Automated ingestion of private reference source materials.</li>
+<li>Email login, magic links, social auth, and external identity providers.</li>
+<li>Per-person secret accounts or claims that one persona&#39;s data is hidden from someone who knows the shared household credentials.</li>
+<li>A full starter deck, source-like responsibility library, copied assessment, copied public app flow, source-derived taxonomy, printable-card UI, or source visuals.</li>
+<li>Partner scoring, winner/loser comparisons, morality grades, diagnosis, or confrontation prompts.</li>
+<li>AI advice or therapy-like rewriting in v1.</li>
+<li>Billing, subscriptions, public sharing, exports, deletion workflows, and household exit/revocation. These need later privacy and product review.</li>
+<li>Production app implementation in this architecture task.</li>
+</ul>
+<h2 id="v1-information-architecture">V1 Information Architecture</h2>
+<ul>
+<li><code>/</code> redirects signed-in households to the app home and signed-out visitors to login/create household.</li>
+<li><code>/create-household</code> creates the shared household credentials and default personas.</li>
+<li><code>/login</code> accepts household username/password.</li>
+<li><code>/choose-persona</code> lets the signed-in user select Alex or Max for the session.</li>
+<li><code>/app/home</code> shows household learning entry points, due reviews, and next check-in.</li>
+<li><code>/app/load-map</code> lists responsibilities with filters for owner, status, cadence, tag, and review timing.</li>
+<li><code>/app/responsibilities/new</code> and <code>/app/responsibilities/[id]</code> create/edit a responsibility.</li>
+<li><code>/app/check-ins/new</code> schedules a check-in.</li>
+<li><code>/app/check-ins/[id]</code> confirms a scheduled check-in or updates completed notes.</li>
+<li><code>/app/settings</code> manages household name, persona display preferences, logout, and future data controls.</li>
+</ul>
+<h2 id="demo-seed-boundaries">Demo Seed Boundaries</h2>
+<p>V1 may include a tiny demo household or resettable seed state for screenshots, QA, and onboarding examples. It must use original names and invented content, such as:</p>
+<ul>
+<li>Areas: Home base, Food flow, Calendar lane, Care circle, Paper trail, Fix and fetch, Recharge, Big shifts.</li>
+<li>Example responsibilities: Evening kitchen reset, Weekly meal outline, Appointment follow-through, Laundry rhythm, Supply restock, Weekend plan check, Shared space reset, Bill due-date review.</li>
+</ul>
+<p>Do not expand this into a source-like deck or catalog. Demo examples must not copy source card names, categories, descriptions, worksheet labels, Better Share wording, or source visuals.</p>
+<h2 id="success-criteria">Success Criteria</h2>
+<ul>
+<li>A household can represent its current work clearly.</li>
+<li>Ownership and handoff expectations are explicit.</li>
+<li>The interface encourages calm review rather than blame.</li>
+<li>Alex and Max can use the same household credentials, choose their persona, and see a consistent shared household state.</li>
+<li>Users can restart learning flows and keep check-in notes without partner scoring.</li>
+<li>The domain model and API contracts are reusable by a future iOS client.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

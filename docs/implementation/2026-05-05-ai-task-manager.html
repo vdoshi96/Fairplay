@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-05-ai-task-manager.md">
+  <meta name="fairplay-document-source-sha256" content="102128a708872b0a2a83603d7c7f7c3b1c40369a7cb94e19ba7abe211170b240">
+  <title>docs/implementation/2026-05-05-ai-task-manager.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-05-ai-task-manager.md"><code>docs/implementation/2026-05-05-ai-task-manager.md</code></a></p>
+    <article>
+<h1 id="ai-task-manager-implementation">AI Task Manager Implementation</h1>
+<h2 id="user-flow">User Flow</h2>
+<p>AI Task Manager is a Library-first text card creation flow with generated cover art. A user opens <code>/app/library</code>, selects <code>AI Task Manager</code>, and types a task they want turned into a structured Fairplay card. The app creates an AI card draft, tracks each request independently in the <code>AI-created cards</code> section, and lets the user review the generated text and cover before putting it in play.</p>
+<p>Ready drafts can be opened in a review panel. The panel loads draft detail, shows the original prompt and structured card fields, supports edits through <code>PATCH /api/ai-card-drafts/:id</code>, and creates a responsibility through <code>Put in play</code>. A ready draft can also be discarded from the tracker or review panel before it is accepted. Failed drafts stay scoped to their own request card and do not block new prompts.</p>
+<p>Generated covers target the current local Library card assets in <code>public/assets/fairplay/cards/</code>: 5:7 portrait PNGs with a pale blush full-bleed background, compact black title text, orange vertical labels, a small orange marker, and a rough hand-drawn central household-object illustration.</p>
+<h2 id="api-routes">API Routes</h2>
+<ul>
+<li><code>GET /api/ai-card-drafts</code>: list AI draft summaries for the current household.</li>
+<li><code>POST /api/ai-card-drafts</code>: create from JSON text. Multipart audio is rejected.</li>
+<li><code>GET /api/ai-card-drafts/:id</code>: load draft detail for review.</li>
+<li><code>PATCH /api/ai-card-drafts/:id</code>: save generated field edits before acceptance.</li>
+<li><code>DELETE /api/ai-card-drafts/:id</code>: discard failed, canceled, or ready drafts before acceptance.</li>
+<li><code>POST /api/ai-card-drafts/:id/retry</code>: retry failed generation.</li>
+<li><code>POST /api/ai-card-drafts/:id/regenerate-image</code>: deprecated; returns <code>410 Gone</code>.</li>
+<li><code>POST /api/ai-card-drafts/:id/put-in-play</code>: atomically create a responsibility and accept the draft.</li>
+<li><code>POST /api/ai-card-drafts/:id/cancel</code>: cancel the draft.</li>
+<li><code>GET /api/ai-card-drafts/:id/cover</code>: streams the persisted generated cover image bytes.</li>
+</ul>
+<p>All routes use the Node.js runtime, the current server session, household scoping, and existing <code>{ error }</code> response conventions.</p>
+<h2 id="qwen-environment">Qwen Environment</h2>
+<p>Required text-generation variables are listed in <code>.env.example</code>:</p>
+<ul>
+<li><code>QWEN_CARD_MODEL=qwen3.6-max-preview</code></li>
+<li><code>QWEN_OPENAI_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1</code></li>
+<li><code>QWEN_CARD_API_KEY</code></li>
+</ul>
+<p>The card key is used for Qwen OpenAI-compatible text structuring. The image key is used for Qwen card-cover generation. No Qwen keys are exposed to client components. The Library card-generation path does not call ASR, OCR, ACR, audio, or upload APIs.</p>
+<p>Required image-generation variables are also listed in <code>.env.example</code>:</p>
+<ul>
+<li><code>QWEN_IMAGE_MODEL=qwen-image-2.0-pro</code></li>
+<li><code>QWEN_IMAGE_BASE_URL=https://dashscope-intl.aliyuncs.com/api/v1</code></li>
+<li><code>QWEN_IMAGE_API_KEY</code></li>
+</ul>
+<h2 id="openai-fallback">OpenAI Fallback</h2>
+<p>Qwen remains the primary provider for text structuring and cover generation. When <code>AI_PROVIDER_FALLBACK_ENABLED=true</code>, the failed text or image step falls back to OpenAI after Qwen throws.</p>
+<p>Required fallback variables:</p>
+<ul>
+<li><code>AI_PROVIDER_FALLBACK_ENABLED=true</code></li>
+<li><code>OPENAI_BASE_URL=https://api.openai.com/v1</code></li>
+<li><code>OPENAI_TEXT_MODEL=gpt-5-nano</code></li>
+<li><code>OPENAI_TEXT_API_KEY</code></li>
+<li><code>OPENAI_IMAGE_MODEL=gpt-image-1-mini</code></li>
+<li><code>OPENAI_IMAGE_API_KEY</code></li>
+</ul>
+<p>OpenAI card structuring uses strict JSON schema output and the same card validation as Qwen. Optional image fallback uses <code>OPENAI_IMAGE_MODEL</code> and <code>OPENAI_IMAGE_API_KEY</code> when enabled.</p>
+<h2 id="request-state">Request State</h2>
+<p>Submitting a prompt clears the prompt bar immediately and adds a compact optimistic request card. Each request tracks its own status, generated result, retry action, cancel action, discard action, and error details. A failed request remains reviewable and retryable without blocking future prompts.</p>
+<p>The public contract exposes <code>queued</code>, <code>structuring</code>, <code>ready</code>, and <code>failed</code> stages. Internal image-generation stages are mapped to <code>structuring</code> when summaries are returned.</p>
+<p>Ready means structured text fields and generated cover bytes have both been saved. A retry of a failed draft with existing text but missing cover bytes regenerates the missing cover before returning to ready.</p>
+<h2 id="known-v1-limitations">Known V1 Limitations</h2>
+<ul>
+<li>Generation runs synchronously inside the create/retry request instead of a background queue.</li>
+<li>Generated cover bytes are stored on the draft and served through the local cover route; provider URLs are not persisted as public asset paths.</li>
+<li>The review form uses simple comma-separated inputs for area and hidden-effort keys.</li>
+<li>Failed drafts can be retried or canceled, but prompt-edit retry is not a separate flow yet.</li>
+<li>Accepted AI drafts remain visible in the Library tracker as accepted drafts.</li>
+<li>Accepted drafts cannot be discarded from the AI tracker because they have already become responsibilities.</li>
+<li>Track for later is visible but unavailable for generated drafts until a persistent saved-draft list exists.</li>
+</ul>
+<h2 id="manual-smoke-test">Manual Smoke Test</h2>
+<ol>
+<li>Configure database, session, and Qwen env vars in <code>.env.local</code>.</li>
+<li>Run <code>npm run prisma:migrate</code>, then <code>npm run dev</code>.</li>
+<li>Log in, select a persona, and open <code>/app/library</code>.</li>
+<li>Create a text draft from <code>AI Task Manager</code>.</li>
+<li>Confirm the prompt bar clears immediately and the request appears in <code>AI-created cards</code>.</li>
+<li>Open <code>Review</code>, edit title/summary/CPE fields, save changes, and refresh.</li>
+<li>Submit a second prompt while the first request is still pending or failed and confirm the second request is not blocked.</li>
+<li>Force or simulate a failed request, then confirm retry/cancel are scoped to that request card.</li>
+<li>Discard a ready draft and confirm it leaves the tracker without creating a responsibility.</li>
+<li>Put a ready draft in play and confirm navigation to the new responsibility.</li>
+</ol>
+    </article>
+  </main>
+</body>
+</html>

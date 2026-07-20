@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-07-ai-card-image-generation/qa-results.md">
+  <meta name="fairplay-document-source-sha256" content="19fad4c953998adf418a2065d320f1b0b94c27d0779273cb22f90e9dc0c20df2">
+  <title>docs/agents/tasks/2026-05-07-ai-card-image-generation/qa-results.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="qa-results.md"><code>docs/agents/tasks/2026-05-07-ai-card-image-generation/qa-results.md</code></a></p>
+    <article>
+<h1 id="qa-results">QA Results</h1>
+<h2 id="automated-verification">Automated Verification</h2>
+<ul>
+<li>Focused AI draft contracts/service/repository/provider/UI/route suite: 9 files, 112 tests passed.</li>
+<li>OpenAI fallback image prompt suite: 1 file, 12 tests passed after aligning the fallback prompt expectation with the new Library-card style.</li>
+<li>Full Vitest suite: 96 files, 540 tests passed.</li>
+<li>Typecheck passed with <code>tsc --noEmit</code>.</li>
+<li>Lint passed with <code>eslint .</code>.</li>
+<li>Production build passed with <code>next build</code>.</li>
+<li>Prisma schema validation passed.</li>
+</ul>
+<h2 id="visual-qa">Visual QA</h2>
+<ul>
+<li>Inspected current Library card assets at <code>public/assets/fairplay/cards/auto.png</code> and <code>public/assets/fairplay/cards/laundry.png</code>.</li>
+<li>Confirmed both reference assets are 500x700 portrait PNGs.</li>
+<li>Ran live Qwen image smoke tests with real environment variables from <code>.env.local</code>.</li>
+<li>Stored smoke-test outputs under ignored <code>test-results/ai-card-image-generation/</code> for local inspection.</li>
+</ul>
+<h2 id="flow-coverage">Flow Coverage</h2>
+<ul>
+<li>Creating a text prompt now requires text generation and cover generation before ready.</li>
+<li>Failed drafts with generated text but missing cover can retry cover generation.</li>
+<li>Ready drafts expose cover paths in contract parsing.</li>
+<li>Tracker cards and review panels show generated cover images when available.</li>
+<li>Put-in-play carries the cover path into the accepted responsibility.</li>
+</ul>
+<h2 id="not-covered">Not Covered</h2>
+<ul>
+<li>Browser e2e against a live authenticated session was not run.</li>
+<li>Pixel-diff comparison against the current Library assets was not added because generated-provider output is nondeterministic.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

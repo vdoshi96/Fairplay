@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/agents/tasks/2026-05-04-trello-data-model-research/learned.md">
+  <meta name="fairplay-document-source-sha256" content="fd7a16babd9e11a2eeb1fa65e9bdd1dda81f563a2b55de4ce67bf98b05b66145">
+  <title>docs/agents/tasks/2026-05-04-trello-data-model-research/learned.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="learned.md"><code>docs/agents/tasks/2026-05-04-trello-data-model-research/learned.md</code></a></p>
+    <article>
+<h1 id="learned">Learned</h1>
+<h2 id="source-structure-summary">Source Structure Summary</h2>
+<ul>
+<li>The board exposes 6 workflow lanes and 100 open responsibility cards.</li>
+<li>At export time, all 100 cards sit in the reserve/library lane. The other lanes appear to represent review/attention, two individual owners, a child-related shared/split state, and a removed/trimmed state, but those lanes contain no active cards in the exported snapshot.</li>
+<li>The board defines 9 labels. 7 labels are used on cards; 2 labels are defined but unused.</li>
+<li>Used label-card counts are 30, 23, 22, 22, 21, 10, and 6. Cards can have multiple labels, so label totals exceed the 100-card deck count.</li>
+<li>The used labels function like broad source categories: recurring routine work, care responsibilities, away-from-home logistics, home work, delight/meaning work, disruption/life-event work, and personal wellbeing.</li>
+<li>All cards have descriptions and PNG attachments. There are 105 image attachments across 100 cards, with most cards having one image and a small number having multiple images.</li>
+<li>No cards have assigned members, due dates, start dates, checklists, comments, votes, custom field items, plugin data, recurrence rules, or Trello template flags.</li>
+<li>Every card description follows the same repeated structure: overview/context, three responsibility-lifecycle sections, and a minimum acceptable standard. The exact headings and text should not be reused.</li>
+</ul>
+<h2 id="workflow-implications">Workflow Implications</h2>
+<ul>
+<li>The Trello board is closer to a responsibility deck plus manual assignment lanes than a task tracker.</li>
+<li>Lane movement encodes state and ownership, while labels encode coarse categories. A product model should not rely only on visual columns because mobile/API clients need first-class ownership and status fields.</li>
+<li>The empty owner lanes suggest the template starts with all responsibilities unassigned, then households move cards into owner or shared states.</li>
+<li>The attention/review lane implies a &quot;needs discussion&quot; or &quot;on the radar&quot; state separate from owner assignment.</li>
+<li>The removed/trimmed lane implies households need a way to hide, archive, or mark responsibilities as not relevant without deleting the template concept.</li>
+<li>The child-related split lane implies some responsibilities may need special handling for dependents, co-parenting, or child-specific sharing rather than a simple single-owner assignment.</li>
+<li>The lack of due dates/checklists suggests each card represents durable household accountability, not a one-time task.</li>
+<li>The repeated description structure implies users need fields for what the responsibility means, what must be noticed/decided, what must be prepared, what must be done, and what &quot;good enough&quot; means in that household.</li>
+</ul>
+<h2 id="original-v1-taxonomy-proposal">Original V1 Taxonomy Proposal</h2>
+<p>This taxonomy is transformed for Fairplay and should be treated as a starting point for product architecture, not copied seed content.</p>
+<ul>
+<li>Home care: cleaning, tidying, laundry, dishes, supplies, mail handling, storage, and household reset work.</li>
+<li>Food: groceries, meal planning, recurring meals, packed meals, kitchen readiness, and food-related cleanup.</li>
+<li>Planning and coordination: calendars, weekends, travel prep, social planning, school logistics, appointments, forms, and reminders.</li>
+<li>Family and social life: extended family, hosting, celebrations, gift-giving, thank-you rituals, community involvement, and social commitments.</li>
+<li>Admin and money: bills, budget tracking, insurance, documents, returns, benefits, points/coupons, estate planning, and household records.</li>
+<li>Maintenance and logistics: home repairs, vehicle care, yard/plants, renovations, moving, technology, transport, and physical household infrastructure.</li>
+<li>Health and safety: medical care, dental care, medication/insurance coordination, emergency readiness, personal care, contraception, and wellbeing routines.</li>
+<li>Child routines: morning/evening rhythms, bathing, clothing, childcare coverage, sleep support, diapers/toileting, meals, supervision, and screen boundaries.</li>
+<li>Child school and growth: teacher communication, homework, school supplies, breaks, transitions, extracurriculars, tutoring/coaching, friendships, values, and special support needs.</li>
+<li>Relationship and personal wellbeing: adult friendships, romance, individual renewal, appreciation, play, memory-keeping, and personal growth.</li>
+<li>Life events and disruptions: illness, job changes, aging relatives, new child transitions, death, moves, financial shocks, and unexpected daily disruptions.</li>
+</ul>
+<p>Responsibilities should support multiple tags because real work often spans food plus planning, health plus admin, or child care plus routines.</p>
+<h2 id="app-behavior-implications">App Behavior Implications</h2>
+<ul>
+<li>Card overview: show title, user-written summary, category tags, hidden effort dimensions, current owner state, cadence, standard, and recent status without source-derived description text.</li>
+<li>Ownership assignment: support unassigned, one accountable owner, shared accountable owners, helper/contributor, paused/not relevant, and needs-review states.</li>
+<li>Radar/status: let users flag a responsibility for discussion without changing owner; include reason, urgency, privacy, and desired check-in timing.</li>
+<li>Check-in prompts: ask what changed, what is unclear, what is blocked, what standard needs adjustment, who will carry the outcome until the next review, and when to revisit.</li>
+<li>Load balance signals: summarize active ownership counts, high-friction responsibilities, overdue reviews, hidden-effort mix, child-related load, recurring load, and life-event load. Avoid a partner score.</li>
+<li>Lifecycle fields: store noticing/decision work, preparation/planning work, execution/follow-through work, standard, cadence, dependencies, handoff notes, last reviewed date, and next review date.</li>
+<li>Library behavior: keep original responsibility templates separate from household-specific instances so users can hide, customize, combine, or split responsibilities.</li>
+<li>Image behavior: do not use Trello PNG assets. If the product needs visuals, create original icons/illustrations after IP review.</li>
+</ul>
+<h2 id="api-and-domain-model-sketch">API and Domain Model Sketch</h2>
+<ul>
+<li><code>Household</code>: id, name, timezone, createdAt, updatedAt.</li>
+<li><code>HouseholdMember</code>: id, householdId, userId, displayName, role, status, joinedAt.</li>
+<li><code>ResponsibilityTemplate</code>: id, slug, title, summary, categoryIds, suggestedTags, defaultCadence, lifecyclePromptSetId, sourceReviewStatus, version.</li>
+<li><code>ResponsibilityInstance</code>: id, householdId, templateId nullable, title, description, categoryIds, tags, cadence, status, visibility, createdByMemberId, createdAt, updatedAt, archivedAt.</li>
+<li><code>OwnershipAssignment</code>: id, responsibilityId, memberId, role, accountabilityLevel, startsAt, endsAt nullable, createdByMemberId.</li>
+<li><code>ResponsibilityLifecycle</code>: responsibilityId, noticeDecideNotes, planPrepareNotes, executeFollowThroughNotes, standardNotes, dependencies, blockers, supportNeeded.</li>
+<li><code>RadarItem</code>: id, householdId, responsibilityId nullable, createdByMemberId, visibility, state, urgency, topic, notes, targetCheckInId nullable, createdAt, resolvedAt nullable.</li>
+<li><code>CheckIn</code>: id, householdId, scheduledFor, startedAt nullable, completedAt nullable, state, facilitatorMemberId nullable, summary.</li>
+<li><code>CheckInItem</code>: id, checkInId, radarItemId nullable, responsibilityId nullable, type, promptKey, response, decisionId nullable.</li>
+<li><code>Decision</code>: id, householdId, checkInId nullable, responsibilityId nullable, decisionType, summary, effectiveAt, reviewOn nullable, createdByMemberId.</li>
+<li><code>LoadSignalSnapshot</code>: id, householdId, computedAt, periodStart, periodEnd, ownerDistribution, categoryDistribution, recurringLoadCount, reviewDueCount, radarOpenCount, hiddenEffortMix.</li>
+<li><code>ResponsibilityEvent</code>: id, responsibilityId, actorMemberId, eventType, payload, occurredAt. Use for audit/history without exposing a blame ledger by default.</li>
+</ul>
+<h2 id="enum-candidates">Enum Candidates</h2>
+<ul>
+<li>Responsibility status: <code>unassigned</code>, <code>active</code>, <code>needs_review</code>, <code>paused</code>, <code>not_relevant</code>, <code>archived</code>.</li>
+<li>Ownership role: <code>accountable_owner</code>, <code>shared_owner</code>, <code>helper</code>, <code>observer</code>.</li>
+<li>Accountability level: <code>outcome</code>, <code>part</code>, <code>backup</code>.</li>
+<li>Visibility: <code>private</code>, <code>shared_household</code>, <code>partner_visible</code>, <code>check_in_only</code>.</li>
+<li>Cadence: <code>daily</code>, <code>weekly</code>, <code>monthly</code>, <code>seasonal</code>, <code>event_based</code>, <code>as_needed</code>, <code>one_time</code>.</li>
+<li>Radar state: <code>open</code>, <code>scheduled</code>, <code>discussed</code>, <code>resolved</code>, <code>dismissed</code>.</li>
+<li>Check-in state: <code>draft</code>, <code>scheduled</code>, <code>active</code>, <code>completed</code>, <code>skipped</code>.</li>
+<li>Decision type: <code>assign_owner</code>, <code>change_standard</code>, <code>change_cadence</code>, <code>pause</code>, <code>split</code>, <code>combine</code>, <code>custom_note</code>.</li>
+</ul>
+<h2 id="ios-compatible-contract-notes">iOS-Compatible Contract Notes</h2>
+<ul>
+<li>Use stable string enums and UUID strings for client interoperability.</li>
+<li>Send timestamps as ISO 8601 strings and include household timezone for local review/cadence display.</li>
+<li>Keep template text versioned so mobile clients can cache responsibility libraries without mixing source-reviewed and user-authored content.</li>
+<li>Represent lifecycle notes as nullable strings or structured rich-text blocks; avoid server-only markdown assumptions for v1.</li>
+<li>Make ownership history append-only through events or dated assignments so clients can render current state and past handoffs consistently.</li>
+<li>Keep aggregate load signals as snapshots so clients do not need to recompute sensitive metrics offline.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

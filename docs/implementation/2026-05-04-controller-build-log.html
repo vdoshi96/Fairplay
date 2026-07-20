@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/implementation/2026-05-04-controller-build-log.md">
+  <meta name="fairplay-document-source-sha256" content="6862405b7ba68d5e3b67bb36b4ff661c69e2e0fa33e8a7516ddb6d052ae0343d">
+  <title>docs/implementation/2026-05-04-controller-build-log.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-04-controller-build-log.md"><code>docs/implementation/2026-05-04-controller-build-log.md</code></a></p>
+    <article>
+<h1 id="controller-build-log-personal-use-redesign">Controller Build Log: Personal-Use Redesign</h1>
+<h2 id="expectations">Expectations</h2>
+<ul>
+<li>Build from the approved personal-use redesign spec.</li>
+<li>Keep implementation documentation reviewable.</li>
+<li>Dispatch workers with disjoint file ownership where practical.</li>
+<li>Preserve user changes and avoid destructive git operations.</li>
+<li>Download all source card covers into <code>public/assets/fairplay/cards/</code> and reference local <code>coverAssetPath</code> values only.</li>
+</ul>
+<h2 id="outputs">Outputs</h2>
+<ul>
+<li>Implementation plan: <code>docs/superpowers/plans/2026-05-04-fairplay-personal-use-redesign-implementation.md</code>.</li>
+<li>Implementation branch: <code>codex/personal-use-redesign</code>.</li>
+<li>Branch base: current <code>main</code> plus cherry-picked research/spec/plan commits.</li>
+<li>Controller integration fix after Task 2/Task 5:<ul>
+<li>Updated legacy responsibility mapper/test fixtures to include required <code>boardLane</code> and <code>boardSortOrder</code>.</li>
+<li>Verified <code>npm run typecheck</code> passes.</li>
+<li>Verified <code>npm test -- src/components/responsibilities/responsibility-load-map.test.tsx src/server/responsibilities/service.test.ts</code> passes.</li>
+</ul>
+</li>
+<li>Controller image polish:<ul>
+<li>Swapped new source-card cover renderers from raw <code>&lt;img&gt;</code> tags to Next <code>Image</code> with local <code>coverAssetPath</code> assets.</li>
+<li>Verified <code>npm run lint</code>, <code>npm run typecheck</code>, and card/library component tests pass.</li>
+</ul>
+</li>
+<li>Local Postgres follow-up:<ul>
+<li>Installed <code>postgresql@16</code> with Homebrew and started it with <code>brew services start postgresql@16</code>.</li>
+<li>Created the <code>fairplay</code> role/database and applied all Prisma migrations through <code>20260504203000_cascade_persona_owned_records</code>.</li>
+<li>Seeded the local database with <code>npm run prisma:seed</code>.</li>
+<li>Updated persona-owned record foreign keys from restrictive deletes to cascade so household cleanup works in repository integration tests.</li>
+<li>Verified <code>npm run lint</code>, <code>npm run typecheck</code>, full <code>npm test</code>, <code>npm run build</code>, and <code>npm run test:e2e</code> pass with the local Postgres <code>DATABASE_URL</code>.</li>
+</ul>
+</li>
+<li>Controller self-review fix:<ul>
+<li>Found that <code>/app/library</code> displayed the source deck but did not wire &quot;Put in play&quot; to creation.</li>
+<li>Found that <code>prisma/seed.ts</code> was still writing only the old template fields, which dropped source labels, CPE text, minimum standards, local cover paths, source IDs, and default lanes from DB-backed templates.</li>
+<li>Wired the library page to create from stable source card IDs, added on-demand source-template upsert, and updated the seed script to write the full original-card payload.</li>
+</ul>
+</li>
+</ul>
+<h2 id="challenges">Challenges</h2>
+<ul>
+<li>The full 100-card data import is content-heavy and should be isolated from UI work.</li>
+<li>Schema changes are a dependency for board placement, preferences, and source-card APIs.</li>
+<li>Cover assets must be stored in GitHub rather than hotlinked from Trello.</li>
+<li>Docker is unavailable on this machine, so local DB verification uses Homebrew Postgres instead of <code>npm run db:up</code>.</li>
+<li>Static source card IDs and generated database template IDs need a bridge because older seeded rows may already exist with generated UUIDs.</li>
+</ul>
+<h2 id="next-handoff">Next Handoff</h2>
+<ul>
+<li>Review PR #4, promote it from draft when ready, then merge after GitHub checks are green.</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/superpowers/plans/2026-05-06-fairplay-polish-upgrades.md">
+  <meta name="fairplay-document-source-sha256" content="927c1dc9b39837cdf79c09ac1f07a1268fb57da5ceb473e504a68d98dc0e1acf">
+  <title>docs/superpowers/plans/2026-05-06-fairplay-polish-upgrades.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="2026-05-06-fairplay-polish-upgrades.md"><code>docs/superpowers/plans/2026-05-06-fairplay-polish-upgrades.md</code></a></p>
+    <article>
+<h1 id="fairplay-polish-upgrades-implementation-plan">Fairplay Polish Upgrades Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Deliver dark-mode readability, Greg Taskmaster Library polish, and richer Little Alex customization/behavior.</p>
+<p><strong>Architecture:</strong> Three isolated feature branches merge into main in dependency order. Theme fixes are systemic and verified visually; Greg is UI/asset-only; Little Alex adds persona-scoped preferences plus physics behavior.</p>
+<p><strong>Tech Stack:</strong> Next.js App Router, React 19, Tailwind utility classes, Matter.js, Prisma/Postgres, Vitest, Playwright.</p>
+<hr>
+<h2 id="task-1-theme-toggle-and-dark-qa">Task 1: Theme Toggle And Dark QA</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify <code>src/components/settings/settings-panel.tsx</code></p>
+</li>
+<li><p>Modify <code>src/components/settings/settings-panel.test.tsx</code></p>
+</li>
+<li><p>Modify <code>src/app/globals.css</code></p>
+</li>
+<li><p>Add or modify <code>e2e/dark-mode-visual.spec.ts</code></p>
+</li>
+<li><p>Add <code>docs/agents/tasks/2026-05-06-fairplay-polish-upgrades/theme-dark-qa.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write tests for a system toggle plus explicit light/dark switch in Settings.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write focused dark-mode class/contrast regressions for risky controls.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement the Settings UI using existing <code>useTheme()</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add dark-mode utility overrides and targeted token fixes for hard-coded white/stone surfaces.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused tests and Playwright dark visual smoke.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Save screenshots under <code>test-results/dark-mode-polish/</code> or document Playwright artifact paths.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Commit with message <code>fix: improve dark mode readability</code>.</p>
+</li>
+</ul>
+<h2 id="task-2-greg-taskmaster-avatar">Task 2: Greg Taskmaster Avatar</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Add <code>public/assets/fairplay/generated-ui/greg-taskmaster-avatar.png</code></p>
+</li>
+<li><p>Modify <code>src/components/library/ai-task-manager.tsx</code></p>
+</li>
+<li><p>Modify <code>src/components/library/ai-task-manager.test.tsx</code></p>
+</li>
+<li><p>Modify <code>src/components/library/card-library.test.tsx</code></p>
+</li>
+<li><p>Modify <code>src/components/guide/guide-content.ts</code></p>
+</li>
+<li><p>Modify <code>src/components/guide/guide-content.test.ts</code></p>
+</li>
+<li><p>Modify <code>e2e/guided-learning.spec.ts</code></p>
+</li>
+<li><p>Add <code>docs/agents/tasks/2026-05-06-fairplay-polish-upgrades/greg-taskmaster-avatar.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Prepare the generated avatar with transparent background and validate it renders cleanly.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write tests expecting <code>Greg - The Taskmaster</code>, the static Greg avatar, and absence of the local Little Alex sidekick.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Replace <code>LittleAlexHorneSidekick</code> with a Greg avatar stage above the button.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Update guide copy capitalization.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused Library/guide tests and guided-learning E2E.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Commit with message <code>feat: add greg taskmaster avatar</code>.</p>
+</li>
+</ul>
+<h2 id="task-3-little-alex-preferences-and-behavior">Task 3: Little Alex Preferences And Behavior</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify <code>prisma/schema.prisma</code></p>
+</li>
+<li><p>Add <code>prisma/migrations/*_add_little_alex_preferences/migration.sql</code></p>
+</li>
+<li><p>Modify <code>src/contracts/preferences.ts</code></p>
+</li>
+<li><p>Modify <code>src/contracts/preferences.test.ts</code></p>
+</li>
+<li><p>Modify <code>src/server/repositories/preferences.ts</code></p>
+</li>
+<li><p>Modify <code>src/server/repositories/preferences.test.ts</code></p>
+</li>
+<li><p>Add <code>src/app/api/preferences/little-alex/route.ts</code></p>
+</li>
+<li><p>Add <code>src/app/api/preferences/little-alex/route.test.ts</code></p>
+</li>
+<li><p>Modify <code>src/app/app/layout.tsx</code></p>
+</li>
+<li><p>Modify <code>src/app/app/settings/page.tsx</code></p>
+</li>
+<li><p>Modify <code>src/components/app-shell/app-shell.tsx</code></p>
+</li>
+<li><p>Modify <code>src/components/app-shell/app-shell.test.tsx</code></p>
+</li>
+<li><p>Modify <code>src/components/settings/settings-panel.tsx</code></p>
+</li>
+<li><p>Modify <code>src/components/settings/settings-panel.test.tsx</code></p>
+</li>
+<li><p>Modify <code>src/components/little-alex/little-alex-physics.tsx</code></p>
+</li>
+<li><p>Modify <code>src/components/little-alex/little-alex-physics.test.tsx</code></p>
+</li>
+<li><p>Modify <code>src/app/globals.css</code></p>
+</li>
+<li><p>Modify <code>e2e/little-alex-physics.spec.ts</code></p>
+</li>
+<li><p>Add <code>docs/agents/tasks/2026-05-06-fairplay-polish-upgrades/little-alex-upgrades.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write contract tests for constrained gender, 30-character phrase, and skin tone values.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add Prisma model and migration.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write repository and API route tests for get/update defaults and validation.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement repository and route.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Pass preferences from app layout into <code>AppShell</code> and <code>LittleAlexPhysics</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Add Settings controls with optimistic save/status/error behavior.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Write Little Alex tests for 10% fling multiplier, bubble after fling, idle mode after 5 seconds, and reduced-motion opt out.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Implement physics behavior and styling: black suit, white shirt, clipboard, skin-tone variables, idle walk, glance, bubble.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused tests and Little Alex E2E.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Commit with message <code>feat: upgrade little alex behavior</code>.</p>
+</li>
+</ul>
+<h2 id="task-4-mainline-integration-and-final-qa">Task 4: Mainline Integration And Final QA</h2>
+<p><strong>Files:</strong></p>
+<ul>
+<li><p>Modify <code>docs/agents/tasks/2026-05-06-fairplay-polish-upgrades/final-qa.md</code></p>
+</li>
+<li><p>Modify <code>docs/agents/tasks/2026-05-06-fairplay-polish-upgrades/achievements.md</code></p>
+</li>
+<li><p>Modify <code>docs/agents/tasks/2026-05-06-fairplay-polish-upgrades/blockers.md</code></p>
+</li>
+<li><p>Modify <code>docs/agents/tasks/2026-05-06-fairplay-polish-upgrades/work-log.md</code></p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Merge branches to main in the documented order.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run focused checks after each merge.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Run final lint, typecheck, full Vitest, and full Playwright.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Review dark-mode screenshots with vision and record issues/fixes.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Commit final QA docs.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Push <code>main</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox" aria-label="Incomplete task">Verify <code>git rev-parse HEAD</code> equals <code>git ls-remote origin refs/heads/main</code>.</p>
+</li>
+</ul>
+    </article>
+  </main>
+</body>
+</html>

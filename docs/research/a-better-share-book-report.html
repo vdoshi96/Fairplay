@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <meta name="fairplay-document-source" content="docs/research/a-better-share-book-report.md">
+  <meta name="fairplay-document-source-sha256" content="962dd9cb462627d1ac4b116aaf67bcad7f1044a3810079ac3025c75fb37610da">
+  <title>docs/research/a-better-share-book-report.md | Fairplay Documentation</title>
+  <style>:root { color-scheme: light dark; --background: #fffaf2; --surface: #ffffff; --text: #302b27; --muted: #6f6258; --border: #d8cabd; --accent: #8f3f2f; --code: #f2ebe3; } @media (prefers-color-scheme: dark) { :root { --background: #211d1a; --surface: #2b2521; --text: #f7eee5; --muted: #cbbcaf; --border: #5a4d44; --accent: #ffad96; --code: #3b332d; } } * { box-sizing: border-box; } html { background: var(--background); color: var(--text); } body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1rem; line-height: 1.65; } main { width: min(100% - 2rem, 72rem); margin: 2rem auto; padding: clamp(1rem, 3vw, 3rem); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 0.75rem 2rem rgb(48 43 39 / 8%); } .skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 1; padding: 0.75rem 1rem; background: var(--surface); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; } .skip-link:focus { top: 1rem; } .source-note { margin: 0 0 2rem; padding-bottom: 1rem; color: var(--muted); border-bottom: 1px solid var(--border); } h1, h2, h3, h4, h5, h6 { line-height: 1.25; text-wrap: balance; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); } h2 { margin-top: 2.5rem; } a { color: var(--accent); text-underline-offset: 0.18em; } a:hover { text-decoration-thickness: 0.16em; } :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; } img { display: block; max-width: 100%; height: auto; } blockquote { margin-inline: 0; padding: 0.25rem 1rem; color: var(--muted); border-inline-start: 0.3rem solid var(--border); } code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; } code { padding: 0.12rem 0.3rem; background: var(--code); border-radius: 4px; } pre { overflow-x: auto; padding: 1rem; background: var(--code); border: 1px solid var(--border); border-radius: 8px; } pre code { padding: 0; background: transparent; } .table-scroll { overflow-x: auto; margin-block: 1.5rem; } table { width: 100%; border-collapse: collapse; } th, td { padding: 0.6rem 0.75rem; border: 1px solid var(--border); text-align: start; } th { background: var(--code); } li + li { margin-top: 0.25rem; } hr { border: 0; border-top: 1px solid var(--border); } article { overflow-wrap: anywhere; } @media print { :root { color-scheme: light; } body, main { background: white; color: black; } main { width: 100%; margin: 0; padding: 0; border: 0; box-shadow: none; } .skip-link, .source-note { display: none; } a { color: inherit; } }</style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <main id="content" tabindex="-1">
+    <p class="source-note">Canonical source: <a href="a-better-share-book-report.md"><code>docs/research/a-better-share-book-report.md</code></a></p>
+    <article>
+<h1 id="a-better-share-book-report">A Better Share Book Report</h1>
+<p>Source: Morgan Cutlip, <em>A Better Share: How Couples Can Tackle the Mental Load for More Fun, Less Resentment, and Great Sex</em> (Thomas Nelson, 2025). Local EPUB inspected from <code>References/</code>.</p>
+<h2 id="executive-summary">Executive Summary</h2>
+<p><em>A Better Share</em> is a practical relationship book about how couples can identify, discuss, redistribute, and repeatedly renegotiate the mental load of home and family life. Its central value for the Fairplay redesign is not a task taxonomy. The stronger contribution is a behavioral model: invisible work becomes relationship-damaging when it is unseen, unacknowledged, treated as one partner&#39;s default responsibility, or discussed only after resentment has already accumulated.</p>
+<p>The book frames mental load as a three-part experience: physical execution, cognitive coordination, and emotional holding. It argues that visible chores are only the outer layer. The heavier burden is often the noticing, remembering, anticipating, regulating, tracking, and care-oriented decision-making that surrounds a task before and after anyone sees the task being done.</p>
+<p>Cutlip&#39;s solution is built around the branded SHARE sequence: shared perspective, shared expectations, shared ownership, and shared accountability, followed by a recurring meeting ritual. The book also includes handoff guidance, partner-resistance scripts, sex/intimacy framing, and family-system advice for involving children. For product purposes, Fairplay should treat these as design inputs rather than copyable content. The app can support original flows for perspective-taking, standards, ownership, handoffs, recurring reviews, appreciation, and calm deferral without reproducing the book&#39;s named agenda, prompt wording, scripts, examples, or visual models.</p>
+<p>The most important redesign implications are:</p>
+<ul>
+<li>Make hidden effort visible by separating execution from planning/remembering and emotional care.</li>
+<li>Model ownership as accountable responsibility, not merely helping.</li>
+<li>Ask users to define the household&#39;s own standard for &quot;done well enough&quot; before or during handoff.</li>
+<li>Build private drafting and shared check-ins so users can convert resentment into specific, discussable requests.</li>
+<li>Include appreciation and acknowledgement so the product is not only an imbalance detector.</li>
+<li>Treat partner resistance as a continuum that changes the amount of support, structure, and confrontation needed.</li>
+<li>Keep product language non-clinical, practical, safety-aware, and non-shaming.</li>
+</ul>
+<h2 id="core-thesis">Core Thesis</h2>
+<p>The book&#39;s thesis is that couples do not need a mathematically equal split of every household task. They need a fair, visible, actively maintained share of the work that lets both partners feel known, supported, responsible, and connected. Fairness is dynamic: the right arrangement changes with work seasons, parenting stages, health, travel, stress, and household standards.</p>
+<p>The mental load causes damage because it often lives below the surface of ordinary tasks. One partner may experience a responsibility as a multi-step, emotionally charged obligation, while the other sees only a quick action. When that gap is not named, the default partner feels invisible and alone; the nondefault partner may feel criticized, inadequate, or confused about what is being requested. The couple then fights about the surface task while the real issue is unmet needs, hidden expectations, and loss of trust.</p>
+<p>The book&#39;s deeper claim is relational: household work is not separate from intimacy, friendship, and desire. Repeated invisibility turns into resentment. Resentment reduces warmth, generosity, and sexual openness. Repair requires not only redistributing tasks but also changing how partners notice each other, speak to each other, take initiative, and revisit agreements.</p>
+<h2 id="structure-and-major-concepts">Structure and Major Concepts</h2>
+<p>The EPUB contains 21 chapters plus reflection sections, a conclusion, appendix, resources, notes, and image-based worksheets/figures. The major movement is:</p>
+<ul>
+<li>Part 1 defines the mental load and explains why it is damaging.</li>
+<li>Part 2 introduces the book&#39;s shared practices: perspective, expectations, ownership, and accountability.</li>
+<li>Part 3 turns the framework into implementation: handoff conversations, a recurring meeting ritual, sex/intimacy conversations, and family participation.</li>
+</ul>
+<h3 id="mental-load-as-physical-cognitive-and-emotional-work">Mental Load as Physical, Cognitive, and Emotional Work</h3>
+<p>The book defines mental load broadly. It includes the visible action, the unseen planning around the action, and the emotional regulation or care work attached to it. A single clothing purchase, for example, can include physically shopping and returning items, cognitively tracking sizes and timing, and emotionally managing a child&#39;s preferences, frustration, or sensory needs.</p>
+<p>For Fairplay, this supports a load model where every responsibility may have:</p>
+<ul>
+<li>visible execution,</li>
+<li>planning and memory,</li>
+<li>decision-making and standards,</li>
+<li>emotional care or relational sensitivity,</li>
+<li>follow-through and monitoring,</li>
+<li>review timing.</li>
+</ul>
+<h3 id="treadmill-tasks-vs-one-and-done-tasks">Treadmill Tasks vs. One-and-Done Tasks</h3>
+<p>The book distinguishes recurring responsibilities from finite projects. Repeating household tasks can feel draining because they never produce a lasting finish line. One-and-done work may be important, but it often gives a clearer sense of completion and recognition.</p>
+<p>Fairplay should avoid treating a monthly project and a daily replenishment/checking loop as equivalent just because each appears as one card or row. Cadence, recurrence, and invisible monitoring should shape the perceived load.</p>
+<h3 id="fair-does-not-mean-fifty-fifty">Fair Does Not Mean Fifty-Fifty</h3>
+<p>Cutlip argues that mental load is never perfectly balanced because life changes constantly. The target is a felt sense of fairness, not an exact split. Money is also not the only currency; time, energy, attention, and emotional bandwidth matter.</p>
+<p>Product implication: avoid partner scoreboards. Use signals like concentration, review needs, high-frequency load, ambiguous standards, and open concerns rather than declaring a winner or loser.</p>
+<h3 id="why-the-load-falls-unevenly">Why the Load Falls Unevenly</h3>
+<p>The book identifies several sources: early precedents, socialization, gendered caregiver/provider expectations, intensive mothering norms, and family-of-origin stories. It is careful to say that explanation is not excuse. The point is to see the inherited pattern clearly enough to revise it.</p>
+<p>Product implication: onboarding can ask about current patterns and assumptions without diagnosing either partner. It should normalize inherited defaults while still requiring present-day choice.</p>
+<h3 id="the-death-spiral-of-communication">The &quot;Death Spiral&quot; of Communication</h3>
+<p>The book repeatedly returns to a conflict loop: one partner raises a need, the other hears accusation or failure, defensiveness starts, both partners feel unseen, and the original need becomes harder to discuss next time. Cutlip treats this as a process problem more than a content problem.</p>
+<p>Product implication: check-ins should slow the exchange down. The interface should prompt for what changed, what is needed, what standard is unclear, and what decision is being made. It should also allow pausing, deferring, or taking a break rather than forcing resolution in a heated moment.</p>
+<h3 id="perspective-different-needs-same-end">Perspective: Different Needs, Same End</h3>
+<p>The perspective chapters propose that partners may pursue the same underlying relationship goal through different needs. For women, the book emphasizes pursuit, appreciation, and reliability. For men, it emphasizes peace, affection, and respect. These categories are gendered and should be treated cautiously in product design; however, the broader design insight is useful: partners often need different forms of reassurance to feel loved and secure.</p>
+<p>Product implication: Fairplay should not hard-code gendered need profiles. It can instead offer original, user-authored &quot;what helps me feel supported&quot; prompts, with examples such as reliability, acknowledgement, space, affection, appreciation, or follow-through.</p>
+<h3 id="expectations-and-stories">Expectations and Stories</h3>
+<p>The book treats hidden expectations as a major engine of disappointment. Expectations come from media, social norms, family history, early experiences, and each partner&#39;s self-concept. When reality differs from an unspoken expectation, partners often create a story about the other person&#39;s motives or character.</p>
+<p>Cutlip&#39;s reflection model is: reflect on expectations, revise the expectation or story, and reinforce the revised story through practice. Product translation: Fairplay can help users name assumptions and standards without turning them into accusations.</p>
+<h3 id="ownership-and-initiative">Ownership and Initiative</h3>
+<p>Ownership is the book&#39;s strongest product-relevant concept. Helping is not the same as owning. The owner knows the context, tracks timing, notices needs, learns the standard, and initiates action without being managed by the default partner. The book calls initiative the desired outcome of shared ownership.</p>
+<p>Product implication: Fairplay&#39;s role model should distinguish accountable owner, shared owner, helper, backup, and observer/support. A helper completes a step; an owner carries the outcome.</p>
+<h3 id="accountability">Accountability</h3>
+<p>The accountability chapters cover self-accountability, couple accountability, and task accountability. Self-accountability includes noticing one&#39;s own destructive responses. Couple accountability includes communication norms, repair, apologies, and rules of engagement. Task accountability includes agreeing on what &quot;good enough&quot; means and what training is needed when someone takes on a new responsibility.</p>
+<p>Product implication: every ownership change should include standard, support/training, revisit date, and what to do if the standard is missed.</p>
+<h2 id="terminology-glossary">Terminology Glossary</h2>
+<ul>
+<li>Mental load: The invisible and visible burden of managing home and family life, including execution, planning, remembering, anticipating, standards, and emotional care.</li>
+<li>Physical load: The observable doing of a task.</li>
+<li>Cognitive load: Tracking, remembering, planning, comparing, scheduling, and deciding.</li>
+<li>Emotional load: Regulating feelings, anticipating others&#39; emotional needs, holding concern, and managing the relational impact of household work.</li>
+<li>Default partner: The person who automatically notices, tracks, decides, and fills gaps unless a different agreement is made.</li>
+<li>Nondefault partner: The person who may help or participate but is not carrying the default awareness and initiative for a domain.</li>
+<li>Treadmill task: A recurring task that never stays finished for long.</li>
+<li>One-and-done task: A finite task or project with a clearer endpoint.</li>
+<li>Fair share: A distribution that feels fair and responsive to capacity, not necessarily an equal numerical split.</li>
+<li>Perspective: Understanding what the household load feels like to the other partner and what helps them feel supported.</li>
+<li>Expectation: A standard or assumption about how a partner, parent, or household should function.</li>
+<li>Story: The meaning a partner assigns to the other&#39;s behavior, especially when expectations are unmet.</li>
+<li>Ownership: Acting from responsibility for an outcome rather than waiting to be assigned steps.</li>
+<li>Initiative: Noticing and acting without needing the default partner to manage the action.</li>
+<li>Accountability: The practice of owning one&#39;s communication, agreements, repair, task standards, and follow-through.</li>
+<li>Good enough: The negotiated standard for a task or responsibility.</li>
+<li>On-the-job training: The transfer of context and skill needed when a partner takes on unfamiliar work.</li>
+<li>Handoff: A deliberate renegotiation of responsibility, including context, standards, support, and follow-up.</li>
+<li>SHARE meeting: The book&#39;s branded recurring review ritual. Fairplay should learn from the recurring review concept but avoid copying the name, acronym, agenda, or prompts.</li>
+<li>Relationship-wrecking responses: The book&#39;s term for destructive communication patterns such as dismissing, defending, distancing, relentless pursuit, personalization, power moves, blame, passivity, and harmful statements.</li>
+<li>Weaponized incompetence patterns: Avoidance behaviors where a partner uses lack of skill, delay, forgetfulness, or complexity to return responsibility to the default partner.</li>
+</ul>
+<h2 id="emotional-labor-and-care-load-framing">Emotional Labor and Care Load Framing</h2>
+<p>The book is especially useful for distinguishing emotional labor from generic task work. Emotional load includes:</p>
+<ul>
+<li>anticipating how a decision will affect another person,</li>
+<li>remembering preferences and sensitivities,</li>
+<li>absorbing frustration so others can remain regulated,</li>
+<li>carrying worry about future needs,</li>
+<li>feeling responsible for family mood, preparedness, and relational smoothness,</li>
+<li>monitoring whether a partner will follow through,</li>
+<li>holding resentment while still keeping the household functioning.</li>
+</ul>
+<p>The redesign should let users describe care load in plain language. Avoid clinical labels or therapy-like analysis. A responsibility might ask: &quot;What makes this mentally heavy?&quot; with options like remembering, planning, timing, emotional care, decision pressure, follow-through, or coordination with others.</p>
+<p>Care load should also be visible in check-ins. A partner who handles a child&#39;s appointment may not only schedule the visit. They may track symptoms, know the doctor&#39;s portal, remember insurance details, prepare the child emotionally, follow up on instructions, and worry about outcomes. The product should make that context transferable.</p>
+<h2 id="assessment-and-reflection-models">Assessment and Reflection Models</h2>
+<p>The book includes repeated reflection sections after chapters and several figure-based continuums. These are useful as pattern language, but Fairplay should create original prompts.</p>
+<p>Key models:</p>
+<ul>
+<li>Mental load triad: physical, cognitive, emotional.</li>
+<li>Unmet need cycle: a need is pursued, the partner responds, and the response either meets the need or lets it grow.</li>
+<li>Participation/confrontation continuum: partner behavior ranges from resistant, to passively willing, to taking initiative; the level of confrontation changes accordingly.</li>
+<li>Expectation reflection: identify expectations, where they came from, whether they are realistic, and whether the story about the partner needs revision.</li>
+<li>Ask/act/appreciate lens: support can come through asking better questions, taking action, or showing appreciation.</li>
+<li>Good-enough standard: define what satisfactory completion means for each responsibility.</li>
+<li>Training need: identify what context or skill transfer is necessary for a new owner.</li>
+<li>Sexual desire continuums: desire is affected by accelerators and brakes; closeness and sex can carry different meanings for each partner.</li>
+</ul>
+<p>Fairplay-compatible adaptation:</p>
+<ul>
+<li>Load snapshot: &quot;What parts of this responsibility are visible? What parts are mostly hidden?&quot;</li>
+<li>Standard builder: &quot;What does done well enough mean for our household?&quot;</li>
+<li>Ownership readiness: &quot;Who notices this? Who decides? Who acts? Who follows up?&quot;</li>
+<li>Handoff builder: &quot;What context, access, reminders, or practice does the new owner need?&quot;</li>
+<li>Review prompt: &quot;Does this still feel fair enough for the current season?&quot;</li>
+<li>Repair prompt: &quot;What decision do we need, and should this be discussed now or deferred?&quot;</li>
+</ul>
+<h2 id="partner-resistance-dynamics">Partner-Resistance Dynamics</h2>
+<p>The book does not assume both partners begin equally willing. It distinguishes passive willingness from actual initiative and names resistant patterns that may require more direct confrontation.</p>
+<p>Common resistance dynamics:</p>
+<ul>
+<li>&quot;Just tell me what to do&quot; keeps the default partner in the manager role.</li>
+<li>Working-for-pay is treated as a reason to opt out of home participation.</li>
+<li>The nondefault partner delays, forgets, overcomplicates, or claims incapacity until the default partner takes the task back.</li>
+<li>The default partner asks for help but then micromanages, criticizes, keeps score, or rescues too quickly.</li>
+<li>Conversations become about whether a partner is &quot;good enough&quot; rather than what support or decision is needed.</li>
+<li>A partner shuts down, distances, or treats inequity language as an accusation.</li>
+</ul>
+<p>The product should not become an ambush tool for resistant partners. It should support solo preparation, private notes, neutral language, and safety boundaries. It should also avoid implying that every resistant situation can be solved by better prompts. In unsafe, coercive, or abusive contexts, household negotiation tools can increase risk.</p>
+<p>Design guidance:</p>
+<ul>
+<li>Offer solo mode without pretending solo effort equals mutual change.</li>
+<li>Keep private drafts private until intentionally shared.</li>
+<li>Help transform complaints into specific requests, standards, and decision points.</li>
+<li>Provide deferral and &quot;not ready for check-in&quot; options.</li>
+<li>Do not label a partner as incompetent or resistant in app-generated copy.</li>
+<li>Let the user document patterns factually without turning history into a grievance archive.</li>
+</ul>
+<h2 id="household-negotiation-rituals">Household Negotiation Rituals</h2>
+<p>The book&#39;s practical core is ritualized renegotiation. It recommends an initial handoff conversation plus recurring review meetings. The purpose is to make invisible work visible, update agreements, and prevent small misalignments from turning into resentment.</p>
+<p>Elements of a strong handoff:</p>
+<ul>
+<li>Identify what is currently being carried by default.</li>
+<li>Separate asking, action, and appreciation needs.</li>
+<li>Clarify what support type is actually needed: questions, action, acknowledgement, or a full transfer.</li>
+<li>Define the task&#39;s good-enough standard.</li>
+<li>Name any training/context the new owner needs.</li>
+<li>Let the new owner fail, figure it out, and fine-tune within agreed boundaries.</li>
+<li>Revisit after a set period rather than judging the first attempt as final.</li>
+</ul>
+<p>Elements of a recurring review:</p>
+<ul>
+<li>Start with how heavy and fair the load has felt.</li>
+<li>Share a perspective each partner wishes the other had.</li>
+<li>Surface upcoming expectations and unmet expectations.</li>
+<li>Review initiative, asking, action, appreciation, and collected household data.</li>
+<li>Check communication and apologies.</li>
+<li>Ask whether responsibilities are meeting agreed standards.</li>
+<li>Decide what to divide, delegate, drop, or revisit.</li>
+</ul>
+<p>Fairplay should translate this into original IA:</p>
+<ul>
+<li>Load map for current responsibilities.</li>
+<li>Radar for concerns, blockers, unclear standards, and due reviews.</li>
+<li>Check-in agenda builder with optional acknowledgement.</li>
+<li>Decision capture that updates responsibility owner, status, standard, support role, and review date.</li>
+<li>Historical summaries that preserve decisions without encouraging re-litigation.</li>
+</ul>
+<h2 id="sex-desire-and-intimacy">Sex, Desire, and Intimacy</h2>
+<p>The book connects household load to desire and sexual connection. When the mental load crowds out cognitive and emotional energy, sex can feel like another demand instead of a source of connection. Cutlip uses the accelerator/brake model of desire and encourages explicit conversations about turn-ons, turn-offs, meanings attached to sex, scheduling, and initiation.</p>
+<p>Fairplay v1 should not become a sex coaching tool, but the insight matters: workload and intimacy are connected. The app can acknowledge that resentment and exhaustion affect closeness without offering sexual advice. Product copy should stay within household organization and relationship support boundaries.</p>
+<p>Possible v1-safe framing:</p>
+<ul>
+<li>&quot;This responsibility affects energy, rest, or connection.&quot;</li>
+<li>&quot;This concern may be better discussed outside the app or with professional support.&quot;</li>
+<li>&quot;Choose whether to discuss now, save privately, or defer.&quot;</li>
+</ul>
+<h2 id="family-and-children">Family and Children</h2>
+<p>The final chapter extends the household system to children. The goal is not perfect chore compliance but a family-team mentality, increased initiative, and modeling future partnership habits. Cutlip is skeptical of relying only on chore charts; children need participation in everyday work, repeated modeling, and age-appropriate responsibility.</p>
+<p>Fairplay implication: if future versions support children, they should avoid gamifying chores as isolated points. The stronger model is shared household participation, age-appropriate contribution, and visible family norms. For v1, child accounts are out of scope; however, responsibilities can include child-related context and recurring review.</p>
+<h2 id="ui-and-product-implications-for-fairplay">UI and Product Implications for Fairplay</h2>
+<h3 id="onboarding">Onboarding</h3>
+<ul>
+<li>Begin with the user&#39;s household reality, not a lecture.</li>
+<li>Explain that the app helps make invisible work discussable and reviewable.</li>
+<li>Use original education: visible work, hidden coordination, emotional care, ownership, standards, review dates.</li>
+<li>Include safety and scope boundaries early.</li>
+<li>Let a solo starter map responsibilities privately before inviting or sharing.</li>
+</ul>
+<h3 id="responsibility-model">Responsibility Model</h3>
+<ul>
+<li>Store title, notes, cadence, area/tag, hidden effort dimensions, owner state, support roles, standard, review date, and radar status.</li>
+<li>Separate owner from helper.</li>
+<li>Include &quot;who notices,&quot; &quot;who decides,&quot; &quot;who does,&quot; and &quot;who follows up&quot; as possible internal design questions, even if the UI simplifies them.</li>
+<li>Allow paused, not relevant, and deferred states so reducing load is not only reassignment.</li>
+</ul>
+<h3 id="load-map">Load Map</h3>
+<ul>
+<li>Show patterns without scores: high-frequency work, unclear standards, concentrated ownership, due reviews, open radar items.</li>
+<li>Treat cognitive/emotional load as first-class attributes.</li>
+<li>Avoid copying any source card deck, worksheet categories, or branded terminology.</li>
+</ul>
+<h3 id="radar">Radar</h3>
+<ul>
+<li>Support private drafts, shared items, and check-in-only topics.</li>
+<li>Prompt for the desired outcome: clarify standard, request support, change owner, set a review, pause/drop, acknowledge, or defer.</li>
+<li>Use neutral language. No &quot;proof your partner failed&quot; framing.</li>
+</ul>
+<h3 id="guided-check-in">Guided Check-In</h3>
+<ul>
+<li>Keep the ritual short and repeatable.</li>
+<li>Include one appreciation or acknowledgement prompt, but make it optional and original.</li>
+<li>Let users choose agenda items rather than forcing every flagged issue into the meeting.</li>
+<li>Capture decisions as updates to the household system.</li>
+<li>Provide a pause/defer path for heated topics.</li>
+</ul>
+<h3 id="handoff-flow">Handoff Flow</h3>
+<ul>
+<li>When ownership changes, require context transfer: standard, timing, access/tools, known pitfalls, support needed, and review date.</li>
+<li>Give the previous owner a way to step back without micromanaging.</li>
+<li>Give the new owner a way to request context without returning management to the previous owner.</li>
+</ul>
+<h3 id="copy-and-ip-safety">Copy and IP Safety</h3>
+<ul>
+<li>Do not use the book&#39;s branded SHARE acronym, &quot;get a load of this&quot; exercise framing, meeting name, agenda wording, scripts, examples, or visual diagrams.</li>
+<li>Avoid copying gendered PAR categories as product defaults.</li>
+<li>Use broad concepts in original language: perspective, expectations, ownership, accountability, hidden effort, standards, review.</li>
+<li>Keep educational content short and app-specific.</li>
+</ul>
+<h2 id="crash-course-curriculum-recommendations">Crash-Course Curriculum Recommendations</h2>
+<p>This curriculum should help a new household learn enough to use Fairplay well without reading a book-length guide.</p>
+<h3 id="module-1-see-the-hidden-work">Module 1: See the Hidden Work</h3>
+<p>Goal: Help users understand that a responsibility includes visible action, planning/remembering, and emotional care.</p>
+<p>Product exercise: Pick one responsibility and mark what makes it heavy: doing, remembering, deciding, coordinating, emotional care, follow-up.</p>
+<h3 id="module-2-fair-is-dynamic">Module 2: Fair Is Dynamic</h3>
+<p>Goal: Normalize that fairness changes with season and capacity.</p>
+<p>Product exercise: Rate whether the current arrangement feels light, manageable, heavy, or overloaded. Ask what changed recently.</p>
+<h3 id="module-3-owner-vs-helper">Module 3: Owner vs. Helper</h3>
+<p>Goal: Teach that ownership means carrying the outcome.</p>
+<p>Product exercise: For one task, choose accountable owner, helper, backup, or shared owner. Define who notices and who follows up.</p>
+<h3 id="module-4-define-done-well-enough">Module 4: Define Done Well Enough</h3>
+<p>Goal: Reduce conflict over unspoken standards.</p>
+<p>Product exercise: Write the household&#39;s standard for one responsibility in plain language. Add what is flexible and what is not.</p>
+<h3 id="module-5-make-a-handoff">Module 5: Make a Handoff</h3>
+<p>Goal: Transfer context without making one partner the permanent manager.</p>
+<p>Product exercise: Choose a responsibility to move or share. Add context, tools/access, timing, likely blockers, training needed, and review date.</p>
+<h3 id="module-6-bring-it-to-radar">Module 6: Bring It to Radar</h3>
+<p>Goal: Convert resentment into a discussable topic.</p>
+<p>Product exercise: Draft a concern privately, then convert it into a neutral agenda item with a desired decision.</p>
+<h3 id="module-7-run-a-short-check-in">Module 7: Run a Short Check-In</h3>
+<p>Goal: Create a repeatable ritual.</p>
+<p>Product exercise: Pick up to three agenda items, record decisions, defer anything too heated, and schedule the next review.</p>
+<h3 id="module-8-keep-repair-in-the-loop">Module 8: Keep Repair in the Loop</h3>
+<p>Goal: Prevent check-ins from becoming administrative scorekeeping.</p>
+<p>Product exercise: Add one acknowledgement, one apology if needed, and one next step.</p>
+<h2 id="open-questions-for-implementation">Open Questions for Implementation</h2>
+<ul>
+<li>How should Fairplay quantify or display hidden effort without creating partner scores?</li>
+<li>Which hidden effort dimensions belong in v1: planning, remembering, emotional care, coordination, decision pressure, follow-up, or a shorter set?</li>
+<li>Should &quot;good enough&quot; standards be required for every responsibility or only for handoffs and flagged items?</li>
+<li>How much solo-mode guidance can the product offer before it risks becoming a confrontation coach?</li>
+<li>What safety language is needed when a user indicates fear, retaliation risk, coercion, or repeated hostile shutdown?</li>
+<li>Should check-ins include a structured appreciation moment by default, or should acknowledgement emerge from selected topics?</li>
+<li>How should the app distinguish a private draft, a shared concern, a partner-visible item, and a check-in agenda item in the UI?</li>
+<li>Can the product support partner-resistance patterns without labeling or diagnosing a partner?</li>
+<li>What should the review cadence be: weekly default, user-selected, responsibility-specific, or event-driven?</li>
+<li>How should historical decisions be summarized so they support continuity without becoming a grievance log?</li>
+<li>Should Fairplay include an educational crash course as a separate onboarding path, or weave micro-lessons into responsibility creation and check-ins?</li>
+<li>What language is original enough to avoid source mimicry while still teaching common concepts such as hidden labor, ownership, standards, and recurring review?</li>
+</ul>
+<h2 id="bottom-line">Bottom Line</h2>
+<p><em>A Better Share</em> reinforces that Fairplay should be a household operating system for visibility, ownership, standards, and recurring renegotiation, not a task list with relationship paint on it. The product should help users move from invisible pressure to shared decisions: what exists, why it is heavy, who owns it, what good enough means, what support is needed, when it will be reviewed, and how the couple can keep talking without turning the app into a scorecard.</p>
+    </article>
+  </main>
+</body>
+</html>
